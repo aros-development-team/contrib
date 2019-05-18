@@ -1,3 +1,5 @@
+# Contrib
+
 Software in this directory and in all directories below this one works
 with AROS but is usually not written by AROS developers (but also usually
 modified by us). The software usually has it's own copyright which is
