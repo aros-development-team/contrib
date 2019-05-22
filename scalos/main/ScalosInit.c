@@ -1437,7 +1437,7 @@ static void ScalosMain(IPTR *ArgArray)
 		if (NULL == ScreenTitleBuffer)
 			break;
 
-		SCA_ScreenTitleMsg("Copyright © 2000" CURRENTYEAR " The Scalos Team - All Rights Reserved", NULL);
+		SCA_ScreenTitleMsg("Copyright \xa9 2000" CURRENTYEAR " The Scalos Team - All Rights Reserved", NULL);
 
 		LINE_TRACE;
 
@@ -1496,7 +1496,7 @@ static void ScalosMain(IPTR *ArgArray)
 		else
 #endif //defined(SA_OpacitySupport)
 			{
-			iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+			iInfos.xii_Layers3D = NULL != FindTask("LayerInfoTask");
 			}
 #endif //defined(__MORPHOS__)
 

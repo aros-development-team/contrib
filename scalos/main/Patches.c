@@ -418,7 +418,7 @@ static LONG ReOpenScalos(void)
 		else
 #endif //defined(SA_OpacitySupport)
 			{
-			iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+			iInfos.xii_Layers3D = NULL != FindTask("LayerInfoTask");
 			}
 #endif //defined(__MORPHOS__)
 
@@ -1088,7 +1088,7 @@ LIBFUNC_P3(struct Window *, sca_OpenWindowTagList,
 			d1(KPrintF("%s/%s/%ld: WA_SuperBitMap  data=%08lx\n", __FILE__, __FUNC__, __LINE__, ti->ti_Data));
 			break;
 		case WA_MinWidth:
-			d1(KPrintF("%s/%s/%ld: WA_MinWidth  data=%öd\n", __FILE__, __FUNC__, __LINE__, ti->ti_Data));
+			d1(KPrintF("%s/%s/%ld: WA_MinWidth  data=%ld\n", __FILE__, __FUNC__, __LINE__, ti->ti_Data));
 			break;
 		case WA_MinHeight:
 			d1(KPrintF("%s/%s/%ld: WA_MinHeight  data=%ld\n", __FILE__, __FUNC__, __LINE__, ti->ti_Data));
@@ -1362,7 +1362,7 @@ LIBFUNC_P3(struct Screen *, sca_OpenScreenTagList,
 		struct TagItem *AllocatedTagList;
 
 		d1(KPrintF("%s/%s/%ld: driPens=%08lx  ScreenColorList=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, driPens, ScreenColorList));
+			__FILE__, __FUNC__, __LINE__, PalettePrefs.pal_driPens, PalettePrefs.pal_ScreenColorList));
 
 		AllocatedTagList = CloneTagItems((struct TagItem *)TagList);
 		d1(KPrintF("%s/%s/%ld: AllocatedTagList=%08lx\n", __FILE__, __FUNC__, __LINE__, AllocatedTagList));
@@ -1658,7 +1658,7 @@ LIBFUNC_P4(BOOL, sca_PutIconTagList,
 
 	//NotifyWB = GetTagData(ICONPUTA_NotifyWorkbench, FALSE, tags);
 
-	d1(KPrintF("%s/%s/%ld: Success=%ld  NotifyWB=%ld\n", __FILE__, __FUNC__, __LINE__, Success, NotifyWB));
+	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	if (Success)
 		PatchRefreshIcon(Name, diskObj->do_Type);
@@ -2057,7 +2057,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 		if (BNULL == fh->fh_Type)
 			break;
 
-		d1(kprintf("%s/%s/%ld: fh_Link=%08lx  fh_Port=%08lx  fh_Type=%08lx\n", __FILE__, __FUNC__, __LINE__, fh->fh_Link, fh->fh_Port, fh->fh_Type));
+		d1(kprintf("%s/%s/%ld: fh_Port=%08lx  fh_Type=%08lx\n", __FILE__, __FUNC__, __LINE__, fh->fh_Port, fh->fh_Type));
 
 		if (!ScalosExamineBegin(&fib))
 			break;
@@ -2105,7 +2105,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 		{
 		//BOOL HideResult;
 		/* HideResult = */ BTreeHide(PatchOpenBTree, (APTR) file);
-		d1(KPrintF("%s/%s/%ld: HideResult=%ld  DoiCount=%ld  BTreeNumberOfNodes=%ld\n", __FILE__, __FUNC__, __LINE__, HideResult, DoiCount, BTreeNumberOfNodes(PatchOpenBTree)));
+		d1(KPrintF("%s/%s/%ld: DoiCount=%ld  BTreeNumberOfNodes=%ld\n", __FILE__, __FUNC__, __LINE__, DoiCount, BTreeNumberOfNodes(PatchOpenBTree)));
 		}
 #endif
 

@@ -721,7 +721,7 @@ static IPTR TextWindowClass_New(Class *cl, Object *o, Msg msg)
 		iwt->iwt_TextWindowGadgetHeight = Height + 2;
 
 		Scalos_SetFont(&rp, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
-		Scalos_TextExtent(&rp, "OÖÄgyM", 6, &textExtent);
+		Scalos_TextExtent(&rp, "O\xd6\xc4gyM", 6, &textExtent);
 
 		iwt->iwt_TextWindowLineHeight = Scalos_GetFontHeight(&rp);
 		iwt->iwt_TextWindowLineHeight = 1 + max(textExtent.te_Height, iwt->iwt_TextWindowLineHeight);
@@ -1339,7 +1339,7 @@ static ULONG TextWindowClass_DrawColumnHeaders(Class *cl, Object *o, Msg msg)
 				}
 			// .widthok3:
 
-			d1(kprintf("%s/%s/%ld: x=%ld  MinX=%ld  MaxX=%ld\n", __FILE__, __FUNC__, __LINE__, x, MinX, MaxX));
+			d1(kprintf("%s/%s/%ld: x=%ld  MinX=%ld  MaxX=%ld\n", __FILE__, __FUNC__, __LINE__, x, TextGadgetRect.MinX, TextGadgetRect.MaxX));
 			d1(KPrintF("%s/%s/%ld: *pColumn=%ld\n", __FILE__, __FUNC__, __LINE__, pColumn[-1]));
 
 			SetAPen(rp, iwt->iwt_WinDrawInfo->dri_Pens[BACKGROUNDPEN]);
