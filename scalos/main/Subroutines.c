@@ -334,7 +334,7 @@ BOOL CheckAllowCloseWB(void)
 		{
 		d1(kprintf("%s/%s/%ld: TaskName=<%s>\n", __FILE__, __FUNC__, __LINE__, myProc->pr_Task.tc_Node.ln_Name));
 
-		if (0 == strcmp(myProc->pr_Task.tc_Node.ln_Name, "IPrefs"))
+		if (0 == strcmp(myProc->pr_Task.tc_Node.ln_Name, "\xab IPrefs \xbb"))
 			return TRUE;
 		}
 

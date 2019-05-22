@@ -1496,7 +1496,7 @@ static void ScalosMain(IPTR *ArgArray)
 		else
 #endif //defined(SA_OpacitySupport)
 			{
-			iInfos.xii_Layers3D = NULL != FindTask("LayerInfoTask");
+			iInfos.xii_Layers3D = NULL != FindTask("\xab LayerInfoTask \xbb");
 			}
 #endif //defined(__MORPHOS__)
 
