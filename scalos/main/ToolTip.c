@@ -883,7 +883,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		sData->ttsd_Int.is_Node.ln_Name = (STRPTR) "Scalos Tooltip Input Handler";
 
 		d1(kprintf("%s/%s/%ld: sData = %ld, is_Data = %ld\n", __FILE__, __FUNC__, __LINE__,
-			(LONG)sData, (LONG)sData->ttsd_Int.is_Data));
+			sData, sData->ttsd_Int.is_Data));
 
 		inputRequest->io_Data = (APTR) sData;
 		inputRequest->io_Command = IND_ADDHANDLER;
@@ -892,7 +892,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		handlerAdded = TRUE;
 
 		d1(kprintf("%s/%s/%ld: sData = %ld, is_Data = %ld\n", __FILE__, __FUNC__, __LINE__,
-			(LONG)sData, (LONG)sData->ttsd_Int.is_Data));
+			sData, sData->ttsd_Int.is_Data));
 
 		TTLayoutWindow(&tti);
 
@@ -939,7 +939,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		} while (0);
 
 	d1(kprintf("%s/%s/%ld: sData = %ld, is_Data = %ld\n", __FILE__, __FUNC__, __LINE__,
-		(LONG)sData, (LONG)sData->ttsd_Int.is_Data));
+		sData, sData->ttsd_Int.is_Data));
 
 	if (tti.tti_Window)
 		LockedCloseWindow(tti.tti_Window);
@@ -997,7 +997,7 @@ M68KFUNC_P2(struct InputEvent *, ttInputHandler,
 	struct InputEvent *ie;
 	BOOL Found = FALSE;
 
-	d1(kprintf("%s/%s/%ld: isData = %ld\n", __FILE__, __FUNC__, __LINE__, (LONG)isData));
+	d1(kprintf("%s/%s/%ld: isData = %ld\n", __FILE__, __FUNC__, __LINE__, isData));
 
 	for (ie = eventList; ie && !Found; ie=ie->ie_NextEvent)
 		{
@@ -2529,8 +2529,8 @@ static void BlitBackgroundTransparent(struct ttInfo *tti, struct BitMap *MaskBit
 			0, 0,
 			255 - (CurrentPrefs.pref_TooltipsTransparency * 255) / 100);
 
-		d1(KPrintF("%s/%s/%ld: AlphaChannel=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, bob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel));
+		d1(KPrintF("%s/%s/%ld:\n", \
+			__FILE__, __FUNC__, __LINE__));
 
 		BlitARGBMask(tti->tti_Window->Width,
 			tti->tti_Window->Height,
