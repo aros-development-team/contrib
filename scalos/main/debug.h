@@ -6,7 +6,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-//#define DEBUG_SCALOS
+#define DEBUG_SCALOS
 
 // Debugging Macros
 
@@ -17,15 +17,22 @@
 
 #ifdef DEBUG_SCALOS
 /* ------------------------------------------------- */
-# define       DEBUG_SEMAPHORES
+//# define       DEBUG_SEMAPHORES
 //# define       DEBUG_LOCKS
 //# define       DEBUG_MEMORY
+//# define       DEBUG_INPUT
 /* ------------------------------------------------- */
 # define	d1(x)	x;
 # define	d2(x)	{ Forbid(); x; Permit(); }
+# ifdef DEBUG_INPUT
+#  define 	d3(x)	x;
+# else
+#  define 	d3(x)	;
+# endif
 #else
 # define	d1(x)	;
 # define	d2(x)	;
+# define	d3(x)	;
 #endif
 
 #define	debugLock_d1(LockName) ;
@@ -180,7 +187,7 @@ void ScalosFree_Debug(APTR mem, CONST_STRPTR CallingFile,
 
 // from debug.lib
 extern int kprintf(const char *fmt, ...);
-extern int KPrintF(const char *fmt, ...);
+#define KPrintF kprintf
 
 
 #endif	/* DEBUG_H */
