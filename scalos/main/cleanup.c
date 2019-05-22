@@ -107,7 +107,7 @@ void IconWindow_UnCleanup(struct internalScaWindowTask *iwt, struct Region *UnCl
 
 	ScalosLockIconListExclusive(iwt);
 
-	d1(KPrintF("%s/%s/%ld:\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	for (in=iwt->iwt_WindowTask.wt_IconList; in; in = inNext)
 		{

@@ -874,7 +874,7 @@ static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaI
 		}
 
 	d1(kprintf("%s/%s/%ld: InfoArgs.wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, \
-		InfoArgs.wa_Name, InfoArgs.wa_Name ? InfoArgs.wa_Name : ""));
+		InfoArgs.wa_Name, InfoArgs.wa_Name ? InfoArgs.wa_Name : (BYTE *) ""));
 	debugLock_d1(InfoArgs.wa_Lock);
 
 	RunProcess(&iwt->iwt_WindowTask, IconPropertiesStart, sizeof(InfoArgs)/sizeof(ULONG), &InfoArgs, iInfos.xii_iinfos.ii_MainMsgPort);
@@ -1152,7 +1152,7 @@ static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 	IPTR IconType = 0;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
-	d1(KPrintF("%s/%s/%ld: Icon=<%s>  Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, IconName, in->in_Lock));
+	d1(KPrintF("%s/%s/%ld: Icon=<%s>  Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, GetIconName(in), in->in_Lock));
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
@@ -3987,12 +3987,12 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 	BOOL Ok = FALSE;
 
 	debugLock_d1(arg->wa_Lock);
-	d1(kprintf("%s/%s/%ld: START arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
+	d1(kprintf("%s/%s/%ld: START arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : (BYTE *) ""));
 
 	do	{
 		ModsDirLock = LockScaModsDir();
 
-		d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
+		d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : (BYTE *) ""));
 		debugLock_d1(ModsDirLock);
 		if ((BPTR)NULL == ModsDirLock)
 			break;
@@ -4000,7 +4000,7 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 		oldDir = CurrentDir(ModsDirLock);
 		infoModLock = Lock((STRPTR) ModuleName, ACCESS_READ);
 
-		d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
+		d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : (BYTE *) ""));
 		debugLock_d1(infoModLock);
 		if (infoModLock)
 			{
@@ -4024,7 +4024,7 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 			}
 		} while (0);
 
-	d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
+	d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : (BYTE *) ""));
 
 	if (!Ok)
 		WBInfo(arg->wa_Lock, arg->wa_Name, iInfos.xii_iinfos.ii_Screen);
@@ -4137,7 +4137,7 @@ static BOOL CopyToCloneWBArg(struct internalScaWindowTask *iwt, struct WBArg **w
 			if (in->in_Lock)
 				{
 				(*wbArg)->wa_Lock = DupLock(in->in_Lock);
-				d1(kprintf("%s/%s/%ld: (*wbArg)->wa_Lock = <%s>\n", __FILE__, __FUNC__, __LINE__, TestLock));
+				d1(kprintf("%s/%s/%ld: (*wbArg)->wa_Lock = <%s>\n", __FILE__, __FUNC__, __LINE__, DupLock(in->in_Lock)));
 				}
 			else
 				{

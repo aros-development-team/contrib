@@ -421,7 +421,7 @@ static ULONG RootClass_AddToClipboard(Class *cl, Object *o, Msg msg)
 	struct FileTransArg *fta;
 
 	d1(kprintf("%s/%s/%ld: in=%08lx  <%s>  Opcode=%ld  Clipboard=%08lx\n", \
-		__FILE__, __FUNC__, __LINE__, acp->acb_in, GetIconName(acp->acb_in), OpCode, &globalCopyClipBoard));
+		__FILE__, __FUNC__, __LINE__, acp->acb_in, GetIconName(acp->acb_in), acp->acb_Opcode, &globalCopyClipBoard));
 
 	GetAttr(IDTA_Type, acp->acb_in->in_Icon, &IconType);
 

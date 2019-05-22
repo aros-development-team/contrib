@@ -82,7 +82,7 @@ struct ScaIconNode *CheckMouseIcon(struct ScaIconNode **IconList,
 			{
 			ULONG Hit = GMR_GADGETHIT;
 
-			d1(kprintf("%s/%s/%ld: icon found,  prefClickTransp=%ld\n", __FILE__, __FUNC__, __LINE__, prefClickTransp));
+			d1(kprintf("%s/%s/%ld: icon found\n", __FILE__, __FUNC__, __LINE__));
 
 			if (CurrentPrefs.pref_ClickTransp || !IsIwtViewByIcon(iwt))
 				{

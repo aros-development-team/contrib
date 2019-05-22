@@ -225,7 +225,7 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppIcon,
 
 		if (!IsNoIconPosition(gg))
 			{
-			d1(kprintf("%s/%s/%ld: \n", __LINE__));
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 			if (!CheckPosition(iwt, in) && !CheckOverlap(iwt, in))
 				DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_DrawIcon, iconObj);
@@ -252,7 +252,7 @@ LIBFUNC_P3(ULONG, sca_ScalosControl,
 
 	(void) ScalosBase;
 
-	d1(kprintf("%s/%s/%ld: name=%08lx <%s>  taglist=%08lx\n", __FILE__, __FUNC__, __LINE__, name ? name : (STRPTR) "", taglist));
+	d1(kprintf("%s/%s/%ld: name=<%s>  taglist=%08lx\n", __FILE__, __FUNC__, __LINE__, name ? name : (STRPTR) "", taglist));
 
 	(void) name;
 
@@ -1133,7 +1133,7 @@ static BOOL WaitForReply(struct Process *newProc, struct WblMessage *wblMsg,
 		if (0 != OpenDevice(TIMERNAME, UNIT_VBLANK, &TimerIO->tr_node, 0L))
 			break;
 
-		d1(kprintf("%s/%s/%ld: OpenDevice OK\n", __LINE__));
+		d1(kprintf("%s/%s/%ld: OpenDevice OK\n", __FILE__, __FUNC__, __LINE__));
 		DeviceOpened = TRUE;
 
 		ScalosObtainSemaphore(&DoWaitSemaphore);
@@ -1209,22 +1209,22 @@ static BOOL WaitForReply(struct Process *newProc, struct WblMessage *wblMsg,
 				}
 			} while (Waiting);
 
-		d1(kprintf("%s/%s/%ld: \n", __LINE__));
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		ScalosObtainSemaphore(&DoWaitSemaphore);
 		SCA_FreeNode((struct ScalosNodeList *)(APTR) &DoWaitList, &dw->dwai_Node);
 		ScalosReleaseSemaphore(&DoWaitSemaphore);
 
-		d1(kprintf("%s/%s/%ld: \n", __LINE__));
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		} while (0);
 
-	d1(kprintf("%s/%s/%ld: \n", __LINE__));
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	if (!Success)
 		{
 		ULONG n;
 
-		d1(kprintf("%s/%s/%ld: \n", __LINE__));
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		for (n=0; n<wblMsg->wbl_IO.wbl_Input.wbli_NumArgs; n++)
 			{
@@ -1236,7 +1236,7 @@ static BOOL WaitForReply(struct Process *newProc, struct WblMessage *wblMsg,
 		}
 	if (TimerIO)
 		{
-		d1(kprintf("%s/%s/%ld: \n", __LINE__));
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		if (TimerPending)
 			{
@@ -1507,11 +1507,11 @@ LIBFUNC_P3(Object *, sca_NewScalosObject,
 
 	(void) ScalosBase;
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	ScalosObtainSemaphoreShared(&ClassListSemaphore);
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	// try to find specified superclass (upper/lower case does matter!)
 	cl = FindScalosClass(ClassName);
@@ -1527,11 +1527,11 @@ LIBFUNC_P3(Object *, sca_NewScalosObject,
 		o = NewObjectA(cl->sccl_class, NULL, TagList);
 		}
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	ScalosReleaseSemaphore(&ClassListSemaphore);
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	return o;
 }
@@ -1573,7 +1573,7 @@ static struct ScalosClass *FindScalosClass(CONST_STRPTR ClassName)
 			}
 		}
 
-	d1(kprintf("%s/%s/%ld: return NULL\n", __LINE__));
+	d1(kprintf("%s/%s/%ld: return NULL\n", __FILE__, __FUNC__, __LINE__));
 
 	return NULL;
 }
@@ -1709,7 +1709,7 @@ static BOOL RemoveAppMenuItem(struct internalScaWindowTask *iwt, struct AppObjec
 
 	Success = AppMenu_RemoveItem(appObj->appo_object.appoo_MenuInfo);
 
-	d1(kprintf("%s/%s/%ld: \n", __LINE__));
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	if (Success)
 		AppMenu_ResetMenu();
@@ -2176,7 +2176,7 @@ LIBFUNC_P4(void, sca_FreeWBArgs,
 		NumArgs--;
 		wbArg++;
 		}
-	d1(KPrintF("%s/%s/%ld: END", __LINE__));
+	d1(KPrintF("%s/%s/%ld: END", __FILE__, __FUNC__, __LINE__));
 }
 LIBFUNC_END
 
@@ -2532,7 +2532,7 @@ static void NodeBubbleSort(struct ScalosNodeList *nodeList,
 
 		node = nodeList->snl_MinNode;
 		}
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -2571,7 +2571,7 @@ static void NodeSelectionSort(struct ScalosNodeList *nodeList,
 			break;
 		}
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -2609,18 +2609,18 @@ static void NodeInsertionSort(struct ScalosNodeList *nodeList,
 		if (rightNext == NULL)
 			break;
 		}
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 }
 
 
 static void NodeQuickSort(struct ScalosNodeList *nodeList, 
 	struct MinNode *lastNode, ULONG nodeCount, struct Hook *compareHook)
 {
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	quickSortList(nodeList, compareHook, nodeList->snl_MinNode, lastNode);
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -2629,7 +2629,7 @@ static void quickSortList(struct ScalosNodeList *nodeList, struct Hook *compareH
 {
 	struct MinNode *middleNode, *middleNodeNext;
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	if (firstNode == lastNode)
 		return;
@@ -2645,7 +2645,7 @@ static void quickSortList(struct ScalosNodeList *nodeList, struct Hook *compareH
 	if (middleNode != lastNode)
 		quickSortList(nodeList, compareHook, middleNodeNext, lastNode);
 
-	d1(KPrintF("%s/%s/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 }
 
 

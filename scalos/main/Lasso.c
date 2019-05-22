@@ -295,8 +295,8 @@ static void AdjustLassoIcons(struct internalScaWindowTask *iwt,
 		{
 		d1(kprintf("%s/%s/%ld:Icon=%08lx <%s>  x1=%ld  y1=%ld  x2=%ld  y2=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, lin->lin_IconNode, GetIconName(lin->lin_IconNode), \
-			lin->lin_Rect.MinX, lin->lin_Rect.MinY, \
-			lin->lin_Rect.MaxX, lin->lin_Rect.MaxY));
+			LassoRect.MinX, LassoRect.MinY, \
+			LassoRect.MaxX, LassoRect.MaxY));
 
 		ClearRegion(OverlapRegion);
 		OrRectRegion(OverlapRegion, &LassoRect);
@@ -589,7 +589,7 @@ static ULONG FillLassoIconList(struct internalScaWindowTask *iwt,
 							&lin->lin_Node);
 
 						d1(kprintf("%s/%s/%ld: xmin=%ld  ymin=%ld  xmax=%ld  ymax=%ld\n", \
-							__FILE__, __FUNC__, __LINE__, lin->lin_Rect.MinX, lin->lin_Rect.MinY, lin->lin_Rect.MaxX, lin->lin_Rect.MaxY));
+							__FILE__, __FUNC__, __LINE__, IconRect.MinX, IconRect.MinY, IconRect.MaxX, IconRect.MaxY));
 						}
 					}
 				}

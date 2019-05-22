@@ -344,7 +344,7 @@ static ULONG TIHighlight_DrawEnhanced(struct TextIconHighlightClassInst *inst, c
 			0, 0,
 			img->Width, img->Height);
 
-		d1(KPrintF("%s/%s/%ld:  iobj_TextPenBgSel=%ld\n", __FILE__, __FUNC__, __LINE__, inst->iobj_TextPenBgSel));
+		d1(KPrintF("%s/%s/%ld:  tih_Transparencyl=%ld\n", __FILE__, __FUNC__, __LINE__, inst->tih_Transparency));
 		} while (0);
 
 	if (argb)

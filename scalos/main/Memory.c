@@ -159,7 +159,7 @@ APTR ScalosAlloc(ULONG Size)
 #else //DLMALLOC
 	struct AllocatedMemFromPool *ptr;
 
-	d1(kprintf("%s/%s/%ld: Size=%lu  MemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, Size, MemPool));
+	d1(kprintf("%s/%s/%ld: Size=%lu  MemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, Size, MainMemPool));
 
 	if (MainMemPool)
 		{

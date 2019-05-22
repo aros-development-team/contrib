@@ -918,7 +918,7 @@ static BOOL isParentOf(BPTR srcDirLock, struct DragNode *dragList, BPTR dirLock,
 	BOOL isParent = FALSE;
 	BPTR oldDir;
 
-	d1(kprintf("%s/%s/%ld: objName=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, objName, objName ? objName : ""));
+	d1(kprintf("%s/%s/%ld: objName=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, objName, objName ? objName : (STRPTR) ""));
 
 	if (objName)
 		{

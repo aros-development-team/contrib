@@ -638,7 +638,7 @@ static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message
 {
 	struct SM_ShowControlBar *smcb = (struct SM_ShowControlBar *) msg;
 
-	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smcb_Visible=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smsb->smcb_Visible));
+	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smcb_Visible=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smcb->smcb_Visible));
 
 	if (smcb->smcb_Visible)
 		iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags &= ~WSV_MoreFlagF_NoControlBar;

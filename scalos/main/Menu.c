@@ -245,7 +245,7 @@ static ULONG GetSelectedIconsSupportFlags(void)
 
 	if (SCA_LockWindowList(SCA_LockWindowList_AttemptShared))
 		{
-		d1(kprintf("%s/%s/%ld: layer=%08lx\n", __FILE__, __FUNC__, __LINE__, layer));
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 		for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 			{
@@ -861,7 +861,7 @@ static void GenerateMainMenu(struct SCALOS_MENUTREE *mTree, struct NewMenu **nm,
 			{
 		case SCAMENUTYPE_Menu:
 			d1(kprintf("%s/%s/%ld: Menu  Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, \
-				mTree->mtre_name, mTree->mtre_name ? mTree->mtre_name : (STRPTR) ""));
+				mTree->MenuCombo.MenuTree.mtre_name, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) ""));
 
 			(*nm)->nm_UserData = NULL;
 			if (Level < 2)
@@ -879,7 +879,7 @@ static void GenerateMainMenu(struct SCALOS_MENUTREE *mTree, struct NewMenu **nm,
 
 		case SCAMENUTYPE_MenuItem:
 			d1(kprintf("%s/%s/%ld: MenuItem  Name=%08lx  <%s>  HotKey=<%s>\n", __FILE__, __FUNC__, __LINE__, \
-				mTree->mtre_name, mTree->mtre_name ? mTree->mtre_name : (STRPTR) "",\
+				mTree->MenuCombo.MenuTree.mtre_name, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) "",\
 				mTree->MenuCombo.MenuTree.mtre_hotkey));
 
 			if (Level < 3)
@@ -997,7 +997,7 @@ static void GenerateMainMenu(struct SCALOS_MENUTREE *mTree, struct NewMenu **nm,
 
 		case SCAMENUTYPE_ToolsMenu:
 			d1(kprintf("%s/%s/%ld: Menu  Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, \
-				mTree->mtre_name, mTree->mtre_name ? mTree->mtre_name : (STRPTR) ""));
+				mTree->MenuCombo.MenuTree.mtre_name, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) ""));
 
 			(*nm)->nm_UserData = USERDATA_TOOLSMENU;
 			if (Level < 2)

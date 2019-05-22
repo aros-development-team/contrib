@@ -143,8 +143,8 @@ LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName, BOOL SaveIcon)
 	LONG Result = RETURN_OK;
 	STRPTR *ttClone = NULL;
 
-	d1(kprintf("%s/%s/%ld: iconObj=%08lx  ttName=<%s>  ttValue=<%s>\n", \
-		__FILE__, __FUNC__, __LINE__, iconObj, ToolTypeName, ToolTypeValue));
+	d1(kprintf("%s/%s/%ld: iconObj=%08lx  ttName=<%s>\n", \
+		__FILE__, __FUNC__, __LINE__, iconObj, ToolTypeName));
 
 	do	{
 		STRPTR *ToolTypeArray = NULL;

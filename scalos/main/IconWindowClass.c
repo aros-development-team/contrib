@@ -2862,7 +2862,7 @@ static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg)
 			UnLock(newLock);
 		}
 
-	d1(kprintf("%s/%s/%ld: mft->mft_IconNode=<%s>  IconType=%ld  iwt_ReadOnly=%ld\n", __FILE__, __FUNC__, __LINE__, GetIconName(mft->mft_IconNode), (ULONG) mft->mft_IconNode->in_FileType, iwt->iwt_ReadOnly));
+	d1(kprintf("%s/%s/%ld: mft->mft_IconNode=<%s>  IconType=%ld  iwt_ReadOnly=%ld\n", __FILE__, __FUNC__, __LINE__, GetIconName(mft->mft_IconNode), (IPTR) mft->mft_IconNode->in_FileType, iwt->iwt_ReadOnly));
 
 	SetIconSupportsFlags(mft->mft_IconNode, !iwt->iwt_ReadOnly);
 

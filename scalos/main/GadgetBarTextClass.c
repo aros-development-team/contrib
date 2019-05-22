@@ -192,7 +192,7 @@ static IPTR GadgetBarText_New(Class *cl, Object *o, Msg msg)
 	d1(KPrintF("%s/%s/%ld: gbtcl_Font=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->gbtcl_Font));
 	d1(KPrintF("%s/%s/%ld: tf_YSize=%lu\n", __FILE__, __FUNC__, __LINE__, inst->gbtcl_Font->tf_YSize));
 	d1(KPrintF("%s/%s/%ld: ttff=%08lx Normal=%08lx Bold=%08lx Italic=%08lx BoldItalic=%08lx\n", \
-		__LINE__, inst->gbtcl_TTFont, inst->gbtcl_TTFont->ttff_Normal, \
+		__FILE__, __FUNC__, __LINE__, inst->gbtcl_TTFont, inst->gbtcl_TTFont->ttff_Normal, \
 		inst->gbtcl_TTFont->ttff_Bold, inst->gbtcl_TTFont->ttff_Italic, \
 		inst->gbtcl_TTFont->ttff_BoldItalic));
 
