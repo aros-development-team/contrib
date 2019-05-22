@@ -188,17 +188,17 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 	if (OuterBoundsIconUnderPtr)
 		*OuterBoundsIconUnderPtr = NULL;
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d3(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	Forbid();
 	ILock = ScaLockIBase(0);
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d3(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	for (scr = IntuitionBase->FirstScreen; scr; scr = scr->NextScreen)
 		{
-		d1( kprintf("screen=%lx  Offsetx=%ld ", scr, scr->ViewPort.DyOffset) );
-		d1( kprintf("x=%ld  y=%ld\n", scr->MouseX, scr->MouseY) );
+		d3( kprintf("screen=%lx  Offsetx=%ld ", scr, scr->ViewPort.DyOffset) );
+		d3( kprintf("x=%ld  y=%ld\n", scr->MouseX, scr->MouseY) );
 
 		if (scr->MouseY >= 0 && scr->MouseY < scr->Height)
 			break;
@@ -206,18 +206,18 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 
 	ScreenOk = NULL != scr && scr == iInfos.xii_iinfos.ii_Screen;
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d3(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	ScaUnlockIBase(ILock);
 	Permit();
 
-	d1(kprintf("%s/%s/%ld: scr=%08lx\n", __FILE__, __FUNC__, __LINE__, scr));
+	d3(kprintf("%s/%s/%ld: scr=%08lx\n", __FILE__, __FUNC__, __LINE__, scr));
 	if (!ScreenOk)
 		return Success;
 
 	PtrLayer = WhichLayer(&scr->LayerInfo, scr->MouseX, scr->MouseY);
 
-	d1(kprintf("%s/%s/%ld: PtrLayer=%08lx\n", __FILE__, __FUNC__, __LINE__, PtrLayer));
+	d3(kprintf("%s/%s/%ld: PtrLayer=%08lx\n", __FILE__, __FUNC__, __LINE__, PtrLayer));
 	if (NULL == PtrLayer)
 		return Success;
 
@@ -226,7 +226,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 
 	if (PtrLayer && PtrLayer->Window)
 		{
-		d1(kprintf("%s/%s/%ld: PtrLayer=%08lx  Window=%08lx\n", __FILE__, __FUNC__, __LINE__, PtrLayer, PtrLayer->Window));
+		d3(kprintf("%s/%s/%ld: PtrLayer=%08lx  Window=%08lx\n", __FILE__, __FUNC__, __LINE__, PtrLayer, PtrLayer->Window));
 
 		if (SCA_LockWindowList(SCA_LockWindowList_AttemptShared))
 			{
@@ -242,7 +242,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 				swi = (struct ScaWindowStruct *) swi->ws_Node.mln_Succ;
 				}
 
-			d1(kprintf("%s/%s/%ld: swif=%08lx\n", __FILE__, __FUNC__, __LINE__, swif));
+			d3(kprintf("%s/%s/%ld: swif=%08lx\n", __FILE__, __FUNC__, __LINE__, swif));
 
 			if (swif)
 				{
@@ -251,7 +251,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 
 				*iWinUnderPtr = swit;
 
-				d1(kprintf("%s/%s/%ld: WinUnderPtr=%08lx  swit=%08lx\n", __FILE__, __FUNC__, __LINE__, swit->iwt_WinUnderPtr, swit));
+				d3(kprintf("%s/%s/%ld: WinUnderPtr=%08lx  swit=%08lx\n", __FILE__, __FUNC__, __LINE__, swit->iwt_WinUnderPtr, swit));
 
 				// Pointer is inside a Scalos Window
 				// now check icons
@@ -266,7 +266,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 						x = MouseX - swit->iwt_WindowTask.wt_Window->LeftEdge - swit->iwt_InnerLeft;
 						y = MouseY - swit->iwt_WindowTask.wt_Window->TopEdge - swit->iwt_InnerTop;
 
-						d1(kprintf("%s/%s/%ld: x=%ld  y=%ld \n", __FILE__, __FUNC__, __LINE__, x, y ));
+						d3(kprintf("%s/%s/%ld: x=%ld  y=%ld \n", __FILE__, __FUNC__, __LINE__, x, y ));
 
 						if (x >= 0 && x < swit->iwt_InnerWidth
 							&& y >= 0 && y < swit->iwt_InnerHeight)
@@ -296,7 +296,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 						}
 					}
 
-				d1(kprintf("%s/%s/%ld:  in=%08lx\n", __FILE__, __FUNC__, __LINE__, *IconUnderPtr));
+				d3(kprintf("%s/%s/%ld:  in=%08lx\n", __FILE__, __FUNC__, __LINE__, *IconUnderPtr));
 				}
 			else
 				{
@@ -315,7 +315,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 			}
 		}
 
-	d1(kprintf("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d3(kprintf("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1328,7 +1328,7 @@ Object *LoadIconObject(BPTR DirLock, CONST_STRPTR IconName, struct TagItem *TagL
 	Object *IconObj;
 	BPTR oldDir;
 
-	d1(KPrintF("%s/%s/%ld:  START IconObj=%08lx  NeedUpdateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, IconObj, NeedUpdateIcon));
+	d1(KPrintF("%s/%s/%ld:  START IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 	debugLock_d1(DirLock);
 
 	oldDir = CurrentDir(DirLock);

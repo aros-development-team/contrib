@@ -206,7 +206,7 @@ static SAVEDS(void) INTERRUPT RawMouseMoveHandler(CxMsg *cxm, CxObj *co)
 ///
 	struct InputEvent *ie;
 
-	d1(KPrintF( "%s/%s/%ld: START CxMsg=%08lx, CxObj=%08lx\n", __FILE__, __FUNC__, __LINE__, cxm, co));
+	d3(KPrintF( "%s/%s/%ld: START CxMsg=%08lx, CxObj=%08lx\n", __FILE__, __FUNC__, __LINE__, cxm, co));
 
 	// i KNOW that all messages getting this far are CXM_IEVENT
 	ie = (struct InputEvent *) CxMsgData(cxm);
@@ -217,7 +217,7 @@ static SAVEDS(void) INTERRUPT RawMouseMoveHandler(CxMsg *cxm, CxObj *co)
 		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
-		d1(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
+		d3(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
 
 		MouseScreen = SearchMouseScreen(ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y);
 
@@ -233,7 +233,7 @@ static SAVEDS(void) INTERRUPT RawMouseMoveHandler(CxMsg *cxm, CxObj *co)
 			HighlightIconUnderMouse();
 		} while (0);
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
@@ -243,7 +243,7 @@ static SAVEDS(void) INTERRUPT RawMouseButtonsHandler(CxMsg *cxm, CxObj *co)
 ///
 	struct InputEvent *ie;
 
-	d1(KPrintF("%s/%s/%ld: START CxMsg=%08lx, CxObj=%08lx\n", __FILE__, __FUNC__, __LINE__, cxm, co));
+	d3(KPrintF("%s/%s/%ld: START CxMsg=%08lx, CxObj=%08lx\n", __FILE__, __FUNC__, __LINE__, cxm, co));
 
 	// i KNOW that all messages getting this far are CXM_IEVENT
 	ie = (struct InputEvent *) CxMsgData(cxm);
@@ -258,7 +258,7 @@ static SAVEDS(void) INTERRUPT RawMouseButtonsHandler(CxMsg *cxm, CxObj *co)
 		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
-		d1(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
+		d3(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
 
 		MouseScreen = SearchMouseScreen(ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y);
 
@@ -286,7 +286,7 @@ static SAVEDS(void) INTERRUPT RawMouseButtonsHandler(CxMsg *cxm, CxObj *co)
 			}
 		} while (0);
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
@@ -297,15 +297,15 @@ struct Screen *SearchMouseScreen(LONG x, LONG y)
 	struct Screen *scr;
 	ULONG ILock;
 
-	d1(KPrintF( "%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF( "%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	Forbid();
 	ILock = ScaLockIBase(0);
 
 	for (scr = IntuitionBase->FirstScreen; scr; scr = scr->NextScreen)
 		{
-		d1( KPrintF("%s/%s/%ld: screen=%lx  Offsetx=%ld ", __FILE__, __FUNC__, __LINE__, scr, scr->ViewPort.DyOffset) );
-		d1( KPrintF("%s/%s/%ld: x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, scr->MouseX, scr->MouseY) );
+		d3( KPrintF("%s/%s/%ld: screen=%lx  Offsetx=%ld ", __FILE__, __FUNC__, __LINE__, scr, scr->ViewPort.DyOffset) );
+		d3( KPrintF("%s/%s/%ld: x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, scr->MouseX, scr->MouseY) );
 
 		if (scr->MouseY >= 0 && scr->MouseY < scr->Height)
 			break;
@@ -314,7 +314,7 @@ struct Screen *SearchMouseScreen(LONG x, LONG y)
 	ScaUnlockIBase(ILock);
 	Permit();
 
-	d1(KPrintF("%s/%s/%ld: scr=%08lx\n", __FILE__, __FUNC__, __LINE__, scr));
+	d3(KPrintF("%s/%s/%ld: scr=%08lx\n", __FILE__, __FUNC__, __LINE__, scr));
 
 	return scr;
 ///
@@ -331,17 +331,17 @@ void HighlightIconUnderMouse(void)
 	static struct ScaIconNode *LastIconUnderPointer = NULL;
 	BOOL QoSuccess;
 
-	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	QoSuccess = QueryObjectUnderPointer(&iwtUnderPointer, &iconUnderPointer, NULL, &foreignWindow);
 
-	d1(KPrintF("%s/%s/%ld: QoSuccess=%ld  iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, QoSuccess, iconUnderPointer));
+	d3(KPrintF("%s/%s/%ld: QoSuccess=%ld  iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, QoSuccess, iconUnderPointer));
 
 	HighlightControlbarGadgets(QoSuccess, iwtUnderPointer, iconUnderPointer);
 
 	if (QoSuccess && LastIconUnderPointer != iconUnderPointer)
 		{
-		d1(KPrintF("%s/%s/%ld: iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iconUnderPointer));
+		d3(KPrintF("%s/%s/%ld: iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iconUnderPointer));
 
 		if (LastIconUnderPointer)
 			{
@@ -375,7 +375,7 @@ void HighlightIconUnderMouse(void)
 							struct SM_RedrawIconObj *sMsg;
 
 							sMsg = (struct SM_RedrawIconObj *) SCA_AllocMessage(MTYP_RedrawIconObj, 0);
-							d1(KPrintF("%s/%s/%ld: sMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, sMsg));
+							d3(KPrintF("%s/%s/%ld: sMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, sMsg));
 							if (sMsg)
 								{
 								sMsg->smrio_IconObject = LastIconUnderPointer->in_Icon;
@@ -394,7 +394,7 @@ void HighlightIconUnderMouse(void)
 			SCA_UnLockWindowList();
 			}
 
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		if (iconUnderPointer)
 			{
@@ -406,25 +406,25 @@ void HighlightIconUnderMouse(void)
 				}
 			}
 
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		if (iconUnderPointer)
 			{
 			// Highlight icon under mouse
 			struct SM_RedrawIconObj *sMsg;
 
-			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 			sMsg = (struct SM_RedrawIconObj *) SCA_AllocMessage(MTYP_RedrawIconObj, 0);
-			d1(KPrintF("%s/%s/%ld: sMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, sMsg));
+			d3(KPrintF("%s/%s/%ld: sMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, sMsg));
 			if (sMsg)
 				{
 				sMsg->smrio_IconObject = iconUnderPointer->in_Icon;
 				sMsg->smrio_Flags = SMRIOFLAGF_Highlight | SMRIOFLAGF_HightlightOn;
-				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 				PutMsg(iwtUnderPointer->iwt_WindowTask.wt_IconPort,
 					&sMsg->ScalosMessage.sm_Message);
-				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 				}
 			}
 
@@ -439,7 +439,7 @@ void HighlightIconUnderMouse(void)
 		SCA_UnLockWindowList();
 		}
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
@@ -459,9 +459,9 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 	struct ExtGadget *ggNew = NULL;
 	struct internalScaWindowTask *iwtOld;
 ///
-	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
-	d1(KPrintF("%s/%s/%ld: QoSuccess=%ld  iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, QoSuccess, iconUnderPointer));
-	d1(KPrintF("%s/%s/%ld: iwtUnderPointer=%08lx  LastIwtUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtUnderPointer, LastIwtUnderPointer));
+	d3(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: QoSuccess=%ld  iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, QoSuccess, iconUnderPointer));
+	d3(KPrintF("%s/%s/%ld: iwtUnderPointer=%08lx  LastIwtUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtUnderPointer, LastIwtUnderPointer));
 
 	if (iwtUnderPointer == LastIwtUnderPointer)
 		{
@@ -490,10 +490,10 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 		Code = StatusBarQueryGadgetID(iwtUnderPointer,
 			(struct ExtGadget *) iwtUnderPointer->iwt_ControlBar, MouseX, MouseY);
 
-		d1(KPrintF("%s/%s/%ld: MouseX=%ld  MouseY=%ld  Code=%lu\n", __FILE__, __FUNC__, __LINE__, MouseX, MouseY, Code));
+		d3(KPrintF("%s/%s/%ld: MouseX=%ld  MouseY=%ld  Code=%lu\n", __FILE__, __FUNC__, __LINE__, MouseX, MouseY, Code));
 
 		ggNew = ControlBarFindGadget(iwtUnderPointer, Code);
-		d1(KPrintF("%s/%s/%ld: ggNew=%08lx\n", __FILE__, __FUNC__, __LINE__, ggNew));
+		d3(KPrintF("%s/%s/%ld: ggNew=%08lx\n", __FILE__, __FUNC__, __LINE__, ggNew));
 
 		if (ggNew)
 			{
@@ -507,7 +507,7 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 		{
 		}
 
-	d1(KPrintF("%s/%s/%ld: ggOld=%08lx  ggNew=%08lx  iwtOld=%08lx\n", __FILE__, __FUNC__, __LINE__, ggOld, ggNew, iwtOld));
+	d3(KPrintF("%s/%s/%ld: ggOld=%08lx  ggNew=%08lx  iwtOld=%08lx\n", __FILE__, __FUNC__, __LINE__, ggOld, ggNew, iwtOld));
 
 	if (ggOld != ggNew)
 		{
@@ -523,7 +523,7 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 			}
 		}
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
@@ -534,7 +534,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 	static UBYTE OnCount;
 	BOOL BarVisible = (MouseScreen->Flags & SHOWTITLE);
 
-	d1(KPrintF("%s/%s/%ld: MouseScreen=%08lx  Flags=%08lx  BarLayer=%08lx  BarVisible=%04lx\n", \
+	d3(KPrintF("%s/%s/%ld: MouseScreen=%08lx  Flags=%08lx  BarLayer=%08lx  BarVisible=%04lx\n", \
 		__FILE__, __FUNC__, __LINE__, MouseScreen, MouseScreen->Flags, MouseScreen->BarLayer, BarVisible));
 
 	if (CurrentPrefs.pref_PopTitleFlag)
@@ -547,7 +547,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				{
 				struct SM_ShowTitle *sMsg;
 
-				d1(KPrintF("%s/%s/%ld: Screen Title ON\n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: Screen Title ON\n", __FILE__, __FUNC__, __LINE__));
 
 				sMsg = (struct SM_ShowTitle *) SCA_AllocMessage(MTYP_ShowTitle, 0);
 				if (sMsg)
@@ -563,7 +563,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				{
 				struct SM_ShowTitle *sMsg;
 
-				d1(KPrintF("%s/%s/%ld: Screen Title OFF\n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: Screen Title OFF\n", __FILE__, __FUNC__, __LINE__));
 
 				sMsg = (struct SM_ShowTitle *) SCA_AllocMessage(MTYP_ShowTitle, 0);
 				if (sMsg)
@@ -587,7 +587,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				{
 				struct SM_ShowTitle *sMsg;
 
-				d1(KPrintF("%s/%s/%ld: Screen Title OFF\n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: Screen Title OFF\n", __FILE__, __FUNC__, __LINE__));
 
 				sMsg = (struct SM_ShowTitle *) SCA_AllocMessage(MTYP_ShowTitle, 0);
 				if (sMsg)
@@ -604,7 +604,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				{
 				struct SM_ShowTitle *sMsg;
 
-				d1(KPrintF("%s/%s/%ld: Screen Title ON\n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: Screen Title ON\n", __FILE__, __FUNC__, __LINE__));
 
 				sMsg = (struct SM_ShowTitle *) SCA_AllocMessage(MTYP_ShowTitle, 0);
 				if (sMsg)

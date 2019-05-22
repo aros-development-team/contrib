@@ -153,7 +153,7 @@ M68KFUNC_P2(struct InputEvent *, ScalosInputHandler,
 
 	(void) isData;
 
-	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	for (ie = eventList; ie; ie=ie->ie_NextEvent)
 		{
@@ -162,17 +162,17 @@ M68KFUNC_P2(struct InputEvent *, ScalosInputHandler,
 		case IECLASS_RAWMOUSE:
 			if (IECODE_RBUTTON == ie->ie_Code)
 				{
-				d1(KPrintF("%s/%s/%ld: ie=%08lx  class=%02lx  subclass=%02lx  code=%04lx  qual=%04lx\n", \
+				d3(KPrintF("%s/%s/%ld: ie=%08lx  class=%02lx  subclass=%02lx  code=%04lx  qual=%04lx\n", \
 					__FILE__, __FUNC__, __LINE__, ie, ie->ie_Class, ie->ie_SubClass, ie->ie_Code, ie->ie_Qualifier));
 				if (PretestPopupMenu(ie))
 					ie->ie_Class = IECLASS_NULL;
-				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				d3(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 				}
 			break;
 			}
 		}
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d3(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return eventList;
 }
@@ -198,7 +198,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
-		d1(KPrintF("%s/%s/%ld: Class=%02lx  SubClass=%02lx  Code=%04lx  Qual=%04lx\n", \
+		d3(KPrintF("%s/%s/%ld: Class=%02lx  SubClass=%02lx  Code=%04lx  Qual=%04lx\n", \
 			__FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code, ie->ie_Qualifier));
 
 		// don't bother checking for popup menus while user is moving around windows
@@ -207,7 +207,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 
 		MouseScreen = SearchMouseScreen(ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y);
 
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d3(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		if (MouseScreen != iInfos.xii_iinfos.ii_Screen)
 			break;
