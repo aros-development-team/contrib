@@ -1119,7 +1119,7 @@ BOOL SetIconThumbnailARGB(struct internalScaWindowTask *iwt,
 				__FILE__, __FUNC__, __LINE__, argbh.argb_Width, argbh.argb_Height, AdjustLeft, AdjustTop));
 
 			d1({ \
-				ULONG TextStyle = 0; \
+				IPTR TextStyle = 0; \
 					\
 				GetAttr(IDTA_TextStyle, smtia->smtia_IconObject, &TextStyle); \
 				d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \

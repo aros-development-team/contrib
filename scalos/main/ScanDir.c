@@ -313,7 +313,7 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 	if (in)
 		{
 		d1({ \
-			ULONG TextStyle = 0; \
+			IPTR TextStyle = 0; \
 				\
 			GetAttr(IDTA_TextStyle, in->in_Icon, &TextStyle); \
 			d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
@@ -1147,7 +1147,7 @@ static struct ScaIconNode *ScanDirInitIcon(struct ReadIconListControl *rilc, con
 	TIMESTAMPCOUNT_END_d1(iwt, 9);
 
 	d1({ \
-		ULONG TextStyle = 0; \
+		IPTR TextStyle = 0; \
 			\
 		GetAttr(IDTA_TextStyle, in->in_Icon, &TextStyle); \
 		d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
@@ -1239,7 +1239,7 @@ static struct ScaIconNode *ScanDirCreateIcon(struct ReadIconListControl *rilc,
 		}
 
 	d1({ \
-		ULONG TextStyle = 0; \
+		IPTR TextStyle = 0; \
 			\
 		GetAttr(IDTA_TextStyle, IconObj, &TextStyle); \
 		d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
