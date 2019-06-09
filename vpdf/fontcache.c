@@ -1415,7 +1415,7 @@ static char *fcSfntNameTranscode(FT_SfntName *sname)
     if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
     {
 		FcChar8 *u8;
-		const FcCharMap	*map = FcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
+		const FcCharMap	*map = IntFcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
 		FcChar8 *src = (FcChar8 *) sname->string;
 		int src_len = sname->string_len;
 	
@@ -1733,7 +1733,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 					exclusiveLang = 0;
 					break;
 				}
-				exclusiveLang = FcCodePageRange[i].lang;
+				exclusiveLang = (char*)FcCodePageRange[i].lang;
 			}
 		}
     }

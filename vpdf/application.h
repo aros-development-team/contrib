@@ -6,8 +6,8 @@
 #define MUIA_VPDF_Renderer           (MUIA_VPDF_TagBase + 1)
 #define MUIA_VPDF_Locked             (MUIA_VPDF_TagBase + 2)
 
-#define	MUIM_VPDF_OpenFile		     (MUIM_VPDF_Dummy + 1)
-#define	MUIM_VPDF_CreateTab		     (MUIM_VPDF_Dummy + 2)
+#define	MUIM_VPDF_OpenFile	     (MUIM_VPDF_Dummy + 1)
+#define	MUIM_VPDF_CreateTab	     (MUIM_VPDF_Dummy + 2)
 #define	MUIM_VPDF_CreateWindow 	     (MUIM_VPDF_Dummy + 3)
 #define	MUIM_VPDF_HandleAppMessage   (MUIM_VPDF_Dummy + 4)
 #define	MUIM_VPDF_RequestFile        (MUIM_VPDF_Dummy + 5)
@@ -24,10 +24,16 @@
 #define	MUIM_VPDF_About              (MUIM_VPDF_Dummy + 16)
 #define	MUIM_VPDF_PrintDocument      (MUIM_VPDF_Dummy + 17)
 #define	MUIM_VPDF_SelectionCopy      (MUIM_VPDF_Dummy + 18)
+#define	MUIM_VPDF_SaveFile	     (MUIM_VPDF_Dummy + 19)
+#define	MUIM_VPDF_CloseTab	     (MUIM_VPDF_Dummy + 20)
 
 struct MUIP_VPDF_OpenFile{ULONG MethodID; int windowid; char *filename; int mode;};  // mode is MUIV_VPDFWindow_OpenFile_XXX
+struct MUIP_VPDF_SaveFile{ULONG MethodID; int windowid; char *filename; int mode;};  // mode is MUIV_VPDFWindow_OpenFile_XXX
 struct MUIP_VPDF_CreateTab{ULONG MethodID; int windowid;};
 struct MUIP_VPDF_CreateWindow{ULONG MethodID;};
+
+struct MUIP_VPDF_CloseTab{ULONG MethodID; int windowid;};
+
 
 struct MUIP_VPDF_RequestFile{ULONG MethodID; int mode; char *initialfile; char *initialdir; char *initialpath;};
 struct MUIP_VPDF_OpenRecentFile{ULONG MethodID; int windowid; int idx;};

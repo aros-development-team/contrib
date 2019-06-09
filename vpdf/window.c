@@ -114,6 +114,36 @@ DEFNEW
     return (IPTR)obj;
 }
 
+DEFMMETHOD(VPDFWindow_CloseTab)
+{
+    GETDATA;
+	if (xget(data->grpTitles, MUIA_Group_ChildCount) == 1) {
+    	DoMethod(_app(data->grpTitles), MUIM_Application_PushMethod, obj, 3, MUIM_Set, MUIA_Window_CloseRequest, TRUE);
+    	return 0;
+    }
+
+    /* remove active tab */
+	 
+    int tabind = xget(data->grpRoot, MUIA_Group_ActivePage);
+    Object *tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Group_GetChild, tabind);
+    Object *contents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1);
+
+    DoMethod(data->grpTitles, MUIM_Group_InitChange);
+    DoMethod(data->grpRoot, MUIM_Group_InitChange);
+
+    DoMethod(data->grpTitles, OM_REMMEMBER, tcontents);
+    DoMethod(data->grpRoot, OM_REMMEMBER, contents);
+
+    DoMethod(data->grpTitles, MUIM_Group_ExitChange);
+    DoMethod(data->grpRoot, MUIM_Group_ExitChange);
+
+    /* return index of new group member */
+
+    if (xget(data->grpTitles, MUIA_Group_ChildCount) == 0)
+            DoMethod(_app(data->grpTitles), MUIM_Application_PushMethod, obj, 3, MUIM_Set, MUIA_Window_CloseRequest, TRUE);
+    return xget(data->grpRoot, MUIA_Group_ChildCount) - 2;
+
+}
 DEFMMETHOD(VPDFWindow_CreateTab)
 {
     GETDATA;
@@ -122,14 +152,14 @@ DEFMMETHOD(VPDFWindow_CreateTab)
 
     DoMethod(data->grpRoot, MUIM_Group_InitChange);
     DoMethod(data->grpTitles, MUIM_Group_InitChange);
-    DoMethod(data->grpTitles, MUIM_Family_AddTail, VPDFTitleButtonObject,
+    DoMethod(data->grpTitles, MUIM_Group_AddTail, VPDFTitleButtonObject,
              Child, (IPTR) TextObject,
              MUIA_Text_Contents, (IPTR) LOCSTR( MSG_NOFILE ) ,
 			 // MUIA_Text_Copy, TRUE, // acc. to MUI4 autodocs that's already the default
              End,
     End);
 
-    DoMethod(data->grpRoot, MUIM_Family_AddTail, VGroup,
+    DoMethod(data->grpRoot, MUIM_Group_AddTail, VGroup,
              MUIA_UserData, TRUE,		// move it to subclass
              Child, (IPTR) RectangleObject,
              End,
@@ -140,9 +170,31 @@ DEFMMETHOD(VPDFWindow_CreateTab)
 
     /* return index of new group member */
 
-    set(data->grpRoot, MUIA_Group_ActivePage, xget(data->grpRoot, MUIA_Family_ChildCount) - 1);
-    return xget(data->grpRoot, MUIA_Family_ChildCount) - 1;
+    set(data->grpRoot, MUIA_Group_ActivePage, xget(data->grpRoot, MUIA_Group_ChildCount)-2);
+    return xget(data->grpRoot, MUIA_Group_ChildCount) - 2;
 }
+
+
+DEFMMETHOD(VPDFWindow_SaveFile)
+{ 
+    GETDATA;
+    int tabind = xget(data->grpRoot, MUIA_Group_ActivePage);
+    Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1); // +1 for title object
+    group = (Object*)DoMethod(group, MUIM_Group_GetChild, 0);
+
+    if (group != NULL)
+    {
+        Object* doc = (Object*)xget(group, MUIA_DocumentView_PDFDocument);
+    
+        if (doc != NULL)
+     	{
+     		pdfSaveFile(doc, msg->filename, 0);
+     	}
+    }
+
+    return 0;
+}
+
 
 DEFMMETHOD(VPDFWindow_OpenFile)
 {
@@ -154,7 +206,7 @@ DEFMMETHOD(VPDFWindow_OpenFile)
     if (mode == MUIV_VPDFWindow_OpenFile_CurrentTabIfEmpty)
     {
         int tabind = xget(data->grpRoot, MUIA_Group_ActivePage);
-        Object *tcontents = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, tabind + 1); // +1 for title object
+        Object *tcontents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind+1); // +1 for title object
         if (xget(tcontents, MUIA_UserData) == TRUE)	// marker for empty page. fix
             newtab = FALSE;
         else
@@ -181,14 +233,14 @@ DEFMMETHOD(VPDFWindow_OpenFile)
 
         /* setup new label */
 
-        tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Family_GetChild, tabind);
+        tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Group_GetChild, tabind);
         set(tcontents, MUIA_Text_Contents, filename);
 
         /* dispose old contents and add new browser */
 
-        contents = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, tabind + 1); /*  +1 for title object */
+        contents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1); /*  +1 for title object */
         DoMethod(contents, MUIM_Group_InitChange);
-        tcontents = (Object*)DoMethod(contents, MUIM_Family_GetChild, 0);
+        tcontents = (Object*)DoMethod(contents, MUIM_Group_GetChild, 0);
 
         DoMethod(contents, OM_REMMEMBER, tcontents);
         MUI_DisposeObject(tcontents);
@@ -204,7 +256,7 @@ DEFMMETHOD(VPDFWindow_OpenFile)
                End;
 
         if (tcontents != NULL)
-            DoMethod(contents, MUIM_Family_AddTail, tcontents);
+            DoMethod(contents, MUIM_Group_AddTail, tcontents);
 
         set(contents, MUIA_UserData, FALSE); // mark as not empty
         DoMethod(contents, MUIM_Group_ExitChange);
@@ -217,8 +269,8 @@ DEFMMETHOD(VPDFWindow_UpdateActive)
 {
     GETDATA;
 
-    Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, msg->active + 1); /* +1 for title object */
-    group = (Object*)DoMethod(group, MUIM_Family_GetChild, 0);
+    Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, msg->active + 1); /* +1 for title object */
+    group = (Object*)DoMethod(group, MUIM_Group_GetChild, 0);
 
     if (group != NULL)
     {
@@ -249,8 +301,8 @@ DEFMMETHOD(VPDFWindow_DetachView)
     if (msg->tabind == MUIV_VPDFWindow_DetachView_Active)
     {
         int tabind = xget(data->grpRoot, MUIA_Group_ActivePage);
-        Object *tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Family_GetChild, tabind);
-        Object *contents = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, tabind + 1);
+        Object *tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Group_GetChild, tabind);
+        Object *contents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1);
 
         DoMethod(data->grpTitles, MUIM_Group_InitChange);
         DoMethod(data->grpRoot, MUIM_Group_InitChange);
@@ -265,8 +317,7 @@ DEFMMETHOD(VPDFWindow_DetachView)
         msg->title = tcontents;
 
         /* hmm, should we really close the window here? */
-
-        if (xget(data->grpTitles, MUIA_Family_ChildCount) == 0)
+        if (xget(data->grpTitles, MUIA_Group_ChildCount) == 0)
             DoMethod(_app(data->grpTitles), MUIM_Application_PushMethod, obj, 3, MUIM_Set, MUIA_Window_CloseRequest, TRUE);
 
         return TRUE;
@@ -285,7 +336,7 @@ DEFMMETHOD(VPDFWindow_AttachView)
     if (tabind == MUIV_VPDFWindow_OpenFile_CurrentTabIfEmpty)
     {
         int tabind = xget(data->grpRoot, MUIA_Group_ActivePage);
-        Object *tcontents = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, tabind + 1); // +1 for title object
+        Object *tcontents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1); // +1 for title object
         if (xget(tcontents, MUIA_UserData) == TRUE)	// marker for empty page. fix
             newtab = FALSE;
         else
@@ -307,20 +358,20 @@ DEFMMETHOD(VPDFWindow_AttachView)
 
     /* dispose old title and put whole new object inplace */
 
-    tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Family_GetChild, tabind);
+    tcontents = (Object*)DoMethod(data->grpTitles, MUIM_Group_GetChild, tabind);
     DoMethod(data->grpTitles, MUIM_Group_InitChange);
     DoMethod(data->grpTitles, OM_REMMEMBER, tcontents);
     MUI_DisposeObject(tcontents);
-    DoMethod(data->grpTitles, MUIM_Family_AddTail, msg->title);
+    DoMethod(data->grpTitles, MUIM_Group_AddTail, msg->title);
     DoMethod(data->grpTitles, MUIM_Group_ExitChange);
 
     /* dispose old contents and add new browser */
 
-    contents = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, tabind + 1); /*  +1 for title object */
+    contents = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, tabind + 1); /*  +1 for title object */
     DoMethod(data->grpRoot, MUIM_Group_InitChange);
     DoMethod(data->grpRoot, OM_REMMEMBER, contents);
     MUI_DisposeObject(contents);
-    DoMethod(data->grpRoot, MUIM_Family_AddTail, msg->docview);
+    DoMethod(data->grpRoot, MUIM_Group_AddTail, msg->docview);
     DoMethod(data->grpRoot, MUIM_Group_ExitChange);
 
     DoMethod(obj, MUIM_VPDFWindow_UpdateActive, tabind);
@@ -340,8 +391,8 @@ DEFGET
     case MUIA_VPDFWindow_PDFDocument:
     {
         void *doc = NULL;
-        Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, xget(data->grpRoot, MUIA_Group_ActivePage) + 1); /* +1 for title object */
-        group = (Object*)DoMethod(group, MUIM_Family_GetChild, 0);
+        Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, xget(data->grpRoot, MUIA_Group_ActivePage) + 1); /* +1 for title object */
+        group = (Object*)DoMethod(group, MUIM_Group_GetChild, 0);
 
         if (group != NULL)
             doc = (APTR) xget(group, MUIA_DocumentView_PDFDocument);
@@ -352,8 +403,8 @@ DEFGET
 
     case MUIA_VPDFWindow_ActiveDocumentView:
     {
-        Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Family_GetChild, xget(data->grpRoot, MUIA_Group_ActivePage) + 1); /* +1 for title object */
-        group = (Object*)DoMethod(group, MUIM_Family_GetChild, 0);
+        Object *group = (Object*)DoMethod(data->grpRoot, MUIM_Group_GetChild, xget(data->grpRoot, MUIA_Group_ActivePage) + 1); /* +1 for title object */
+        group = (Object*)DoMethod(group, MUIM_Group_GetChild, 0);
 
         if (group != NULL)
         {
@@ -372,6 +423,8 @@ DECNEW
 DECGET
 DECMMETHOD(VPDFWindow_CreateTab)
 DECMMETHOD(VPDFWindow_OpenFile)
+DECMMETHOD(VPDFWindow_CloseTab)
+DECMMETHOD(VPDFWindow_SaveFile)
 DECMMETHOD(VPDFWindow_UpdateActive)
 DECMMETHOD(VPDFWindow_DetachView)
 DECMMETHOD(VPDFWindow_AttachView)

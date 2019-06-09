@@ -58,8 +58,10 @@
 
 #include <cybergraphx/cybergraphics.h>
 
+#ifndef __AROS__
 #include <emul/emulregs.h>
 #include <emul/emulinterface.h>
+#endif
 
 #include "chunky.h"
 #include "file.h"
@@ -512,7 +514,7 @@ static Texture *LoadDTPictureTRUE32(char *fname)
 	return LoadDTPicture(fname, CHK_PIXFMT_ARGB8888);
 }
 ////
-
+#ifndef __AROS__
 /// static LoadReggaePictureTRUE32()
 
 //static Texture *LoadReggaePicture(char *fname, int chkpixfmt)
@@ -547,7 +549,7 @@ Texture *LoadReggaePicture(char *fname, int chkpixfmt)
 						DoMethod(fileobj, MMM_Pull, 0, txt->image->data.p, width * height * 4);
 					else
 					{
-						unsigned char *buffer = mmalloc(width * 4);
+						unsigned char *buffer = malloc(width * 4);
 						int i;
 
 						if (buffer != NULL)
@@ -582,7 +584,7 @@ Texture *LoadReggaePicture(char *fname, int chkpixfmt)
 }
 
 ////
-
+#endif
 /// fileGetType()
 
 void fileGetType(char *fname, char *type)
@@ -652,6 +654,7 @@ FileInfo *fileGetInfo(char *fname, int flags)
 
 				ReleaseDataType(dt);
 			}
+#ifndef __AROS__			
 			else if (MultimediaBase != NULL) /* check if recognized by reggae */
 			{
 				fileobj = MediaNewObjectTags(
@@ -679,7 +682,7 @@ FileInfo *fileGetInfo(char *fname, int flags)
 					}
 				}
 			}
-
+#endif
 			if (finfo->type == NULL)
 			{
 				finfo->type = strdup("Unknown");
@@ -724,11 +727,13 @@ FileInfo *fileGetInfo(char *fname, int flags)
 				}
 				if (success == FALSE)
 				{
+#ifndef __AROS__				
 					if (fileobj != NULL)
 					{
 						finfo->width  = MediaGetPort(fileobj, 0, MMA_Video_Width);
 						finfo->height = MediaGetPort(fileobj, 0, MMA_Video_Height);
 					}
+#endif
 				}
 			}
 
@@ -1089,7 +1094,7 @@ int	isDTPicture(char *fname)
 			}
 
 			UnLock(lock);
-
+#ifndef __AROS__
 			/* check if recognized by reggae */
 
 			if (isPicture == FALSE)
@@ -1106,6 +1111,7 @@ int	isDTPicture(char *fname)
 					DisposeObject(fileobj);
 				}
 			}
+#endif
 		}
 
 		/* check for builtin image formats */
@@ -1318,7 +1324,7 @@ int	fileCopyTo(char *src, char *dst)
 		{
 			int	len = fileLength(src);
 
-			if (len != SetFileSize(f2, len, OFFSET_BEGINING))
+			if (len != SetFileSize(f2, len, OFFSET_BEGINNING))
 			{
 				/* not enough space on the device */
 
@@ -1329,7 +1335,7 @@ int	fileCopyTo(char *src, char *dst)
 				return 0;
 			}
 
-			Seek(f2, 0, OFFSET_BEGINING);
+			Seek(f2, 0, OFFSET_BEGINNING);
 
 			while(len)
 			{
@@ -1490,7 +1496,7 @@ int filesCopy(Object *app, char *reqtitle, char **list, char *dest, int move)
 
 						Fault(IoErr(), "", msg, sizeof(msg));
 
-						MUI_Request(app, NULL, 0, "ShowGirls · Error...", "OK",
+						MUI_Request(app, NULL, 0, "ShowGirls Â· Error...", "OK",
 									"Failed to copy file:\n\n\033b%s\033n to\n\033b%s\033n\n\nError message %s", path, dest, msg,
 									TAG_END);
 						error = 1;

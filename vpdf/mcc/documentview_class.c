@@ -139,20 +139,18 @@ DEFNEW
 {
 	Object *sldPage, *grpOutlines, *grpOutlinesTitles, *grpToolbar;
 	Object *grpDisplay, *grpOutlineTree, *grpNavigation, *balBalance, *grpSearch, *grpOutlineThumbs;
+	Object *grpOutlineItems;
+	STRPTR tabPageNames[3];
+	tabPageNames[0]="Outline";
+	tabPageNames[1]="Thumbnail";
+	tabPageNames[2]=NULL;
 
 	obj = (Object *) DoSuperNew(cl, obj,
 				MUIA_Group_Horiz, FALSE,
 				Child, (IPTR) HGroup,
-					Child, (IPTR) (grpDisplay = VGroup, End),
+					Child, (IPTR) (grpDisplay = VGroup, MUIA_Weight,200, End),
 					Child, (IPTR) (balBalance = BalanceObject, End),
-					Child, (IPTR) (grpOutlines = VGroup,
-						MUIA_ShowMe, GetTagData(MUIA_DocumentView_Outline, TRUE, INITTAGS),
-						MUIA_Group_PageMode, TRUE,
-						MUIA_Frame, MUIV_Frame_Group,
-						MUIA_Weight, 30,
-						Child, (IPTR) (grpOutlinesTitles = MUI_NewObject(MUIC_Title,
-							TAG_DONE)),
-						End),
+					Child, (IPTR) (grpOutlines = VGroup,MUIA_Weight,50, End),
 					End,
 				Child, (IPTR) HGroup,
 					Child, (IPTR) (grpNavigation = HGroup,
@@ -224,44 +222,43 @@ DEFNEW
 
 		DoMethod(grpDisplay, OM_ADDMEMBER, ScrollgroupObject, MUIA_Scrollgroup_Contents, (IPTR) data->layoutgroup, End);
 
+		Object *outline = OutlineViewObject,
+							MUIA_OutlineView_Document, (IPTR) data->doc,
+							End;
+
+		Object * RegObj;
+
+		if (xget(outline, MUIA_OutlineView_IsEmpty) == FALSE)
 		{
-			Object *outline = OutlineViewObject,
-								MUIA_OutlineView_Document, (IPTR) data->doc,
-								End;
-
-			if (xget(outline, MUIA_OutlineView_IsEmpty) == FALSE)
-			{
-				DoMethod(grpOutlines, OM_ADDMEMBER, outline);
-				DoMethod(grpOutlinesTitles, OM_ADDMEMBER, TextObject, MUIA_Text_Contents, (IPTR) "Tree", End);
-				outlinenum++;
-			}
-			else
-			{
-				MUI_DisposeObject(outline);
-				outline = NULL;
-			}
-			
-			data->grpOutline = grpOutlines;
-		}
-
-		{
-			Object *thumbnails = ThumbnailListObject,
-								MUIA_ThumbnailList_PDFDocument, (IPTR) data->doc,
-								MUIA_ThumbnailList_Renderer, (IPTR) data->renderer,
-								End;
-
-			DoMethod(grpOutlines, OM_ADDMEMBER, thumbnails);
-			if (outlinenum > 0)
-				DoMethod(grpOutlinesTitles, OM_ADDMEMBER, TextObject, MUIA_Text_Contents, (IPTR) "Thumbnails", End);
-				
 			outlinenum++;
 		}
+		Object *thumbnails = ThumbnailListObject,
+							MUIA_ThumbnailList_PDFDocument, (IPTR) data->doc,
+							MUIA_ThumbnailList_Renderer, (IPTR) data->renderer,
+							End;
 
-		if (outlinenum == 1)
+		outlinenum++;
+
+		if (outlinenum != 1)
 		{
-			DoMethod(grpOutlines, OM_REMMEMBER, grpOutlinesTitles);
-			MUI_DisposeObject(grpOutlinesTitles);
-		}
+		 	set(data->grpOutline, MUIA_Group_ActivePage, xget(data->grpOutline, MUIA_Group_ChildCount) - 1);
+			RegObj = (RegisterGroup(tabPageNames),
+			Child, (IPTR)outline,
+			Child, (IPTR)thumbnails,
+			End);
+			}
+		else
+		{
+			tabPageNames[0]="Thumbnails";
+			tabPageNames[1]=NULL;
+			RegObj = (RegisterGroup(tabPageNames),
+			Child, (IPTR)thumbnails,
+			End);
+			}
+
+		data->grpOutline = RegObj;
+
+		DoMethod(grpOutlines, OM_ADDMEMBER, RegObj);
 
 		/* attach toolbar to the document view */
 
@@ -307,6 +304,7 @@ DEFSET
 		case MUIA_DocumentView_Page:
 		{
 			int page = tag->ti_Data;
+			D(kprintf("DocView set page: %d\n", page));
 			SetAttrs(data->layoutgroup, MUIA_Group_Forward, FALSE, MUIA_DocumentLayout_Page, page, TAG_DONE);
 			break;
 		}
@@ -384,9 +382,7 @@ DEFMMETHOD(Cleanup)
 	GETDATA;
 
 	/* remove all pending pages from renderer */
-	D(kprintf("cleanup renderer for view %p\n", data->layoutgroup));
 	DoMethod(data->renderer, MUIM_Renderer_Remove, MUIV_Renderer_Remove_All, data->layoutgroup);
-	D(kprintf("   ..cleanup done\n"));
 	
 	if (data->eh.ehn_Object != NULL)
 	{
@@ -402,7 +398,7 @@ DEFMMETHOD(Cleanup)
 DEFMMETHOD(DocumentView_EnqueueRender)
 {
 	GETDATA;
-	//kprintf("enqueue with high priority:%d\n", msg->page);
+	kprintf("enqueue with high priority:%d\n", msg->page);
 	DoMethod(data->renderer, MUIM_Renderer_Enqueue, msg->page, data->layoutgroup, data->renderpriority);
 	
 	// rerendered so probably annotations have to be reprocessed. optimize this pass..
@@ -421,11 +417,11 @@ DEFMMETHOD(DocumentView_Layout)
 	LONG page = xget(data->layoutgroup, MUIA_DocumentLayout_Page);
 	LONG pagenum;
 
-	D(kprintf("cleanup renderer for view %p\n", data->layoutgroup));
+	//D(kprintf("cleanup renderer for view %p\n", data->layoutgroup));
 	DoMethod(data->renderer, MUIM_Renderer_Remove, MUIV_Renderer_Remove_All, data->layoutgroup);
-	D(kprintf("   ..cleanup done\n"));
+	//D(kprintf("   ..cleanup done\n"));
 
-	grpDisplayChild = (Object*)DoMethod(data->grpDisplay, MUIM_Family_GetChild, MUIV_Family_GetChild_First);
+	grpDisplayChild = (Object*)DoMethod(data->grpDisplay, MUIM_Group_GetChild, MUIV_Group_GetChild_First);
 	DoMethod(data->grpDisplay, MUIM_Group_InitChange);
 	DoMethod(data->grpDisplay, MUIM_Group_Remove, grpDisplayChild);
 	MUI_DisposeObject(grpDisplayChild);
@@ -454,6 +450,7 @@ DEFMMETHOD(DocumentView_Layout)
 
 	/* NOTE: using pushmethod ensures that object will be properly layed out and focusing on page will work properly. investigate in mui! */
 	#warning investigate!
+	D(kprintf("Layout page: %d\n",page));
 	DoMethod(_app(obj), MUIM_Application_PushMethod, data->layoutgroup, 3, MUIM_Set, MUIA_DocumentLayout_Page, page);
 	//set(data->layoutgroup, MUIA_DocumentLayout_Page, page);
 
@@ -469,6 +466,7 @@ DEFMMETHOD(DocumentView_Layout)
 DEFMMETHOD(DocumentView_FindViewForPage)
 {
 	GETDATA;
+	D(kprintf("FindViewForPage: %d\n",msg->page));
 	return DoMethod(data->layoutgroup, MUIM_DocumentLayout_FindViewForPage, msg->page);
 }
 
@@ -570,7 +568,7 @@ DEFMMETHOD(DocumentView_UpdateAnnotations)
 							DoMethod(data->layoutgroup, MUIM_Group_InitChange);
 						modified = TRUE;
 							
-						DoMethod(data->layoutgroup, MUIM_Family_Remove, an->obj);
+						DoMethod(data->layoutgroup, MUIM_Group_Remove, an->obj);
 						DoMethod(pageview, MUIM_PageView_RemoveAnnotation, an->obj);
 						MUI_DisposeObject(an->obj);
 						an->obj = NULL;
@@ -593,7 +591,7 @@ DEFMMETHOD(DocumentView_UpdateAnnotations)
 							MUIA_Annotation_Contents, (IPTR) an->contents,
 							MUIA_Annotation_RefObject, (IPTR) pageview,
 							End;
-						DoMethod(data->layoutgroup, MUIM_Family_AddTail, an->obj);
+						DoMethod(data->layoutgroup, MUIM_Group_AddTail, an->obj);
 						coords[0] = an->x1;
 						coords[1] = an->y1;
 						coords[2] = an->x2;
@@ -647,6 +645,7 @@ DEFMMETHOD(DocumentView_SelectionCopy)
 				struct pdfSelectionText *selection =  pdfBuildTextForSelection(data->doc, pagenum, msg.region.x1, msg.region.y1, msg.region.x2, msg.region.y2);
 				if (selection != NULL)
 				{
+					D(kprintf("pdfselection: %ls\n",selection->utf8));
 					clipboard_write_text(selection->utf8, CODESET_UTF8);
 					pdfDisposeTextForSelection(data->doc, selection);
 				}

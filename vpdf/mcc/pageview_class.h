@@ -28,6 +28,7 @@
 #define	MUIA_PageView_Rotation   	   (MUIA_PageView_TagBase +25)
 #define	MUIA_PageView_PDFBitmap		   (MUIA_PageView_TagBase +26)
 #define MUIA_PageView_Quiet            (MUIA_PageView_TagBase +27)
+#define MUIA_PageView_TopEdge          (MUIA_PageView_TagBase +28)
 
 #define	MUIM_PageView_Update		   (MUIM_PageView_Dummy + 1)
 #define	MUIM_PageView_AddMarker		   (MUIM_PageView_Dummy + 2)
@@ -75,10 +76,10 @@ struct MUIP_PageView_GetSelection {ULONG MethodID; struct PageViewSelectionRegio
 
 struct PageViewRegion
 {
-	int x1;
-	int x2;
-	int y1;
-	int y2;
+	LONG x1;
+	LONG x2;
+	LONG y1;
+	LONG y2;
 };
 
 

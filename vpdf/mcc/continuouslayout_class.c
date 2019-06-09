@@ -53,6 +53,10 @@
 #include "system/functions.h"
 #include "system/gentexture.h"
 
+#define DEBUG 1
+#include <aros/debug.h>
+
+
 struct Data
 {
 	void *doc;
@@ -62,7 +66,7 @@ struct Data
 	struct MUI_EventHandlerNode eh;
 	int clicky;
 	int clickx;
-	int page;
+	LONG page;
 	int columns;
 	int scaling;
 	float zoom;
@@ -103,7 +107,7 @@ DEFNEW
 
 			data->views = malloc(sizeof(Object*) * pdfGetPagesNum(data->doc));
 			#warning TODO: handle failure
-
+			LONG top=0;
 			for(i=0; i<pdfGetPagesNum(data->doc); i++)
 			{
 				float mediawidth = pdfGetPageMediaWidth(data->doc, i + 1);
@@ -117,6 +121,7 @@ DEFNEW
 								MUIA_PageView_MediaHeight, (int)mediaheight,
 								MUIA_PageView_Information, information,
 								MUIA_PageView_IsPreview, data->ispreview,
+								MUIA_PageView_TopEdge, top,
 								//MUIA_FixWidth , 128,
 								//MUIA_FixHeight , 128,
 								End;
@@ -129,6 +134,7 @@ DEFNEW
 				//DoMethod(obj, OM_ADDMEMBER, RectangleObject, End);
 
 				data->views[i] = pageview;
+				top +=(int)mediaheight;
 			}
 
 			/* only notify about new 'focused' page if this is not previews view (outlines) */
@@ -214,7 +220,6 @@ DEFSET
 				}
 				//set(obj, MUIA_Virtgroup_Top, (LONG)xget(pageview, MUIA_PageView_LayoutTop));
 			}
-
 			MUI_Redraw(data->views[prevpage], MADF_DRAWOBJECT);
 			MUI_Redraw(data->views[newpage], MADF_DRAWOBJECT);
 
@@ -362,47 +367,56 @@ METHOD continuouslayoutFindViewForPage(struct IClass *cl, Object *obj, struct MU
 
 METHOD continuouslayoutIsPageVisible(struct IClass *cl, Object *obj, struct MUIP_DocumentLayout_IsPageVisible *msg)
 {
-	GETDATA;
+GETDATA;
 	Object *pageview = data->views[msg->page - 1];
 
-	LONG top = xget(pageview, MUIA_TopEdge) - (LONG)_addtop(obj);
-	LONG height = xget(pageview, MUIA_Height);
+	//work around overflow in TopEdge... why is this happening, it's meant to be a long?
 
+	LONG top = (LONG)xget(pageview, MUIA_TopEdge) - (LONG)_addtop(obj);
+	LONG height = (LONG)xget(pageview, MUIA_Height);
+
+	LONG topedge = ((long)xget(pageview, MUIA_PageView_TopEdge)*(float)((float)height / xget(obj, MUIA_PageView_MediaHeight) )) -(long)xget(obj, MUIA_Virtgroup_Top);
+
+	D(kprintf("topedge: %ld, virttop %ld, mediaheight: %ld, height: %ld\n",topedge,(long)xget(obj, MUIA_Virtgroup_Top), (long)xget(obj, MUIA_PageView_MediaHeight), height));
 	/* check constraints for object and group */
-
+	top = topedge; //- (long)_addtop(obj);
 	LONG nTop = top - _top(obj);
 	LONG nBottom = nTop + height;
 	LONG gBottom = _height(obj) + 5;    /* 5 is a margin */
 	LONG gTop = -5;
 
-	//printf("page %d borders:%d %d, borders:%d,%d\n", msg->page, nTop, nBottom, gTop, gBottom);
+	
+	
 
 	if (nBottom < gTop)
 	{
-		/* bottom is invisible */
+	D(kprintf("no page %d borders:%ld %ld, borders:%ld,%ld\n", msg->page, nTop, nBottom, gTop, gBottom));
+	/* bottom is invisible */
 		return FALSE;
 	}
 
 	if (nTop > gBottom)
 	{
-		/* top is invisible */
+	D(kprintf("no page %d borders:%ld %ld, borders:%ld,%ld\n", msg->page, nTop, nBottom, gTop, gBottom));
+	/* top is invisible */
 		return FALSE;
 	}
+D(kprintf("YES page %d borders:%ld %ld, borders:%ld,%ld\n", msg->page, nTop, nBottom, gTop, gBottom));
 
-	return TRUE;
+return TRUE;
 }
 
 METHOD continuouslayoutClippedPageOffset(struct IClass *cl, Object *obj, struct MUIP_ContinuousLayout_ClippedPageOffset *msg)
 {
-	GETDATA;
+GETDATA;
 	Object *pageview = data->views[msg->page - 1];
 
-	LONG top = xget(pageview, MUIA_TopEdge) - (LONG)_addtop(obj);
-	LONG height = xget(pageview, MUIA_Height);
-
+	LONG top = (LONG)xget(pageview, MUIA_TopEdge) - (LONG)_addtop(obj);
+	LONG height = (LONG)xget(pageview, MUIA_Height);
 	/* check constraints for object and group */
+	LONG topedge = ((LONG)xget(pageview, MUIA_PageView_TopEdge)*(float)((float)height / xget(obj, MUIA_PageView_MediaHeight) )) -(LONG)xget(obj, MUIA_Virtgroup_Top);
 
-	LONG nTop = top - _top(obj);
+	LONG nTop = topedge - _top(obj);
 	LONG nBottom = nTop + height;
 	LONG gBottom = _height(obj) + 5;    /* 5 is a margin */
 	LONG gTop = -5;
@@ -419,7 +433,7 @@ METHOD continuouslayoutClippedPageOffset(struct IClass *cl, Object *obj, struct 
 	if (nTop < gTop && nTop + height > gTop) /* partialy clipped outside the top edge. scroll to the bottom */
 		nTop = gTop;
 
-	return nTop - oldnTop;
+return nTop - oldnTop;
 }
 
 METHOD continuouslayoutShow(struct IClass *cl, Object *obj, struct MUIP_Show *msg)

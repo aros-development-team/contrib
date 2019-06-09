@@ -85,7 +85,7 @@ struct Data
 enum
 {
 	MEN_PROJECT = 1,
-	MEN_ABOUT, MEN_OPEN_FILE, MEN_OPEN_URL, MEN_TAB_NEW, MEN_TAB_CLOSE, MEN_WINDOW_NEW, MEN_WINDOW_CLOSE,
+	MEN_ABOUT, MEN_OPEN_FILE, MEN_OPEN_URL,  MEN_SAVE_FILE, MEN_TAB_NEW, MEN_TAB_CLOSE, MEN_WINDOW_NEW, MEN_WINDOW_CLOSE,
 	MEN_OPEN_RECENT, 
 	MEN_PRINT,
 	MEN_QUIT,
@@ -133,6 +133,7 @@ static const struct MUI_Command rexxcommands[] =
 static CONST_STRPTR __credits = 
 "\33b%p\33n\n"   
 "\tMichal 'kiero' Wozniak\n\n"  
+"\tAROS port: Craig 'Watto' Watson\n\n"
 "\33b%W\33n\n"  
 "\twozniak_m@interia.pl\n\n" 
 "\33b%P\33n\n"    
@@ -193,6 +194,12 @@ DEFNEW
 							CreateMenuitem(LOCSTR(MSG_MENU_FILE), 0)),
 						MUIA_Family_Child, (IPTR) (menu[MEN_OPEN_RECENT] =
 							CreateMenuitem(LOCSTR(MSG_MENU_RECENT), 0)),
+						MUIA_Family_Child, (IPTR) CreateMenuitem(NM_BARLABEL, NULL),
+						MUIA_Family_Child, (IPTR) (menu[MEN_SAVE_FILE] =
+							CreateMenuitem(LOCSTR(MSG_MENU_SAVEFILE), "S")),
+						
+						MUIA_Family_Child, (IPTR) (menu[MEN_TAB_CLOSE] =
+							CreateMenuitem(LOCSTR(MSG_MENU_TABCLOSE), "X")),
 						MUIA_Family_Child, (IPTR) (menu[MEN_PRINT] =
 							CreateMenuitem(LOCSTR(MSG_MENU_PRINT), "P")),
 						MUIA_Family_Child, (IPTR) CreateMenuitem(NM_BARLABEL, NULL),
@@ -266,8 +273,10 @@ DEFNEW
 		DoMethod((Object *)menu[MEN_ABOUT], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 1, MUIM_VPDF_About);
 		DoMethod((Object *)menu[MEN_QUIT], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod((Object *)menu[MEN_TAB_NEW], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 2, MUIM_VPDF_CreateTab, 0);
+		DoMethod((Object *)menu[MEN_TAB_CLOSE], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 2, MUIM_VPDF_CloseTab, 0);
 		DoMethod((Object *)menu[MEN_WINDOW_NEW], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 1, MUIM_VPDF_CreateWindow);
 		DoMethod((Object *)menu[MEN_OPEN_FILE], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 4, MUIM_VPDF_OpenFile, 0, NULL, MUIV_VPDFWindow_OpenFile_CurrentTabIfEmpty);
+        DoMethod((Object *)menu[MEN_SAVE_FILE], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 2, MUIM_VPDF_SaveFile, 0); 
 		DoMethod((Object *)menu[MEN_SETTINGS_SETTINGS], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,settingswin, 3, MUIM_Set, MUIA_Window_Open, TRUE);
 		DoMethod((Object *)menu[MEN_SETTINGS_SAVESETTINGS], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,settingswin, 1, MUIM_VPDFSettings_Save);
 		DoMethod((Object *)menu[MEN_SETTINGS_MUI], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, obj, 2, MUIM_Application_OpenConfigWindow, 0);
@@ -400,6 +409,18 @@ DEFMMETHOD(VPDF_CreateTab)
 	if (window != NULL)
 	{
 		return DoMethod(window, MUIM_VPDFWindow_CreateTab);
+	}
+
+	return (ULONG)-1;
+}
+
+DEFMMETHOD(VPDF_CloseTab)
+{
+	Object *window = (Object*)DoMethod(obj, MUIM_VPDF_FindWindowByID, msg->windowid == 0 ? MUIV_VPDF_FindWindowByID_Active :  msg->windowid);
+
+	if (window != NULL)
+	{
+		return DoMethod(window, MUIM_VPDFWindow_CloseTab);
 	}
 
 	return (ULONG)-1;
@@ -1019,6 +1040,46 @@ DEFMMETHOD(VPDF_SelectionCopy)
 	
 	return TRUE;
 }
+
+
+DEFMMETHOD(VPDF_SaveFile)
+{
+    GETDATA;
+    char *filename = msg->filename;
+    int mode = msg->mode;
+    Object *window = (Object*)DoMethod(obj, MUIM_VPDF_FindWindowByID, msg->windowid == 0 ? MUIV_VPDF_FindWindowByID_Active : msg->windowid);
+
+   /* if (window == NULL)
+    {
+        window = (Object*)DoMethod(obj, MUIM_VPDF_CreateWindow);
+        mode = MUIV_VPDFWindow_OpenFile_CurrentTabIfEmpty;
+    }
+    */
+
+    if (filename == NULL)
+    {
+        filename = (char*)DoMethod(_app(obj), MUIM_VPDF_RequestFile,
+                        MUIV_VPDF_RequestFile_Save,
+                        NULL,
+                        NULL,
+                        NULL);
+
+        if (filename == NULL)
+            return FALSE;
+    }
+
+    if (window != NULL)
+    {
+        if (DoMethod(window, MUIM_VPDFWindow_SaveFile, filename, mode))
+        {
+
+        }
+
+    }
+
+    return TRUE;
+}
+
 /* */
 
 BEGINMTABLE
@@ -1030,7 +1091,9 @@ BEGINMTABLE
 	DECMMETHOD(Export)
 	DECMMETHOD(DragDrop)
 	DECMMETHOD(VPDF_OpenFile)
+	DECMMETHOD(VPDF_SaveFile)
 	DECMMETHOD(VPDF_CreateTab)
+	DECMMETHOD(VPDF_CloseTab)
 	DECMMETHOD(VPDF_CreateWindow)
 	DECMMETHOD(VPDF_HandleAppMessage)
 	DECMMETHOD(VPDF_RequestFile)
