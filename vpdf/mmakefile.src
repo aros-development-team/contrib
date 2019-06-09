@@ -27,7 +27,8 @@ CFILES := \
     system/dlist \
     system/init \
     system/timer \
-    aros/aros
+    aros/aros \
+    fontcache
 
 CPPFILES := \
     poppler_io \

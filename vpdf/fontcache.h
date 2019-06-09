@@ -52,24 +52,24 @@ enum {
 #define FC_CHARCELL		    110
 
 enum {
-	FC_FAMILY = 0,
+	EFC_FAMILY = 0,
 	//FC_FAMILYLANG,
-	FC_FULLNAME,
+	EFC_FULLNAME,
 	//FC_FULLNAMELANG,
-	FC_STYLE,
+	EFC_STYLE,
 	//FC_STYLELANG,
-	FC_FILE,
-	FC_INDEX, /* index of a face in font file */
-	FC_WEIGHT,
-	FC_WIDTH,
-	FC_SLANT,
+	EFC_FILE,
+	EFC_INDEX, /* index of a face in font file */
+	EFC_WEIGHT,
+	EFC_WIDTH,
+	EFC_SLANT,
 	//FC_DECORATIVE,
 	//FC_CHARSET,
-	FC_LANG,
+	EFC_LANG,
 	//FC_PROPORTIONAL,
-	FC_SPACING,
-	FC_SERIF,
-	FC_LAST_CRITERIA,
+	EFC_SPACING,
+	EFC_SERIF,
+	EFC_LAST_CRITERIA,
 };
 
 static int fcelementpriority[] = {
