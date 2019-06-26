@@ -1,9 +1,9 @@
-# Copyright © 2011, The AROS Development Team. All rights reserved.
+# Copyright © 2011-2019, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-USER_CFLAGS     := -I$(AROS_INCLUDES)/SDI -I$(SRCDIR)/$(CURDIR)/../../../portable/include
+USER_INCLUDES     := -I$(AROS_INCLUDES)/SDI -I$(SRCDIR)/$(CURDIR)/../../../portable/include
 USER_LDFLAGS += -nostartfiles -static
 
 #MM- contrib-pack-xadmaster : xadmaster-clients
