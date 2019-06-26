@@ -2,7 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#USER_CFLAGS   := -DMYDEBUG=1
+#USER_CPPFLAGS   := -DMYDEBUG=1
 
 FILES := svgclass stubs memory
 
