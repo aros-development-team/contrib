@@ -4,9 +4,10 @@ include $(SRCDIR)/$(CURDIR)/../make.cfg
 
 #MM- DOpus_Print : dopus-library
 
-USER_CFLAGS := -I$(DOPUSDIR)/$(AROS_DIR_DEVELOPER)/include \
-    -I$(SRCDIR)/$(CURDIR)/../include \
-    -D__REXXSYSLIB_STDLIBBASE__ \
+USER_INCLUDES := -I$(DOPUSDIR)/$(AROS_DIR_DEVELOPER)/include \
+    -I$(SRCDIR)/$(CURDIR)/../include
+
+USER_CPPFLAGS := -D__REXXSYSLIB_STDLIBBASE__ \
     -D__UTILITY_STDLIBBASE__ \
     -D__LOCALE_STDLIBBASE__
 
