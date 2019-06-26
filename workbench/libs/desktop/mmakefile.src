@@ -1,4 +1,4 @@
-# Copyright © 2003, The AROS Development Team. All rights reserved.
+# Copyright © 2003-2019, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -53,7 +53,8 @@ FUNCS := \
 #MM     includes-copy
 #MM- workbench-libs-desktop : linklibs
 
-USER_CFLAGS := -D__DESKTOP_NOLIBBASE__
+USER_CPPFLAGS := -D__DESKTOP_NOLIBBASE__
+
 %build_module mmake=workbench-libs-desktop \
  modname=desktop modtype=library \
  files="desktop_init $(FUNCS) $(FILES)"
