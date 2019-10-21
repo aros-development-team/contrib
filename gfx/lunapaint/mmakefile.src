@@ -2,11 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-gfx : contrib-gfx-$(AROS_TARGET_CPU)
-
-#MM- contrib-gfx-i386 : contrib-gfx-lunapaint
-#DISABLED #MM- contrib-gfx-m68k : contrib-gfx-lunapaint
-#MM- contrib-gfx-arm : contrib-gfx-lunapaint
+#MM- contrib-gfx : contrib-gfx-lunapaint
 
 #MM  contrib-gfx-lunapaint : includes linklibs workbench-libs-freetype-linklibs \
 #MM  contrib-gfx-lunapaint-data \
