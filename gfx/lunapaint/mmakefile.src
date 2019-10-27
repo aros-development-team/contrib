@@ -2,11 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-gfx : contrib-gfx-$(AROS_TARGET_CPU)
-
-#MM- contrib-gfx-i386 : contrib-gfx-lunapaint
-#DISABLED #MM- contrib-gfx-m68k : contrib-gfx-lunapaint
-#MM- contrib-gfx-arm : contrib-gfx-lunapaint
+#MM- contrib-gfx : contrib-gfx-lunapaint
 
 #MM  contrib-gfx-lunapaint : includes linklibs workbench-libs-freetype-linklibs \
 #MM  contrib-gfx-lunapaint-data \
@@ -20,7 +16,7 @@ DEFICON      := def_Lunapaint
 # Next version of Lunapaint shouldn't need -fgnu89-inline anymore
 NOWARN_FLAGS := $(NOWARN_UNUSED_BUT_SET_VARIABLE)
 USER_CFLAGS  := -fgnu89-inline -fno-strict-aliasing $(NOWARN_FLAGS)
-USER_INCLUDES:= -I$(SRCDIR)/$(CURDIR)/src -I$(AROS_INCLUDES)/SDI
+USER_INCLUDES:= -I$(SRCDIR)/$(CURDIR)/src -I$(GENDIR)/$(CURDIR)/src/app -I$(AROS_INCLUDES)/SDI
 
 FILES := \
 	src/main \
