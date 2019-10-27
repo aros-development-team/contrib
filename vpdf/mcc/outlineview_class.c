@@ -39,7 +39,14 @@
 ////
 
 #include <private/vapor/vapor.h>
-#include <mui/Listtree_mcc.h>
+#include <mui/NListtree_mcc.h>
+
+#define DEBUG 1
+#include <aros/debug.h>
+
+#ifdef __AROS__
+#include <SDI/SDI_hook.h>
+#endif
 
 #include "util.h"
 #include "poppler.h"
@@ -57,11 +64,11 @@ static void buildlist(Object *obj, struct MinList *outlineitems, APTR parentnode
 	struct MinNode *n;
 	ITERATELIST(n, outlineitems)
 	{
-		APTR newparentnode = (APTR)DoMethod(obj, MUIM_Listtree_Insert,
-				"foo",
+		APTR newparentnode = (APTR)DoMethod(obj, MUIM_NListtree_Insert,
+				"foobar",
 				n,
 				parentnode,
-				MUIV_Listtree_Insert_PrevNode_Tail,
+				MUIV_NListtree_Insert_PrevNode_Tail,
 				outlineHasChildren(n) ? TNF_LIST : 0
 			);
 
@@ -70,30 +77,49 @@ static void buildlist(Object *obj, struct MinList *outlineitems, APTR parentnode
 	}
 }
 
-MUI_HOOK(outline_displayfunc, STRPTR *array, struct MUIS_Listtree_TreeNode *tn)
+#ifdef __AROS__
+HOOKPROTONHNO(outline_displayfunc, LONG, struct MUIP_NListtree_DisplayMessage *msg)
+{
+  if (msg->TreeNode != NULL)
+	{
+		struct MinNode *td = (struct MinNode*)msg->TreeNode->tn_User;
+		
+		char *name = outlineGetTitle(td);
+		*msg->Array++ = (name != NULL ? name : "---");
+	}
+	else
+	{
+		*msg->Array++ = "";
+	}
+	return (0);
+  }
+MakeStaticHook(outline_displayhook  , outline_displayfunc);
+#else
+MUI_HOOK(outline_displayfunc, LONG, struct MUI_NListtree_TreeNode *tn)
 {
 	if (tn != NULL)
 	{
 		struct MinNode *td = (struct MinNode*)tn->tn_User;
 		char *name = outlineGetTitle(td);
 
-		array[ 0 ] = name != NULL ? name : "---";
+		*tn->Array[ 0 ] = name != NULL ? name : "---";
 
-		if ((ULONG)array[ -1 ] % 2)
-			array[-9] = (STRPTR)10;
+		if ((ULONG)*tn->Array[ -1 ] % 2)
+			*tn->Array[-9] = (STRPTR)10;
 	}
 	else
 	{
-		array[ 0 ] = "";
+		*tn->Array[ 0 ] = "";
 	}
 
 	return (0);
 }
+#endif
 
 DEFNEW
 {
 	obj = (Object *) DoSuperNew(cl, obj,
-			MUIA_Listtree_DisplayHook, &outline_displayfunc_hook,
+			MUIA_NListtree_DisplayHook, (IPTR)&outline_displayhook,
 			MUIA_Frame, MUIV_Frame_InputList,
 			TAG_MORE, INITTAGS);
 
@@ -107,7 +133,7 @@ DEFNEW
 		if (data->doc != NULL)
 		{
 			data->outlineitems = pdfGetOutlines(data->doc);
-			buildlist(obj, data->outlineitems, MUIV_Listtree_Insert_ListNode_Root);
+			buildlist(obj, data->outlineitems, MUIV_NListtree_Insert_ListNode_Root);
 		}
 		else
 		{
@@ -115,7 +141,7 @@ DEFNEW
 
 		/* notifications */
 
-		DoMethod(obj, MUIM_Notify, MUIA_Listtree_Active, MUIV_EveryTime, obj, 2, MUIM_OutlineView_NewEntrySelected, MUIV_TriggerValue);
+		DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, obj, 2, MUIM_OutlineView_NewEntrySelected, MUIV_TriggerValue);
 
 	}
 
@@ -131,7 +157,7 @@ METHOD outlineviewNewEntrySelected(struct IClass *cl, Object *obj, struct MUIP_O
 {
 	GETDATA;
 
-	struct MUIS_Listtree_TreeNode *tn = msg->entry;
+	struct MUI_NListtree_TreeNode *tn = msg->entry;
 	struct MinNode *td = (struct MinNode*)tn->tn_User;
 	int page = msg->entry > 0 ? outlineGetPage(td) : 0;
 
@@ -166,5 +192,5 @@ BEGINMTABLE
 	case MUIM_OutlineView_NewEntrySelected: return outlineviewNewEntrySelected(cl,obj,(APTR)msg);
 ENDMTABLE
 
-DECSUBCLASS_NC(MUIC_Listtree, OutlineViewClass)
+DECSUBCLASS_NC(MUIC_NListtree, OutlineViewClass)
 

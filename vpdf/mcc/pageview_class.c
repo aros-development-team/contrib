@@ -82,7 +82,8 @@ struct Data
 	struct PageViewRegion region;
 	int mx, my;
 	int moveregion;
-	int offsetx, offsety;
+	LONG offsetx, offsety;
+	LONG topedge;
 	int markmx, markmy;
 	int pointertype;
 	int mousedown;
@@ -94,8 +95,8 @@ struct Data
 	void *doc;
 	int page;
 	int ready;
-	int prevwidth, prevheight;
-	int mediawidth, mediaheight;
+	LONG prevwidth, prevheight;
+	LONG mediawidth, mediaheight;
 	int invalid;
 	int flushmethodid;
 	int information;
@@ -230,20 +231,29 @@ DEFNEW
 				case MUIA_PageView_PDFDocument:
 					data->doc = (void*)tag->ti_Data;
 					break;
+
 				case MUIA_PageView_Page:
 					data->page = tag->ti_Data;
 					break;
+
 				case MUIA_PageView_MediaWidth:
 					data->mediawidth = tag->ti_Data;
 					break;
+
 				case MUIA_PageView_MediaHeight:
 					data->mediaheight = tag->ti_Data;
 					break;
+
 				case MUIA_PageView_Information:
 					data->information = tag->ti_Data;
 					break;
+
 				case MUIA_PageView_IsPreview:
 					data->ispreview= tag->ti_Data;
+					break;
+
+				case MUIA_PageView_TopEdge:
+					data->topedge= tag->ti_Data;
 					break;
 		}
 		NEXTTAG
@@ -371,10 +381,10 @@ METHOD riDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 				{
 					width = data->refreshrect.MaxX - data->refreshrect.MinX;
 					height = data->refreshrect.MaxY - data->refreshrect.MinY;
-					WritePixelArray(image->data, data->refreshrect.MinX, data->refreshrect.MinY, image->width * image->bpp, _rp(obj), x0 + data->refreshrect.MinX, y0 + data->refreshrect.MinY, width, height, image->bpp == 4 ? RECTFMT_ARGB : RECTFMT_GREY8);
+					WritePixelArray(image->data, data->refreshrect.MinX, data->refreshrect.MinY, image->width * image->bpp, _rp(obj), x0 + data->refreshrect.MinX, y0 + data->refreshrect.MinY, width, height, image->bpp == 4 ? ( AROS_BIG_ENDIAN ? RECTFMT_ARGB32 : RECTFMT_BGRA32 ) : RECTFMT_GREY8);
 				}
 				else
-					WritePixelArray(image->data, 0, 0, image->width * image->bpp, _rp(obj), x0, y0, width, height, data->image->bpp == 4 ? RECTFMT_ARGB : RECTFMT_GREY8);
+					WritePixelArray(image->data, 0, 0, image->width * image->bpp, _rp(obj), x0, y0, width, height, data->image->bpp == 4 ? ( AROS_BIG_ENDIAN ? RECTFMT_ARGB32 : RECTFMT_BGRA32 ) : RECTFMT_GREY8);
 
 				/* draw remaining area with background */
 
@@ -461,6 +471,7 @@ METHOD riDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 			//data->prevwidth = _mwidth(obj);
 			//data->prevheight = _mheight(obj);
 			data->invalid = FALSE;
+			D(kprintf("Set NeedRefresh page: %d\n", data->page));
 			SetAttrs(_parent(obj), MUIA_Group_Forward, FALSE, MUIA_PageView_NeedRefresh, data->page, TAG_DONE);
 		}
 
@@ -711,6 +722,10 @@ DEFSET
 			data->ready = tag->ti_Data;
 			break;
 
+		case MUIA_PageView_TopEdge:
+			data->topedge = tag->ti_Data;
+			break;
+
 		case MUIA_PageView_Quiet:
 			data->quiet = tag->ti_Data;
 			break;
@@ -848,6 +863,10 @@ DEFGET
 
 		case MUIA_PageView_Region:
 			*(msg->opg_Storage) = (ULONG)&data->region;
+			return TRUE;
+
+		case MUIA_PageView_TopEdge:
+			*(msg->opg_Storage) = (ULONG)data->topedge;
 			return TRUE;
 
 		case MUIA_PageView_Page:
@@ -1104,13 +1123,11 @@ DEFMMETHOD(Hide)
 	   is canceled.*/
 
 #if defined(__AROS__)
-    kprintf("[Pageview::Hide] not implemented\n");
     // FIXME: implement MUIV_PushMethod_Delay in Zune/AROS
 	data->flushmethodid = DoMethod(_app(obj), MUIM_Application_PushMethod, obj, 1, MUIM_PageView_Flush);
 #else
 	data->flushmethodid = DoMethod(_app(obj), MUIM_Application_PushMethod, obj, 1 | MUIV_PushMethod_Delay(150), MUIM_PageView_Flush);
 #endif
-	D(kprintf("cleanup:%d\n", data->page));
 	return DOSUPER;
 }
 

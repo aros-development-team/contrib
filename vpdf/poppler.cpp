@@ -367,10 +367,10 @@ float pdfGetPageMediaWidth(void *_ctx, int page)
 {
 	ENTER_SECTION
 	struct devicecontext *ctx = (struct devicecontext*)_ctx;
-	//float width = ctx->doc->getPageMediaWidth(page);
+	float width = ctx->doc->getPageMediaWidth(page);
 	Page *pdfpage = ctx->doc->getCatalog()->getPage(page);
 	int rotate = pdfpage->getRotate();
-	float width;
+	//float width;
 	if(rotate == 90 || rotate == 270)
 		width = pdfpage->getMediaHeight();
 	else
@@ -843,12 +843,8 @@ static struct MinList *buildoutlineitemlist(PDFDoc *doc, GooList *items)
 					n->title = convertUTF32ToANSI(n->item->getTitle(), n->item->getTitleLength());
 					n->page = actionGetPage(doc, n->item->getAction());
 
-
-					//printf("outline item:%s, page:%d\n", n->title, n->page);
-
 					if(n->item->hasKids())
 					{
-						//printf("has children, process...\n");
 						n->children = buildoutlineitemlist(doc, n->item->getKids());
 					}
 
@@ -1322,10 +1318,6 @@ int pdfSearch(void *_ctx, int *page, char *phrase, int direction, double *x1, do
 
 		/* new search */
 
-#if defined(__AROS__)
-    kprintf("[pdfSearch] not implemented\n");
-// FIXME: AROS
-#else
 		WCHAR *phraseUCS4 = convertToUCS4(phrase);
 
 		TextOutputDev *text_dev = new TextOutputDev(NULL, gTrue, 0, gFalse, gFalse);
@@ -1371,7 +1363,6 @@ int pdfSearch(void *_ctx, int *page, char *phrase, int direction, double *x1, do
 		
 		delete text_dev;
 		free(phraseUCS4);
-#endif
 		if (found == FALSE)
 		{
 			LEAVE_SECTION
@@ -1506,6 +1497,23 @@ void pdfFreeAttr(void *_ctx, struct pdfAttribute *attr)
 
 		free(attr);
 	}
+}
+
+int pdfSaveFile(void *_ctx, char *filename, int mode)
+{
+	int ret = 0;
+	ENTER_SECTION
+	struct devicecontext *ctx = (struct devicecontext*)_ctx;
+	
+	GooString *gstring = new GooString(filename);
+	if (gstring)
+	{
+		ret = ctx->doc->saveAs(gstring, writeStandard);
+		delete gstring;
+	}
+	LEAVE_SECTION;
+	return ret;
+
 }
 
 /* annotations */

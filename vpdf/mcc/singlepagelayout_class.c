@@ -123,7 +123,7 @@ DEFNEW
 				//DoMethod(obj, OM_ADDMEMBER, RectangleObject, MUIA_FixWidth, 128, MUIA_FixHeight, 128, End);
 
 				if (i >= rangefirst && i < rangefirst + data->columns)
-					DoMethod(obj, MUIM_Family_AddTail, pageview);
+					DoMethod(obj, MUIM_Group_AddTail, pageview);
 
 				//DoMethod(obj, OM_ADDMEMBER, RectangleObject, MUIA_FixWidth, 50, End);
 				//DoMethod(obj, OM_ADDMEMBER, HSpace(0));
@@ -155,7 +155,7 @@ DEFDISP
 	{
 		Object *child = (Object*)DoMethod(obj, MUIM_Group_GetChild, 0);
 		if (child != NULL)
-			DoMethod(obj, MUIM_Family_Remove, child);
+			DoMethod(obj, MUIM_Group_Remove, child);
 	}
 
 	DoMethod(obj, MUIM_Group_ExitChange);
@@ -228,11 +228,11 @@ DEFSET
 				{
 					Object *child = (Object*)DoMethod(obj, MUIM_Group_GetChild, 0);
 					if (child != NULL)
-						DoMethod(obj, MUIM_Family_Remove, child);
+						DoMethod(obj, MUIM_Group_Remove, child);
 				}
 
 				for(i=rangefirst; i<min(data->pagesnum, rangefirst + data->columns); i++)
-					DoMethod(obj, MUIM_Family_AddTail, data->views[i]);
+					DoMethod(obj, MUIM_Group_AddTail, data->views[i]);
 
 				DoMethod(obj, MUIM_Group_ExitChange);
 			}

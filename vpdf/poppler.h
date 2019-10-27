@@ -12,6 +12,7 @@ void pdfConvertUserToDevice(void *_ctx, double *x, double *y);
 void pdfConvertDeviceToUser(void *_ctx, int page, double x, double y, int *ux, int *uy);
 
 void pdfDelete(void *_ctx);
+int pdfSaveFile(void *_ctx, char *filename, int mode);
 
 float pdfGetPageMediaWidth(void *_ctx, int page);
 float pdfGetPageMediaHeight(void *_ctx, int page);

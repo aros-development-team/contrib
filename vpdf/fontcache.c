@@ -26,10 +26,9 @@
 
 static FT_Library ftLibrary;
 
-void kprintf(char *fmt,...);
+#define DEBUG 1
+#include <aros/debug.h>
 
-
-#define D(x) x
 //#define FcDebug() 0xffffffffUL
 #define FcDebug() 0
 #define FcResultMatch TRUE
@@ -1282,7 +1281,8 @@ static const FcFontDecode fcFontDecoders[] = {
 
 static FcChar32 FcFreeTypePrivateToUcs4 (FcChar32 private, const FcCharMap *map);
 
-const FcCharMap *FcFreeTypeGetPrivateMap(FT_Encoding encoding)
+
+const FcCharMap *IntFcFreeTypeGetPrivateMap(FT_Encoding encoding)
 {
     int	i;
 
@@ -1415,7 +1415,7 @@ static char *fcSfntNameTranscode(FT_SfntName *sname)
     if (!strcmp (fromcode, FC_ENCODING_MAC_ROMAN))
     {
 		FcChar8 *u8;
-		const FcCharMap	*map = FcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
+		const FcCharMap	*map = IntFcFreeTypeGetPrivateMap (ft_encoding_apple_roman);
 		FcChar8 *src = (FcChar8 *) sname->string;
 		int src_len = sname->string_len;
 	
@@ -1594,7 +1594,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 							sname.encoding_id, sname.language_id,
 							utf8);
 
-					elt = FC_FAMILY;
+					elt = EFC_FAMILY;
 					break;
 				case TT_NAME_ID_MAC_FULL_NAME:
 				case TT_NAME_ID_FULL_NAME:
@@ -1606,7 +1606,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 						utf8);
 
 
-					elt = FC_FULLNAME;
+					elt = EFC_FULLNAME;
 					break;
 	#ifdef TT_NAME_ID_WWS_SUBFAMILY
 				case TT_NAME_ID_WWS_SUBFAMILY:
@@ -1621,7 +1621,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 						utf8);
 
 
-					elt = FC_STYLE;
+					elt = EFC_STYLE;
 					break;
 				}
 				
@@ -1654,7 +1654,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 		if (FcDebug () & FC_DBG_SCANV)
 			kprintf ("using FreeType family \"%s\"\n", face->family_name);
 
-		if (!fcPatternAddString (pat, FC_FAMILY, (FcChar8 *) face->family_name))
+		if (!fcPatternAddString (pat, EFC_FAMILY, (FcChar8 *) face->family_name))
 			goto bail1;
 		++nfamily;
     }
@@ -1664,7 +1664,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 		if (FcDebug () & FC_DBG_SCANV)
 			kprintf ("using FreeType style \"%s\"\n", face->style_name);
 
-		if (!fcPatternAddString (pat, FC_STYLE, (FcChar8 *) face->style_name))
+		if (!fcPatternAddString (pat, EFC_STYLE, (FcChar8 *) face->style_name))
 			goto bail1;
 		++nstyle;
     }
@@ -1690,7 +1690,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 		if (FcDebug () & FC_DBG_SCANV)
 			kprintf ("using filename for family %s\n", family);
 
-		if (!fcPatternAddString (pat, FC_FAMILY, family))
+		if (!fcPatternAddString (pat, EFC_FAMILY, family))
 		{
 			free (family);
 			goto bail1;
@@ -1699,10 +1699,10 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 		++nfamily;
     }
 
-	if (!fcPatternAddString (pat, FC_FILE, fname))
+	if (!fcPatternAddString (pat, EFC_FILE, fname))
 		goto bail1;
 
-    if (!fcPatternAddInteger (pat, FC_INDEX, id))
+    if (!fcPatternAddInteger (pat, EFC_INDEX, id))
 		goto bail1;
 
     if (os2 && os2->version >= 0x0001 && os2->version != 0xffff)
@@ -1733,14 +1733,14 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 					exclusiveLang = 0;
 					break;
 				}
-				exclusiveLang = FcCodePageRange[i].lang;
+				exclusiveLang = (char*)FcCodePageRange[i].lang;
 			}
 		}
     }
 
 	if (os2 && os2 && (unsigned)(((os2->sFamilyClass >> 8) & 0xff) - 1) < 5)	/* kiero: from ftmanager source. too lazy to google for it... */
 	{
-		fcPatternAddInteger(pat, FC_SERIF, TRUE);
+		fcPatternAddInteger(pat, EFC_SERIF, TRUE);
 	}
 		
 
@@ -1848,7 +1848,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
     /* Look for weight, width and slant names in the style value */
     for (st = 0;; st++)
     {
-		style = fcPatternGetString (pat, FC_STYLE, st);
+		style = fcPatternGetString (pat, EFC_STYLE, st);
 		if (style == NULL)
 			break;
     
@@ -1895,13 +1895,13 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 	width = FC_WIDTH_NORMAL;
 
   
-    if (!fcPatternAddInteger (pat, FC_SLANT, slant))
+    if (!fcPatternAddInteger (pat, EFC_SLANT, slant))
 		goto bail1;
 
-    if (!fcPatternAddInteger (pat, FC_WEIGHT, weight))
+    if (!fcPatternAddInteger (pat, EFC_WEIGHT, weight))
 		goto bail1;
 
-    if (!fcPatternAddInteger (pat, FC_WIDTH, width))
+    if (!fcPatternAddInteger (pat, EFC_WIDTH, width))
 		goto bail1;
 
 	/* Compute the unicode coverage for the font */
@@ -1925,7 +1925,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
 #endif
 
     if (spacing != FC_PROPORTIONAL)
-		if (!fcPatternAddInteger (pat, FC_SPACING, spacing))
+		if (!fcPatternAddInteger (pat, EFC_SPACING, spacing))
 			goto bail2;
 
 #endif
@@ -1949,7 +1949,7 @@ struct fontpattern *fcQueryFace(const FT_Face face, char *fname, int id)
     if (!ls)
 		goto bail2;
 	
-    if (!fcPatternAddLangSet (pat, FC_LANG, ls))
+    if (!fcPatternAddLangSet (pat, EFC_LANG, ls))
     {
 		FcLangSetDestroy (ls);
 		goto bail2;
@@ -2088,7 +2088,7 @@ struct fontpattern *fcMatch(struct fontcache *cache, struct fontpattern *pat, in
 	ITERATELIST(cpat, &cache->entries)
 	{
 		struct patternentry *cpe, *pe;
-		int cmatchingcriteria[FC_LAST_CRITERIA] = {0};
+		int cmatchingcriteria[EFC_LAST_CRITERIA] = {0};
 		int weight = 0;
 		
 		ITERATELIST(pe, &pat->entries)	/* pe - for each entry in criteria pattern. assume that caller is not stupid and doesn't pass elements with 0-weight */
@@ -2100,8 +2100,8 @@ struct fontpattern *fcMatch(struct fontcache *cache, struct fontpattern *pat, in
 				if (cpe->element == pe->element)
 				{
 					/* first go special elements */
-					
-					if (cpe->element == FC_FILE)
+
+					if (cpe->element == EFC_FILE)
 					{
 						char *filepart = FilePart(cpe->value.s);
 						if (filepart != NULL) /* paranoid? */
@@ -2371,14 +2371,14 @@ int main(void)
 			struct fontpattern *pat = fcPatternAlloc();
 			struct fontpattern *cpat;
 			
-			fcPatternAddString(pat, FC_FAMILY, "Times");
-			//fcPatternAddString(pat, FC_FILE, "n019003l.pfb");
+			fcPatternAddString(pat, EFC_FAMILY, "Times");
+			//fcPatternAddString(pat, EFC_FILE, "n019003l.pfb");
 			
 			cpat = fcMatch(cache, pat, NULL);
 			if (cpat != NULL)
 			{
-				char *name = fcPatternGetString(cpat, FC_FILE, 0);
-				char *family = fcPatternGetString(cpat, FC_FAMILY, 0);
+				char *name = fcPatternGetString(cpat, EFC_FILE, 0);
+				char *family = fcPatternGetString(cpat, EFC_FAMILY, 0);
 			}
 			else
 			{
@@ -2390,14 +2390,14 @@ int main(void)
 			struct fontpattern *pat = fcPatternAlloc();
 			struct fontpattern *cpat;
 			
-			//fcPatternAddString(pat, FC_FAMILY, "Helvetica");
-			fcPatternAddString(pat, FC_FILE, "n019003l.pfb");
+			//fcPatternAddString(pat, EFC_FAMILY, "Helvetica");
+			fcPatternAddString(pat, EFC_FILE, "n019003l.pfb");
 			
 			cpat = fcMatch(cache, pat, NULL);
 			if (cpat != NULL)
 			{
-				char *name = fcPatternGetString(cpat, FC_FILE, 0);
-				char *family = fcPatternGetString(cpat, FC_FAMILY, 0);
+				char *name = fcPatternGetString(cpat, EFC_FILE, 0);
+				char *family = fcPatternGetString(cpat, EFC_FAMILY, 0);
 			}
 			else
 			{

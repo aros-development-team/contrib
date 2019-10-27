@@ -1,6 +1,9 @@
 
 #define SYSTEM_PRIVATE 1
 
+#define DEBUG 1
+#include <aros/debug.h>
+
 /// System includes
 #define AROS_ALMOST_COMPATIBLE
 #include <clib/macros.h>
@@ -57,7 +60,7 @@ struct RenderingQueueNode
 {
 	struct Node n;
 	int id;
-	int page;
+	LONG page;
 	int rerender;
 	Object *grpLayout;
 	void *userdata;
@@ -67,7 +70,7 @@ struct Data
 {
 	int currentid;
 	Object *proc;
-	int pendingpage;
+	LONG pendingpage;
 	int aborted;
 	struct List renderingqueue;
 	struct SignalSemaphore listsema;
@@ -75,8 +78,6 @@ struct Data
 };
 
 #define gFalse 0
-
-#define D(x) x
 
 //struct Library *CairoBase;
 //struct Library *FontConfigBase;
@@ -113,8 +114,6 @@ DEFDISP
 	GETDATA;
 
 	data->quiting = TRUE;
-	D(kprintf("disposing...\n"));
-	D(kprintf("Rendering thread exiting...\n"));
 
 	ObtainSemaphore((struct SignalSemaphore*)data->proc);
 	ObtainSemaphore(&data->listsema);
@@ -129,9 +128,6 @@ DEFDISP
 	ReleaseSemaphore(&data->listsema);
 	ReleaseSemaphore((struct SignalSemaphore*)data->proc);
 
-	D(kprintf("disposing2...:%p, %p\n", data->proc, &data->listsema));
-
-	D(kprintf("Queue empty. finalize...\n"));
 	MUI_DisposeObject(data->proc);
 
 	return DOSUPER;
@@ -188,7 +184,7 @@ DEFMMETHOD(Process_Process)
 			page = rqnn->page;
 			data->pendingpage = 0;
 			data->aborted = FALSE;
-			//kprintf("  render node for page:%d with priority:%d\n", page, rqnn->n.ln_Pri);
+			D(kprintf("  render node for page:%d with priority:%d\n", page, rqnn->n.ln_Pri));
 			/* make copy of a node. list is unlocked from now on so it might cease to exist */
 			rqn = malloc(sizeof(*rqn));
 			if (rqn != NULL)
@@ -203,11 +199,12 @@ DEFMMETHOD(Process_Process)
 
 		if (page > 0 && DoMethod(rqn->grpLayout, MUIM_DocumentLayout_IsPageVisible, page) == FALSE)
 			page = 0;
-
+		D(kprintf("  render node for page:%d\n", page));
+			
 		if (page > 0)
 		{
 			void *pdfDocument = (void*)xget(rqn->grpLayout, MUIA_DocumentLayout_PDFDocument);
-
+			//D(kprintf("Got PDF doc %d\n", pdfDocument));
 			float scale = 1.0f;
 			float mediaheight, mediawidth;
 			int bmwidth, bmheight;
@@ -218,21 +215,25 @@ DEFMMETHOD(Process_Process)
 			/* find pageview object which should receive new image */
 
 			pageview = (Object*)DoMethod(rqn->grpLayout, MUIM_DocumentLayout_FindViewForPage, page);
+			//D(kprintf("Got pageview %d\n", pageview));
 
 			/* calculate scale based on page height dimmensions (scale page to fit) */
 			mediaheight = pdfGetPageMediaHeight(pdfDocument, page);
 			mediawidth = pdfGetPageMediaWidth(pdfDocument, page);
 			
 			rotation = xget(pageview, MUIA_PageView_Rotation);
-			applyrotation(&mediawidth, &mediaheight, rotation);
+			//D(kprintf("Mediaheight %f, width %f, rotation %d\n", mediaheight, mediawidth, rotation));
+
 			
+			applyrotation(&mediawidth, &mediaheight, rotation);
+			//D(kprintf("Applied rotation\n"));
 			rotation *= 90;  // (yeah, we abuse the constants here...)
 			
 			scale = xget(pageview, MUIA_PageView_LayoutHeight) / mediaheight;
 			scale = MIN(scale, xget(pageview, MUIA_PageView_LayoutWidth) / mediawidth);
 			
 			rc = pdfDisplayPageSlice(pdfDocument, page, scale, rotation, 0, gFalse, gFalse, -1, -1, -1, -1, documentviewCheckRenderAbort, rqn->userdata);
-			//printf("dimmensions:%d,%d. media height:%f, %f. scale:%f. page:%d\n", pdfGetBitmapWidth(pdfDocument), pdfGetBitmapHeight(pdfDocument), pdfGetPageMediaWidth(pdfDocument, page), pdfGetPageMediaHeight(pdfDocument, page), scale, page);
+			D(kprintf("dimensions:%d,%d. media height:%f,%f. scale:%f. page:%d\n", pdfGetBitmapWidth(pdfDocument), pdfGetBitmapHeight(pdfDocument), pdfGetPageMediaWidth(pdfDocument, page), pdfGetPageMediaHeight(pdfDocument, page), scale, page));
 
 			/* pass rendered bitmap to the page view */
 
@@ -320,8 +321,6 @@ DEFMMETHOD(Process_Process)
 	//CloseLibrary(CairoBase);
 	//CairoBase =  base1;
 
-	D(kprintf("Rendering thread exiting...\n"));
-
 	return 0;
 }
 
@@ -334,7 +333,7 @@ DEFMMETHOD(Renderer_Enqueue)
 
 	ObtainSemaphore(&data->listsema);
 
-	//kprintf("enqueue2:%d\n", msg->pageIndex);
+	D(kprintf("enqueue2:%d\n", msg->pageIndex));
 
 	ITERATELIST(rqn, &data->renderingqueue)
 	{
@@ -377,8 +376,6 @@ DEFMMETHOD(Renderer_Remove)
 	 * being removed.
 	 */
 
-	D(kprintf("remove rendering nodes for view:%p\n", msg->grpLayout));
-
 	ObtainSemaphore(&data->listsema);
 
 	ITERATELISTSAFE(rqn, rqnn, &data->renderingqueue)
@@ -387,12 +384,9 @@ DEFMMETHOD(Renderer_Remove)
 		{
 			if (!locked)
 			{
-				D(kprintf("  locking rendering thread semaphore...\n"));
 				ObtainSemaphore((struct SignalSemaphore*)data->proc);
 				locked = TRUE;
 			}
-
-			D(kprintf("  killed node for page:%d\n", rqn->page));
 			REMOVE(rqn);
 			free(rqn);
 		}
