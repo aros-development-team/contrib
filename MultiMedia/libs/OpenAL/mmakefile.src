@@ -26,7 +26,8 @@ USER_INCLUDES := \
         -I$(SRCDIR)/$(CURDIR)/Alc
 
 NOWARN_FLAGS := $(NOWARN_ARRAY_BOUNDS) $(NOWARN_VOLATILE_REGISTER_VAR)
-USER_CFLAGS := -std=gnu99 -O3 -ffast-math -Wall $(NOWARN_FLAGS) -DAL_ALEXT_PROTOTYPES 
+USER_CFLAGS := -std=gnu99 $(CFLAGS_FAST_MATH) -Wall $(NOWARN_FLAGS) -DAL_ALEXT_PROTOTYPES 
+OPTIMIZATION_CFLAGS += -O3
 
 OPENAL32_FILES = \
         alAuxEffectSlot \
@@ -52,7 +53,7 @@ ALC_MIXER_FILES = \
 ifeq ($(AROS_TARGET_CPU),x86_64)
 ALC_MIXER_FILES += mixer_sse mixer_sse2
 ##mixer_sse41
-USER_CFLAGS += -msse -mfpmath=sse
+TARGET_ISA_CFLAGS += -msse -mfpmath=sse
 endif
 
 ALC_FILES = \
