@@ -4,15 +4,49 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 ##MM- contrib-openal : contrib-openal-examples
-#MM- contrib-openal-examples : contrib-openal-library contrib-sdl-sdl-sound contrib-ffmpeg
+#MM- openal-example-deps : contrib-openal-library contrib-sdl-sdl-sound contrib-ffmpeg
 
-FILES   :=  alffplay allatency alloopback alreverb alstream
+#MM openal-examples-alffplay : openal-example-deps
+#MM openal-examples-allatency : openal-example-deps
+#MM openal-examples-alloopback : openal-example-deps
+#MM openal-examples-alreverb : openal-example-deps
+#MM openal-examples-alstream : openal-example-deps
+
+##MM- contrib-openal-examples : openal-examples-alffplay
+#MM- contrib-openal-examples : openal-examples-allatency openal-examples-alloopback openal-examples-alreverb openal-examples-alstream
+##MM- contrib-openal-examples-quick : openal-examples-alffplay-quick
+#MM- contrib-openal-examples-quick : openal-examples-allatency-quick openal-examples-alloopback-quick openal-examples-alreverb-quick openal-examples-alstream-quick
+
 EXEDIR  := $(AROS_TESTS)/OpenAL
 
-USER_INCLUDES := -I$(AROS_INCLUDES)/SDL -I$(AROS_CONTRIB_INCLUDES)
+OALECOMMONFILES := common/alhelpers common/sdl_sound
 
-%build_progs mmake=contrib-openal-examples \
-    targetdir=$(EXEDIR) \
-    files="$(FILES)" uselibs="openal pthread"
+ALFFPLAYFILES   := alffplay $(OALECOMMONFILES)
+ALLATENCYFILES  := allatency $(OALECOMMONFILES)
+ALLOOPBACKFILES := alloopback $(OALECOMMONFILES)
+ALREVERBFILES   := alreverb $(OALECOMMONFILES)
+ALSTREAMFILES   := alstream $(OALECOMMONFILES)
+
+USER_INCLUDES := -I$(AROS_INCLUDES)/SDL -I$(AROS_CONTRIB_INCLUDES) -iquote $(SRCDIR)/$(CURDIR)/../include
+
+%build_prog mmake=openal-examples-alffplay \
+    progname=alffplay targetdir=$(EXEDIR) \
+    files="$(ALFFPLAYFILES)" uselibs="SDL_sound SDL mikmod speex vorbis ogg openal pthread"
+
+%build_prog mmake=openal-examples-allatency \
+    progname=allatency targetdir=$(EXEDIR) \
+    files="$(ALLATENCYFILES)" uselibs="SDL_sound SDL mikmod speex vorbis ogg openal pthread"
+
+%build_prog mmake=openal-examples-alloopback \
+    progname=alloopback targetdir=$(EXEDIR) \
+    files="$(ALLOOPBACKFILES)" uselibs="SDL_sound SDL mikmod speex vorbis ogg openal pthread"
+
+%build_prog mmake=openal-examples-alreverb \
+    progname=alreverb targetdir=$(EXEDIR) \
+    files="$(ALREVERBFILES)" uselibs="SDL_sound SDL mikmod speex vorbis ogg openal pthread"
+
+%build_prog mmake=openal-examples-alstream \
+    progname=alstream targetdir=$(EXEDIR) \
+    files="$(ALSTREAMFILES)" uselibs="SDL_sound SDL mikmod speex vorbis ogg openal pthread"
 
 %common
