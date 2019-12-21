@@ -4,7 +4,7 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 ##MM- contrib-openal : contrib-openal-examples
-#MM- contrib-openal-examples : contrib-openal-library
+#MM- contrib-openal-examples : contrib-openal-library contrib-sdl-sdl-sound contrib-ffmpeg
 
 FILES   :=  alffplay allatency alloopback alreverb alstream
 EXEDIR  := $(AROS_TESTS)/OpenAL
