@@ -26,8 +26,6 @@
 #include <exec/libraries.h>
 
 #if defined(__AROS__)
-
-#define DEBUG 1
 #include <aros/debug.h>
 
 #include <proto/exec.h>
@@ -141,7 +139,7 @@ int main(int argc, char **argv) {
             
                 // Might be more than one at a time...
                 while(appmsg=(struct AppMessage *)GetMsg(myport)) {
-		    bug("[SmartTrash] %s: AppMessage @ 0x%p\n", __PRETTY_FUNCTION__, appmsg);
+		    DEBUGMSG("AppMessage @ 0x%p\n", appmsg);
                   if (appmsg->am_NumArgs==0L) {
                     quit=Do_About();
                   } else if (appmsg->am_NumArgs>0L) {
