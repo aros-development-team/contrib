@@ -42,6 +42,17 @@ extern "C" {
 
 #define XADM
 
+#ifdef __AROS__
+typedef ULONG              xadUINT32;
+typedef LONG               xadINT32;
+typedef UWORD              xadUINT16;
+typedef WORD               xadINT16;
+typedef UBYTE              xadUINT8;
+typedef BYTE               xadINT8;
+typedef ULONG              xadSize;
+typedef LONG               xadSignSize;
+typedef IPTR               xadIPTR;
+#else
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 typedef uint32_t           xadUINT32;
@@ -63,6 +74,7 @@ typedef signed char        xadINT8;
 typedef xadUINT32          xadSize;
 typedef xadINT32           xadSignSize;
 typedef unsigned long      xadIPTR;
+#endif
 #endif
 typedef void *             xadPTR;
 typedef char               xadSTRING;
