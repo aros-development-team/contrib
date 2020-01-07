@@ -1,9 +1,9 @@
 ## version $VER: Unarc.catalog 1.0 (06.04.2012)
-## language français
+## language franÃ§ais
 ## codeset 0
 ;
 MSG_AppDescription
-Désarchiveur
+DÃ©sarchiveur
 ;Unarchiver
 ;
 MSG_AppCopyright
@@ -31,7 +31,7 @@ _Inverser
 ;_Invert
 ;
 MSG_BT_START
-_Démarrer
+_DÃ©marrer
 ;_Start
 ;
 MSG_BT_CANCEL
@@ -43,7 +43,7 @@ MSG_TXT_STATUS_ALL
 ;%u bytes in %u files
 ;
 MSG_TXT_STATUS_SEL
-%u octets dans %u fichiers sélectionés
+%u octets dans %u fichiers sÃ©lectionÃ©s
 ;%u bytes in %u selected files
 ;
 MSG_FREQ_ARCHIVE_TITLE
@@ -75,7 +75,7 @@ Taille
 ;Size
 ;
 MSG_LBL_PACKSIZE
-Compressé
+CompressÃ©
 ;Packsize
 ;
 MSG_LBL_RATE
@@ -97,7 +97,7 @@ Erreur
 ;Error
 ;
 MSG_ERR_NO_APPLICATION
-Impossible de créer l'application
+Impossible de crÃ©er l'application
 ;Can't create application
 ;
 MSG_ERR_READARGS
@@ -105,7 +105,7 @@ Impossible de lire les arguments
 ;Can't read commandline arguments
 ;
 MSG_ERR_NO_MEM
-Plus de mémoire
+Plus de mÃ©moire
 ;Out of memory
 ;
 MSG_ERR_NO_ARC
@@ -113,14 +113,14 @@ Impossible de lire l'archive
 ;Can't read archive
 ;
 MSG_ERR_CANT_UNPACK
-La décompression de\n%s a retourné l'erreur :\n%s
+La dÃ©compression de\n%s a retournÃ© l'erreur :\n%s
 ;Unpacking of\n%s\nreturned error:\n%s
 ;
 MSG_ERR_ADDPART
-Impossible de créer le nom de fichier cible
+Impossible de crÃ©er le nom de fichier cible
 ;Can't create target file name
 ;
 MSG_ERR_NODEST
-Choisissez une destination s'il vous plaît
+Choisissez une destination s'il vous plaÃ®t
 ;Please, select a destination
 ;

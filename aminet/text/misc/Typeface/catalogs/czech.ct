@@ -35,12 +35,12 @@
 ;
 ; Continue operation choice.
 msgContinue
-Pokraèovat
+PokraÄovat
 ; Continue
 ;
 ; Cancel operation choice.
 msgCancel
-Zru¹it
+ZruÅ¡it
 ; Cancel
 ;
 ; Yes/no choice. The "Yes" must come first, and be separated from the "No"
@@ -55,12 +55,12 @@ Ano|Ne
 ;
 ; Accept gadget
 gadgAccept
-_Pøijmout
+_PÅ™ijmout
 ; _Accept
 ;
 ; Cancel gadget
 gadgCancel
-_Zru¹it
+_ZruÅ¡it
 ; _Cancel
 ;
 ;
@@ -69,27 +69,27 @@ _Zru¹it
 ;
 ; no asl.library
 msgNoAslLib
-Nelze otevøít knihovnu asl.library v37 nebo novìj¹í.
+Nelze otevÅ™Ã­t knihovnu asl.library v37 nebo novÄ›jÅ¡Ã­.
 ; Cannot open asl.library v37+.
 ;
 ; no diskfont.library
 msgNoDiskfontLib
-Nelze otevøít knihovnu diskfont.library v36 nebo novìj¹í.
+Nelze otevÅ™Ã­t knihovnu diskfont.library v36 nebo novÄ›jÅ¡Ã­.
 ; Cannot open diskfont.library v36+.
 ;
 ; no iffparse.library
 msgNoIFFParseLib
-Nelze otevøít knihovnu iffparse.library v37 nebo novìj¹í.
+Nelze otevÅ™Ã­t knihovnu iffparse.library v37 nebo novÄ›jÅ¡Ã­.
 ; Cannot open iffparse.library v37+.
 ;
 ; no bgui.library
 msgNoBguiLib
-Nelze otevøít knihovnu bgui.library v39 nebo novìj¹í.
+Nelze otevÅ™Ã­t knihovnu bgui.library v39 nebo novÄ›jÅ¡Ã­.
 ; Cannot open bgui.library v39+.
 ;
 ; no textfield.gadget
 msgNoTextFieldGadget
-Nelze otevøít tlaèítko textfield.gadget v3 nebo novìj¹í.
+Nelze otevÅ™Ã­t tlaÄÃ­tko textfield.gadget v3 nebo novÄ›jÅ¡Ã­.
 ; Cannot open textfield.gadget v3+.
 ;
 ;
@@ -100,7 +100,7 @@ Nelze otevøít tlaèítko textfield.gadget v3 nebo novìj¹í.
 ; running. %s is replaced by the name of the routine which failed,
 ; e.g. AllocAslRequest()
 msgFatalError
-Do¹lo k záva¾né chybì:\nVolání funkce %s bylo neúspì¹né.
+DoÅ¡lo k zÃ¡vaÅ¾nÃ© chybÄ›:\nVolÃ¡nÃ­ funkce %s bylo neÃºspÄ›Å¡nÃ©.
 ; A fatal error has occured:\nA call to %s has failed.
 ;
 ;
@@ -109,13 +109,13 @@ Do¹lo k záva¾né chybì:\nVolání funkce %s bylo neúspì¹né.
 ;
 ; font requester title
 msgOpenFont
-Vyberte písmo
+Vyberte pÃ­smo
 ; Open Font
 ;
 ; Error requester on load failure. %s is replaced by the font name,
 ; e.g. "topaz".
 msgNoOpenFont
-Nelze otevøít %s.
+Nelze otevÅ™Ã­t %s.
 ; Cannot open %s.
 ;
 ;
@@ -134,7 +134,7 @@ msgZeroTitle
 ; (0 decimal/$00 hex)
 ; Title for blank character.
 msgBlankTitle
-prázdnı
+prÃ¡zdnÃ½
 ; blank
 ;
 ;
@@ -143,17 +143,17 @@ prázdnı
 ;
 ; text in About requester
 msgFreeChip
-Grafická pamì» (Chip)
+GrafickÃ¡ pamÄ›Å¥ (Chip)
 ; Free Chip Memory
 msgFreeFast
-Ostatní pamì» (Fast)
+OstatnÃ­ pamÄ›Å¥ (Fast)
 ; Free Fast Memory
 ; ** 1.2 Should be a translation of:
 ;   "Catalog translated by <name>\n\n"
 ; where <name> is your name. Note the trailing \n\n. This string is left
 ; blank for the default (i.e. English).
 msgTranslator
-Pøeklad do èe¹tiny: Vít ©indláø\n\
+PÅ™eklad do ÄeÅ¡tiny: VÃ­t Å indlÃ¡Å™\n\
 \n
 ; 
 ;
@@ -165,11 +165,11 @@ Pøeklad do èe¹tiny: Vít ©indláø\n\
 ; If the character data has been modified, %s is replaced by the
 ; following message, else "".
 msgCheckQuit
-%sOpravdu chcete program Typeface ukonèit?
+%sOpravdu chcete program Typeface ukonÄit?
 ; %sDo you wish to quit?
 ; Note the space at the end of this text!
 msgCharsChanged
-Nìkteré znaky vybraného písma byly zmìnìny. 
+NÄ›kterÃ© znaky vybranÃ©ho pÃ­sma byly zmÄ›nÄ›ny. 
 ; The character data has been\nchanged. 
 ;
 ; Gadget string
@@ -180,7 +180,7 @@ Ano|Ne
 ; This requester appears if Typeface cannot quit due to visitor windows
 ; open on its screen.
 msgVisitors
-Zavøete v¹echna cizí okna prosím.
+ZavÅ™ete vÅ¡echna cizÃ­ okna prosÃ­m.
 ; Please close all visitor windows.
 ;
 ;
@@ -192,7 +192,7 @@ Zavøete v¹echna cizí okna prosím.
 ; e.g. "font height", and %ld by a number, so the requester might read
 ; (in English) "The font height must be greater than 1."
 msgPutPositive
-%s musí bıt vìt¹í ne¾ %ld.
+%s musÃ­ bÃ½t vÄ›tÅ¡Ã­ neÅ¾ %ld.
 ; The %s must be greater than %ld.
 ;
 ;
@@ -202,83 +202,83 @@ msgPutPositive
 ; window title
 ;
 msgFontParamsTitle
-Úprava vlastností písma
+Ãšprava vlastnostÃ­ pÃ­sma
 ; Edit Font Parameters
 ;
 ; labels for font type cycle gadget
 msgFontFixed
-S pevnou ¹íøkou
+S pevnou Å¡Ã­Å™kou
 ; Fixed Width
 msgFontProp
-Proporcionální
+ProporcionÃ¡lnÃ­
 ; Proportional
 ;
 ; labels for aspect ratio cycle gadget
 msgAspectNormal
-Normální
+NormÃ¡lnÃ­
 ; Normal
 msgAspectThin
-Tenkı
+TenkÃ½
 ; Thin
 msgAspectWide
-©irokı
+Å irokÃ½
 ; Wide
 ;
 ; The following are the labels for the gadgets.
 ;
 ; font type cycle
 gadgFontType
-T_yp písma
+T_yp pÃ­sma
 ; _Font Type
 ;
 ; font height string
 gadgFontHeight
-_Vı¹ka
+_VÃ½Å¡ka
 ; _Height
 ;
 ; font baseline string
 gadgFontBaseline
-Úèaøí
+ÃšÄaÅ™Ã­
 ; _Baseline
 ;
 ; font width string
 gadgFontWidth
-©íøk_a
+Å Ã­Å™k_a
 ; _Width
 ;
 ; bold smear string
 gadgBoldSmear
-Vznik t_uèného
+Vznik t_uÄnÃ©ho
 ; Bold _Smear
 ;
 ; normal check box
 gadgFontNormal
-_Normální
+_NormÃ¡lnÃ­
 ; _Normal
 ;
 ; italic check box
 gadgFontItalic
-Ku_rzíva
+Ku_rzÃ­va
 ; _Italic
 ;
 ; bold check box
 gadgFontBold
-_Tuèné
+_TuÄnÃ©
 ; B_old
 ;
 ; underline check box
 gadgFontUnderline
-P_odtr¾ené
+P_odtrÅ¾enÃ©
 ; _Underline
 ;
 ; extended check box
 gadgFontExtended
-Roz¹íø_ené
+RozÅ¡Ã­Å™_enÃ©
 ; _Extended
 ;
 ; reversed check box
 gadgFontReversed
-O_brácené
+O_brÃ¡cenÃ©
 ; _Reversed
 ;
 ; aspect cycle
@@ -288,7 +288,7 @@ Vz_hled
 ;
 ; blank gadget
 gadgFontBlank
-Práz_dnı
+PrÃ¡z_dnÃ½
 ; B_lank
 ;
 ; These requesters appear if an incorrect value is entered as one of the
@@ -296,22 +296,22 @@ Práz_dnı
 ;
 ; error if baseline too small
 msgErrorBaseline
-Hodnota úèaøí písma musí bıt men¹í\n\
-ne¾ je vı¹ka písma.
+Hodnota ÃºÄaÅ™Ã­ pÃ­sma musÃ­ bÃ½t menÅ¡Ã­\n\
+neÅ¾ je vÃ½Å¡ka pÃ­sma.
 ; The font baseline must be\n\
 ; less than the font height.
 ;
 ; error if font width negative
 msgErrorFontWidth
-©íøka písma nesmí bıt záporná.
+Å Ã­Å™ka pÃ­sma nesmÃ­ bÃ½t zÃ¡pornÃ¡.
 ; The font width must be positive.
 ;
 ; warning when changing font type
 msgWarnPropChange
-Písmo bude zmìnìno z proporcionálního\n\
-typu na typ s pevnou ¹íøkou znaku.\n\
-Chcete, aby v¹echny znaky mìly stejnou\n\
-¹íøku (doporuèeno je ano)?
+PÃ­smo bude zmÄ›nÄ›no z proporcionÃ¡lnÃ­ho\n\
+typu na typ s pevnou Å¡Ã­Å™kou znaku.\n\
+Chcete, aby vÅ¡echny znaky mÄ›ly stejnou\n\
+Å¡Ã­Å™ku (doporuÄeno je ano)?
 ; This font will be changed from proportional\n\
 ; to fixed width. Do you wish all characters\n\
 ; to have the same width (yes is recommended)?
@@ -320,17 +320,17 @@ Chcete, aby v¹echny znaky mìly stejnou\n\
 ;
 ; bold smear too small
 msgBoldSmear
-Vznik tuèného
+Vznik tuÄnÃ©ho
 ; bold smear
 ;
 ; font baseline too small
 msgFontBaseline
-Úèaøí písma
+ÃšÄaÅ™Ã­ pÃ­sma
 ; font baseline
 ;
 ; font height too small
 msgFontHeight
-Vı¹ka písma
+VÃ½Å¡ka pÃ­sma
 ; font height
 ;
 ;
@@ -339,7 +339,7 @@ Vı¹ka písma
 ;
 ; window title
 msgPrefsTitle
-Nastavení
+NastavenÃ­
 ; Preferences
 ;
 ; page titles
@@ -347,32 +347,32 @@ msgPrefsScreen
 Obrazovka
 ; Screen
 msgPrefsToolBar
-Nástrojová li¹ta
+NÃ¡strojovÃ¡ liÅ¡ta
 ; Tool Bar
 msgPrefsEdit
-Okno pro úpravu znakù
+Okno pro Ãºpravu znakÅ¯
 ; Edit Windows
 msgPrefsSelect
-Okno pro vıbìr znakù
+Okno pro vÃ½bÄ›r znakÅ¯
 ; Selection Window
 msgPrefsMisc
-Ostatní
+OstatnÃ­
 ; Miscellaneous
 ;
 ; save gadget
 gadgPrefsSave
-_Ulo¾it
+_UloÅ¾it
 ; _Save
 ;
 ; use gadget
 gadgPrefsUse
-_Pou¾ít
+_PouÅ¾Ã­t
 ; _Use
 ;
 ; Requester if there is an error while saving preferences. %s is replaced
 ; with the directory to which the save was attempted.
 msgPrefsSaveError
-Nelze ulo¾it nastavení do\n\"%s\"
+Nelze uloÅ¾it nastavenÃ­ do\n\"%s\"
 ; Cannot save preferences to\n\"%s\"
 ;
 ;
@@ -381,38 +381,38 @@ Nelze ulo¾it nastavení do\n\"%s\"
 ;
 ; screen font requester title
 msgScreenFont
-Vyberte písmo pro obrazovku
+Vyberte pÃ­smo pro obrazovku
 ; Change Screen Font
 ;
 ; screen mode requester title
 msgScreenMode
-Vyberte zobrazovací mód
+Vyberte zobrazovacÃ­ mÃ³d
 ; Change Screen Mode
 ;
 ; custom screen check box
 gadgCustomScr
-Vlas_tní obrazovka
+Vlas_tnÃ­ obrazovka
 ; Cus_tom Screen
 ;
 ; screen mode box
 gadgMode
-_Mód
+_MÃ³d
 ; _Mode
 ;
 ; screen font box
 gadgScreenFont
-Pí_smo
+PÃ­_smo
 ; _Font
 ;
 ; public screen string
 gadgPubScreen
-V_eøejná obrazovka
+V_eÅ™ejnÃ¡ obrazovka
 ; _Public Screen
 ;
 ; The screen mode requester is only present in asl.library v38+.
 ; If the version of asl is too old, show this error and continue.
 msgNeedAslV38
-Je po¾adována knihovna asl.library v38 nebo novìj¹í.
+Je poÅ¾adovÃ¡na knihovna asl.library v38 nebo novÄ›jÅ¡Ã­.
 ; asl.library v38 or higher required.
 ;
 ;
@@ -421,18 +421,18 @@ Je po¾adována knihovna asl.library v38 nebo novìj¹í.
 ;
 ; ** 1.2 Tool tips for the listview gadgets.
 gadgToolBarIn
-Polo¾ky obsa¾ené v nástrojové li¹tì
+PoloÅ¾ky obsaÅ¾enÃ© v nÃ¡strojovÃ© liÅ¡tÄ›
 ; Included in tool bar
 gadgToolBarOut
-Polo¾ky neobsa¾ené v nástrojové li¹tì
+PoloÅ¾ky neobsaÅ¾enÃ© v nÃ¡strojovÃ© liÅ¡tÄ›
 ; Not included in tool bar
 ; ** 1.2 The following are entries for the tool bar listvies describing the
 ; various icons. Please make sure that these fit into the listview.
 prefsDecWidth
-Zmen¹ení ¹íøky
+ZmenÅ¡enÃ­ Å¡Ã­Å™ky
 ; Dec. Width
 prefsIncWidth
-Zvìt¹ení ¹íøky
+ZvÄ›tÅ¡enÃ­ Å¡Ã­Å™ky
 ; Inc. Width
 prefsMoveLeft
 Posun vlevo
@@ -444,30 +444,30 @@ prefsMoveUp
 Posun nahoru
 ; Move Up
 prefsMoveDown
-Posun dolù
+Posun dolÅ¯
 ; Move Down
 prefsKerning
-Prostrèení
+ProstrÄenÃ­
 ; Kerning
 prefsWidthWin
-©íøka okna
+Å Ã­Å™ka okna
 ; Width Window
 prefsZoomIn
-Zvìt¹ení
+ZvÄ›tÅ¡enÃ­
 ; Zoom In
 prefsZoomOut
-Zmen¹ení
+ZmenÅ¡enÃ­
 ; Zoom Out
 prefsFlipHoriz
-Horiz. pøevrácení
+Horiz. pÅ™evrÃ¡cenÃ­
 ; Flip Horiz.
 prefsFlipVert
-Vertik. pøevrácení
+Vertik. pÅ™evrÃ¡cenÃ­
 ; Flip Vert.
 ;
 ; height string
 gadgToolBarHeight
-_Vı¹ka
+_VÃ½Å¡ka
 ; _Height
 ;
 ; auto height check box
@@ -477,7 +477,7 @@ _Automaticky
 ;
 ; Passed to PutPositive() (see above) if the tool bar height is too small.
 msgToolbarHeight
-Vı¹ka nástrojové li¹ty
+VÃ½Å¡ka nÃ¡strojovÃ© liÅ¡ty
 ; tool bar height
 ;
 ;
@@ -486,33 +486,33 @@ Vı¹ka nástrojové li¹ty
 ;
 ; pixels group
 msgPixels
-Bloky v møí¾ce
+Bloky v mÅ™Ã­Å¾ce
 ; Pixels
 ;
 ; pixel width string
 gadgPixelWidth
-©íøk_a
+Å Ã­Å™k_a
 ; _Width
 ;
 ; pixel height string
 gadgPixelHeight
-_Vı¹ka
+_VÃ½Å¡ka
 ; _Height
 ;
 ; border cycle gadget
 gadgPixelBorder
-_Ohranièení
+_OhraniÄenÃ­
 ; _Border
 ;
 ; border cycle labels
 msgBorderNo
-®ádné
+Å½Ã¡dnÃ©
 ; No
 msgBorderYes
 Ano
 ; Yes
 msgBorderGrid
-Úplné
+ÃšplnÃ©
 ; Grid
 ;
 ; maximize window check box
@@ -522,21 +522,21 @@ _Max. velikost
 ;
 ; show baseline check box
 gadgShowBLine
-Úèaøí
+ÃšÄaÅ™Ã­
 ; Baseli_ne
 ;
 ; ** 1.2 toggle drawing mode check box
 gadgToggle
-_Inverznì
+_InverznÄ›
 ; _Toggle
 ;
 ; Passed to PutPositive() (see above) if the pixel width is too small.
 msgPixelWidth
-©íøka bloku
+Å Ã­Å™ka bloku
 ; pixel width
 ; Passed to PutPositive() if the pixel height is too small.
 msgPixelHeight
-Vı¹ka bloku
+VÃ½Å¡ka bloku
 ; pixel height
 ;
 ;
@@ -545,7 +545,7 @@ Vı¹ka bloku
 ;
 ; window sizing check box
 gadgSizeWin
-_Mìnitelná velikost okna
+_MÄ›nitelnÃ¡ velikost okna
 ; Window Si_zing
 ;
 ; shift check box
@@ -555,22 +555,22 @@ Posu_n
 ;
 ; selection window width cycle
 gadgWidthCycle
-©íøk_a
+Å Ã­Å™k_a
 ; _Width
 ;
 ; selection window height string
 gadgSelWinHeight
-_Vı¹ka
+_VÃ½Å¡ka
 ; _Height
 ;
 ; selection window font gadget
 gadgSelWinFont
-Pí_smo
+PÃ­_smo
 ; _Font
 ;
 ; Passed to PutPositive() (see above) if the window width is too small.
 msgSelWndWidth
-©íøka okna
+Å Ã­Å™ka okna
 ; window width
 ;
 ;
@@ -579,25 +579,25 @@ msgSelWndWidth
 ;
 ; preferences save cycle group
 msgSavePrefsTo
-Soubor nastavení
+Soubor nastavenÃ­
 ; Save preferences to
 ;
 ; confirm quit check box
 gadgQuit
-Potvrdit u_konèení programu
+Potvrdit u_konÄenÃ­ programu
 ; Confirm _Quit
 ;
 ; ** 1.2 query width on load check box
 gadgQueryWidth
-U_rèit ¹íøku písma pøi naèítání
+U_rÄit Å¡Ã­Å™ku pÃ­sma pÅ™i naÄÃ­tÃ¡nÃ­
 ; Query _Width on Load
 ;
 ; preferences save cycle labels
 msgPrefsEnv
-Do systémového adresáøe
+Do systÃ©movÃ©ho adresÃ¡Å™e
 ; Environment Variable
 msgPrefsProg
-Do adresáøe s programem
+Do adresÃ¡Å™e s programem
 ; Typeface Directory
 ;
 ;
@@ -606,23 +606,23 @@ Do adresáøe s programem
 ;
 ; window title
 msgFontDirTitle
-Zmìna umístìní adresáøe s písmy
+ZmÄ›na umÃ­stÄ›nÃ­ adresÃ¡Å™e s pÃ­smy
 ; Change Font Directory
 ;
 ; assign gadget
 gadgAssign
-Pøiø_adit
+PÅ™iÅ™_adit
 ; _Assign
 ;
 ; assign add gadget
 gadgAssignAdd
-Pøi_dat pøiøazení
+PÅ™i_dat pÅ™iÅ™azenÃ­
 ; Assign A_dd
 ;
 ; Requester if specified directory not found. %s is replaced with the
 ; directory path.
 msgNoDir
-Nelze nalézt adresáø\n\
+Nelze nalÃ©zt adresÃ¡Å™\n\
 \"%s\"
 ; Cannot find directory\n\"%s\"
 ;
@@ -632,7 +632,7 @@ Nelze nalézt adresáø\n\
 ;
 ; window title
 msgResetTitle
-Odstranìní prostrèení
+OdstranÄ›nÃ­ prostrÄenÃ­
 ; Reset Kerning
 ;
 ; reset gadget
@@ -642,13 +642,13 @@ Odst_ranit
 ;
 ; text following "Spacing" gadget
 infoPlusWidth
-+ ¹íøka
++ Å¡Ã­Å™ka
 ; + Width
 ;
 ; warning text in window
 infoWarnReset
-Upozornìní: Tato akce obnoví u v¹ech\n\
-znakù vıchozí informace o prostrèení\n\
+UpozornÄ›nÃ­: Tato akce obnovÃ­ u vÅ¡ech\n\
+znakÅ¯ vÃ½chozÃ­ informace o prostrÄenÃ­\n\
 a odstupu.
 ; Warning: This will reset\n\
 ; the kerning and spacing\n\
@@ -660,12 +660,12 @@ a odstupu.
 ;
 ; window title
 msgEditCharTitle
-Úprava znaku
+Ãšprava znaku
 ; Edit Character
 ;
 ; character number integer gadget
 gadgCharNum
-Èíslo znaku
+ÄŒÃ­slo znaku
 ; Character Number
 ;
 ;
@@ -674,17 +674,17 @@ gadgCharNum
 ;
 ; window title
 msgSaveTitle
-Ulo¾ení písma
+UloÅ¾enÃ­ pÃ­sma
 ; Save Font
 ;
 ; directory string gadget
 gadgFontDir
-A_dresáø s písmy
+A_dresÃ¡Å™ s pÃ­smy
 ; Font _Directory
 ;
 ; font name string gadget
 gadgFontName
-Pí_smo
+PÃ­_smo
 ; _Font
 ;
 ; font size
@@ -694,85 +694,85 @@ Velikost
 ;
 ; first character string gadget
 gadgFirst
-_První
+_PrvnÃ­
 ; F_irst
 ;
 ; last character string gadget
 gadgLast
-P_oslední
+P_oslednÃ­
 ; _Last
 ;
 ; kern info check box
 gadgKernInfo
-_Info o prostrèení
+_Info o prostrÄenÃ­
 ; _Kern Info
 ;
 ; save gadget
 gadgSave
-_Ulo¾it
+_UloÅ¾it
 ; _Save
 ;
 ; Error requesters if the first or last characters to be saved are not
 ; in the range 0 to 255.
 msgFirstRange
-Èíslo prvního znaku musí bıt v rozmezí 0 a¾ 255.
+ÄŒÃ­slo prvnÃ­ho znaku musÃ­ bÃ½t v rozmezÃ­ 0 aÅ¾ 255.
 ; The first character must be between 0 and 255.
 msgLastRange
-Èíslo posledního znaku musí bıt v rozmezí 0 a¾ 255.
+ÄŒÃ­slo poslednÃ­ho znaku musÃ­ bÃ½t v rozmezÃ­ 0 aÅ¾ 255.
 ; The last character must be between 0 and 255.
 ;
 ; Error if first char > last.
 msgFirstGreaterLast
-Èíslo prvního znaku nesmí bıt vìt¹í ne¾ posledního.
+ÄŒÃ­slo prvnÃ­ho znaku nesmÃ­ bÃ½t vÄ›tÅ¡Ã­ neÅ¾ poslednÃ­ho.
 ; The first character cannot be greater than the last.
 ;
 ; Warning if save directory does not exist. %s is replaced by the
 ; name of the directory.
 msgSaveNoDir
-Adresáø \"%s\"\n\
+AdresÃ¡Å™ \"%s\"\n\
 neexistuje.
 ; Directory \"%s\"\ndoes not exist.
 ; gadget text
 msgSaveNoDirGadgets
-Vytvoøit|Zru¹it
+VytvoÅ™it|ZruÅ¡it
 ; Create|Cancel
 ;
 ; Error if directory cannot be created. %s is replaced by the name of
 ; the directory
 msgSaveCreateError
-Nelze vytvoøit adresáø\n\
+Nelze vytvoÅ™it adresÃ¡Å™\n\
 \"%s\".
 ; Cannot create directory\n\"%s\".
 ;
 ; Warning if file already exists. %s is replaced by the file name.
 msgSaveWarnExists
-Soubor \"%s\" ji¾ existuje.
+Soubor \"%s\" jiÅ¾ existuje.
 ; File \"%s\" exists.
 ; gadget text
 msgSaveWarnExistsGadgets
-Pøepsat|Zru¹it
+PÅ™epsat|ZruÅ¡it
 ; Overwrite|Cancel
 ;
 ; Error writing font header. %s is replaced by the directory name.
 msgSaveWriteHeader
-Hlavièku písma nelze ulo¾it do adresáøe\n\
+HlaviÄku pÃ­sma nelze uloÅ¾it do adresÃ¡Å™e\n\
 \"%s\".
 ; Cannot write font header to \n\"%s\".
 ;
 ; Error creating font header
 msgSaveCreateHeader
-Nelze vytvoøit hlavièku písma.
+Nelze vytvoÅ™it hlaviÄku pÃ­sma.
 ; Cannot create font header.
 ;
 ; Error writing font data. %s is replaced by the directory name.
 msgSaveWriteData
-Vybrané písmo nelze ulo¾it do adresáøe\n\
+VybranÃ© pÃ­smo nelze uloÅ¾it do adresÃ¡Å™e\n\
 \"%s\".
 ; Cannot write font data to \n\"%s\".
 ;
 ; Not enough memory.
 msgSaveNoMemory
-Nedostatek pamìti.
+Nedostatek pamÄ›ti.
 ; Not enough memory.
 ;
 ;
@@ -781,22 +781,22 @@ Nedostatek pamìti.
 ;
 ; window title
 msgQueryWidthTitle
-Urèení ¹íøky písma
+UrÄenÃ­ Å¡Ã­Å™ky pÃ­sma
 ; Querying Font Width...
 ;
 ; font info label
 msgQueryFont
-Písmo
+PÃ­smo
 ; Font
 ;
 ; new width integer gadget
 gadgQueryNewWidth
-©íøk_a
+Å Ã­Å™k_a
 ; _Width
 ;
 ; load gadget
 gadgLoad
-_Naèíst písmo
+_NaÄÃ­st pÃ­smo
 ; _Load Font
 ;
 ;
@@ -807,16 +807,16 @@ _Naèíst písmo
 ; character, and %d by it's width, e.g. for "w" from topaz/8:
 ; "Change Width of 119 (from 8)"
 msgWidthTitle
-Zmìna ¹íøky znaku è.%lu (z %d)
+ZmÄ›na Å¡Ã­Å™ky znaku Ä.%lu (z %d)
 ; Change Width of %lu (from %d)
 ; A special case for the blank character.
 msgWidthTitleBlank
-Zmìna ¹íøky prázdného znaku (z %d)
+ZmÄ›na Å¡Ã­Å™ky prÃ¡zdnÃ©ho znaku (z %d)
 ; Change Width of blank (from %d)
 ;
 ; width string gadget
 gadgNewWidth
-Nová ¹íøk_a znaku
+NovÃ¡ Å¡Ã­Å™k_a znaku
 ; New _Width
 ;
 ; Left/right offset texts. %ld if replaced by the pixel offset.
@@ -834,11 +834,11 @@ Odstup vpravo: %ld
 ; The window title. %lu is replaced by the decimal number of the
 ; character, e.g. for "w" from topaz/8: "Kerning for 119"
 msgKernTitle
-Vlastnosti znaku è.%lu
+Vlastnosti znaku Ä.%lu
 ; Kerning for %lu
 ; A special case for the blank character.
 msgKernTitleBlank
-Vlastnosti prázdného znaku
+Vlastnosti prÃ¡zdnÃ©ho znaku
 ; Kerning for blank
 ;
 ; spacing string gadget
@@ -848,7 +848,7 @@ Od_stup
 ;
 ; kerning string gadget
 gadgKerning
-Pr_ostrèení
+Pr_ostrÄenÃ­
 ; _Kerning
 ;
 ;
@@ -857,7 +857,7 @@ Pr_ostrèení
 ;
 ; window title
 msgPreviewTitle
-Náhled písma
+NÃ¡hled pÃ­sma
 ; Font Preview
 ;
 ; update gadget
@@ -867,7 +867,7 @@ Aktualizova_t
 ;
 ; show all gadget
 gadgShowAll
-Z_obrazit v¹e
+Z_obrazit vÅ¡e
 ; S_how All
 ;
 ; clear gadget
@@ -887,31 +887,31 @@ msgMenuProjectTitle
 Projekt
 ; Project
 msgMenuOpen
-Otevøít písmo...
+OtevÅ™Ã­t pÃ­smo...
 ; Open Font...
 msgMenuSave
-Ulo¾it písmo jako...
+UloÅ¾it pÃ­smo jako...
 ; Save Font...
 msgMenuChangeDir
-Zmìnit adresáø...
+ZmÄ›nit adresÃ¡Å™...
 ; Change Dir...
 msgMenuPreview
-Náhled...
+NÃ¡hled...
 ; Preview...
 msgMenuPrefs
-Nastavení...
+NastavenÃ­...
 ; Preferences...
 msgMenuAbout
 O programu...
 ; About...
 msgMenuQuit
-Ukonèit
+UkonÄit
 ; Quit
 ;
 ; Font menu
 ;
 msgMenuFontTitle
-Písmo
+PÃ­smo
 ; Font
 msgMenuEditFont
 Upravit vlastnosti...
@@ -921,23 +921,23 @@ msgMenuEditChar
 Upravit znak...
 ; Edit Character...
 msgMenuMoveLeft
-Pøesunout vlevo
+PÅ™esunout vlevo
 ; Move Left
 msgMenuMoveRight
-Pøesunout vpravo
+PÅ™esunout vpravo
 ; Move Right
 msgMenuMoveUp
-Pøesunout nahoru
+PÅ™esunout nahoru
 ; Move Up
 msgMenuMoveDown
-Pøesunout dolù
+PÅ™esunout dolÅ¯
 ; Move Down
 msgMenuResetKern
-Odstranit prostrèení...
+Odstranit prostrÄenÃ­...
 ; Reset Kerning...
 ; ** 1.2
 msgMenuCascade
-Okna v kaskádì
+Okna v kaskÃ¡dÄ›
 ; Cascade Windows
 ;
 ; Character menu
@@ -947,17 +947,17 @@ Znak
 ; Character
 ; ** 1.2
 msgMenuUndo
-Zpìt
+ZpÄ›t
 ; Undo
 ; ** 1.2
 msgMenuCut
 Vyjmout
 ; Cut
 msgMenuCopy
-Zkopírovat
+ZkopÃ­rovat
 ; Copy
 msgMenuPaste
-Vlo¾it
+VloÅ¾it
 ; Paste
 ; ** 1.2
 msgMenuErase
@@ -965,35 +965,35 @@ Vymazat
 ; Erase
 ; ** 1.2
 msgMenuFlipHoriz
-Pøevrátit horizontálnì
+PÅ™evrÃ¡tit horizontÃ¡lnÄ›
 ; Flip Horizontally
 ; ** 1.2
 msgMenuFlipVert
-Pøevrátit vertikálnì
+PÅ™evrÃ¡tit vertikÃ¡lnÄ›
 ; Flip Vertically
 msgMenuZoomIn
-Zvìt¹it
+ZvÄ›tÅ¡it
 ; Zoom In
 msgMenuZoomOut
-Zmen¹it
+ZmenÅ¡it
 ; Zoom Out
 msgMenuChangeWidth
-Zmìnit ¹íøku...
+ZmÄ›nit Å¡Ã­Å™ku...
 ; Change Width...
 msgMenuKerning
-Prostrèení...
+ProstrÄenÃ­...
 ; Kerning...
 ;
 ; Preview menu
 ;
 msgMenuPreviewTitle
-Náhled
+NÃ¡hled
 ; Preview
 msgMenuUpdate
 Aktualizovat
 ; Update
 msgMenuShowAll
-Zobrazit v¹e
+Zobrazit vÅ¡e
 ; Show All
 msgMenuClear
 Vymazat

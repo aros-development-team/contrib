@@ -1,14 +1,14 @@
 ## version $VER: uae.catalog 1.0 ($TODAY)
-## language français
+## language franÃ§ais
 ## codeset 0
 ;
 ;
 MSG_WINDOW_TITLE_DISPLAY
-Émulateur : Écran
+Ã‰mulateur : Ã‰cran
 ;Emulator: Display
 ;
 MSG_WINDOW_TITLE_CFG
-Émulateur : Configuration
+Ã‰mulateur : Configuration
 ;Emulator: Configuration
 ;
 MSG_MENU_PROJECT
@@ -16,7 +16,7 @@ Projet
 ;Project
 ;
 MSG_MENU_PROJECT_ABOUT
-?\0À propos...
+?\0Ã€ propos...
 ;
 MSG_MENU_PROJECT_QUIT
 Q\0Quitter
@@ -28,19 +28,19 @@ MSG_TB_PAUSE_SH
 Pause
 ;
 MSG_TB_START_SH
-Départ
+DÃ©part
 ;
 MSG_TB_RESTART_SH
-Redémarrer
+RedÃ©marrer
 ;
 MSG_TB_SAVE_STATE_SH
-Sauver l'état...
+Sauver l'Ã©tat...
 ;
 MSG_TB_LOAD_STATE_SH
-Charger l'état...
+Charger l'Ã©tat...
 ;
 MSG_TB_FULLSCREEN_SH
-Plein écran
+Plein Ã©cran
 ;
 MSG_DC_INSERT
 Inserer...
@@ -52,7 +52,7 @@ MSG_CFG_CPU
 CPU
 ;
 MSG_CFG_MEMORY
-Mémoire
+MÃ©moire
 ;
 MSG_CFG_GRAPHICS
 Graphiques
@@ -103,7 +103,7 @@ MSG_CFG_MEM_ROM_KICKSTART
 Kickstart :
 ;
 MSG_CFG_MEM_ROM_KEY
-Clé :
+ClÃ© :
 ;
 MSG_CFG_MEM_NONE
 Aucune
@@ -151,13 +151,13 @@ MSG_CFG_GFX_SC_FULL
 Complet
 ;
 MSG_CFG_GFX_COPPER_SPEEDUP
-Accellérer le copper
+AccellÃ©rer le copper
 ;
 MSG_CFG_GFX_IMMEDIATE_BLITS
-Blits immédiats
+Blits immÃ©diats
 ;
 MSG_CFG_GFX_FRAMERATE
-Vitesse de défilement :
+Vitesse de dÃ©filement :
 ;
 MSG_CFG_GFX_P96RAM
 RAM Video P96 :
@@ -175,7 +175,7 @@ MSG_CFG_SND_MODE_NORMAL
 Normal
 ;
 MSG_CFG_SND_MODE_ACCURATE
-Précis
+PrÃ©cis
 ;
 MSG_CFG_SND_CHANNELS
 Canaux :
@@ -184,13 +184,13 @@ MSG_CFG_SND_CHANNELS_MONO
 Mono
 ;
 MSG_CFG_SND_CHANNELS_STEREO
-Stéréo
+StÃ©rÃ©o
 ;
 MSG_CFG_SND_CHANNELS_MIXED
-Mixé
+MixÃ©
 ;
 MSG_CFG_SND_RESOLUTION
-Résolution :
+RÃ©solution :
 ;
 MSG_CFG_SND_RESOLUTION_8BIT
 8 bit
@@ -208,7 +208,7 @@ MSG_CFG_DRV_FLOPPY_LESS
 Moins
 ;
 MSG_CFG_DRV_HARD
-Matériel
+MatÃ©riel
 ;
 MSG_CFG_PRT_GAMEPORT1
 Port jeux 1 :
@@ -226,7 +226,7 @@ MSG_CFG_PRT_GAMEPORT_MOUSE
 Souris
 ;
 MSG_CFG_PRT_GAMEPORT_NUMERIC
-Pavé numerique
+PavÃ© numerique
 ;
 MSG_CFG_PRT_GAMEPORT_KEYS0
 Curseurs/RCTRL
@@ -253,7 +253,7 @@ MSG_CFG_DRV_DL_TYPE_HARDFILE
 Fichier image
 ;
 MSG_CFG_DRV_DL_TYPE_FILESYSTEM
-Système de fichiers
+SystÃ¨me de fichiers
 ;
 MSG_CFG_DRV_DL_MODE
 Mode
@@ -274,7 +274,7 @@ MSG_CFG_DRV_DE_TYPE_HARDFILE
 Fichier image
 ;
 MSG_CFG_DRV_DE_TYPE_FILESYSTEM
-Système de fichiers
+SystÃ¨me de fichiers
 ;
 MSG_CFG_DRV_DE_MODE
 Mode :
@@ -283,7 +283,7 @@ MSG_CFG_DRV_DE_MODE_READONLY
 Lecture seule
 ;
 MSG_CFG_DRV_DE_MODE_READWRITE
-Lecture/Écriture
+Lecture/Ã‰criture
 ;
 MSG_CFG_DRV_DE_PATH
 Chemin :
@@ -298,10 +298,10 @@ MSG_CFG_DRV_DE_SECTORS
 Secteurs :
 ;
 MSG_CFG_DRV_DE_HEADS
-Têtes :
+TÃªtes :
 ;
 MSG_CFG_DRV_DE_RESERVED
-Réservé :
+RÃ©servÃ© :
 ;
 MSG_OK
 OK

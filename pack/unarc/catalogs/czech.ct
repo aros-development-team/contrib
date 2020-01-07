@@ -19,19 +19,19 @@ Archiv
 ; Archive
 ;
 MSG_LA_DESTINATION
-Cílová slo¾ka
+CÃ­lovÃ¡ sloÅ¾ka
 ; Destination
 ;
 MSG_BT_ALL
-_V¹e
+_VÅ¡e
 ; _All
 ;
 MSG_BT_NONE
-®á_dnı
+Å½Ã¡_dnÃ½
 ; _None
 ;
 MSG_BT_INVERT
-_Inverznì
+_InverznÄ›
 ; _Invert
 ;
 MSG_BT_START
@@ -39,23 +39,23 @@ _Start
 ; _Start
 ;
 MSG_BT_CANCEL
-_Ukonèit
+_UkonÄit
 ; _Cancel
 ;
 MSG_TXT_STATUS_ALL
-%u bytù v %u souborech
+%u bytÅ¯ v %u souborech
 ; %u bytes in %u files
 ;
 MSG_TXT_STATUS_SEL
-%u bytù v %u vybranıch souborech
+%u bytÅ¯ v %u vybranÃ½ch souborech
 ; %u bytes in %u selected files
 ;
 MSG_FREQ_ARCHIVE_TITLE
-Vıbìr archivu
+VÃ½bÄ›r archivu
 ; Select Archive
 ;
 MSG_FREQ_DESTINATION_TITLE
-Cílová slo¾ka
+CÃ­lovÃ¡ sloÅ¾ka
 ; Select Destination
 ;
 MSG_OK
@@ -63,13 +63,13 @@ _OK
 ; _OK
 ;
 MSG_SKIP_CANCEL
-_Pøeskoèit|_Ukonèit
+_PÅ™eskoÄit|_UkonÄit
 ; _Skip|_Cancel
 ;
 ;
 ; List labels
 MSG_LBL_NAME
-Jméno
+JmÃ©no
 ; Name
 ;
 MSG_LBL_PROTECTION
@@ -93,7 +93,7 @@ Datum
 ; Date
 ;
 MSG_LBL_TIME
-Èas
+ÄŒas
 ; Time
 ;
 ;
@@ -104,30 +104,30 @@ Chyba
 ; Error
 ;
 MSG_ERR_NO_APPLICATION
-Nelze vytvoøit aplikace
+Nelze vytvoÅ™it aplikace
 ; Can't create application
 ;
 MSG_ERR_READARGS
-Nelze pøeèíst øádkovı argument
+Nelze pÅ™eÄÃ­st Å™Ã¡dkovÃ½ argument
 ; Can't read commandline arguments
 ;
 MSG_ERR_NO_MEM
-Nedostatek pamìti
+Nedostatek pamÄ›ti
 ; Out of memory
 ;
 MSG_ERR_NO_ARC
-Nelze pøeèíst archiv
+Nelze pÅ™eÄÃ­st archiv
 ; Can't read archive
 ;
 MSG_ERR_CANT_UNPACK
-Rozbaleno z\n%s\nohlá¹ena chyba:\n%s
+Rozbaleno z\n%s\nohlÃ¡Å¡ena chyba:\n%s
 ; Unpacking of\n%s\nreturned error:\n%s
 ;
 MSG_ERR_ADDPART
-Nelze vytvoøit cílovı soubor
+Nelze vytvoÅ™it cÃ­lovÃ½ soubor
 ; Can't create target file name
 ;
 MSG_ERR_NODEST
-Prosím vyberte cílovou slo¾ku
+ProsÃ­m vyberte cÃ­lovou sloÅ¾ku
 ; Please, select a destination
 ;

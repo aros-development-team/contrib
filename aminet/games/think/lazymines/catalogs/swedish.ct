@@ -9,10 +9,10 @@ MSG_GAME_NEW
 N\0Nytt
 ;
 MSG_GAME_NOVICE
-1\0Nybörjare
+1\0NybÃ¶rjare
 ;
 MSG_GAME_AMATEUR
-2\0Amatör
+2\0AmatÃ¶r
 ;
 MSG_GAME_EXPERT
 3\0Expert
@@ -21,7 +21,7 @@ MSG_GAME_OPTIONAL
 0\0Valfri...
 ;
 MSG_GAME_HIGHSCORE
- \0Snabbaste röjare...
+ \0Snabbaste rÃ¶jare...
 ;
 MSG_GAME_ABOUT
 ?\0Om...
@@ -30,31 +30,31 @@ MSG_GAME_QUIT
 Q\0Avsluta LazyMines
 ;
 MSG_SETTINGS_MENU
- \0Inställningar
+ \0InstÃ¤llningar
 ;
 MSG_SETTINGS_TASK
  \0Uppgift
 ;
 MSG_SETTINGS_TASK_ALL
- \0Röj allt
+ \0RÃ¶j allt
 ;
 MSG_SETTINGS_TASK_PATH
- \0Röj väg
+ \0RÃ¶j vÃ¤g
 ;
 MSG_SETTINGS_AUTOOPEN
- \0Automatisk Öppning...
+ \0Automatisk Ã–ppning...
 ;
 MSG_SETTINGS_WARNINGS
  \0Varningar
 ;
 MSG_SETTINGS_NOCOLORS
- \0Inga färger
+ \0Inga fÃ¤rger
 ;
 MSG_SETTINGS_SAVE
- \0Spara Inställningar
+ \0Spara InstÃ¤llningar
 ;
 MSG_CONTINUE_GAD
-Fortsätt
+FortsÃ¤tt
 ;
 MSG_OK_GAD
 OK
@@ -76,58 +76,58 @@ Om
 ;
 MSG_ABOUT_REQMSG
 Av %s (%s)\n\
-Copyright © %s %s
+Copyright Â© %s %s
 ;
 MSG_OPTIONAL_REQTITLE
-Valfri nivå
+Valfri nivÃ¥
 ;
 MSG_AUTOOPEN_REQTITLE
-Automatisk öppning
+Automatisk Ã¶ppning
 ;
 MSG_NAME_REQTITLE
 Det var snabbt!!!
 ;
 MSG_HIGHSCORES_REQTITLE
-Snabbaste röjare
+Snabbaste rÃ¶jare
 ;
 MSG_ERROR_REQTITLE
 Felmeddelande
 ;
 MSG_INITIALIZE_FIELD
-Initierar minfält...
+Initierar minfÃ¤lt...
 ;
 MSG_GENERATE_PATH
-Genererar väg (%3d)...
+Genererar vÃ¤g (%3d)...
 ;
 MSG_OPEN_ERROR
-Kunde inte öppna %s!
+Kunde inte Ã¶ppna %s!
 ;
 MSG_CREATE_ERROR
 Kunde inte skapa %s!
 ;
 MSG_GET_ERROR
-Kunde inte läsa %s!
+Kunde inte lÃ¤sa %s!
 ;
 MSG_SMALLSCREEN_ERROR
-Skärmen är för liten!
+SkÃ¤rmen Ã¤r fÃ¶r liten!
 ;
 MSG_LOCKSCREEN_ERROR
-Kunde inte låsa offentlig skärm!
+Kunde inte lÃ¥sa offentlig skÃ¤rm!
 ;
 MSG_SETMENU_ERROR
-Kunde inte sätta menyraden!
+Kunde inte sÃ¤tta menyraden!
 ;
 MSG_LAYOUTMENU_ERROR
 Kunde inte utforma menyn!
 ;
 MSG_MINEFIELD
-minfält
+minfÃ¤lt
 ;
 MSG_COUNTERS
-räknare
+rÃ¤knare
 ;
 MSG_WINDOW
-fönster
+fÃ¶nster
 ;
 MSG_MENU
 meny

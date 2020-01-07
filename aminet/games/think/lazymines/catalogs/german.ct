@@ -9,7 +9,7 @@ MSG_GAME_NEW
 N\0Neu
 ;
 MSG_GAME_NOVICE
-1\0Anfänger
+1\0AnfÃ¤nger
 ;
 MSG_GAME_AMATEUR
 2\0Fortgeschrittene
@@ -36,13 +36,13 @@ MSG_SETTINGS_TASK
  \0Aufgabe
 ;
 MSG_SETTINGS_TASK_ALL
- \0Feld räumen
+ \0Feld rÃ¤umen
 ;
 MSG_SETTINGS_TASK_PATH
- \0Pfad räumen
+ \0Pfad rÃ¤umen
 ;
 MSG_SETTINGS_AUTOOPEN
- \0Automatische Eröffnung...
+ \0Automatische ErÃ¶ffnung...
 ;
 MSG_SETTINGS_WARNINGS
  \0Warnmarkierungen
@@ -76,14 +76,14 @@ Information
 ;
 MSG_ABOUT_REQMSG
 Von %s (%s)\n\
-Copyright © %s %s\n\
-Übersetzt von Niels Knoop
+Copyright Â© %s %s\n\
+Ãœbersetzt von Niels Knoop
 ;
 MSG_OPTIONAL_REQTITLE
 Selbstdefiniertes Feld
 ;
 MSG_AUTOOPEN_REQTITLE
-Automatische Eröffnung
+Automatische ErÃ¶ffnung
 ;
 MSG_NAME_REQTITLE
 Gute Arbeit!
@@ -101,7 +101,7 @@ MSG_GENERATE_PATH
 Erzeuge Pfad (%3d)...
 ;
 MSG_OPEN_ERROR
-Konnte %s nicht öffnen!
+Konnte %s nicht Ã¶ffnen!
 ;
 MSG_CREATE_ERROR
 Konnte %s nicht erzeugen!
@@ -113,23 +113,23 @@ MSG_SMALLSCREEN_ERROR
 Bildschirm ist zu klein!
 ;
 MSG_LOCKSCREEN_ERROR
-Konnte öffentlichen Bildschirm nicht sperren!
+Konnte Ã¶ffentlichen Bildschirm nicht sperren!
 ;
 MSG_SETMENU_ERROR
-Konnte Menüstreifen nicht setzen!
+Konnte MenÃ¼streifen nicht setzen!
 ;
 MSG_LAYOUTMENU_ERROR
-Konnte Menü nicht anlegen!
+Konnte MenÃ¼ nicht anlegen!
 ;
 MSG_MINEFIELD
 Minenfeld
 ;
 MSG_COUNTERS
-Zähler
+ZÃ¤hler
 ;
 MSG_WINDOW
 Fenster
 ;
 MSG_MENU
-Menü
+MenÃ¼
 ;

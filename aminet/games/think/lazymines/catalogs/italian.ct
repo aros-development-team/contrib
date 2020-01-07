@@ -28,7 +28,7 @@ MSG_GAME_OPTIONAL
 ;
 MSG_GAME_HIGHSCORE
 
-;  \0I più veloci...
+;  \0I piÃ¹ veloci...
 ;
 MSG_GAME_ABOUT
 
@@ -100,7 +100,7 @@ MSG_ABOUT_REQTITLE
 ;
 MSG_ABOUT_REQMSG
 
-; Di %s (%s)\nCopyright © %s %s
+; Di %s (%s)\nCopyright Â© %s %s
 ; Tradotto in italiano da Luca Del Buono (punto@ascuan.unian.it)
 ;
 MSG_OPTIONAL_REQTITLE
@@ -117,7 +117,7 @@ MSG_NAME_REQTITLE
 ;
 MSG_HIGHSCORES_REQTITLE
 
-; I più veloci
+; I piÃ¹ veloci
 ;
 MSG_ERROR_REQTITLE
 
@@ -133,11 +133,11 @@ MSG_GENERATE_PATH
 ;
 MSG_OPEN_ERROR
 
-; Non si può aprire %s!
+; Non si puÃ² aprire %s!
 ;
 MSG_CREATE_ERROR
 
-; Non si può creare %s!
+; Non si puÃ² creare %s!
 ;
 MSG_GET_ERROR
 
@@ -149,15 +149,15 @@ MSG_SMALLSCREEN_ERROR
 ;
 MSG_LOCKSCREEN_ERROR
 
-; Non si può usare lo schermo pubblico!
+; Non si puÃ² usare lo schermo pubblico!
 ;
 MSG_SETMENU_ERROR
 
-; Non si può impostare la barra menù!
+; Non si puÃ² impostare la barra menÃ¹!
 ;
 MSG_LAYOUTMENU_ERROR
 
-; Non si può disegnare il menù!
+; Non si puÃ² disegnare il menÃ¹!
 ;
 MSG_MINEFIELD
 
@@ -173,5 +173,5 @@ MSG_WINDOW
 ;
 MSG_MENU
 
-; menù
+; menÃ¹
 ;

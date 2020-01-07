@@ -88,7 +88,7 @@ Tipo:
 ; Type:
 ;
 MSG_CFG_CPU_SPEED
-Velocità:
+VelocitÃ :
 ; Speed:
 ;
 MSG_CFG_CPU_SPEED_FAST
@@ -264,7 +264,7 @@ Risoluzione:
 ; Floppy
 ;
 MSG_CFG_DRV_FLOPPY_MORE
-Di più
+Di piÃ¹
 ; More
 ;
 MSG_CFG_DRV_FLOPPY_LESS
@@ -408,6 +408,6 @@ Cancella
 ; Cancel
 ;
 MSG_ERROR_CLASSES
-Non è stato possibile inizializzare una o più classi.
+Non Ã¨ stato possibile inizializzare una o piÃ¹ classi.
 ; Can't initialize custom classes.
 ;

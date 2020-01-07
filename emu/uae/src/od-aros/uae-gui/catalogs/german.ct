@@ -16,7 +16,7 @@ Projekt
 ; Project
 ;
 MSG_MENU_PROJECT_ABOUT
-?\0Über ...
+?\0Ãœber ...
 ; ?\0About...
 ;
 MSG_MENU_PROJECT_QUIT
@@ -80,7 +80,7 @@ Laufwerke
 ; Drives
 ;
 MSG_CFG_PORTS
-Anschlüsse
+AnschlÃ¼sse
 ; Ports
 ;
 MSG_CFG_CPU_TYPE
@@ -104,7 +104,7 @@ Einstellbar
 ; Adjustable
 ;
 MSG_CFG_CPU_RATIO
-Verhältnis:
+VerhÃ¤ltnis:
 ; Ratio:
 ;
 MSG_CFG_CPU_RATIO_FORMAT
@@ -132,7 +132,7 @@ Kickstart:
 ; Kickstart:
 ;
 MSG_CFG_MEM_ROM_KEY
-Schlüssel:
+SchlÃ¼ssel:
 ; Key:
 ;
 MSG_CFG_MEM_NONE
@@ -232,7 +232,7 @@ Genau
 ; Accurate
 ;
 MSG_CFG_SND_CHANNELS
-Kanäle:
+KanÃ¤le:
 ; Channels:
 ;
 MSG_CFG_SND_CHANNELS_MONO
@@ -248,7 +248,7 @@ Gemischt
 ; Mixed
 ;
 MSG_CFG_SND_RESOLUTION
-Auflösung:
+AuflÃ¶sung:
 ; Resolution:
 ;
 MSG_CFG_SND_RESOLUTION_8BIT
@@ -308,7 +308,7 @@ T/F/H/B/L Alt
 ; T/F/H/B/LALT
 ;
 MSG_CFG_DRV_DLE_ADD
-Hinzufügen:
+HinzufÃ¼gen:
 ; Add...
 ;
 MSG_CFG_DRV_DLE_EDIT
@@ -348,7 +348,7 @@ RW
 ; RW
 ;
 MSG_CFG_DRV_DE_TITLE
-Laufwerk ändern ...
+Laufwerk Ã¤ndern ...
 ; Edit drive...
 ;
 MSG_CFG_DRV_DE_TYPE
@@ -380,11 +380,11 @@ Pfad:
 ; Path:
 ;
 MSG_CFG_DRV_DE_VOLUME
-Datenträger:
+DatentrÃ¤ger:
 ; Volume:
 ;
 MSG_CFG_DRV_DE_VOLUME_DEFAULT
-Datenträger:
+DatentrÃ¤ger:
 ; Volume
 ;
 MSG_CFG_DRV_DE_SECTORS
@@ -392,7 +392,7 @@ Sektoren:
 ; Sectors:
 ;
 MSG_CFG_DRV_DE_HEADS
-Köpfe:
+KÃ¶pfe:
 ; Heads:
 ;
 MSG_CFG_DRV_DE_RESERVED

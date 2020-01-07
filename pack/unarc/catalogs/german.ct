@@ -47,15 +47,15 @@ MSG_TXT_STATUS_ALL
 ; %u bytes in %u files
 ;
 MSG_TXT_STATUS_SEL
-%u Bytes in %u ausgew‰hlten Dateien
+%u Bytes in %u ausgew√§hlten Dateien
 ; %u bytes in %u selected files
 ;
 MSG_FREQ_ARCHIVE_TITLE
-Archiv w‰hlen
+Archiv w√§hlen
 ; Select Archive
 ;
 MSG_FREQ_DESTINATION_TITLE
-Zielverzeichnis w‰hlen
+Zielverzeichnis w√§hlen
 ; Select Destination
 ;
 MSG_OK
@@ -63,7 +63,7 @@ _OK
 ; _OK
 ;
 MSG_SKIP_CANCEL
-_‹berspringen|_Abbrechen
+_√úberspringen|_Abbrechen
 ; _Skip|_Cancel
 ;
 ;
@@ -77,11 +77,11 @@ Schutz
 ; Protection
 ;
 MSG_LBL_SIZE
-Grˆﬂe
+Gr√∂√üe
 ; Size
 ;
 MSG_LBL_PACKSIZE
-Packgrˆﬂe
+Packgr√∂√üe
 ; Packsize
 ;
 MSG_LBL_RATE
@@ -120,7 +120,7 @@ Kann Archiv nicht lesen
 ; Can't read archive
 ;
 MSG_ERR_CANT_UNPACK
-Entpacken von\n%s\nf¸hrte zu Fehler\n%s
+Entpacken von\n%s\nf√ºhrte zu Fehler\n%s
 ; Unpacking of\n%s\nreturned error:\n%s
 ;
 MSG_ERR_ADDPART
@@ -128,6 +128,6 @@ Kann Zieldateiname nicht erzeugen
 ; Can't create target file name
 ;
 MSG_ERR_NODEST
-Bitte ein Zielverzeichnis ausw‰hlen
+Bitte ein Zielverzeichnis ausw√§hlen
 ; Please, select a destination
 ;

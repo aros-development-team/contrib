@@ -14,7 +14,7 @@ Aplikace
 ; Application
 ;
 MSG_Base
-BÁze
+BÃze
 ; Base
 ;
 MSG_Author
@@ -43,7 +43,7 @@ Popis
 ;
 ;
 MSG_Cancel
-_ZruÓit
+_ZruÃ“it
 ; _Cancel
 ;
 MSG_Ok
@@ -55,15 +55,15 @@ Vyberte funkci
 ; Choose a function
 ;
 MSG_MergeFile
-PÒidat soubor
+PÅ‡idat soubor
 ; Merge File
 ;
 MSG_ComeBack
-Pro nahrÁvÁnÉ se vraÔte do hlavnÉho okna !
+Pro nahrÃvÃnÃ‰ se vraÃ”te do hlavnÃ‰ho okna !
 ; Go back to the main window to load!
 ;
 MSG_ApplicationLost
-Budete-li pokraÃovat,\n  pÒijdete o svoji aplikaci.
+Budete-li pokraÄ‚ovat,\n  pÅ‡ijdete o svoji aplikaci.
 ; You will lose all your application\n           if you continue.
 ;
 ; Note : If you translate this file, please don't forget to insert your name
@@ -72,7 +72,7 @@ Budete-li pokraÃovat,\n  pÒijdete o svoji aplikaci.
 ;     \nThe French Translation was written by\n\033bEric Totel\033n\n
 ;
 MSG_AboutText
-\033c\n%s\nautor:\n\n\033bEric TOTEL\033n\n\ndatum: %s\n\nTento program je Giftware\nVÓechna prÁva vyhrazena\n
+\033c\n%s\nautor:\n\n\033bEric TOTEL\033n\n\ndatum: %s\n\nTento program je Giftware\nVÃ“echna prÃva vyhrazena\n
 ; \n%s - MUI Interface Builder\n\n\
 ; Copyright (C) 1990-2009 Eric Totel\n\
 ; Copyright (C) 2010-2011 MUIBuilder Open Source Team\n\n\
@@ -81,151 +81,151 @@ MSG_AboutText
 ; under certain conditions, see the file 'COPYING' for details.\n
 ;
 MSG_Failed
-Nemohu vytvoÒit aplikaci !
+Nemohu vytvoÅ‡it aplikaci !
 ; Failed to create application!
 ;
 MSG_Arguments
-PonechÁvÁm jen prvnÉ argument !
+PonechÃvÃm jen prvnÃ‰ argument !
 ; I keep only the first argument!
 ;
 MSG_NeedWindows
-Ve vaÓÉ aplikaci musÉ bÙt alespoÎ jedno okno !
+Ve vaÃ“Ã‰ aplikaci musÃ‰ bÅ®t alespoÃŽ jedno okno !
 ; You need windows in your application!
 ;
 MSG_NotEnoughMemory
-Nedostatek pamÅti !
+Nedostatek pamÄ¹ti !
 ; Not Enough Memory Error!
 ;
 MSG_SelectWindow
-NejdÒÉve musÉte zvolit okno !
+NejdÅ‡Ã‰ve musÃ‰te zvolit okno !
 ; You must select a window first!
 ;
 MSG_Confirm
-Jste si jistÙ Úe chcete pokraÃovat ?
+Jste si jistÅ® Ãše chcete pokraÄ‚ovat ?
 ; Are you sure you want to do that ?
 ;
 MSG_ConfirmExit
-úertujete !\n\Opravdu chcete opustit tento program ?
+Ãºertujete !\n\Opravdu chcete opustit tento program ?
 ; Do you really want to quit?
 ;
 MSG_SelectObject
-NejdÒÉve musÉte zvolit objekt !
+NejdÅ‡Ã‰ve musÃ‰te zvolit objekt !
 ; You must select an object first!
 ;
 MSG_SelectTmpObject
-NejdÒÉve musÉte zvolit objekt z okna DoÃasn× !
+NejdÅ‡Ã‰ve musÃ‰te zvolit objekt z okna DoÄ‚asnÃ— !
 ; You need to select an object in tmp!
 ;
 MSG_RemoveRootGroup
-NemÊÚete odstranit skupinu kterÁ je potomkem okna !
+NemÄ˜Ãšete odstranit skupinu kterÃ je potomkem okna !
 ; You can't remove the group child!
 ;
 MSG_QuitWindowAttributes
-MusÉte zadat titulek, jm×no a skupiny !
+MusÃ‰te zadat titulek, jmÃ—no a skupiny !
 ; You need a title, a label and groups!
 ;
 MSG_NoChild
-Skupina, kterÁ je potomkem okna, musÉ mÉt potomky !
+Skupina, kterÃ je potomkem okna, musÃ‰ mÃ‰t potomky !
 ; The Root group must have childs!
 ;
 MSG_NothingToUndelete
-NenÉ nic k vrÁcenÉ !
+NenÃ‰ nic k vrÃcenÃ‰ !
 ; There is nothing to undelete!
 ;
 MSG_CantMoveRoot
-NemÊÚete pÒesunout skupinu kterÁ je potomkem okna !
+NemÄ˜Ãšete pÅ‡esunout skupinu kterÃ je potomkem okna !
 ; You can't move root group!
 ;
 MSG_NeedLabel
-MusÉte zadat jm×no !
+MusÃ‰te zadat jmÃ—no !
 ; You need a label!
 ;
 MSG_NeedLabelTitle
-MusÉte zadat jm×no a titulek !
+MusÃ‰te zadat jmÃ—no a titulek !
 ; You need a label and a title!
 ;
 MSG_NeedImageLabel
-MusÉte zadat obrÁzek a jm×no !
+MusÃ‰te zadat obrÃzek a jmÃ—no !
 ; You need to select an image and a label!
 ;
 MSG_NeedBase
-MusÉte vyplnit pole 'BÁze' pro aplilkaci !
+MusÃ‰te vyplnit pole 'BÃze' pro aplilkaci !
 ; You need to fill in the application 'BASE' argument!
 ;
 MSG_NotBuilderSaveFile
-Toto nenÉ soubor MUIBuilderu !
+Toto nenÃ‰ soubor MUIBuilderu !
 ; It's not a MUIBuilder save file!
 ;
 MSG_WrongVersion
-NeznÁmÁ verze MUIBulder souboru !
+NeznÃmÃ verze MUIBulder souboru !
 ; Unknown MUIBuilder save file : probably wrong version!
 ;
 MSG_SelectEntry
-MusÉte vybrat poloÚku seznamu !
+MusÃ‰te vybrat poloÃšku seznamu !
 ; You must select a list entry!
 ;
 MSG_NeedLabelEntries
-MusÉte zadat nÁzev a poloÚky seznamu !
+MusÃ‰te zadat nÃzev a poloÃšky seznamu !
 ; You need a label and list entries!
 ;
 MSG_SeletNotifyLink
-Vyberte notify spojenÉ !
+Vyberte notify spojenÃ‰ !
 ; Select a notify link!
 ;
 MSG_NotifyExists
-Notifikace jiÚ existuje !
+Notifikace jiÃš existuje !
 ; Notification already exists!
 ;
 MSG_SelectAction
-Vyberte si Ãinnost !
+Vyberte si Ä‚innost !
 ; Select an action please!
 ;
 MSG_SelectEvent
-Vyberte si udÁlost !
+Vyberte si udÃlost !
 ; Select an event please!
 ;
 MSG_SelectNotifyLink
-Vyberte si notify spojenÉ !
+Vyberte si notify spojenÃ‰ !
 ; Select a notify link!
 ;
 MSG_CantMovePopObjectChild
-NemÊÚete pÒesouvat potomka PopObjectu !
+NemÄ˜Ãšete pÅ‡esouvat potomka PopObjectu !
 ; You can't move a PopObject child!
 ;
 MSG_CantDeletePopObjectChild
-NemÊÚete smazat potomka PopObjectu !
+NemÄ˜Ãšete smazat potomka PopObjectu !
 ; You can't delete a PopObject child!
 ;
 MSG_CopyNotImplemented
-InternÉ chyba\nKopie tohoto objektu nenÉ implementovÁna
+InternÃ‰ chyba\nKopie tohoto objektu nenÃ‰ implementovÃna
 ; Internal Error\nThe copy of this object is not implemented
 ;
 MSG_ErrorReading
-Chyba pÒi ÃtenÉ adresÁÒe Modules
+Chyba pÅ‡i Ä‚tenÃ‰ adresÃÅ‡e Modules
 ; Error occured while reading Modules directory
 ;
 MSG_GroupError
-Pozor !\nSkupina %s\nmÁ mÉt %d potomkÊ\na mÁ jich %d.\nNezapomeÎte opravit tuto chybu !\n
+Pozor !\nSkupina %s\nmÃ mÃ‰t %d potomkÄ˜\na mÃ jich %d.\nNezapomeÃŽte opravit tuto chybu !\n
 ; Warning!\nThe group called\n%s\nshould have %d children\nand has %d.\nDon't forget to correct this error!\n
 ;
 MSG_SelectMenuTitle
-NejdÒÉve si vyberte tutulek menu !
+NejdÅ‡Ã‰ve si vyberte tutulek menu !
 ; Select a menu title first!
 ;
 MSG_SelectSubMenu
-NejdÒÉve si vyberte submenu !
+NejdÅ‡Ã‰ve si vyberte submenu !
 ; Select a submenu first!
 ;
 MSG_GiveObjectAndLabel
-NejdÒÉve nastavte objekt a jm×no !
+NejdÅ‡Ã‰ve nastavte objekt a jmÃ—no !
 ; Give an object and a label first!
 ;
 MSG_AlreadyGenerated
-Toto jm×no je uÚ vygenerovÁno v kÏdu !
+Toto jmÃ—no je uÃš vygenerovÃno v kÄŽdu !
 ; This label is already generated in the code!
 ;
 MSG_SelectLabel
-NejdÒÉve vyberte generovan× jm×no !
+NejdÅ‡Ã‰ve vyberte generovanÃ— jmÃ—no !
 ; You must select a generated label first!
 ;
 ;
@@ -233,19 +233,19 @@ NejdÒÉve vyberte generovan× jm×no !
 ;
 ;
 MSG_RectangleChoices
-Parametry pro obd×lnÉk
+Parametry pro obdÃ—lnÃ‰k
 ; Rectangle Choices
 ;
 MSG_Rectangle
-Obd×lnÉk
+ObdÃ—lnÃ‰k
 ; Rectangle
 ;
 MSG_HorizontalBar
-VodorovnÁ linka
+VodorovnÃ linka
 ; Horizontal Bar
 ;
 MSG_VerticalBar
-SvislÁ linka
+SvislÃ linka
 ; Vertical Bar
 ;
 ;
@@ -261,7 +261,7 @@ Volby konfigurace
 ; Config Choices
 ;
 MSG_GhostWindows
-MizejÉci okna
+MizejÃ‰ci okna
 ; Ghost Windows
 ;
 MSG_Icons
@@ -269,7 +269,7 @@ Ikony
 ; Icons
 ;
 MSG_Requests
-PotvrzovÁnÉ
+PotvrzovÃnÃ‰
 ; Requests
 ;
 MSG_Editor
@@ -277,7 +277,7 @@ Editor
 ; Editor
 ;
 MSG_Save
-_UloÚit
+_UloÃšit
 ; _Save
 ;
 MSG_EditorChoice
@@ -293,7 +293,7 @@ Hloubka
 ; Depth
 ;
 MSG_TreeChar
-StromovÙ znak
+StromovÅ® znak
 ; Tree Char
 ;
 ; Main window strings
@@ -316,7 +316,7 @@ _Aplikace
 ; _Application
 ;
 MSG_NewWindow
-_Nov× okno
+_NovÃ— okno
 ; New _Window
 ;
 MSG_EditWindow
@@ -328,11 +328,11 @@ _Smazat
 ; _Delete
 ;
 MSG_View
-_UkÁzat
+_UkÃzat
 ; _View
 ;
 MSG_Code
-_KÏd
+_KÄŽd
 ; _Code
 ;
 MSG_Guide
@@ -357,11 +357,11 @@ Identifikace okna
 ; Window Identification
 ;
 MSG_Label
-Jm×no
+JmÃ—no
 ; Label
 ;
 MSG_AddChild
-_PÒidat potomka
+_PÅ‡idat potomka
 ; _Add Child
 ;
 MSG_RemoveChild
@@ -373,19 +373,19 @@ Nahor_u
 ; _Up
 ;
 MSG_Down
-_DolÊ
+_DolÄ˜
 ; _Down
 ;
 MSG_Tmp
-DoÃasn×
+DoÄ‚asnÃ—
 ; Tmp
 ;
 MSG_ToTmp
--_>PÒesunout
+-_>PÅ‡esunout
 ; -_>Move
 ;
 MSG_ToChild
-_<-PÒesunout
+_<-PÅ‡esunout
 ; _<-Move
 ;
 MSG_RemoveTmp
@@ -393,7 +393,7 @@ Odst_ranit
 ; Remo_ve
 ;
 MSG_Test
-_VyzkouÓet
+_VyzkouÃ“et
 ; _Test
 ;
 MSG_EditObject
@@ -417,7 +417,7 @@ MSG_CopyTmp
 ; <-Co_py
 ;
 MSG_OpenAtInit
-OtevÒÉt pÒi vytvoÒenÉ
+OtevÅ‡Ã‰t pÅ‡i vytvoÅ‡enÃ‰
 ; Open at Init
 ;
 MSG_AppWindow
@@ -461,7 +461,7 @@ Atributy skupiny
 ; Group Attributes
 ;
 MSG_HorizGroup
-HorizontÁlnÉ skupina
+HorizontÃlnÃ‰ skupina
 ; Horizontal Group
 ;
 MSG_PageMode
@@ -469,35 +469,35 @@ Registr
 ; Register Mode
 ;
 MSG_SameHeight
-StejnÁ vÙÓka
+StejnÃ vÅ®Ã“ka
 ; Same Height
 ;
 MSG_SameWidth
-StejnÁ ÓÉÒka
+StejnÃ Ã“Ã‰Å‡ka
 ; Same Width
 ;
 MSG_SameSize
-StejnÁ velikost
+StejnÃ velikost
 ; Same Size
 ;
 MSG_VirtualGroup
-VirtuÁlnÉ skupina
+VirtuÃlnÃ‰ skupina
 ; Virtual Group
 ;
 MSG_Columns
-SloupcÊ
+SloupcÄ˜
 ; Columns
 ;
 MSG_Rows
-òÁdek
+ÅˆÃdek
 ; Rows
 ;
 MSG_HorizSpacing
-HorizontÁlnÉ mezerovÁnÉ
+HorizontÃlnÃ‰ mezerovÃnÃ‰
 ; Horizontal Spacing
 ;
 MSG_VertSpacing
-VertikÁlnÉ mezerovÁnÉ
+VertikÃlnÃ‰ mezerovÃnÃ‰
 ; Vertical Spacing
 ;
 MSG_Register
@@ -505,27 +505,27 @@ Registr
 ; Register
 ;
 MSG_RegisterEntries
-PoloÚky
+PoloÃšky
 ; Register Entries
 ;
 MSG_RowsColumns
-òÁdek/sloupcÊ
+ÅˆÃdek/sloupcÄ˜
 ; Rows/Columns
 ;
 MSG_Number
-PoÃet
+PoÄ‚et
 ; Number
 ;
 MSG_Spacing
-MezerovÁnÉ
+MezerovÃnÃ‰
 ; Spacing
 ;
 MSG_Horizontal
-HorizontÁlnÉ
+HorizontÃlnÃ‰
 ; Horizontal
 ;
 MSG_Vertical
-VertikÁlnÉ
+VertikÃlnÃ‰
 ; Vertical
 ;
 MSG_GroupIdent
@@ -537,7 +537,7 @@ Identifikace skupiny
 ;
 ;
 MSG_ObjectChoice
-VÙbÅr objektu
+VÅ®bÄ¹r objektu
 ; Object Choice
 ;
 MSG_Group
@@ -651,15 +651,15 @@ Parametry pro String
 ; String Choice
 ;
 MSG_UseTitle
-PouÚÉt titulek
+PouÃšÃ‰t titulek
 ; Use a title
 ;
 MSG_SecretString
-SkrytÙ obsah
+SkrytÅ® obsah
 ; Secret String
 ;
 MSG_IntegerString
-CeloÃÉselnÙ obsah
+CeloÄ‚Ã‰selnÅ® obsah
 ; Integer String
 ;
 MSG_StringIdent
@@ -671,15 +671,15 @@ Obsah
 ; Content
 ;
 MSG_Accept
-PÒijmout
+PÅ‡ijmout
 ; Accept
 ;
 MSG_Reject
-OdmÉtnout
+OdmÃ‰tnout
 ; Reject
 ;
 MSG_MaxLen
-Max. d×lka
+Max. dÃ—lka
 ; MaxLength
 ;
 ;
@@ -711,7 +711,7 @@ Identifikace
 ; CheckMark Identification
 ;
 MSG_InitialState
-Stav na poÃÁtku
+Stav na poÄ‚Ãtku
 ; Initial State
 ;
 ; Cycle Window
@@ -722,11 +722,11 @@ Parametry pro Cycle
 ; Cycle Choices
 ;
 MSG_CycleEntries
-PoloÚky Cycle
+PoloÃšky Cycle
 ; Cycle Entries
 ;
 MSG_New
-_NovÁ
+_NovÃ
 ; _New
 ;
 MSG_Remove
@@ -747,7 +747,7 @@ Parametry pro Radio
 ; Radio Choices
 ;
 MSG_RadioEntries
-PoloÚky Radio
+PoloÃšky Radio
 ; Radio Entries
 ;
 ;
@@ -755,15 +755,15 @@ PoloÚky Radio
 ;
 ;
 MSG_SortbyName
-TÒÉdit podle jm×na
+TÅ‡Ã‰dit podle jmÃ—na
 ; Sort by Name
 ;
 MSG_SortbyDate
-TÒÉdit podle data
+TÅ‡Ã‰dit podle data
 ; Sort by Date
 ;
 MSG_SortbySize
-TÒÉdit podle velikosti
+TÅ‡Ã‰dit podle velikosti
 ; Sort by Size
 ;
 MSG_ListDirChoices
@@ -775,7 +775,7 @@ Atributy
 ; Attributes
 ;
 MSG_DrawersOnly
-Jen adresÁÒe
+Jen adresÃÅ‡e
 ; Drawers Only
 ;
 MSG_FilesOnly
@@ -783,11 +783,11 @@ Jen soubory
 ; Files Only
 ;
 MSG_FilterDrawers
-Filtrovat adresÁÒe
+Filtrovat adresÃÅ‡e
 ; Filter Drawers
 ;
 MSG_MultiSelection
-VÉcenÁsobnÙ vÙbÅr
+VÃ‰cenÃsobnÅ® vÅ®bÄ¹r
 ; Multi Selection
 ;
 MSG_RejectIcons
@@ -795,31 +795,31 @@ Nezobrazovat ikony
 ; Reject Icons
 ;
 MSG_SortHighLow
-TÒÉdit od nejvÅtÓÉho
+TÅ‡Ã‰dit od nejvÄ¹tÃ“Ã‰ho
 ; Sort High-Low
 ;
 MSG_SortType
-ZpÊsob tÒÉdÅnÉ
+ZpÄ˜sob tÅ‡Ã‰dÄ¹nÃ‰
 ; Sort Type
 ;
 MSG_Dir
-AdresÁÒ
+AdresÃÅ‡
 ; Dir
 ;
 MSG_SortDirs
-TÒÉdit adresÁÒe
+TÅ‡Ã‰dit adresÃÅ‡e
 ; Sort Dirs
 ;
 MSG_DirsFirst
-AdresÁÒe prvnÉ
+AdresÃÅ‡e prvnÃ‰
 ; Dirs First
 ;
 MSG_DirsLast
-AdresÁÒe poslednÉ
+AdresÃÅ‡e poslednÃ‰
 ; Dirs Last
 ;
 MSG_DirsMixed
-MÉchat adresÁÒe
+MÃ‰chat adresÃÅ‡e
 ; Dirs Mixed
 ;
 ;
@@ -835,19 +835,19 @@ Parametry
 ; Choices
 ;
 MSG_HorizGauge
-HorizontÁlnÉ Gauge
+HorizontÃlnÃ‰ Gauge
 ; Horizontal Gauge
 ;
 MSG_FixHeight
-PevnÁ vÙÓka
+PevnÃ vÅ®Ã“ka
 ; Fix Height
 ;
 MSG_FixWidth
-PevnÁ ÓÉÒka
+PevnÃ Ã“Ã‰Å‡ka
 ; Fix Width
 ;
 MSG_Divide
-DÅlenÉ
+DÄ¹lenÃ‰
 ; Divide
 ;
 MSG_Maximum
@@ -855,15 +855,15 @@ Maximum
 ; Maximum
 ;
 MSG_Height
-VÙÓka
+VÅ®Ã“ka
 ; Height
 ;
 MSG_Width
-óÉÒka
+Ã³Ã‰Å‡ka
 ; Width
 ;
 MSG_Infotext
-InformaÃnÉ text
+InformaÄ‚nÃ‰ text
 ; Info Text
 ;
 ;
@@ -871,39 +871,39 @@ InformaÃnÉ text
 ;
 ;
 MSG_MultiplyDefinedLabel
-\033c\0338POZOR\nNÁsledujÉcÉ jm×na jsou\ndefinovÁna vÉcekrÁt
+\033c\0338POZOR\nNÃsledujÃ‰cÃ‰ jmÃ—na jsou\ndefinovÃna vÃ‰cekrÃt
 ; \033c\0338BEWARE\nThe following Labels are\nmultiply defined
 ;
 MSG_MultiDefinitions
-NÁsobn× definice
+NÃsobnÃ— definice
 ; MultiDefinitions
 ;
 MSG_CodeFileName
-VÙstupnÉ soubor
+VÅ®stupnÃ‰ soubor
 ; Code File Name
 ;
 MSG_ObjectsLabels
-Jm×na objektÊ
+JmÃ—na objektÄ˜
 ; Objects Labels
 ;
 MSG_GeneratedLabels
-GenerovanÁ jm×na
+GenerovanÃ jmÃ—na
 ; Generated Labels
 ;
 MSG_AppCode
-KÏd _aplikace
+KÄŽd _aplikace
 ; App _Code
 ;
 MSG_ObjectCode
-KÏd _objektu
+KÄŽd _objektu
 ; _Object Code
 ;
 MSG_RemoveLabel
-Odst_ranit jm×no
+Odst_ranit jmÃ—no
 ; _Remove Label
 ;
 MSG_AddLabel
-_PÒidat jm×no
+_PÅ‡idat jmÃ—no
 ; _Add Label
 ;
 MSG_Options
@@ -915,11 +915,11 @@ Deklarace
 ; Declarations
 ;
 MSG_Environment
-ProstÒedÉ
+ProstÅ‡edÃ‰
 ; Environment
 ;
 MSG_CodeOption
-KÏd
+KÄŽd
 ; Code
 ;
 MSG_NotificationsOption
@@ -947,19 +947,19 @@ GetString
 ; Guide building part
 ;
 MSG_TextLength
-\0338 CelkovÁ d×lka textu
+\0338 CelkovÃ dÃ—lka textu
 ; \0338 Actually Text Length
 ;
 MSG_NodeTitle
-Jm×no uzlu
+JmÃ—no uzlu
 ; Node Title
 ;
 MSG_EditNodeText
-õpravy _uzlu
+Å‘pravy _uzlu
 ; _Edit Node Text
 ;
 MSG_CantOpen
-Nemohu otevÒÉt doÃasnÙ soubor !
+Nemohu otevÅ‡Ã‰t doÄ‚asnÅ® soubor !
 ; Can't open temporary file!
 ;
 MSG_AmigaGuide
@@ -995,27 +995,27 @@ Uzel o_bjektu
 ; O_bject Node
 ;
 MSG_GenerateWholeDoc
-_VytvoÒit celÙ dokument
+_VytvoÅ‡it celÅ® dokument
 ; Generate _Whole Doc
 ;
 MSG_GenerateWinDoc
-V_ytvoÒit dokument okna
+V_ytvoÅ‡it dokument okna
 ; Generate W_in Doc
 ;
 MSG_GenerateObjDoc
-VytvoÒit dokument ob_jektu
+VytvoÅ‡it dokument ob_jektu
 ; Generate Ob_j Doc
 ;
 MSG_ViewDoc
-_UkÁzat dokument
+_UkÃzat dokument
 ; _View Doc
 ;
 MSG_AmigaguideDocName
-Jm×no vÙstupnÉho souboru
+JmÃ—no vÅ®stupnÃ‰ho souboru
 ; AmigaGuide Doc Name
 ;
 MSG_CantOpenAmigaGuide
-Nemohu otevÒÉt vÙstupnÉ soubor !
+Nemohu otevÅ‡Ã‰t vÅ®stupnÃ‰ soubor !
 ; Can't open AmigaGuide file!
 ;
 ; 
@@ -1027,19 +1027,19 @@ Parametry pro Image
 ; Image Choice
 ;
 MSG_FreeVertical
-VolnÁ vÙÓka
+VolnÃ vÅ®Ã“ka
 ; Free Vertical
 ;
 MSG_FreeHorizontal
-VolnÁ ÓÉÒka
+VolnÃ Ã“Ã‰Å‡ka
 ; Free Horizontal
 ;
 MSG_InputMode
-VstupnÉ mÏd
+VstupnÃ‰ mÄŽd
 ; Input Mode
 ;
 MSG_Frame
-RÁmeÃek
+RÃmeÄ‚ek
 ; Frame
 ;
 MSG_Size
@@ -1072,7 +1072,7 @@ Identifikace
 ; List Identification
 ;
 MSG_StandardList
-StandardnÉ List
+StandardnÃ‰ List
 ; Standard List
 ;
 MSG_FloattextList
@@ -1088,23 +1088,23 @@ Nic
 ; No Entry
 ;
 MSG_FirstEntry
-PrvnÉ poloÚku
+PrvnÃ‰ poloÃšku
 ; First Entry
 ;
 MSG_LastEntry
-PoslednÉ poloÚku
+PoslednÃ‰ poloÃšku
 ; Last Entry
 ; 
 MSG_Strings
-RetÅzce
+RetÄ¹zce
 ; Strings
 ;
 MSG_AdjustHeight
-Nastavit vÙÓku
+Nastavit vÅ®Ã“ku
 ; Adjust Height
 ;
 MSG_AdjustWidth
-Nastavit ÓÉÒku
+Nastavit Ã“Ã‰Å‡ku
 ; Adjust Width
 ;
 MSG_Activate
@@ -1132,15 +1132,15 @@ Multitest Hook
 ; Multitest Hook
 ;
 MSG_Format
-FormÁt
+FormÃt
 ; Format
 ;
 MSG_FloatText
-PlovoucÉ text
+PlovoucÃ‰ text
 ; Float Text
 ;
 MSG_FileName
-Jm×no souboru
+JmÃ—no souboru
 ; File Name
 ;
 MSG_DoubleClick
@@ -1156,19 +1156,19 @@ Parametry pro Prop
 ; Prop Choices
 ;
 MSG_HorizontalProp
-HorizontÁlnÉ Prop
+HorizontÃlnÃ‰ Prop
 ; Horizontal Prop
 ;
 MSG_EntriesNumber
-PoÃet hodnot
+PoÄ‚et hodnot
 ; Entries Number
 ;
 MSG_FirstNumber
-PrvnÉ hodnota
+PrvnÃ‰ hodnota
 ; First Number
 ;
 MSG_VisibleNumber
-ViditelnÁ ÃÁst
+ViditelnÃ Ä‚Ãst
 ; Visible Number
 ;
 ; Scale Window
@@ -1191,7 +1191,7 @@ Parametry pro Slider
 ; Slider Choice
 ;
 MSG_Reverse
-ObrÁcenÙ
+ObrÃcenÅ®
 ; Reverse
 ;
 MSG_SliderQuiet
@@ -1199,7 +1199,7 @@ Bez hodnoty
 ; Slider Quiet
 ;
 MSG_UseTitleSlider
-PouÚÉt titulek
+PouÃšÃ‰t titulek
 ; Use a title for slider
 ;
 MSG_Minimum
@@ -1231,7 +1231,7 @@ Text SetMin
 ; Text SetMin
 ;
 MSG_Backgrounds
-PozadÉ
+PozadÃ‰
 ; Backgrounds
 ;
 MSG_TextContent
@@ -1246,7 +1246,7 @@ Preparse
 ; Test Window
 ;
 MSG_TestWindow
-TestovacÉ okno
+TestovacÃ‰ okno
 ; Test Window
 ;
 MSG_TestClick
@@ -1254,15 +1254,15 @@ _Klikni sem
 ; _Click Here
 ;
 MSG_FirstLine
-PrvnÉ ÒÁdka
+PrvnÃ‰ Å‡Ãdka
 ; First Line
 ;
 MSG_SecondLine
-DruhÁ ÒÁdka
+DruhÃ Å‡Ãdka
 ; Second Line
 ;
 MSG_ThirdLine
-TÒetÉ ÒÁdka
+TÅ‡etÃ‰ Å‡Ãdka
 ; Third Line
 ;
 ;
@@ -1274,15 +1274,15 @@ Notify
 ; Notify
 ;
 MSG_InternalError
-InternÉ chyba
+InternÃ‰ chyba
 ; Internal Error
 ;
 MSG_ChoseIdent
-Zvolte identifikÁtor
+Zvolte identifikÃtor
 ; Choose an indentifier
 ;
 MSG_ChoseVariable
-Zvolte promÅnnou
+Zvolte promÄ¹nnou
 ; Choose a variable
 ;
 MSG_Editing
@@ -1290,7 +1290,7 @@ MSG_Editing
 ; \033cEditing :
 ;
 MSG_Events
-UdÁlosti
+UdÃlosti
 ; Events
 ;
 MSG_Actions
@@ -1298,7 +1298,7 @@ Akce
 ; Actions
 ;
 MSG_AddNotify
-_PÒidat notify
+_PÅ‡idat notify
 ; _Add Notify
 ;
 MSG_RemoveNotify
@@ -1310,7 +1310,7 @@ Odst_ranit notify
 ;
 ;
 MSG_AddToList
-PÒidat
+PÅ‡idat
 ; Add
 ;
 MSG_RemoveFromList
@@ -1318,11 +1318,11 @@ Odst_ranit
 ; _Remove
 ;
 MSG_SelectIdentifier
-NejdÒÉve zvolte identifikÁtor !
+NejdÅ‡Ã‰ve zvolte identifikÃtor !
 ; Select an identifier first!
 ;
 MSG_IdentifierExists
-IdentifikÁtor jiÚ existuje !
+IdentifikÃtor jiÃš existuje !
 ; Identifier already exists!
 ;
 ;
@@ -1358,11 +1358,11 @@ Area
 ; Area
 ;
 MSG_Hide
-UkrÙt
+UkrÅ®t
 ; Hide
 ;
 MSG_Disable
-ZakÁzat
+ZakÃzat
 ; Disable
 ;
 MSG_PhantomFrame
@@ -1370,11 +1370,11 @@ Phantom Frame
 ; Phantom Frame
 ;
 MSG_Weight
-VÁha
+VÃha
 ; Weight
 ;
 MSG_Background
-PozadÉ
+PozadÃ‰
 ; Background
 ;
 MSG_ControlChar
@@ -1382,7 +1382,7 @@ Hot key
 ; Control Char
 ;
 MSG_TitleFrame
-Titulek rÁmeÃku
+Titulek rÃmeÄ‚ku
 ; Title Frame
 ;
 ;
@@ -1421,7 +1421,7 @@ Typ requesteru
 ; Requester Type
 ;
 MSG_CallHook
-VolÁnÉ hookÊ
+VolÃnÃ‰ hookÄ˜
 ; Call Hooks
 ;
 MSG_StartHook
@@ -1445,11 +1445,11 @@ Sledovat okno
 ; Follow
 ;
 MSG_Light
-LehkÙ
+LehkÅ®
 ; Light
 ;
 MSG_Volatile
-NestÁlÙ
+NestÃlÅ®
 ; Volatile
 ;
 MSG_Object
@@ -1457,11 +1457,11 @@ Objekt
 ; Object
 ;
 MSG_OpenHook
-OtevÉracÉ hook
+OtevÃ‰racÃ‰ hook
 ; Open Hook
 ;
 MSG_CloseHook
-ZavÉracÉ hook
+ZavÃ‰racÃ‰ hook
 ; Close Hook
 ;
 ;
@@ -1484,15 +1484,15 @@ Tvorba menu
 ; Menu Creation
 ;
 MSG_EnableCheck
-ZatrÚÉtko
+ZatrÃšÃ‰tko
 ; Enable Check
 ;
 MSG_CheckState
-Stav zatrÚÉtka
+Stav zatrÃšÃ‰tka
 ; Check State
 ;
 MSG_Toggle
-StÒÉdat
+StÅ‡Ã‰dat
 ; Toggle
 ;
 MSG_ShortCut
@@ -1500,11 +1500,11 @@ Hot key
 ; Short Cut
 ;
 MSG_Enable
-Povolen×
+PovolenÃ—
 ; Enable
 ;
 MSG_NewTitle
-NovÙ _titulek
+NovÅ® _titulek
 ; New _Title
 ;
 MSG_SubMenu
@@ -1512,7 +1512,7 @@ _Submenu
 ; _SubMenu
 ;
 MSG_MenuItem
-_PoloÚka menu
+_PoloÃška menu
 ; Menu_Item
 ;
 MSG_DeleteMenu
@@ -1531,7 +1531,7 @@ M\0Spojit
 ; M\00Merge
 ;
 MSG_SaveMenu
-S\0UloÚit
+S\0UloÃšit
 ; S\00Save
 ;
 MSG_QuitMenu
@@ -1539,11 +1539,11 @@ Q\0Konec
 ; Q\00Quit
 ;
 MSG_Fold
-F\0SloÚit
+F\0SloÃšit
 ; F\00Fold
 ;
 MSG_Unfold
-D\0RozloÚit
+D\0RozloÃšit
 ; D\00Unfold
 ;
 MSG_About
@@ -1555,19 +1555,19 @@ P\0Konfigurace
 ; P\00Prefs
 ;
 MSG_Undo
-U\0VrÁtit smazan×
+U\0VrÃtit smazanÃ—
 ; U\00Undelete
 ;
 MSG_Load
-O\0NaÃÉst
+O\0NaÄ‚Ã‰st
 ; O\00Open
 ;
 MSG_NewMenu
-N\0Nov×
+N\0NovÃ—
 ; N\00New
 ;
 MSG_SaveAs
-A\0UloÚit jako
+A\0UloÃšit jako
 ; A\00SaveAs
 ;
 MSG_EditMenu
@@ -1583,11 +1583,11 @@ Strom
 ;
 ;
 MSG_CatalogPrepend
-PÒedpona
+PÅ‡edpona
 ; Prepend
 ;
 MSG_HelpGenerated
-Gonerovan×
+GonerovanÃ—
 ; Generated
 ;
 ;
@@ -1595,15 +1595,15 @@ Gonerovan×
 ;
 ;
 MSG_NotifyHide
-SkrÙt
+SkrÅ®t
 ; Hide
 ;
 MSG_NotifyShow
-UkÁzat
+UkÃzat
 ; Show
 ;
 MSG_NotifyDisable
-ZakÁzat
+ZakÃzat
 ; Disable
 ;
 MSG_NotifyEnable
@@ -1615,11 +1615,11 @@ Aktivovat
 ; Activate
 ;
 MSG_ReturnID
-VrÁtit ID
+VrÃtit ID
 ; Return ID
 ;
 MSG_ReturnQuit
-VrÁtit Quit
+VrÃtit Quit
 ; Return Quit
 ;
 MSG_ApplicationSleep
@@ -1647,11 +1647,11 @@ Deaktivovat
 ; Unactivate
 ;
 MSG_OpenWindow
-OtevÒÉt okno
+OtevÅ‡Ã‰t okno
 ; Open Window
 ;
 MSG_CloseWindow
-ZavÒÉt okno
+ZavÅ‡Ã‰t okno
 ; Close Window
 ;
 MSG_Active
@@ -1659,7 +1659,7 @@ Aktivovat
 ; Active
 ;
 MSG_CloseRequest
-PoÚadavek na zavÒenÉ
+PoÃšadavek na zavÅ‡enÃ‰
 ; Close Request
 ;
 MSG_Deactivate
@@ -1667,27 +1667,27 @@ Deaktivace
 ; Deactivate
 ;
 MSG_PutTriggerValue
-VloÚit trigger hodnotu
+VloÃšit trigger hodnotu
 ; Put Trigger Value
 ;
 MSG_PutConstantValue
-VloÚit konstantu
+VloÃšit konstantu
 ; Put Constant Value
 ;
 MSG_PutVariableValue
-VloÚit promÅnnou
+VloÃšit promÄ¹nnou
 ; Put Variable Value
 ;
 MSG_PressButton
-Stisk tlaÃÉtka
+Stisk tlaÄ‚Ã‰tka
 ; Press Button
 ;
 MSG_ReleaseButton
-UvolnÅnÉ tlaÃÉtka
+UvolnÄ¹nÃ‰ tlaÄ‚Ã‰tka
 ; Release Button
 ;
 MSG_NotifyDisabled
-ZakÁzÁno
+ZakÃzÃno
 ; Disabled
 ;
 MSG_NotifyEnabled
@@ -1695,15 +1695,15 @@ Povoleno
 ; Enabled
 ;
 MSG_TimerAction
-ãasovÁ udÁlost
+ÄƒasovÃ udÃlost
 ; Timer Action
 ;
 MSG_ChangePage
-ZmÅnit strÁnku
+ZmÄ¹nit strÃnku
 ; Change Page
 ;
 MSG_Acknowlede
-PotvrzenÉ
+PotvrzenÃ‰
 ; Acknowledge
 ;
 MSG_ChangePosition
@@ -1711,7 +1711,7 @@ Posun kurzoru
 ; Change Position
 ;
 MSG_ChangeContent
-ZmÅna obsahu
+ZmÄ¹na obsahu
 ; Change Content
 ;
 MSG_ClearList
@@ -1719,23 +1719,23 @@ Smazat obsah
 ; Clear List
 ;
 MSG_JumpToPosition
-Skok na poloÚku
+Skok na poloÃšku
 ; JumpToPosition
 ;
 MSG_RedrawAll
-PÒekreslit vÓe
+PÅ‡ekreslit vÃ“e
 ; Redraw All
 ;
 MSG_RedrawActive
-PÒekreslit aktivnÉ
+PÅ‡ekreslit aktivnÃ‰
 ; Redraw Active
 ;
 MSG_RemoveActive
-Odstranit aktivnÉ
+Odstranit aktivnÃ‰
 ; Remove Active
 ;
 MSG_SortList
-SetÒÉdit
+SetÅ‡Ã‰dit
 ; Sort List
 ;
 MSG_NotifyDoubleClick
@@ -1743,35 +1743,35 @@ Dvojklik
 ; Double Click
 ;
 MSG_ChangeActive
-VÙbÅr poloÚky
+VÅ®bÄ¹r poloÃšky
 ; Change Active
 ;
 MSG_ChangeValue
-ZmÅna hodnoty
+ZmÄ¹na hodnoty
 ; Change Value
 ;
 MSG_ActiveModified
-ZmÅna stavu
+ZmÄ¹na stavu
 ; Active Modified
 ;
 MSG_Select
-VÙbÅr
+VÅ®bÄ¹r
 ; Select
 ;
 MSG_Unselect
-ZruÓenÉ vÙbÅru
+ZruÃ“enÃ‰ vÅ®bÄ¹ru
 ; Unselect
 ;
 MSG_SelectOn
-VÙbÅr zapnut
+VÅ®bÄ¹r zapnut
 ; Select ON
 ;
 MSG_SelectOff
-VÙbÅr vypnut
+VÅ®bÄ¹r vypnut
 ; Select OFF
 ;
 MSG_SelectChange
-ZmÅna vÙbÅru
+ZmÄ¹na vÅ®bÄ¹ru
 ; Select Change
 ;
 MSG_PressImage
@@ -1779,31 +1779,31 @@ Stisk Image
 ; Press Image
 ;
 MSG_ReleaseImage
-UvolnÅnÉ Image
+UvolnÄ¹nÃ‰ Image
 ; Release Image
 ;
 MSG_ChangedPosition
-ZmÅnÅnÁ poloha
+ZmÄ¹nÄ¹nÃ poloha
 ; Changed Position
 ;
 MSG_NotifyReverse
-ObrÁcenÉ
+ObrÃcenÃ‰
 ; Reverse
 ;
 MSG_ChangedText
-ZmÅnÅnÙ text
+ZmÄ¹nÄ¹nÅ® text
 ; Changed Text
 ;
 MSG_ChangedEntriesNumber
-ZmÅna poÃtu poloÚek
+ZmÄ¹na poÄ‚tu poloÃšek
 ; Changed Entries Number
 ;
 MSG_ChangedVisibleEntries
-ZmÅna viditelnÙch poloÚek
+ZmÄ¹na viditelnÅ®ch poloÃšek
 ; Changed Visible Entries
 ;
 MSG_PutTriggerRed
-Nastavit Ãervenou (hodnota trigger)
+Nastavit Ä‚ervenou (hodnota trigger)
 ; Put Red Value (Trigger Value)
 ;
 MSG_PutTriggerBlue
@@ -1815,7 +1815,7 @@ Nastavit zelenou (hodnota trigger)
 ; Put Green Value (Trigger Value)
 ;
 MSG_PutConstantRed
-Nastavit Ãervenou (konstanta)
+Nastavit Ä‚ervenou (konstanta)
 ; Put Red Value (Constant Value)
 ;
 MSG_PutConstantGreen
@@ -1827,75 +1827,75 @@ Nastavit modrou (konstanta)
 ; Put Blue Value (Constant Value)
 ;
 MSG_PutVariableRed
-Nastavit Ãervenou (promÅnnÁ)
+Nastavit Ä‚ervenou (promÄ¹nnÃ)
 ; Put Red Value (Variable Value)
 ;
 MSG_PutVariableGreen
-Nastavit zelenou (promÅnnÁ)
+Nastavit zelenou (promÄ¹nnÃ)
 ; Put Green Value (Variable Value)
 ;
 MSG_PutVariableBlue
-Nastavit modrou (promÅnnÁ)
+Nastavit modrou (promÄ¹nnÃ)
 ; Put Blue Value (Variable Value)
 ;
 MSG_ChangedRed
-ZmÅna Ãernven× sloÚky
+ZmÄ¹na Ä‚ernvenÃ— sloÃšky
 ; Changed Red Value
 ;
 MSG_ChangedGreen
-ZmÅna zelen× sloÚky
+ZmÄ¹na zelenÃ— sloÃšky
 ; Changed Green Value
 ;
 MSG_ChangedBlue
-ZmÅna modr× sloÚky
+ZmÄ¹na modrÃ— sloÃšky
 ; Changed Blue Value
 ;
 MSG_ChangeTitleTrigger
-ZmÅna titulku (trigger)
+ZmÄ¹na titulku (trigger)
 ; Change Title (Trigger Value)
 ;
 MSG_ChangeTitleVariable
-ZmÅna titulku (promÅnnÁ)
+ZmÄ¹na titulku (promÄ¹nnÃ)
 ; Change Title (Variable Value)
 ;
 MSG_ChangeTitleConstant
-ZmÅna titulku (konstanta)
+ZmÄ¹na titulku (konstanta)
 ; Change Title (Constant Value)
 ;
 MSG_CheckMenuON
-ZatrÚeno
+ZatrÃšeno
 ; Check ON
 ;
 MSG_CheckMenuOFF
-NezatrÚeno
+NezatrÃšeno
 ; Check OFF
 ;
 MSG_CheckableON
-ZatrÚiteln×
+ZatrÃšitelnÃ—
 ; Checkable ON
 ;
 MSG_CheckableOFF
-NezatrÚiteln×
+NezatrÃšitelnÃ—
 ; Checkable OFF
 ;
 MSG_ChangeShortTrigger
-ZmÅna hot key (trigger)
+ZmÄ¹na hot key (trigger)
 ; Change Shortcut (Trigger Value)
 ;
 MSG_ChangeShortVariable
-ZmÅna hot key (promÅnnÁ)
+ZmÄ¹na hot key (promÄ¹nnÃ)
 ; Change Shortcut (Variable Value)
 ;
 MSG_ChangeShortConstant
-ZmÅna hot key (konstanta)
+ZmÄ¹na hot key (konstanta)
 ; Change Shortcut (Constant Value)
 ;
 MSG_ToggleFlagON
-PÒepnout flag ON
+PÅ‡epnout flag ON
 ; Toggle Flag ON
 ;
 MSG_ToggleFlagOFF
-PÒepnout flag OFF
+PÅ‡epnout flag OFF
 ; Toggle Flag OFF
 ;
 MSG_MenuTriggered
@@ -1909,7 +1909,7 @@ Parametry Space
 ; Space Choices
 ;
 MSG_HorizontalVertical
-HorizontÁlnÉ a vertikÁlnÉ
+HorizontÃlnÃ‰ a vertikÃlnÃ‰
 ; Horizontal and Vertical
 ;
 ;

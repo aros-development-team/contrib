@@ -24,10 +24,10 @@ MSG_REALLYABORT
 Spiel Abbrechen?
 ;
 MSG_MENU
-Menü
+MenÃ¼
 ;
 MSG_BEGINNER
-Anfänger
+AnfÃ¤nger
 ;
 MSG_ADVANCED
 Fortgeschrittene
@@ -39,13 +39,13 @@ MSG_SEC
 sek.
 ;
 MSG_ERRORWINRESIZE
-Konnte Fenstergröße nicht verändern!\n
+Konnte FenstergrÃ¶ÃŸe nicht verÃ¤ndern!\n
 ;
 MSG_WIDTH
 Breite
 ;
 MSG_HEIGHT
-Höhe
+HÃ¶he
 ;
 MSG_BOMBS
 Bomben

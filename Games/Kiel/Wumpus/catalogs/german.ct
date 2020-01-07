@@ -9,7 +9,7 @@ MSG_THROW
 Speer werfen
 ;
 MSG_CAVE
-Höhle %2d
+HÃ¶hle %2d
 ;
 MSG_NOWT
                          
@@ -18,10 +18,10 @@ MSG_STINKING
 Es stinkt...             
 ;
 MSG_STINKINGTERRIBLE
-Es stinkt fürchterlich!!!
+Es stinkt fÃ¼rchterlich!!!
 ;
 MSG_THROUGHINTO
-In welche Höhle werfen?  
+In welche HÃ¶hle werfen?  
 ;
 MSG_MISSED
 Vorbei geworfen...       
@@ -33,7 +33,7 @@ MSG_ABYSS
 Vorsicht Abgrund!!!      
 ;
 MSG_SILENT
-Ich höre nichts.         
+Ich hÃ¶re nichts.         
 ;
 MSG_DISPLACED
 Du wurdest versetzt!     

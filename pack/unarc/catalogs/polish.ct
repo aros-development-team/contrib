@@ -31,7 +31,7 @@ _Nic
 ; _None
 ;
 MSG_BT_INVERT
-_Odwróæ
+_OdwrÃ³Ä‡
 ; _Invert
 ;
 MSG_BT_START
@@ -43,11 +43,11 @@ _Poniechaj
 ; _Cancel
 ;
 MSG_TXT_STATUS_ALL
-%u bytów w %u plikach
+%u bytÃ³w w %u plikach
 ; %u bytes in %u files
 ;
 MSG_TXT_STATUS_SEL
-%u bytów v %u wybranch plikach
+%u bytÃ³w v %u wybranch plikach
 ; %u bytes in %u selected files
 ;
 MSG_FREQ_ARCHIVE_TITLE
@@ -63,7 +63,7 @@ _OK
 ; _OK
 ;
 MSG_SKIP_CANCEL
-_Pomiñ|_Poniechaj
+_PomiÅ„|_Poniechaj
 ; _Skip|_Cancel
 ;
 ;
@@ -77,15 +77,15 @@ Atrybuty
 ; Protection
 ;
 MSG_LBL_SIZE
-Wielko¶æ
+WielkoÅ›Ä‡
 ; Size
 ;
 MSG_LBL_PACKSIZE
-Wielko¶æ archiwum
+WielkoÅ›Ä‡ archiwum
 ; Packsize
 ;
 MSG_LBL_RATE
-Wapó³czynnik kompresji
+WapÃ³Å‚czynnik kompresji
 ; Rate
 ;
 MSG_LBL_DATE
@@ -100,34 +100,34 @@ Czas
 ; Error messages
 ;
 MSG_ERR
-B³±d
+BÅ‚Ä…d
 ; Error
 ;
 MSG_ERR_NO_APPLICATION
-Nie mo¿na utworzyæ aplikacji
+Nie moÅ¼na utworzyÄ‡ aplikacji
 ; Can't create application
 ;
 MSG_ERR_READARGS
-Nie mo¿na odczytaæ argumentów polecenia
+Nie moÅ¼na odczytaÄ‡ argumentÃ³w polecenia
 ; Can't read commandline arguments
 ;
 MSG_ERR_NO_MEM
-Brak pamiêci
+Brak pamiÄ™ci
 ; Out of memory
 ;
 MSG_ERR_NO_ARC
-Nie mo¿na odczytaæ archiwum
+Nie moÅ¼na odczytaÄ‡ archiwum
 ; Can't read archive
 ;
 MSG_ERR_CANT_UNPACK
-Rozpakowywanie\n%s\nzwraca b³±d:\n%s
+Rozpakowywanie\n%s\nzwraca bÅ‚Ä…d:\n%s
 ; Unpacking of\n%s\nreturned error:\n%s
 ;
 MSG_ERR_ADDPART
-Nie mo¿na utworzyæ docelowej nazwy pliku
+Nie moÅ¼na utworzyÄ‡ docelowej nazwy pliku
 ; Can't create target file name
 ;
 MSG_ERR_NODEST
-Proszê wybraæ cel
+ProszÄ™ wybraÄ‡ cel
 ; Please, select a destination
 ;
