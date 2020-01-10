@@ -16,6 +16,7 @@
 
 --------------------------------------------------------------------------*/
 
+#include <proto/utility.h>
 #include <exec/types.h>
 
 #include <math.h>
@@ -552,7 +553,7 @@ LONG SPrintf(UBYTE *str, const UBYTE *format, ...)
 }
 
 /*------------------------------------------------------------------------*/
-
+#if !defined(__AROS__)
 #ifdef __MORPHOS__
 	#pragma pack(2)
 #endif
@@ -588,6 +589,7 @@ LONG VSNPrintf(UBYTE *str, ULONG n, const UBYTE *format, va_list args)
 	}
 	return -1;
 }
+#endif
 
 LONG SNPrintf(UBYTE *str, ULONG n, const UBYTE *format, ...)
 {
@@ -595,7 +597,11 @@ LONG SNPrintf(UBYTE *str, ULONG n, const UBYTE *format, ...)
 	va_list args;
 
 	va_start(args, format);
+#if defined(__AROS__)
+	size = VSNPrintf(str, n, format, (RAWARG)args);
+#else
 	size = VSNPrintf(str, n, format, args);
+#endif
 	va_end(args);
 
 	return size;

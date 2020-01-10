@@ -27,7 +27,9 @@ LONG  SCountf(const UBYTE *format, ...);
 LONG VSPrintf(UBYTE *str, const UBYTE *format, va_list args);
 LONG  SPrintf(UBYTE *str, const UBYTE *format, ...);
 
+#if !defined(__AROS__)
 LONG VSNPrintf(UBYTE *str, ULONG n, const UBYTE *format, va_list args);
+#endif
 LONG  SNPrintf(UBYTE *str, ULONG n, const UBYTE *format, ...);
 
 /*------------------------------------------------------------------------*/
