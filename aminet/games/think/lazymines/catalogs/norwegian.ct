@@ -12,7 +12,7 @@ MSG_GAME_NOVICE
 1\0Nybegynner
 ;
 MSG_GAME_AMATEUR
-2\0Amatør
+2\0AmatÃ¸r
 ;
 MSG_GAME_EXPERT
 3\0Ekspert
@@ -42,7 +42,7 @@ MSG_SETTINGS_TASK_PATH
  \0Rydde vei
 ;
 MSG_SETTINGS_AUTOOPEN
- \0Automatisk åpning...
+ \0Automatisk Ã¥pning...
 ;
 MSG_SETTINGS_WARNINGS
  \0Advarsler
@@ -76,14 +76,14 @@ Om
 ;
 MSG_ABOUT_REQMSG
 By %s (%s)\n\
-Copyright © %s %s\n\
+Copyright Â© %s %s\n\
 Oversatt til norsk av Lars Christian Schreiner
 ;
 MSG_OPTIONAL_REQTITLE
-Egendefinert nivå
+Egendefinert nivÃ¥
 ;
 MSG_AUTOOPEN_REQTITLE
-Automatisk åpning
+Automatisk Ã¥pning
 ;
 MSG_NAME_REQTITLE
 Det gikk fort!!!
@@ -101,7 +101,7 @@ MSG_GENERATE_PATH
 Genererer vei (%3d)...
 ;
 MSG_OPEN_ERROR
-Kunne ikke åpne %s!
+Kunne ikke Ã¥pne %s!
 ;
 MSG_CREATE_ERROR
 Kunne ikke opprette %s!
@@ -113,7 +113,7 @@ MSG_SMALLSCREEN_ERROR
 Skjermen er for liten!
 ;
 MSG_LOCKSCREEN_ERROR
-Kunne ikke låse offentlig skjerm!
+Kunne ikke lÃ¥se offentlig skjerm!
 ;
 MSG_SETMENU_ERROR
 Kunne ikke sette menylinjen!

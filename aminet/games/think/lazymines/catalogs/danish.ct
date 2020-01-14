@@ -12,7 +12,7 @@ MSG_GAME_NOVICE
 1\0Begynder
 ;
 MSG_GAME_AMATEUR
-2\0Amatør
+2\0AmatÃ¸r
 ;
 MSG_GAME_EXPERT
 3\0Ekspert
@@ -42,7 +42,7 @@ MSG_SETTINGS_TASK_PATH
  \0Ryd Sti
 ;
 MSG_SETTINGS_AUTOOPEN
- \0Automatisk Åbning...
+ \0Automatisk Ã…bning...
 ;
 MSG_SETTINGS_WARNINGS
  \0Advarsler
@@ -51,19 +51,19 @@ MSG_SETTINGS_NOCOLORS
  \0Ingen Farver
 ;
 MSG_SETTINGS_SAVE
- \0Gem Præferencer
+ \0Gem PrÃ¦ferencer
 ;
 MSG_CONTINUE_GAD
-Fortsæt
+FortsÃ¦t
 ;
 MSG_OK_GAD
 OK
 ;
 MSG_NUMROWS_GAD
-Antal Rækker
+Antal RÃ¦kker
 ;
 MSG_NUMCOLS_GAD
-Antal Søjler
+Antal SÃ¸jler
 ;
 MSG_NUMMINES_GAD
 Antal Miner
@@ -76,7 +76,7 @@ Om
 ;
 MSG_ABOUT_REQMSG
 Af %s (%s)\n\
-Copyright © %s %s\n\
+Copyright Â© %s %s\n\
 \n\
 Oversat til dansk af\n\
 Kenneth Fribert
@@ -85,7 +85,7 @@ MSG_OPTIONAL_REQTITLE
 Valgfrit Niveau
 ;
 MSG_AUTOOPEN_REQTITLE
-Automatisk Åbning
+Automatisk Ã…bning
 ;
 MSG_NAME_REQTITLE
 Det var hurtigt!!!
@@ -103,31 +103,31 @@ MSG_GENERATE_PATH
 Genererer Sti (%3d)...
 ;
 MSG_OPEN_ERROR
-Kunne ikke åbne %s!
+Kunne ikke Ã¥bne %s!
 ;
 MSG_CREATE_ERROR
 Kunne ikke oprette %s!
 ;
 MSG_GET_ERROR
-Kunne ikke få %s!
+Kunne ikke fÃ¥ %s!
 ;
 MSG_SMALLSCREEN_ERROR
-Skærmen er for lille!
+SkÃ¦rmen er for lille!
 ;
 MSG_LOCKSCREEN_ERROR
-Kunne ikke finde offentlig skærm!
+Kunne ikke finde offentlig skÃ¦rm!
 ;
 MSG_SETMENU_ERROR
-Kunne ikke sætte menuer op!
+Kunne ikke sÃ¦tte menuer op!
 ;
 MSG_LAYOUTMENU_ERROR
-Kunne ikke opsætte menu!
+Kunne ikke opsÃ¦tte menu!
 ;
 MSG_MINEFIELD
 minefeldt
 ;
 MSG_COUNTERS
-tællere
+tÃ¦llere
 ;
 MSG_WINDOW
 vindue
