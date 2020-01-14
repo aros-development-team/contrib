@@ -12,22 +12,23 @@ EXEDIR      := $(AROS_CONTRIB)/Demos/Kitty
 
 #MM demo-kitty : includes linklibs demo-kitty-extra demo-kitty-icons
 
+USER_INCLUDES := -iquote $(GENDIR)/$(CURDIR)
+
 %build_prog mmake=demo-kitty \
     progname=Kitty targetdir=$(EXEDIR) \
     files=$(FILES)
-
 
 #MM
 demo-kitty-extra : demo-kitty-images
 
 
 IMAGES      := kittysprite
-SRCIMAGES   := $(foreach f, $(IMAGES), pics/$(f).ilbm)
-C_IMAGES    := $(foreach f, $(IMAGES), $(f)_image.c)
+SRCIMAGES   := $(foreach f, $(IMAGES), $(SRCDIR)/$(CURDIR)/pics/$(f).ilbm)
+C_IMAGES    := $(foreach f, $(IMAGES), $(GENDIR)/$(CURDIR)/$(f)_image.c)
 
 demo-kitty-images : $(C_IMAGES)
 
-./%_image.c : pics/%.ilbm
+$(GENDIR)/$(CURDIR)/%_image.c : $(SRCDIR)/$(CURDIR)/pics/%.ilbm
 	@$(ILBMTOC) $< >$@    	
 
 #MM
