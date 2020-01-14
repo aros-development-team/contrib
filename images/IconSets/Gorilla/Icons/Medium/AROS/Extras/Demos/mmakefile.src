@@ -1,4 +1,4 @@
-# Copyright 2004, The AROS Development Team. All rights reserved.
+# Copyright 2004-2020, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -7,14 +7,15 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 ICONS := BlackHole \
          DawaFire \
+         EGL \
          Firework \
          Flamme \
          FTunnel \
          kdp \
          Kitty \
          Galaxy \
+         GL \
          InfPlane \
-         Mesa \
          Metaballs \
          NewVox \
          Parallax \
@@ -23,8 +24,9 @@ ICONS := BlackHole \
          Tunnel \
          Voxel \
          startsomedemos \
-	     startsomedemos2 \
-         StartMesaDemos
+         startsomedemos2 \
+         StartGLDemos \
+         StartEGLDemos
 
 #MM- iconset-Gorilla-contrib-icons-extras-clean : iconset-Gorilla-contrib-icons-extras-demos-clean
 %build_icons mmake=iconset-Gorilla-contrib-icons-extras-demos icons=$(ICONS) dir=$(AROS_CONTRIB)/Demos
