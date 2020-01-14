@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-blackhole
+#MM- contrib-demo-quick : demo-blackhole-quick
+
 %build_prog mmake=demo-blackhole \
     progname=blackhole targetdir=$(AROS_CONTRIB)/Demos/BlackHole \
     files=blackhole

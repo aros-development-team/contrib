@@ -1,0 +1,6 @@
+cd EGL
+stack 512000
+run eglgears
+run lion
+cd /
+

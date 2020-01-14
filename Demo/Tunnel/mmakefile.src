@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-tunnel
+#MM- contrib-demo-quick : demo-tunnel-quick
+
 #MM demo-tunnel : demo-tunnel-icons demo-tunnel-data
 
 DESTDIR := $(AROS_CONTRIB)/Demos/Tunnel

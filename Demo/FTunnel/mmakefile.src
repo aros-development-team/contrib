@@ -3,6 +3,9 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 DESTDIR := $(AROS_CONTRIB)/Demos/FTunnel
 
+#MM- contrib-demo : demo-ftunnel
+#MM- contrib-demo-quick : demo-ftunnel-quick
+
 #MM demo-ftunnel : demo-ftunnel-data
 
 %build_prog mmake=demo-ftunnel \

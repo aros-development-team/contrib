@@ -3,29 +3,18 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-demos : \
-#MM		demo-startscripts \
-#MM		demo-voxel \
-#MM		demo-newvox \
-#MM		demo-galaxy  \
-#MM		demo-dawafire \
-#MM		demo-flamme \
-#MM		demo-tunnel \
-#MM		demo-ftunnel \
-#MM		demo-infplane \
-#MM		demo-kdp \
-#MM		demo-parallax \
-#MM		demo-firework \
-#MM		demo-metaballs \
-#MM		demo-blackhole \
-#MM		demo-rubberstrings \
-#MM		demo-kitty \
-#MM		demo-powerzoom \
-#MM		demo-mesa
+#MM- contrib-demo : \
+#MM		demo-startscripts
 
-##MM		demo-mesa-egl
+#MM- contrib-demo-quick : \
+#MM		demo-startscripts
 
-SCRIPTFILES = StartSomeDemos StartSomeDemos2 StartMesaDemos
+SCRIPTFILES = \
+        StartSomeDemos \
+        StartSomeDemos2 \
+        StartGLDemos \
+        StartEGLDemos
+
 DSTDIR := $(AROS_CONTRIB)/Demos
 
 %copy_files_q mmake=demo-startscripts files=$(SCRIPTFILES) dst=$(DSTDIR)

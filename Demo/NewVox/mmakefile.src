@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-newvox
+#MM- contrib-demo-quick : demo-newvox-quick
+
 #MM demo-newvox : demo-newvox-icons
 
 DESTDIR := $(AROS_CONTRIB)/Demos/NewVox

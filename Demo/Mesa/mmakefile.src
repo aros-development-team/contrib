@@ -3,26 +3,42 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-EXEDIR      := $(AROS_CONTRIB)/Demos/Mesa
+EXEDIR      := $(AROS_CONTRIB)/Demos/GL
 
-#MM- demo-mesa-prerequisites : workbench-libs-mesa-linklib workbench-libs-glu-linklib \
-#MM     contrib-gfx-libs-glut demo-mesa-images
+#MM- contrib-demo : demo-mesa-gl
+#MM- contrib-demo-quick : demo-mesa-gl-quick
 
-#MM- demo-mesa-egl-prerequisites : demo-mesa-prerequisites contrib-gfx-libs-eglut \
-#MM     workbench-libs-vega-linklib workbench-libs-egl-linklib
+#MM- demo-mesa-gl-prerequisites : \
+#MM     workbench-libs-mesa-linklib \
+#MM     workbench-libs-glu-linklib \
+#MM     contrib-gfx-libs-glut \
+#MM     demo-mesa-gl-images
 
-#MM demo-mesa : demo-mesa-prerequisites demo-mesa-teapot demo-mesa-fire demo-mesa-textures \
-#MM     demo-mesa-tunnel demo-mesa-ipers demo-mesa-reflect
+#MM- demo-mesa-gl : \
+#MM     demo-mesa-gl-common \
+#MM     demo-mesa-gl-teapot \
+#MM     demo-mesa-gl-fire \
+#MM     demo-mesa-gl-textures \
+#MM     demo-mesa-gl-tunnel \
+#MM     demo-mesa-gl-ipers \
+#MM     demo-mesa-gl-reflect
 
-#MM demo-mesa-egl : demo-mesa-egl-prerequisites demo-mesa-lion
+#MM- demo-mesa-gl-quick : \
+#MM     demo-mesa-gl-common-quick \
+#MM     demo-mesa-gl-teapot-quick \
+#MM     demo-mesa-gl-fire-quick \
+#MM     demo-mesa-gl-textures-quick \
+#MM     demo-mesa-gl-tunnel-quick \
+#MM     demo-mesa-gl-ipers-quick \
+#MM     demo-mesa-gl-reflect-quick
 
-#MM demo-mesa-teapot : demo-mesa-prerequisites
-#MM demo-mesa-fire : demo-mesa-prerequisites
-#MM demo-mesa-textures : demo-mesa-prerequisites
-#MM demo-mesa-tunnel : demo-mesa-prerequisites
-#MM demo-mesa-ipers : demo-mesa-prerequisites
-#MM demo-mesa-reflect : demo-mesa-prerequisites
-#MM demo-mesa-lion : demo-mesa-egl-prerequisites
+#MM demo-mesa-gl-common : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-teapot : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-fire : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-textures : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-tunnel : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-ipers : demo-mesa-gl-prerequisites
+#MM demo-mesa-gl-reflect : demo-mesa-gl-prerequisites
 
 # GL/GLUT Demos
 
@@ -36,45 +52,32 @@ GLDEMOFILES 	    := \
                 ray \
                 spectex
 
-%build_progs mmake=demo-mesa \
+%build_progs mmake=demo-mesa-gl-common \
     targetdir=$(EXEDIR) \
     files="$(GLDEMOFILES)" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-teapot \
+%build_prog mmake=demo-mesa-gl-teapot \
     targetdir=$(EXEDIR) progname="teapot" \
     files="teapot readtex" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-fire \
+%build_prog mmake=demo-mesa-gl-fire \
     targetdir=$(EXEDIR) progname="fire" \
     files="fire readtex" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-textures \
+%build_prog mmake=demo-mesa-gl-textures \
     targetdir=$(EXEDIR) progname="textures" \
     files="textures readtex" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-tunnel \
+%build_prog mmake=demo-mesa-gl-tunnel \
     targetdir=$(EXEDIR) progname="tunnel" \
     files="tunnel readtex" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-ipers \
+%build_prog mmake=demo-mesa-gl-ipers \
     targetdir=$(EXEDIR) progname="ipers" \
     files="ipers readtex" uselibs="glut GL GLU"
 
-%build_prog mmake=demo-mesa-reflect \
+%build_prog mmake=demo-mesa-gl-reflect \
     targetdir=$(EXEDIR) progname="reflect" \
     files="reflect readtex showbuffer" uselibs="glut GL GLU"
-
-# EGL/EGLUT Demos
-
-EGLDEMOFILES 	    := \
-                eglgears
-
-%build_progs mmake=demo-mesa-egl \
-    targetdir=$(EXEDIR) \
-    files="$(EGLDEMOFILES)" uselibs="glut eglut GL GLU EGL"
-
-%build_prog mmake=demo-mesa-lion \
-    targetdir=$(EXEDIR) progname="lion" \
-    files="lion lion-render" uselibs="eglut EGL OpenVG"
 
 %common

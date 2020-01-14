@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-rubberstrings
+#MM- contrib-demo-quick : demo-rubberstrings-quick
+
 #MM demo-rubberstrings : demo-rubberstrings-icons
 
 DESTDIR := $(AROS_CONTRIB)/Demos/RubberStrings

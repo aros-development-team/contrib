@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-parallax
+#MM- contrib-demo-quick : demo-parallax-quick
+
 #MM demo-parallax : demo-parallax-icons
 
 DESTDIR := $(AROS_CONTRIB)/Demos/Parallax

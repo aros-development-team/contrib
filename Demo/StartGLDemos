@@ -1,4 +1,4 @@
-cd Mesa
+cd GL
 stack 512000
 run bounce x=0 y=20
 run gears x=720 y=20

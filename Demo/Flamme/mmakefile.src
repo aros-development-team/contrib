@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-flamme
+#MM- contrib-demo-quick : demo-flamme-quick
+
 #MM demo-flamme : demo-flamme-icons
 
 DESTDIR := $(AROS_CONTRIB)/Demos/Flamme

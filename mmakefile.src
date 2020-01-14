@@ -9,7 +9,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-complete : contrib-fish
 #MM- contrib-complete : contrib-games
 #MM- contrib-complete : contrib-misc
-#MM- contrib-complete : contrib-demos
+#MM- contrib-complete : contrib-demo
 #MM- contrib-complete : contrib-dopus
 #MM- contrib-complete : contrib-fryingpan-$(AROS_TARGET_CPU)
 #MM- contrib-complete : contrib-bgui

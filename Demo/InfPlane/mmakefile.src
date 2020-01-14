@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-infplane
+#MM- contrib-demo-quick : demo-infplane-quick
+
 #MM- demo-infplane : demo-infplane-binary demo-infplane-icons demo-infplane-data
 
 DESTDIR 	:= $(AROS_CONTRIB)/Demos/InfPlane

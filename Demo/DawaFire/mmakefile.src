@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-dawafire
+#MM- contrib-demo-quick : demo-dawafire-quick
+
 #MM demo-dawafire : demo-dawafire-icons
 
 DESTDIR := $(AROS_CONTRIB)/Demos/DawaFire

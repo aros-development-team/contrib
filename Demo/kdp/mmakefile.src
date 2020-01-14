@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-kdp
+#MM- contrib-demo-quick : demo-kdp-quick
+
 DESTDIR 	:= $(AROS_CONTRIB)/Demos/kdp
 OBJECTDIR	:= $(DESTDIR)/objects
 RAWDIR		:= $(DESTDIR)/raw

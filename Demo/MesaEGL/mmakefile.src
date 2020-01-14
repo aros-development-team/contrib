@@ -1,0 +1,41 @@
+#   $Id$
+#
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+EXEDIR      := $(AROS_CONTRIB)/Demos/EGL
+
+##MM- contrib-demo : demo-mesa-egl
+##MM- contrib-demo-quick : demo-mesa-egl-quick
+
+#MM- demo-mesa-egl-prerequisites : \
+#MM     demo-mesa-prerequisites \
+#MM     contrib-gfx-libs-eglut \
+#MM     workbench-libs-vega-linklib \
+#MM     workbench-libs-egl-linklib
+
+#MM- demo-mesa-egl : \
+#MM     demo-mesa-egl-common \
+#MM     demo-mesa-lion
+
+#MM- demo-mesa-egl-quick : \
+#MM     demo-mesa-egl-common-quick \
+#MM     demo-mesa-lion-quick
+
+#MM demo-mesa-egl-common : demo-mesa-egl-prerequisites
+#MM demo-mesa-lion : demo-mesa-egl-prerequisites
+
+# EGL/EGLUT Demos
+
+EGLDEMOFILES 	    := \
+                eglgears
+
+%build_progs mmake=demo-mesa-egl-common \
+    targetdir=$(EXEDIR) \
+    files="$(EGLDEMOFILES)" uselibs="glut eglut GL GLU EGL"
+
+%build_prog mmake=demo-mesa-lion \
+    targetdir=$(EXEDIR) progname="lion" \
+    files="lion lion-render" uselibs="eglut EGL OpenVG"
+
+%common

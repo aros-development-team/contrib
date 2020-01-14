@@ -1,6 +1,9 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+#MM- contrib-demo : demo-voxel
+#MM- contrib-demo-quick : demo-voxel-quick
+
 #MM demo-voxel : demo-voxel-icons demo-voxel-images
 
 DESTDIR := $(AROS_CONTRIB)/Demos/Voxel
