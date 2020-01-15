@@ -28,11 +28,11 @@ C_IMAGES    := $(foreach f, $(IMAGES), $(GENDIR)/$(CURDIR)/$(f)_image.c)
 
 demo-kitty-images : $(C_IMAGES)
 
-$(GENDIR)/$(CURDIR)/%_image.c : $(SRCDIR)/$(CURDIR)/pics/%.ilbm
+$(GENDIR)/$(CURDIR)/%_image.c : $(SRCDIR)/$(CURDIR)/pics/%.ilbm | $(GENDIR)/$(CURDIR)
 	@$(ILBMTOC) $< >$@    	
 
 #MM
 clean ::
 	@$(RM) $(C_IMAGES)
 
-%rule_makedirs dirs=$(EXEDIR)
+%rule_makedirs dirs="$(EXEDIR) $(GENDIR)/$(CURDIR)"
