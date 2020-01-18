@@ -4,7 +4,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-USER_CFLAGS := -I$(SRCDIR)/$(CURDIR)
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
 
 #MM- contrib-development : linklibs-clib contrib-development-getconf
 
