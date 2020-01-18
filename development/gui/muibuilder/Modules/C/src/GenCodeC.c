@@ -737,10 +737,10 @@ static void Init(void)
     strncpy(HeaderFile, FileName, 512);
     add_extend(HeaderFile, ".h");
     strncpy(Externals, FileName, 512);
-    strncat(Externals, "Extern", 512);
+    strncat(Externals, "Extern", 511);
     add_extend(Externals, ".h");
     strncpy(MainFile, FileName, 512);
-    strncat(MainFile, "Main", 512);
+    strncat(MainFile, "Main", 511);
     add_extend(MainFile, ".c");
 
     /* Get Current Directory Name */
