@@ -175,7 +175,7 @@ void seteditclassgads(int);
 void removeclassentry(char **,char *,int);
 void insertnewclass(char **,char *,int,char **,char *,int);
 void endclassedit(int,char **,char *,char **);
-void makeclassrecog(struct fileclass *,unsigned char **,unsigned char *);
+void makeclassrecog(struct fileclass *,char **,char *);
 void checkclassswap(void);
 void showclassop(int);
 struct fileclass *getfileclasslist(int);

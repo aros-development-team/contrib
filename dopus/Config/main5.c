@@ -1221,7 +1221,7 @@ char **classlist,*classtype,**displist;
 
 void makeclassrecog(class,classlist,classtype)
 struct fileclass *class;
-unsigned char **classlist,*classtype;
+char **classlist,*classtype;
 {
     int size,num,a;
     unsigned char *buf,buf2[2];
