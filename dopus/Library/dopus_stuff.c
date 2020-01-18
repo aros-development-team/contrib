@@ -266,7 +266,7 @@ int __saveds DoReadConfig(register char *name __asm("a0"),register struct Config
         config->pad3=config->pad4=config->pad8=0;
 // HUX
         for (a=0;a<2;a++) config->pad7[a]=0;
-        for ( a = 0; a < 224; a++ ) config->morepadding[a] = 0;
+        for ( a = 0; a < 223; a++ ) config->morepadding[a] = 0;
 /*
         for (a=0;a<2;a++) config->pad5[a]=config->pad7[a]=0;
         for (a=0;a<232;a++) config->morepadding[a]=0;
@@ -292,7 +292,7 @@ int __saveds DoReadConfig(register char *name __asm("a0"),register struct Config
         for (a=0;a<3;a++) config->arrowsize[a]=8;
     if (config->version<=CONFIG_CHANGE_EXTERN) {
 // HUX        for (a=0;a<80;a++) config->pad5a[a]=config->configreturnscript[a]=0;
-        for (a=0;a<397;a++) config->pad9a[a]=0;
+        for (a=0;a<295;a++) config->pad9a[a]=0;
         config->loadexternal=0;
     }
     key=NULL;
