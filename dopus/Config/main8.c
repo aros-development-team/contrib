@@ -386,7 +386,7 @@ void fix_gadget_positions()
     for (a=0;a<6;a++) fix_gad_pos(&palettegads[a],palettegads_xy[a]);
     for (a=0;a<7;a++) fix_gad_pos(&screenmodegads[a],screenmodegads_xy[a]);
     for (a=0;a<8;a++) fix_gad_pos(&arrowgadgets[a],arrowgadgets_xy[a]);
-    for (a=0;a<12/*HUX: was 10*/;a++) fix_gad_pos(&formatgads[a],formatgads_xy[a]);
+    for (a=0;a<11/*HUX: was 10*/;a++) fix_gad_pos(&formatgads[a],formatgads_xy[a]);
     for (a=0;a<14;a++) fix_gad_pos(&editclassgadgets[a],editclassgadgets_xy[a]);
     for (a=0;a<15;a++) fix_gad_pos(&editfuncgadgets[a],editfuncgadgets_xy[a]);
     fix_gad_pos(&coloursgad,coloursgad_xy);
