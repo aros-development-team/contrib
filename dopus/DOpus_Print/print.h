@@ -48,6 +48,7 @@ the existing commercial status of Directory Opus 5.
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 #include <proto/dopus.h>
+#include <proto/workbench.h>
 
 //#include "dopusbase.h"
 #include <dopus/dopusbase.h>
