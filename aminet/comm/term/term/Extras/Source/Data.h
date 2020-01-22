@@ -51,7 +51,7 @@ extern struct Library		*GadToolsBase,
 				*DataTypesBase,
 				*OwnDevUnitBase;
 #ifdef __AROS__
-struct UtilityBase              *UtilityBase;
+extern struct UtilityBase       *UtilityBase;
 #endif
 extern struct Device		*TimerBase,
 				*ConsoleDevice;

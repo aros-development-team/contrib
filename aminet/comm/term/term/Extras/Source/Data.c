@@ -232,7 +232,7 @@ struct Process		*ThisProcess;
 struct Process		*StatusProcess;
 struct Process		*RexxProcess;
 struct MsgPort		*TermRexxPort;
-struct WBStartup	*WBenchMsg;
+extern struct WBStartup	*WBenchMsg;
 BPTR			 WBenchLock;
 struct TermPort		*TermPort;
 BYTE			 CheckBit	= -1;
