@@ -46,8 +46,8 @@ struct IntuitionBase *IntuitionBase;
 struct GfxBase *GfxBase;
 struct Screen *scr,*openscreen();
 struct Window *gwdw,*wdw,*openwindow();
-struct IntuiMessage *imsg;
-struct ViewPort *WVP;
+extern struct IntuiMessage *imsg;
+extern struct ViewPort *WVP;
 
 void ColorWindow(),scanmenu(),newscreen();
 void ShutDown(),SavePic(),PutBoolGadget(),PutGadget();

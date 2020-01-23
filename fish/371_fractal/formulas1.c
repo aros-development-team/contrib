@@ -48,8 +48,8 @@ extern short width;
 extern short height;
 extern short depth;
 
-struct IntuiMessage *imsg;
-struct ViewPort *WVP;
+extern struct IntuiMessage *imsg;
+extern struct ViewPort *WVP;
 void ColorWindow(),scanmenu();
 void PutBoolGadget(),PutGadget();
 void runfractal();
