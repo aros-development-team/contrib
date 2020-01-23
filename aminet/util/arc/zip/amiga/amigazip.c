@@ -513,7 +513,7 @@ void version_local()
  */
 
 #ifdef __GNUC__
-  strcpy(buf2, __VERSION__);
+  strncpy(buf2, __VERSION__, sizeof(buf2));
 #else
 #if defined(__VERSION__) && defined(__REVISION__)
   sprintf(buf2,"version %d.%d",__VERSION__,__REVISION__);
