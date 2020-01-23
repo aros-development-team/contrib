@@ -35,7 +35,8 @@ extern struct ExecBase *SysBase;
 extern struct IntuitionBase *IntuitionBase;
 extern struct GfxBase *GfxBase;
 
-int RELVERIFY, BOOLGADGET, GADGHIMAGE, LONGINT, STRGADGET;
+int RELVERIFY, BOOLGADGET, GADGHIMAGE, LONGINT;
+extern int STRGADGET;
 extern struct FMConfig *fmconfig;
 extern struct TextFont *txtshowfont;
 extern struct FMMain fmmain;
