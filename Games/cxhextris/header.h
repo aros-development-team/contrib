@@ -99,11 +99,11 @@ typedef struct high_score_s
  * hex that is up to its neighbors in its row, or down to them. One row in the
  * game moves up and down, from left to right.
  */
-int shape[NUMBEROFPIECES*6][16];
+extern int shape[NUMBEROFPIECES*6][16];
 
 #ifdef LOG
 #define LOGHOST "localhost"
-char log_message[80];
+extern char log_message[80];
 #endif
 
 extern int score_cardinal;
