@@ -1,4 +1,4 @@
-# Copyright © 2008-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2008-2020, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -13,7 +13,11 @@ OPENSSL_BUILD_DIR := $(GENDIR)/$(CURDIR)/$(ARCHBASE)
 NOWARN_FLAGS := $(NOWARN_FORMAT_SECURITY) $(NOWARN_UNUSED_BUT_SET_VARIABLE) \
         $(NOWARN_UNUSED_VALUE) $(NOWARN_UNUSED_VARIABLE) \
         $(NOWARN_MISLEADING_INDENTATION) $(NOWARN_MAYBE_UNINITIALIZED)
-USER_CFLAGS := $(NOWARN_FLAGS) -DOPENSSL_NO_SECURE_MEMORY
+OPENSSL_CPPFLAGS :=  \
+        -DOPENSSL_NO_SECURE_MEMORY \
+        -D_XOPEN_SOURCE=500 \
+        -D__BSD_VISIBLE=1
+USER_CFLAGS=$(NOWARN_FLAGS) $(OPENSSL_CPPFLAGS)
 
 ifneq (,$(findstring arm,$(AROS_TARGET_CPU)))
 OPENSSL_TARGET := aros-arm-buildsys
@@ -21,7 +25,10 @@ else
 OPENSSL_TARGET := aros-$(AROS_TARGET_CPU)-buildsys
 endif
 
-OPENSSL_OPTIONS=no-threads no-sse2 no-ssl3
+OPENSSL_OPTIONS:=no-threads no-ssl3
+ifneq ($(AROS_TARGET_CPU),x86_64)
+OPENSSL_OPTIONS+=no-sse2
+endif
 
 #MM- contrib-openssl : contrib-openssl-install contrib-openssl-installtests
 #MM contrib-openssl-setup : contrib-openssl-fetch 
