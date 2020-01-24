@@ -13,7 +13,9 @@ REPOSITORIES := https://curl.haxx.se/download \
  https://mirror.sobukus.de/files/src/curl
 
 CURL_VERSION=7.60.0
-USER_CPPFLAGS=-D__BSD_VISIBLE=1
+USER_CPPFLAGS= \
+        -D_XOPEN_SOURCE=500 \
+        -D__BSD_VISIBLE=1
 CURL_OPTIONS=--disable-shared --without-random --disable-threaded-resolver --disable-ntlm-wb --with-ssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB)
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
