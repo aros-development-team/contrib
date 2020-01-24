@@ -1211,7 +1211,7 @@ struct function_data *funcdata;
     struct Message *msg;
     char buf[256],buf2[512],portname[50],pubname[140];
     int wb2f,setcust=0,otemp=0,oldmodes,okayflag=0,bit,flags=0;
-    BPTR tnil=NULL;
+    BPTR tnil=BNULL;
 
     if (run>0 && par && funcdata->output_file) {
         flags=par->which;
@@ -1357,7 +1357,7 @@ freeargs:
     if ((funcdata->output_file || okayflag) && funcdata->scriptname[0] &&
         (!par || !(flags&FLAG_ASYNC)))
         DeleteFile(funcdata->scriptname);
-    funcdata->output_file=NULL;
+    funcdata->output_file=BNULL;
     funcdata->scriptname[0]=0;
     funcdata->rereaddest=funcdata->rereadsource=0;
 
