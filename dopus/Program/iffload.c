@@ -1866,11 +1866,10 @@ endprint:
 int InitDHIRES(mp)
 int mp;
 {
-#ifdef __AROS__
-#warning Not implemented because of copper usage
-//bug("InitDHIRES(): NOT IMPLEMENTED BECAUSE OF COPPER MACRO USAGE\n");
-return 0;
-
+#if defined(__AROS__) && !(AROS_FLAVOUR & AROS_FLAVOUR_BINCOMPAT)
+    /* TODO: warning Not implemented because of copper usage */
+    bug("[DOpus] %s: Not implemented (requires copper macro usage)\n", __func__);
+    return 0;
 #else
     int line,creg,top,oscan,lace;
     struct UCopList *ucop;
