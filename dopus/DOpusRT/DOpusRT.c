@@ -149,7 +149,7 @@ char *argv[];
             }
         }
         if (cli && !cli->cli_CommandDir) {
-            BPTR path = NULL;
+            BPTR path = BNULL;
 
             for (a=0;a<7;a++) if ((path=CloneCommandDir(pathlists[a]))) break;
             cli->cli_CommandDir=path;
@@ -242,7 +242,7 @@ BPTR CloneCommandDir(const char *taskname)
     struct Process *teacher;
     struct CommandLineInterface *teachcli;
     struct PathList *wext,*mext,*lastmext=NULL;
-    BPTR newpath=NULL;
+    BPTR newpath=BNULL;
 
     Forbid();
     if (teacher=(struct Process *)FindTask(taskname))
@@ -253,7 +253,7 @@ BPTR CloneCommandDir(const char *taskname)
          {
           if (!(mext = AllocVec(sizeof(struct PathList),MEMF_PUBLIC))) break;
 
-          mext->nextPath=NULL;
+          mext->nextPath=BNULL;
           mext->pathLock=DupLock(wext->pathLock);
           if (!newpath) newpath=MKBADDR(mext);
 
