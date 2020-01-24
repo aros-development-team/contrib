@@ -906,7 +906,7 @@ struct DateStamp *ds;
         //kprintf("!!!! getroot(%s)\n", name);
 
         lock = Lock(name, ACCESS_READ);
-        if (NULL == lock)
+        if (BNULL == lock)
         {
             //kprintf("Could not get lock in getroot()\n");
             return 0;
