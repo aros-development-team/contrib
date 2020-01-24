@@ -116,7 +116,7 @@ struct GfxBase *GfxBase;	/* graphics pointer */
 struct IntuitionBase *IntuitionBase;	/* intuition pointer */
 struct Library *IconBase, *DiskfontBase, *GadToolsBase;
 WINTEXTINFO wtinfo;
-struct WBStartup *WBenchMsg = NULL;
+extern struct WBStartup *WBenchMsg;
 
 #define MEMSNAP_TIME	10L
 #define MEMONLY_TIME	25L
