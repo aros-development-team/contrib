@@ -53,4 +53,4 @@ int pceFileClose (int * pfa);
 
 int pcePadGet ();
 
-int zoom, fullscreen;
+extern int zoom, fullscreen;

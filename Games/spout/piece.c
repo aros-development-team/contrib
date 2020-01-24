@@ -5,12 +5,14 @@
 #include <fcntl.h>
 #include <math.h>
 
-#include "SDL.h"
+#include <SDL.h>
 #include "piece.h"
 #include "font.h"
 
 SDL_Surface *video, *layer;
 SDL_Rect layerRect;
+
+int zoom, fullscreen;
 
 unsigned char *vBuffer = NULL;
 
