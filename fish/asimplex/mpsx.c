@@ -72,7 +72,7 @@ SHORT       num_ranges, num_bounds;
 LONG        mm, nn;
 
 TEXT        line_nr[9];         /* Zählvariable, max 99999999 (8 Zeichen) */
-TEXT        line[BUFFER];       /* eingelesene Zeile */
+extern TEXT        line[BUFFER];       /* eingelesene Zeile */
 TEXT        buf[4][BUFFER2+1];  /* Zwischenspeicher */
 
 VOID    Cap(STRPTR  str, SHORT   start, SHORT stop);
