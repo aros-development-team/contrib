@@ -1,0 +1,13 @@
+diff -ruN libmodplug-0.8.8.5/src/libmodplug/stdafx.h libmodplug-0.8.8.5.aros/src/libmodplug/stdafx.h
+--- libmodplug-0.8.8.5/src/libmodplug/stdafx.h	2014-03-09 23:52:07.000000000 +0000
++++ libmodplug-0.8.8.5.aros/src/libmodplug/stdafx.h	2020-01-25 04:13:28.732334500 +0000
+@@ -112,7 +112,9 @@
+ 
+ #define GlobalFreePtr(p) free((void *)(p))
+ 
++#if !defined(strnicmp)
+ #define strnicmp(a,b,c)		strncasecmp(a,b,c)
++#endif
+ #define wsprintf			sprintf
+ 
+ #ifndef FALSE
