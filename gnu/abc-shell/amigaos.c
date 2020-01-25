@@ -79,7 +79,7 @@ int __execve_environ_init(char * const envp[])
 }
 
 #else
-int lastresult;
+extern int lastresult;
 #endif
 
 /*used to stdin/out fds*/
