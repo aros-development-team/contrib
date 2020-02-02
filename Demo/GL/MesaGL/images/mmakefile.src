@@ -5,6 +5,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 IMGDIR      := $(AROS_CONTRIB)/Demos/GL/images
 
-%copy_dir_recursive mmake=demo-mesa-gl-images dst=$(IMGDIR)
+%copy_dir_recursive mmake=demo-gl-mesagl-images dst=$(IMGDIR)
 
 %common

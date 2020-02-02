@@ -1,0 +1,83 @@
+#   $Id$
+#
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+EXEDIR      := $(AROS_CONTRIB)/Demos/GL
+
+#MM- contrib-demo-gl : demo-gl-mesagl
+#MM- contrib-demo-gl-quick : demo-gl-mesagl-quick
+
+#MM- demo-gl-mesagl-prerequisites : \
+#MM     workbench-libs-mesa-linklib \
+#MM     workbench-libs-glu-linklib \
+#MM     contrib-gfx-libs-glut \
+#MM     demo-gl-mesagl-images
+
+#MM- demo-gl-mesagl : \
+#MM     demo-gl-mesagl-common \
+#MM     demo-gl-mesagl-teapot \
+#MM     demo-gl-mesagl-fire \
+#MM     demo-gl-mesagl-textures \
+#MM     demo-gl-mesagl-tunnel \
+#MM     demo-gl-mesagl-ipers \
+#MM     demo-gl-mesagl-reflect
+
+#MM- demo-gl-mesagl-quick : \
+#MM     demo-gl-mesagl-common-quick \
+#MM     demo-gl-mesagl-teapot-quick \
+#MM     demo-gl-mesagl-fire-quick \
+#MM     demo-gl-mesagl-textures-quick \
+#MM     demo-gl-mesagl-tunnel-quick \
+#MM     demo-gl-mesagl-ipers-quick \
+#MM     demo-gl-mesagl-reflect-quick
+
+#MM demo-gl-mesagl-common : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-teapot : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-fire : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-textures : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-tunnel : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-ipers : demo-gl-mesagl-prerequisites
+#MM demo-gl-mesagl-reflect : demo-gl-mesagl-prerequisites
+
+# GL/GLUT Demos
+
+GLDEMOFILES 	    := \
+                bounce \
+                gearbox \
+                gears \
+                morph3d \
+                glinfo \
+                arbfslight \
+                ray \
+                spectex
+
+%build_progs mmake=demo-gl-mesagl-common \
+    targetdir=$(EXEDIR) \
+    files="$(GLDEMOFILES)" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-teapot \
+    targetdir=$(EXEDIR) progname="teapot" \
+    files="teapot readtex" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-fire \
+    targetdir=$(EXEDIR) progname="fire" \
+    files="fire readtex" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-textures \
+    targetdir=$(EXEDIR) progname="textures" \
+    files="textures readtex" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-tunnel \
+    targetdir=$(EXEDIR) progname="tunnel" \
+    files="tunnel readtex" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-ipers \
+    targetdir=$(EXEDIR) progname="ipers" \
+    files="ipers readtex" uselibs="glut GL GLU"
+
+%build_prog mmake=demo-gl-mesagl-reflect \
+    targetdir=$(EXEDIR) progname="reflect" \
+    files="reflect readtex showbuffer" uselibs="glut GL GLU"
+
+%common

@@ -2,18 +2,18 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM mesa-demos-glexcess : \
+#MM demos-gl-glexcess : \
 #MM	includes \
 #MM     linklibs-startup \
 #MM	$(CROSSTOOLS_TARGET) \
 #MM	workbench-libs-mesa-includes \
 #MM	workbench-libs-glu-includes \
 #MM	contrib-gfx-libs-glut \
-#MM	mesa-demos-glexcess-cpp \
-#MM	mesa-demos-glexcess-copyfiles
+#MM	demos-gl-glexcess-cpp \
+#MM	demos-gl-glexcess-copyfiles
 
-#MM- demo-mesa-gl : mesa-demos-glexcess
-#MM- demo-mesa-gl-quick : mesa-demos-glexcess-quick
+#MM- contrib-demo-gl : demos-gl-glexcess
+#MM- contrib-demo-gl-quick : demos-gl-glexcess-quick
 
 GLEXCESS_SOURCES = \
 	glxsglut \
@@ -54,20 +54,20 @@ $(GLEXCESS_SOURCES) :
 %compile_q cmd=$(CXX_CC) opt=$(CXX_FLAGS) from=$(SRCDIR)/$(CURDIR)/$@.cpp to="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $@)))"
 
 #MM
-mesa-demos-glexcess-cpp : mesa-demos-glexcess-cpp-directories-setup $(GLEXCESS_SOURCES)
+demos-gl-glexcess-cpp : demos-gl-glexcess-cpp-directories-setup $(GLEXCESS_SOURCES)
 
 #MM
-mesa-demos-glexcess-cpp-directories-setup :
+demos-gl-glexcess-cpp-directories-setup :
 %mkdirs_q dirs="$(GENDIR)/$(CURDIR) $(AROS_CONTRIB)/Demos/GL/GLExcess"
 
 USER_LDFLAGS := -L$(AROS_LIB) -static-libstdc++
 
 #MM
-mesa-demos-glexcess :
+demos-gl-glexcess :
 %link_q cmd=$(TARGET_CXX) from="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $(GLEXCESS_SOURCES))))" to=$(AROS_CONTRIB)/Demos/GL/GLExcess/GLExcess libs="-lglut -lGL -lGLU"
 
 #MM
-mesa-demos-glexcess-copyfiles :
-%copy_dir_recursive mmake=mesa-demos-glexcess-copyfiles src=data dst="$(GENDIR)/$(CURDIR) $(AROS_CONTRIB)/Demos/GL/GLExcess/data"
+demos-gl-glexcess-copyfiles :
+%copy_dir_recursive mmake=demos-gl-glexcess-copyfiles src=data dst="$(GENDIR)/$(CURDIR) $(AROS_CONTRIB)/Demos/GL/GLExcess/data"
 
 %common
