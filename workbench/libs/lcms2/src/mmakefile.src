@@ -35,7 +35,7 @@ FILES := \
     cmswtpnt
 
 NOWARN_FLAGS := $(NOWARN_UNUSED_BUT_SET_VARIABLE) $(NOWARN_STRINGOP_TRUNCATION)
-USER_CFLAGS := $(NOWARN_FLAGS)
+USER_CFLAGS := $(NOWARN_FLAGS) -noposixc
 USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/../include
 
 %build_module mmake=workbench-libs-lcms2 \
