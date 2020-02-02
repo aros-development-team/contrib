@@ -1,0 +1,47 @@
+#   $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- demos-gl-fractals-deps : \
+#MM	includes \
+#MM     linklibs-startup \
+#MM	$(CROSSTOOLS_TARGET) \
+#MM	workbench-libs-mesa-includes \
+#MM	workbench-libs-glu-includes \
+#MM	contrib-gfx-libs-glut \
+#MM demos-gl-fractals-copyfiles
+
+#MM- contrib-demo-gl : demos-gl-fractals
+#MM- contrib-demo-gl-quick : demos-gl-fractals-quick
+
+#MM- demos-gl-fractals : demos-gl-fractals-mbrot demos-gl-fractals-julia
+#MM- demos-gl-fractals-quick : demos-gl-fractals-mbrot-quick demos-gl-fractals-julia-quick
+
+#MM demos-gl-fractals-mbrot : demos-gl-fractals-deps
+#MM demos-gl-fractals-julia : demos-gl-fractals-deps
+
+EXEDIR      := $(AROS_CONTRIB)/Demos/GL/Mindlapse
+
+COMMONFILES = image_ppm sdr timer glfuncs
+DATAFILES = julia.glsl mbrot.glsl pal.ppm
+
+USER_INCLUDES := \
+    -I$(SRCDIR)/$(CURDIR)
+
+NOWARN_FLAGS := $(NOWARN_WRITE_STRINGS) $(NOWARN_ARRAY_BOUNDS) $(NOWARN_MISLEADING_INDENTATION)
+
+USER_CFLAGS := $(NOWARN_FLAGS) -fno-asynchronous-unwind-tables -fno-exceptions 
+
+%build_prog mmake=demos-gl-fractals-mbrot \
+    progname=Mandelbrot targetdir=$(EXEDIR) \
+    files="mbrot $(COMMONFILES)" uselibs="glut GL GLU"
+
+%build_prog mmake=demos-gl-fractals-julia \
+    progname=Julia targetdir=$(EXEDIR) \
+    files="julia $(COMMONFILES)" uselibs="glut GL GLU"
+
+#MM
+demos-gl-fractals-copyfiles :
+%copy_dir_recursive mmake=demos-gl-fractals-copyfiles src=data dst=$(EXEDIR)
+
+%common
