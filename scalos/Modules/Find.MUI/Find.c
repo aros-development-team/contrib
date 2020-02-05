@@ -320,7 +320,7 @@ static Object *ContextMenuPatternPopup, *ContextMenuContentsPopup;
 
 Object *ListtreeFileTypes;
 
-struct WBStartup *WBenchMsg;
+extern struct WBStartup *WBenchMsg;
 
 static char CurrentPath[1024];
 

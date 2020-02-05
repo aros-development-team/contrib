@@ -258,18 +258,12 @@ BSTR makeBSTR(CONST_STRPTR in, char *out)
 STRPTR BtoCString(BPTR bString, STRPTR Buffer, size_t MaxLen)
 {
 #ifdef __AROS__
-	// AROS needs special handling because it uses NULL-terminated
-	// strings on some platforms.
-	size_t Len = AROS_BSTR_strlen(bString);
-	if (Len >= MaxLen)
-		Len = MaxLen - 1;
-	strncpy(Buffer, AROS_BSTR_ADDR(bString), Len);
-	Buffer[Len] = '\0';
-
-	return Buffer;
+	UBYTE *bStringAddr = AROS_BSTR_ADDR(bString);
+	size_t Length = AROS_BSTR_strlen(bString);
 #else
 	UBYTE *bStringAddr = BADDR(bString);
 	size_t Length = bStringAddr[0];
+#endif
 
 	if (Length >= MaxLen)
 		Length = MaxLen - 1;
@@ -278,7 +272,6 @@ STRPTR BtoCString(BPTR bString, STRPTR Buffer, size_t MaxLen)
 	Buffer[Length] = '\0';
 
 	return Buffer;
-#endif
 }
 
 //-----------------------------------------------------------------------------

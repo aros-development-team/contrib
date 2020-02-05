@@ -274,7 +274,7 @@ static Object *ButtonClearLog, *ButtonSaveLog;
 
 static struct FileRequester *SaveLogAslRequest = NULL;
 
-struct WBStartup *WBenchMsg;
+extern struct WBStartup *WBenchMsg;
 
 static char TextProgressBuffer[256];
 
