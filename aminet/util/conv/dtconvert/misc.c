@@ -34,7 +34,7 @@ struct Node *GetNumNode( struct List *list, ULONG num )
     return( cur );
 }
 
-
+#if !defined(__AROS__)
 void mysprintf( STRPTR buffer, STRPTR fmt, ... )
 {
     APTR args;
@@ -44,7 +44,6 @@ void mysprintf( STRPTR buffer, STRPTR fmt, ... )
     RawDoFmt( fmt, args, (void (*))"\x16\xc0\x4e\x75", buffer );
 }
 
-#if !defined(__AROS__)
 APTR AllocVecPooled( APTR poolheader, ULONG memsize )
 {
     ULONG *memory;

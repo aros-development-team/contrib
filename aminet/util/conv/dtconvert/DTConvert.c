@@ -411,7 +411,7 @@ int main( int ac, STRPTR *av )
                        oldProjectLock = NULL;
     BPTR               oldOutput      = NULL;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     main_retval2 = 0L;
     main_retval  = RETURN_OK;
@@ -571,7 +571,7 @@ int main( int ac, STRPTR *av )
 static
 void DefaultSettings( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     ClearRDA();
 
@@ -598,7 +598,7 @@ void ReadENVPrefs( void )
 
     TEXT varbuff[ 258 ];
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     envvarrda . RDA_Source . CS_Buffer = varbuff;
 
@@ -624,7 +624,7 @@ void ReadENVPrefs( void )
 static
 void ClearRDA( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
     memset( (void *)(&result), 0, sizeof( result ) );
 }
 
@@ -632,7 +632,7 @@ void ClearRDA( void )
 static
 void ScanRDA( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
     if( result . srcname )
     {
       UpdateString( (&(project . srcname)), (result . srcname) );
@@ -667,7 +667,7 @@ void ScanToolTypes( TEXT **tt )
 {
     STRPTR s;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( s = FindToolType( tt, "FROM" ) )
       result . srcname = s;
@@ -706,7 +706,7 @@ void ScanToolTypes( TEXT **tt )
 static
 void FreeInitProjectResult( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     FreeString( (project . srcname) );
     FreeString( (project . destdatatype) );
@@ -718,7 +718,7 @@ void FreeInitProjectResult( void )
 static
 BOOL CreateBasicResources( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( OpenLibStuff() )
     {
@@ -741,7 +741,7 @@ BOOL CreateBasicResources( void )
 static
 void DeleteBasicResources( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     DeletePool( StringPool );
     CloseLibStuff();
@@ -751,7 +751,7 @@ void DeleteBasicResources( void )
 static
 BOOL OpenLibStuff( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     AttemptOpenLibrary( (struct Library **)(&UtilityBase),       NAME, "utility.library",     39UL );
     AttemptOpenLibrary( (struct Library **)(&(GfxBase)),         NAME, "graphics.library",    39UL );
@@ -776,7 +776,7 @@ BOOL OpenLibStuff( void )
 static
 void CloseLibStuff( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     CloseLibrary( AslBase );
     CloseLibrary( WorkbenchBase );
@@ -795,7 +795,7 @@ void RunTool( STRPTR srcname )
     struct Task *ThisTask  = FindTask( NULL );
     ULONG        stacksize = (ULONG)(((UBYTE *)(ThisTask -> tc_SPReg)) - ((UBYTE *)(ThisTask -> tc_SPLower)));
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     /* Enougth stack ? */
     if( stacksize >= 8192UL )
@@ -823,7 +823,7 @@ void RunTool( STRPTR srcname )
         {
           datatypename = NULL;
         }
-          bug("[DTConvert] %s: datatypename = '%s'\n", __func__, datatypename);
+          D(bug("[DTConvert] %s: datatypename = '%s'\n", __func__, datatypename);)
       }
 
       /* GUI requested / required (some ares are missing and the user should fill them in) ? */
@@ -1494,7 +1494,7 @@ BOOL NewProject( STRPTR from, STRPTR datatype, STRPTR destname, BOOL gui, STRPTR
     ULONG                        buffersize;
     struct CommandLineInterface *cli = Cli();
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( from = GetLockName( olddir, from ) )
     {
@@ -1577,7 +1577,7 @@ static BOOL             DATATYPEBlockReqActive = FALSE;
 static
 void LockGUI( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( GUILock++ == 0UL )
     {
@@ -1610,7 +1610,7 @@ void LockGUI( void )
 static
 void UnlockGUI( void )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( --GUILock == 0UL )
     {
@@ -1654,7 +1654,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
 #define NUM_GID_TABLE (32) /* we have much less GID_#? types defined yet (datatypes.library V45), but... */
     ULONG groupid_table[ NUM_GID_TABLE ] = { 0 };
 
-  bug("[DTConvert] %s(0x%p, #%08x)\n", __func__, lock, groupid);
+  D(bug("[DTConvert] %s(0x%p, #%08x)\n", __func__, lock, groupid);)
 
     /* If a lock is given, we build here a list of all DT group ids the source file may be of... */
     if( lock )
@@ -1662,7 +1662,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
       struct DataType *dtn,
                       *prevdtn = NULL;
 
-      bug("[DTConvert] %s: querying locks dt's\n", __func__);
+      D(bug("[DTConvert] %s: querying locks dt's\n", __func__);)
 
       /* Print whole list or determine the DataType of the file */
       while( dtn = ObtainDataType( DTST_FILE, (APTR)lock, DTA_DataType,                  prevdtn,
@@ -1674,11 +1674,11 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
 
         if (prevdtn == dtn)
         {
-        bug("[DTConvert] %s: dtn == prevdtn\n", __func__);
+        D(bug("[DTConvert] %s: dtn == prevdtn\n", __func__);)
           break;
         }
 
-      bug("[DTConvert] %s: dtn @ 0x%p\n", __func__, dtn);
+      D(bug("[DTConvert] %s: dtn @ 0x%p\n", __func__, dtn);)
 
         /* Release previous DataType */
         ReleaseDataType( prevdtn );
@@ -1692,7 +1692,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
           {
             if( !groupid_table[ i ] )
             {
-              bug("[DTConvert] %s: %u = grpid #%08x\n", __func__, i, dtn);
+              D(bug("[DTConvert] %s: %u = grpid #%08x\n", __func__, i, groupid);)
               groupid_table[ i ] = groupid;
               break;
             }
@@ -1719,7 +1719,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
         NewList( (&(dtl -> dtl_List)) );
         dtl -> dtl_Pool = pool;
 
-      bug("[DTConvert] %s: querying grpid #%08x dt's\n", __func__, groupid);
+      D(bug("[DTConvert] %s: querying grpid #%08x dt's\n", __func__, groupid);)
 
         /* Print whole list or determine the DataType of the file */
         while( dtn = ObtainDataType( DTST_RAM, NULL, DTA_DataType,                  prevdtn,
@@ -1729,7 +1729,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
           struct DataTypeHeader *dth;          /* datatypes header        */
           BOOL                   match = TRUE; /* include this datatype ? */
 
-      bug("[DTConvert] %s: dtn @ 0x%p\n", __func__, dtn);
+      D(bug("[DTConvert] %s: dtn @ 0x%p\n", __func__, dtn);)
 
           /* Release previous DataType */
           ReleaseDataType( prevdtn );
@@ -1779,7 +1779,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
             /* Alloc and build node... */
             if( namenode = (struct DTNode *)AllocVecPooled( pool, size ) )
             {
-              STRPTR s = (STRPTR)(namenode + 1);
+              STRPTR s = (STRPTR)&namenode[1];
 
               /* store listview names */
               mysprintf( s, "%s %s", (dth -> dth_Name), groupid_name );
@@ -1824,7 +1824,7 @@ struct DTList *CreateDTDescrList( BPTR lock, ULONG groupid )
 static
 void FreeDTDescrList( struct DTList *list )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
    if( list )
    {
@@ -1839,7 +1839,7 @@ struct DTNode *FindDTNodeByName( struct DTList *list, STRPTR name )
     struct DTNode *node;
     struct DTNode *result = NULL;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s(0x%p, '%s')\n", __func__, list, name);)
 
     if( list && name )
     {
@@ -1862,7 +1862,7 @@ STRPTR StringSave( STRPTR s )
 {
     STRPTR saved;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( s )
     {
@@ -1881,7 +1881,7 @@ STRPTR StringSave( STRPTR s )
 static
 STRPTR AllocStringBuff( ULONG size )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     return( (STRPTR)AllocVecPooled( StringPool, (size + 2UL) ) );
 }
@@ -1892,7 +1892,7 @@ STRPTR UpdateString( STRPTR *storage, STRPTR newstring )
 {
     STRPTR s;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     s = NULL;
 
@@ -1910,7 +1910,7 @@ STRPTR UpdateString( STRPTR *storage, STRPTR newstring )
 static
 void FreeString( STRPTR s )
 {
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     if( s )
     {
@@ -1926,7 +1926,7 @@ struct DiskObject *GetToolDiskObject( STRPTR name )
     struct Process    *ThisProc = (struct Process *)FindTask( NULL );
     BPTR               olddir   = CurrentDir( (ThisProc -> pr_HomeDir) );
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     dobj = GetDiskObjectNew( name );
 

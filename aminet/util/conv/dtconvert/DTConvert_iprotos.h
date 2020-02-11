@@ -1,4 +1,5 @@
 #include <exec/types.h>
+#include <stdio.h>
 
 /* DTConvert.c */
 void chkabort ( void );
@@ -16,10 +17,12 @@ void CloseDTConvert_DATATYPEWindow ( void );
 
 /* misc.c */
 struct Node *GetNumNode ( struct List *list , ULONG num );
-void mysprintf ( STRPTR buffer , STRPTR fmt , ...);
 #if !defined(__AROS__)
+void mysprintf ( STRPTR buffer , STRPTR fmt , ...);
 APTR AllocVecPooled ( APTR poolheader , ULONG memsize );
 void FreeVecPooled ( APTR poolheader , APTR mem );
+#else
+#define mysprintf sprintf
 #endif
 STRPTR GetLockName ( BPTR lock , STRPTR name );
 void AttemptOpenLibrary ( struct Library **library , STRPTR title , STRPTR libname , ULONG libversion );
