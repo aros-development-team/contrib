@@ -1,8 +1,8 @@
 #define NAME         "ModifyIcon"
 #define VERSION      "1"
-#define REVISION     "1"
+#define REVISION     "2"
 #define DISTRIBUTION "(GPL) "
-#define DATE	     "24.02.2002"
+#define DATE	     "11.02.2020"
 #define AUTHOR       "by Dirk Stöcker <stoecker@epost.de>"
 
 /* Programmheader
@@ -14,6 +14,7 @@
 
  1.0   24.02.02 : first version, handles all files totally itself
  1.1   24.02.02 : fixed bug which could trash tooltypes and default tool
+ 1.2   11.02.20 : fixed for 64bit
 */
 //#define DEBUG /* turn debugging on */
 //#define CHECK   /* turn on data checks, this will report any unknown type */
@@ -293,7 +294,7 @@ ULONG start(void)
 
     args.from = version; /* is deleted by optimizer */
     /* clear Args structure */
-    for(i = 0; i < sizeof(struct Args)/4; ++i)
+    for(i = 0; i < (sizeof(struct Args)/sizeof(IPTR)); ++i)
       ((IPTR *)&args)[i] = 0;
 
     if((ico = (struct IconRepresentation *)
