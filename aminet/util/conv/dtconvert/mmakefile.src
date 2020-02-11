@@ -3,6 +3,7 @@
 
 include $(SRCDIR)/config/aros.cfg
 
+EXEDIR := $(AROS_CONTRIB)/Misc/aminet/DTConvert
 FILES := DTConvert gui misc convert
 
 #MM contrib-aminet-util-conv-dtconvert : includes linklibs 
@@ -10,7 +11,7 @@ FILES := DTConvert gui misc convert
 USER_LDFLAGS := -static
 
 %build_prog mmake=contrib-aminet-util-conv-dtconvert \
-    progname=DTConvert targetdir=$(AROS_C) \
+    progname=DTConvert targetdir=$(EXEDIR) \
     files=$(FILES)
 
 %common
