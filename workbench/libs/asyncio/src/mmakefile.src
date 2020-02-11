@@ -23,7 +23,7 @@ FUNCS := \
 #MM workbench-libs-asyncio-includes : \
 #MM    kernel-exec-includes \
 #MM    includes-copy
-#MM- workbench-libs-asyncio : linklibs
+#MM workbench-libs-asyncio : linklibs
 
 %build_module mmake=workbench-libs-asyncio \
     modname=asyncio modtype=library \
