@@ -1,0 +1,14 @@
+VERSION		EQU	1
+REVISION	EQU	8
+DATE	MACRO
+		dc.b	'20.3.98'
+	ENDM
+VERS	MACRO
+		dc.b	'DTConvert 1.8'
+	ENDM
+VSTRING	MACRO
+		dc.b	'DTConvert 1.8 (20.3.98)',13,10,0
+	ENDM
+VERSTAG	MACRO
+		dc.b	0,'$VER: DTConvert 1.8 (20.3.98)',0
+	ENDM

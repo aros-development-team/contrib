@@ -1,0 +1,16 @@
+# Copyright © 2020, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros.cfg
+
+FILES := DTConvert gui misc convert
+
+#MM contrib-aminet-util-conv-dtconvert : includes linklibs 
+
+USER_LDFLAGS := -static
+
+%build_prog mmake=contrib-aminet-util-conv-dtconvert \
+    progname=DTConvert targetdir=$(AROS_C) \
+    files=$(FILES)
+
+%common

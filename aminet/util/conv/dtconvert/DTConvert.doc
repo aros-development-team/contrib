@@ -1,0 +1,244 @@
+DTConvert/DTConvert                                       DTConvert/DTConvert
+
+    NAME
+       DTConvert -- DataTypes-based conversion tool
+
+    FORMAT
+       DTConvert [FROM|NAME|SRCNAME <file>]
+                 [DESTDATATYPE|DATATYPE|DTN <datatype>]
+                 [TO|DESTNAME <file>] [GUI] [PUBSCREEN <public screen>]
+
+    TEMPLATE
+       FROM=NAME=SRCNAME,DESTDATATYPE=DATATYPE=DTN,TO=DESTNAME,GUI/S,
+       PUBSCREEN/K
+
+    PURPOSE
+       Convert data from one format into another format using datatypes
+       classes.
+
+    DESCRIPTION
+       DTConvert converts data from one format into another format,
+       e.g. picture -> picture,
+            animation -> anmation,
+            movie -> movie,
+            sound -> sound,
+            text -> text (n/a)
+
+      You simply have to set the souce file name (SRCNAME), the
+      datatype to convert to (DATATYPE) and the destination file name (TO).
+
+      The datatype option accepts the format names as they are written in
+      DEVS:DataTypes, e.g. if you ant to save a mpeg video stream,
+      you've to set DATATYPE="MPEG Video".
+      If you want to use the base class (to save the incoming data to a 
+      matching IFF format, simply specify the base class name, e.g.
+      "picture" for picture.datatype, "sound" for sound.datatype, 
+      "animation" for animation.datatype and so on.
+
+      If you miss one of the options or if you set the GUI switch, a small
+      GUI will appear where you can set the options.
+      If ou're done with setting all neccesary things in the GUI, the
+      "Convert"-button gets enabled.
+      Selection of the "Convert"-button starts the encoding job...
+
+    BUGS
+      - picture.datatype V43 interface not implemented.
+        This causes that any encoder only runs in V42 mode any may
+        only encode 8 bit data.
+
+      - path names are limitted to 1024 chars, larger filenames may cause
+        mailfunctions. But: Who uses so long path names ?
+
+      - datatypes.library versions V45.3 and V45.4 have a bug in
+        NewDTObjectA which causes that a descriptor is unlocked too often,
+        which results in an Alert( 3500000 ). >= V45.5 fixes this.
+
+    NOTES
+      - picture.datatype V43 pixmap interface not supported.
+
+      - text conversion not supported yet.
+
+      - DTConvert prints a message if a subclass does not
+        implement a local encoder. This was only done to get rid
+        of mails like "your DTConvert has a bug: IFF ILBM -> PNG does
+        not work...". These mails should go to the authors of the
+        datatype classes, not to me. Sorry, but...
+
+    TODO
+      - picture.datatype V43 compatibility
+
+      - text conversion (GID_TEXT -> GID_TEXT), e.g. IFF FTXT <-> Ascii
+
+      - document conversion (GID_DOCUMENT -> GID_DOCUMENT), after
+        Stefan Ruppert and I finsished the document.datatype concepts.
+
+    HISTORY
+       V1.1:
+         - First release to dta@amigawolrd.com mailinglist.
+
+       V1.2:
+         - Added support for animation.datatype subclasses
+
+       V1.3:
+         - Minor fixes.
+
+       V1.4
+         - Added support for sound.datatype V40 subclasses, partial support
+           for suggested sound.datatype V41 interface.
+
+         - Added some usefull comments.
+
+         - WriteAnimClass/WriteSoundClass now sets
+           SetIoErr( ERROR_REQUIRED_ARGUMENT_MISSING ); if something goes
+           wrong (this should abort the encoder; only ERROR_OBJECT_NOT_FOUND
+           is accepted here).
+
+         - Fixed some holes in the error handling.
+
+         - GUI added.
+
+         - Added WB support
+
+         - Added ENV variable support; a local or global (ENV) variable
+           "DTConvert" takes the same arguments as the shell template.
+           Variable settings can be overridden by any argument.
+
+         - Project split in seperate sources (e.g. main, GUI, converters)
+
+       V1.5
+         - Added the feature that the datatypes selection requester shows
+           only entries which match the source group IDs
+           (if a source has been already selected).
+
+         - Added kluge which alows the conversion between GID_MOVIE
+           and GID_ANIMATION datatypes (both are based on
+           animation.datatype, here we have the same interface :-)
+
+         - Fixed the bug that ConvertAnimation function did not deal
+           with truecolor bitmaps (e.g. CyberGFX bitmaps for example,
+           truecolor bitmaps are indicated by ADTA_NumColors == 0.
+           Fixed.
+
+       V1.6
+         - Fixed the bug that ObtainDataTypeA was called for each
+           INTUITICK if the datatype selection requester was open.
+           Fixed.
+
+       V1.7
+         - Fixed the bug that a descriptor was unlocked too often
+           in some cases. See BUGS section above about a matching bug
+           in datatypes.library V45.3 and V45.4 (V45.5 fixes this).
+           Fixed (both "datatypes.library" and "DTConvert").
+
+         - The datatypes requester now accepts ESC as "Cancel" and
+           RETURN as OK.
+
+         - The tool can now be aborted by SIGBREAKF_CTRL_C.
+
+         - Fixed the bug that somtimes an error return code
+           was overwritting by the Message() function.
+
+         - Fixed the bug that the IFF comandline switch did not work
+           (the GUI prompted everytimes in this case). But IFF and
+           GUI switches does currently not co-operate :-(
+
+         - Fixed a bug in the WB startup code which caused that a project
+           without an icon wasn't processed. The code now uses
+           GetDiskObjectNew instead of GetDiskObject to fix this.
+           Fixed.
+
+         - If launched from WB, "DTConvert" now opens a console window
+           manually. Previously, the default WB output channel was used
+           (which was NIL:).
+           Same for project childs.
+
+         - Added output which prints a message if a subclass does not
+           implement a local encoder. This was only done to get rid
+           of mails like "your DTConvert has a bug: IFF ILBM -> PNG does
+           not work...". These mails should go to the authors of the
+           datatype classes, not to me. Sorry, but...
+
+         - If more than one project icon is given at WB startup, "DTConvert"
+           now launches the matching number of projects instead
+           of processing the given icons in sequence.
+
+         - Fixed problems with WB project startup and the current directory.
+
+         - The icon now contains the (possible) options and sets the
+           stack size up to 16384 bytes.
+
+       V1.8
+         - Shame on me. 
+           In the last minutes of the V1.7 release build I
+           decided to make "DTConvert" resident (using cres.o), which
+           bombs out any __saved marked code has used by the animation
+           converter section.
+           Fixed.
+
+         - Completly removed the IFF switch because it was really
+           unneccesary. If you want to save in the base class format,
+           simply specify the name of the base class, e.g.
+           "document" for documents,
+           "text" for texts,
+           "picture" for pictures,
+           "sound" for sample data,
+           "animation" for animation (and movies, due lack of a
+               movie.datatype subclass)
+           and so on...
+           And the same from the GUI.
+
+         - The "no encoder"-message is now avoided if a base class did the
+           encoder job.
+
+         - Added stack checking code. Now "DTConvert" forces the user
+           to use at least 16k stack to et rid of stack related problems...
+
+         - Minor code cleanup.
+
+
+    AUTHOR's REQUEST
+        By  releasing  this program I do  not  place any obligations on you,
+        feel free to share this program with your  friends (and enemies).
+
+        If you want to blame me, report any bugs, or wants a new version
+        send your letter to:
+                        Roland Mainz
+                        Hohenstaufenstraße 8
+                        52388 Nörvenich
+                        GERMANY
+
+        Phone: (+49)(0)2426/901568
+        Fax:   (+49)(0)2426/901569
+
+        EMAIL is also available:
+        GISBURN@w-specht.rhein-ruhr.de
+
+        If you want to send me attachments larger than 1MB (up to 5MB,
+        more with my permission):
+        Up to April 1998 I'm reachable using this email address, too:
+        Reinhold.A.Mainz@KBV.DE
+
+        | Please put your name and address in your mails !
+        | German mailers should add their phone numbers.
+        | See BUGS section above when submitting bug reports.
+
+        Sorry, but I can only look once a week for mails.
+        If you don't hear something from me within three weeks, please
+        send your mail again (but watch about new releases) (problems with
+        this email port are caused by reconfigurations, hackers, network
+        problems etc.).
+
+        The  entire  "DTConvert"  package may  be  noncommercially
+        redistributed, provided  that  the package  is always  distributed
+        in it's complete  form (including it's documentation).  A small copy
+        fee for media costs is okay but any kind of commercial distribution
+        is strictly forbidden! Comments  and  suggestions  how  to  improve
+        this program  are generally appreciated!
+
+        Thanks to Matt Dillon for his DICE, David Junod for this datatypes
+        environment and Olaf 'Olsen' Barthel for his help, ideas and some
+        text clips from his documentations.
+
+    SEE ALSO
+
+
