@@ -27,7 +27,7 @@ static                 void           No_Local_Encoder_Message( struct DataType 
 
 void Convert( STRPTR srcname, STRPTR datatypename, STRPTR destname )
 {
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     if( srcname && datatypename && destname )
     {
       struct DataType *destdtn;
@@ -124,7 +124,7 @@ BOOL ConvertDataType( Object *srcdto, struct DataType *destdtn, STRPTR destfile 
     BOOL success = FALSE;
     LONG error   = 0L;
 
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     if( srcdto && destfile )
     {
       struct DataType *srcdtn;
@@ -216,8 +216,14 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
     BOOL success = FALSE;
     LONG error   = 0L;
 
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     Message( "picture converter\n" );
+
+    D(
+      bug("[DTConvert] %s: srcdto @ 0x%p\n", __func__, srcdto);
+      bug("[DTConvert] %s: destdtn @ 0x%p\n", __func__, destdtn);
+      bug("[DTConvert] %s: file = '%s'\n", __func__, destfile);
+    )
 
     if( srcdto && destfile )
     {
@@ -234,6 +240,7 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
       {
         struct gpLayout  gpl;
 
+      D(bug("[DTConvert] %s: srcdto needs layouting\n", __func__);)
         Message( "source requires layouting...\n" );
 
         /* "Layout" picture (for those picture classes which need this,
@@ -250,6 +257,8 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
 
       /* Get source datatype, see below */
       (void)GetDTAttrs( srcdto, DTA_DataType, (&srcdtn), TAG_DONE );
+
+      D(bug("[DTConvert] %s: srcdto datatype @ 0x%p\n", __func__, srcdtn);)
 
       /* Create empty picture.datatype subclass object */
       if( destdto = NewDTObject( NULL, DTA_SourceType, DTST_RAM,
@@ -268,6 +277,8 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
         ULONG                *scregs;
         struct ColorRegister *scm;
 
+      D(bug("[DTConvert] %s: destdto @ 0x%p\n", __func__, destdto);)
+
         if( GetDTAttrs( srcdto, DTA_ObjName,         (&objname),
                                 DTA_ObjAuthor,       (&objauthor),
                                 DTA_ObjAnnotation,   (&objannotation),
@@ -281,8 +292,25 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
                                 PDTA_BitMap,         (&bm),
                                 TAG_DONE ) == 11UL )
         {
+
+    D(
+      bug("[DTConvert] %s: srcdto attribs obtained\n", __func__);
+      bug("[DTConvert] %s: DTA_ObjName = 0x%p\n", __func__, objname);
+      bug("[DTConvert] %s: DTA_ObjAuthor = 0x%p\n", __func__, objauthor);
+      bug("[DTConvert] %s: DTA_ObjAnnotation = 0x%p\n", __func__, objannotation);
+      bug("[DTConvert] %s: DTA_ObjCopyright = 0x%p\n", __func__, objcopyright);
+      bug("[DTConvert] %s: DTA_ObjVersion = 0x%p\n", __func__, objversion);
+      bug("[DTConvert] %s: PDTA_ModeID = 0x%p\n", __func__, modeid);
+      bug("[DTConvert] %s: PDTA_BitMapHeader = 0x%p\n", __func__, sbmh);
+      bug("[DTConvert] %s: PDTA_BitMap = 0x%p\n", __func__, bm);
+      bug("[DTConvert] %s: PDTA_NumColors = 0x%p\n", __func__, numcolors);
+      bug("[DTConvert] %s: PDTA_CRegs = 0x%p\n", __func__, scregs);
+      bug("[DTConvert] %s: PDTA_ColorRegisters = 0x%p\n", __func__, scm);
+    )
+
           if( GetDTAttrs( destdto, PDTA_BitMapHeader, (&dbmh), TAG_DONE ) == 1UL )
           {
+      D(bug("[DTConvert] %s: destdto bmheader @ 0x%p\n", __func__, dbmh);)
             if( sbmh && bm && dbmh )
             {
               ULONG                *dcregs;
@@ -373,6 +401,7 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
               else
               {
                 /* can't get required args from object */
+      D(bug("[DTConvert] %s: missing color regs\n", __func__);)
                 error = ERROR_OBJECT_WRONG_TYPE;
               }
 
@@ -381,6 +410,7 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
             }
             else
             {
+      D(bug("[DTConvert] %s: missing bmheader/bm\n", __func__);)
               Message( "can't get bitmap\n" );
               error = ERROR_NO_FREE_STORE;
             }
@@ -388,6 +418,7 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
           else
           {
             /* can't get required args from destination object */
+      D(bug("[DTConvert] %s: dest object missing bmheader\n", __func__);)
             Message( "can't get PDTA_BitMapHeader from destination object \n" );
             error = ERROR_OBJECT_WRONG_TYPE;
           }
@@ -395,6 +426,7 @@ BOOL ConvertPicture( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
         else
         {
           /* can't get required args from source object */
+      D(bug("[DTConvert] %s: source object missing attribs\n", __func__);)
           Message( "can't get required args from source object\n" );
           error = ERROR_OBJECT_WRONG_TYPE;
         }
@@ -430,7 +462,7 @@ BOOL ConvertAnimation( Object *srcdto, struct DataType *destdtn, STRPTR destfile
     BOOL success = FALSE;
     LONG error   = 0L;
 
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     Message( "animation converter\n" );
 
     if( srcdto && destfile && destdtn )
@@ -695,7 +727,7 @@ BOOL ConvertSound( Object *srcdto, struct DataType *destdtn, STRPTR destfile )
     BOOL success = FALSE;
     LONG error   = 0L;
 
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     Message( "sound converter\n" );
 
     if( srcdto && destfile )
@@ -827,7 +859,7 @@ ULONG WriteAnimAndSoundDispatch( REGA0 struct IClass *cl, REGA2 Object *o, REGA1
 {
     ULONG retval = 0UL;
 
-      bug("[DTConvert] %s()\n", __func__);
+      D(bug("[DTConvert] %s()\n", __func__);)
     switch( msg -> MethodID )
     {
 #ifdef CURRENTLY_USELESS_CODE
@@ -964,7 +996,7 @@ void No_Local_Encoder_Message( struct DataType *dtn )
 {
     struct DataTypeHeader *dth = dtn -> dtn_Header;
 
-  bug("[DTConvert] %s()\n", __func__);
+  D(bug("[DTConvert] %s()\n", __func__);)
 
     Message( "##########################################################################\n"
              "# Error: the selected class \"%s\"\n"
