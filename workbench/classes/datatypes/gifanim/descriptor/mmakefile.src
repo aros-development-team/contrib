@@ -1,13 +1,15 @@
-# Copyright © 2017-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2017-2020, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros.cfg
 
-DESCRNAME      :=GIFANIM
+DESCRNAME              := GIFAnim
 DESCRDIR 		:= $(AROS_DEVS)/DataTypes
 DESCRFILE		:= $(DESCRDIR)/$(DESCRNAME)
+DESCRDTCD		:= $(GENDIR)/$(CURDIR)/$(DESCRNAME).dtcd
+DTCDFILE                  := descriptor
 
-#MM datatype-descriptor-gifanim : datatype-descriptor-gifanim-setup  datatype-descriptor-gifanim-$(AROS_TARGET_CPU)
+#MM datatype-descriptor-gifanim : datatype-descriptor-gifanim-setup datatype-descriptor-gifanim-$(AROS_TARGET_CPU)
 
 #MM
 datatype-descriptor-gifanim-quick : datatype-descriptor-gifanim
@@ -18,21 +20,35 @@ datatype-descriptor-gifanim-quick : datatype-descriptor-gifanim
 #MM- datatype-descriptor-gifanim-ppc : datatype-descriptor-gifanim-matchfunc
 
 #MM datatype-descriptor-gifanim-setup :
-%rule_makedirs dirs=$(DESCRDIR) setuptarget=datatype-descriptor-gifanim-setup
+%rule_makedirs dirs="$(DESCRDIR) $(GENDIR)/$(CURDIR)/dtcd" setuptarget=datatype-descriptor-gifanim-setup
+
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/..
+USER_LDFLAGS := -static -noposixc -nostartfiles
+
+ifeq ($(AROS_TARGET_CPU),m68k)
+CREATEDTDESCARGS := -m $(DESCRDTCD)
+$(DESCRFILE) : $(DESCRDTCD)
+endif
 
 $(DESCRDIR)/% : $(SRCDIR)/$(CURDIR)/%.dtd
-	@$(ECHO) "Generating $@"
-	@cd $(DESCRDIR) && $(CREATEDTDESC) $<
+	@$(ECHO) "Generating $(if $(filter /%,$@),$(if $(filter $(SRCDIR)/%,$(abspath $@)),$(patsubst $(SRCDIR)/%,%,$(abspath $@)),$(patsubst $(TOP)/%,%,$(abspath $@))),$(patsubst $(SRCDIR)/%,%,$(abspath $(SRCDIR)/$(CURDIR)/$@)))"
+	@cd $(DESCRDIR) && $(CREATEDTDESC) $(CREATEDTDESCARGS) $<
+
+$(GENDIR)/$(CURDIR)/$(DESCRNAME).dtcd : $(SRCDIR)/$(CURDIR)/$(DTCDFILE).c | $(GENDIR)/$(CURDIR)/dtcd
+	@$(ECHO) "Generating $(if $(filter /%,$@),$(if $(filter $(SRCDIR)/%,$(abspath $@)),$(patsubst $(SRCDIR)/%,%,$(abspath $@)),$(patsubst $(TOP)/%,%,$(abspath $@))),$(patsubst $(SRCDIR)/%,%,$(abspath $(SRCDIR)/$(CURDIR)/$@)))"
+	$(Q)$(eval DTCDTMPFILE=$(GENDIR)/$(CURDIR)/dtcd/$(notdir $@.elf.o))
+	%compile_q to=$(DTCDTMPFILE)
+	%link_q objdir=$(GENDIR)/$(CURDIR)/dtcd from=$(DTCDTMPFILE) to=$@.elf
+	@$(ELF2HUNK) $(QE2H) $@.elf $@
 
 #MM
 datatype-descriptor-gifanim : $(DESCRFILE)
 
-USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/..
-USER_LDFLAGS := -static
+#MM
+datatype-descriptor-gifanim-m68k : $(DESCRDTCD)
 
 %build_prog mmake=datatype-descriptor-gifanim-matchfunc \
-    progname=$(DESCRNAME).$(AROS_TARGET_CPU) targetdir=$(DESCRDIR) \
-    files=descriptor usestartup=no
-
+    progname=.$(DESCRNAME).$(AROS_TARGET_CPU) targetdir=$(DESCRDIR) \
+    files=$(DTCDFILE) usestartup=no
 
 %common
