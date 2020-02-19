@@ -1442,7 +1442,7 @@ LONG LoadFrames( struct ClassBase *cb, Object *o )
                                 }
                             }
 
-                            DIFF(bug("[anim.datatype] %s: EOF Reached\n", __func__, error);)
+                            DIFF(bug("[anim.datatype] %s: IFF Parsed\n", __func__, error);)
 
                             /* Any frames ? */
                             if( timestamp && (error == 0L) && numcmaps )

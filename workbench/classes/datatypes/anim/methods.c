@@ -752,9 +752,10 @@ IPTR DT_LoadFrame(struct IClass *cl, Object *o, struct adtFrame *alf)
                             else
                             {
                                 LONG seekdist; /* seeking distance (later Seek result, if Seek'ed) */
+                                int count = 1;
 
                                 D(bug("[anim.datatype] %s: loading data\n", __func__));
-
+tryagain:
                                 seekdist = ((worknode -> fn_BMOffset) - (aid -> aid_CurrFilePos));
 
                                 D(
@@ -778,11 +779,15 @@ IPTR DT_LoadFrame(struct IClass *cl, Object *o, struct adtFrame *alf)
                                 {
                                     LONG bytesread;
 
+                                    D(bug("[anim.datatype] %s: reading %d bytes..\n", __func__, worknode -> fn_LoadSize);)
+
 #ifdef DOASYNCIO
                                     bytesread = ReadAsync( cb, (aid -> aid_FH), buff, (worknode -> fn_LoadSize) );
 #else
                                     bytesread = Read( (aid -> aid_FH), buff, (worknode -> fn_LoadSize) );
 #endif /* DOASYNCIO */
+
+                                    D(bug("[anim.datatype] %s: BytesRead %d\n", __func__, bytesread);)
 
                                     /* No error during reading ? */
                                     if ((bytesread >= (worknode -> fn_BMSize)) && (bytesread != -1L))
@@ -805,6 +810,7 @@ IPTR DT_LoadFrame(struct IClass *cl, Object *o, struct adtFrame *alf)
                                         /* Read error */
                                         error = IoErr();
 
+                                        D(bug("[anim.datatype] %s: ReadError %d\n", __func__, error);)
                                         /* Error, rewind stream */
 #ifdef DOASYNCIO
                                         SeekAsync( cb, (aid -> aid_FH), 0L, OFFSET_BEGINNING );
@@ -812,6 +818,8 @@ IPTR DT_LoadFrame(struct IClass *cl, Object *o, struct adtFrame *alf)
                                         Seek( (aid -> aid_FH), 0L, OFFSET_BEGINNING );
 #endif /* DOASYNCIO */
                                         aid -> aid_CurrFilePos = 0L;
+                                        if (count-- >= 0)
+                                            goto tryagain;
                                     }
 
                                     worknode -> fn_LoadSize = 0UL; /* destroy that this value won't affect anything else */
@@ -820,6 +828,7 @@ IPTR DT_LoadFrame(struct IClass *cl, Object *o, struct adtFrame *alf)
                                 {
                                     /* Seek error */
                                     error = IoErr();
+                                    D(bug("[anim.datatype] %s: SeekError %d\n", __func__, error);)
                                 }
                             }
                         } while( rollback-- && (error == 0L) );

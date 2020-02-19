@@ -48,6 +48,7 @@ LONG generic_unpackshortdelta(struct AnimHeader *anhd, struct BitMap *bm, UBYTE 
             while (*ops  != 0xFFFF)
             {
                 offset = AROS_BE2WORD(*ops);
+                D(bug("[anim.datatype] %s: offset %04x\n", __func__, offset);)
                 ops++;
 
                 if (offset >= 0)
