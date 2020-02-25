@@ -6,4 +6,4 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-multimedia : development-libmikmod
 
 %fetch_and_build_gnu_development package=libmikmod version=3.3.10 patch=no \
-    package_repo=sf://mikmod suffixes="tar.gz" nlsflag=no
+    package_repo=https://sourceforge.net/projects/mikmod/files/outdated_versions/libmikmod/3.3.10 suffixes="tar.gz" nlsflag=no
