@@ -61,30 +61,30 @@ struct Affrect
     int h;
 };
 
-struct WindowList*          globalActiveWindow;
-struct oCanvas*             globalActiveCanvas;
-int                         globalWindowIncrement;
-int                         globalEvents;
-int                         globalCurrentTool;
-int                         globalGrid; // Using grid?
-int                         globalCurrentGrid; // Grid size
+extern struct WindowList*          globalActiveWindow;
+extern struct oCanvas*             globalActiveCanvas;
+extern int                         globalWindowIncrement;
+extern int                         globalEvents;
+extern int                         globalCurrentTool;
+extern int                         globalGrid; // Using grid?
+extern int                         globalCurrentGrid; // Grid size
 
-int                         eMouseX; // event mouse coordinate
-int                         eMouseY; // --||--
-double                      cMouseX; // Registered coordinates..
-double                      cMouseY; // --||--
-double                      dMouseX; // Coordinate for drawing
-double                      dMouseY; // --||--
-double                      pMouseX; // Prev coordinate for drawing
-double                      pMouseY; // --||--
+extern int                         eMouseX; // event mouse coordinate
+extern int                         eMouseY; // --||--
+extern double                      cMouseX; // Registered coordinates..
+extern double                      cMouseY; // --||--
+extern double                      dMouseX; // Coordinate for drawing
+extern double                      dMouseY; // --||--
+extern double                      pMouseX; // Prev coordinate for drawing
+extern double                      pMouseY; // --||--
 
-BOOL                        MouseButtonL;
-BOOL                        MouseButtonR;
-BOOL                        globalAntialiasing;
-BOOL                        globalFeather;
-int                         globalBrushMode; // Normal generated or clipbrush
-int                         globalColorMode; // How to use colors
-UWORD                       lastKeyPressed;
-BOOL                        MouseHasMoved;
+extern BOOL                        MouseButtonL;
+extern BOOL                        MouseButtonR;
+extern BOOL                        globalAntialiasing;
+extern BOOL                        globalFeather;
+extern int                         globalBrushMode; // Normal generated or clipbrush
+extern int                         globalColorMode; // How to use colors
+extern UWORD                       lastKeyPressed;
+extern BOOL                        MouseHasMoved;
 
 #endif

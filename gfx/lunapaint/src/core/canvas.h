@@ -71,8 +71,9 @@ struct toolLineData
     double                  h;              // Height of buffer rect
     BOOL                    initialized;    // Are we initialized or not?
     unsigned long long int  *buffer;        // pixelbuffer
-} toolLineData;
+};
 
+extern struct toolLineData toolLineData;
 extern struct toolLineData lineTool;
 
 // Tool Brush

@@ -69,7 +69,9 @@ struct ObjectBOOL
 {
     Object *obj;
     BOOL value;
-} ObjectBOOL;
+};
+
+extern struct ObjectBOOL ObjectBOOL;
 
 /*
     Program menu

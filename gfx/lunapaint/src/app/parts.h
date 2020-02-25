@@ -84,7 +84,9 @@ struct RectStruct
     int y;
     int w;
     int h;
-} RectStruct;
+};
+
+extern struct RectStruct RectStruct;
 
 /*
     A linked list consisting of windowID and a window object
@@ -131,7 +133,9 @@ struct WindowList
     struct RectStruct prevBlit;     // previous blitted area
     struct Hook     CanvasKey_hook; // Hook for input keys
     struct WindowList *nextwin;     // Next window in list
-} WindowList;
+};
+
+extern struct WindowList WindowList;
 
 /*
     The data struct for the custom area class

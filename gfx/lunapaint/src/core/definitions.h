@@ -150,6 +150,8 @@ struct oCanvas
     unsigned long long int  *activebuffer;      // Points to the current layer/frame
     unsigned long long int  *swapbuffer;        // A swap buffer :-)
     unsigned int            *tmpBuf;            // Stores temp info if needed
-} oCanvas;
+};
+
+extern struct oCanvas oCanvas;
 
 #endif

@@ -2,7 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-gfx : contrib-gfx-lunapaint
+##MM- contrib-gfx : contrib-gfx-lunapaint
 
 #MM  contrib-gfx-lunapaint : includes linklibs workbench-libs-freetype-linklibs \
 #MM  contrib-gfx-lunapaint-data \
@@ -20,6 +20,7 @@ USER_INCLUDES:= -I$(SRCDIR)/$(CURDIR)/src -I$(GENDIR)/$(CURDIR)/src/app -I$(AROS
 
 FILES := \
 	src/main \
+        src/globals \
 	src/math/math \
 	src/app/events \
 	src/app/gui \
