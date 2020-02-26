@@ -71,8 +71,8 @@ struct UserGroupIFace*  IUserGroup;
 #endif
 
 #if defined(__AROS__)
-struct Library*         SocketBase;
-struct Library*         UserGroupBase;
+extern struct Library*         SocketBase;
+extern struct Library*         UserGroupBase;
 #endif
 
 extern int init_inet_daemon(void);
