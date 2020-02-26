@@ -92,6 +92,7 @@ QUAKE_MAINSOURCES := \
 #####
 
 ifeq ($(AROS_TARGET_CPU),i386)
+USER_CPPFLAGS += -DQUAKE_ASM
 QUAKE_MAINASMSOURCES := \
         $(QUAKE_SRCDIR)/d_draw \
         $(QUAKE_SRCDIR)/d_draw16 \

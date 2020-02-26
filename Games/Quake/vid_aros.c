@@ -74,8 +74,10 @@ struct Library *KeymapBase = NULL;
 void aros_vid_shutdown();
 
 
-/*  SYMBOLS NEEDED FROM OTHER FILES */
-viddef_t vid; // global video state
+/*  Symbols needed FROM other files */
+extern viddef_t vid; // global video state
+
+/*  Symbols needed FOR other files */
 unsigned short d_8to16table[256];
 
 static void calc_window_dims()
