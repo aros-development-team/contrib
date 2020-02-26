@@ -169,7 +169,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 	struct SplashInstance *inst = &splashInst;
 	char text[512];
 	va_list args;
-	ULONG *ArgList = NULL;
+	IPTR *ArgList = NULL;
 	BOOL SemaLocked = FALSE;
 
 	d1(kprintf("%s/%s/%ld: fmt=<%s>\n", __FILE__, __FUNC__, __LINE__, fmt));
@@ -191,13 +191,13 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 
 		va_start(args, NumArgs);
 
-		ArgList = ScalosAlloc(1 + NumArgs * sizeof(ULONG));
+		ArgList = ScalosAlloc(1 + NumArgs * sizeof(IPTR));
 		if (NULL == ArgList)
 			break;
 
 		pArg = ArgList;
 		while (NumArgs--)
-			*pArg++ = va_arg(args, ULONG);
+			*pArg++ = va_arg(args, IPTR);
 
 		if (strlen(fmt) > 0)
 			ScaFormatStringArgs(text, sizeof(text), fmt, (RAWARG)ArgList);
