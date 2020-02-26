@@ -15,7 +15,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-complete : contrib-bgui
 #MM- contrib-complete : contrib-gfx
 #MM- contrib-complete : contrib-radium
-#DISABLE MM- contrib-complete : contrib-gc
 #MM- contrib-complete : contrib-development
 #MM- contrib-complete : contrib-gnu
 #MM- contrib-complete : contrib-networking
