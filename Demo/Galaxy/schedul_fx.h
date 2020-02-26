@@ -13,18 +13,18 @@
 
 
   
-struct timeval   demo_start_time;   /* self-describing name... */
-struct timeval   demo_current_time; /* idem */
-struct timeval   demo_elapsed_time; /* duration since demo begining, used */
+extern struct timeval   demo_start_time;   /* self-describing name... */
+extern struct timeval   demo_current_time; /* idem */
+extern struct timeval   demo_elapsed_time; /* duration since demo begining, used */
                                     /* for sequences transitions */
 
 
-struct timeval    frame_time;        /* time of last frame computation ending */
-struct timeval    frame_elapsed_time;/* duration between the two frames */
+extern struct timeval    frame_time;        /* time of last frame computation ending */
+extern struct timeval    frame_elapsed_time;/* duration between the two frames */
 
 extern unsigned long int frame_count;    /* number of frames in sequence */
-struct timeval    sequence_start_time;   /* start-date of current sequence */
-struct timeval    sequence_elapsed_time; /* duration since sequence begining */
+extern struct timeval    sequence_start_time;   /* start-date of current sequence */
+extern struct timeval    sequence_elapsed_time; /* duration since sequence begining */
 
 
 /* update functions */

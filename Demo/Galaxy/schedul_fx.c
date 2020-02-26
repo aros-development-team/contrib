@@ -11,6 +11,17 @@
 
 #include "schedul_fx.h"
 
+struct timeval   demo_start_time;
+struct timeval   demo_current_time;
+struct timeval   demo_elapsed_time;
+
+struct timeval    frame_time;
+struct timeval    frame_elapsed_time;
+
+unsigned long int frame_count;
+struct timeval    sequence_start_time;
+struct timeval    sequence_elapsed_time;
+
 unsigned long int frame_count;
 
 void opti_sched_init(){
