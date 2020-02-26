@@ -314,7 +314,7 @@ struct rgba3DB{
 #define MAXFUNCTIONS 88				/* 88 functions in V4  */
 #endif
 /*==================================================================================*/
-BOOL LibDebug;				/* Enable Library Debugger (global)	*/
+extern BOOL LibDebug;				/* Enable Library Debugger (global)	*/
 /*==================================================================================*/
 struct WAZP3D_parameters{
 struct button3D HardwareLie;		/* pretend to be a perfect hardware driver */

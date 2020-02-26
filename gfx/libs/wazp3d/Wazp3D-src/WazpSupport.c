@@ -8,6 +8,8 @@
 /*==================================================================================*/
 #include "Wazp3D.h"
 
+BOOL LibDebug = FALSE;
+
 #ifdef AMIGA
 ULONG  StartTime=0;
 
