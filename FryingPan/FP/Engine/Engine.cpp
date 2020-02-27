@@ -648,7 +648,7 @@ bool Engine::openDevice(const char* name, int lun)
       if (strlen(name) == 0)
          return false;
 
-      pdrv = pOptical->OptDoMethodA(ARRAY(DRV_NewDrive, (IPTR)name, lun));
+      pdrv = pOptical->OptDoMethodA(ARRAY(DRV_NewDrive, (IPTR)name, (IPTR)lun));
 
       Drive.Assign(pdrv);
    }

@@ -33,6 +33,8 @@
    // both fryingpan and coffe work on common engine
    // this CAN BE DONE!
 
+extern "C"
+{
    LIBRARY("fryingpan.engine", "$VER: fryingpan.engine 1.2 Tomasz Wiszkowski", 1);
    GATE1(IEngine*,         getEngine,     int,              d0);
    GATE1(const ScanData*,  scanDevice,    const char*,      a0);
@@ -43,6 +45,7 @@
       LIB_FT_Function(scanDevice)
       LIB_FT_Function(freeScanData)
    LIB_FT_End
+}
 
    Configuration    *pConfig;
    VectorT<Engine*> *pEngines;

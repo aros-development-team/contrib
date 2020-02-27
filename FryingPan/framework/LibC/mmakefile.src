@@ -50,4 +50,4 @@ USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS)
 USER_LDFLAGS := -static-libstdc++
 
 %build_linklib mmake=contrib-fryingpan-framework-libc libname="C" \
- files="$(FILES)" cxxfiles="$(CXXFILES)"
+ files="$(FILES)" libdir=$(GENDIR)/$(CURDIR)/.. cxxfiles="$(CXXFILES)"

@@ -40,4 +40,4 @@ USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) $(CFLAGS_PERMISSIVE) 
 USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/.. $(CFLAGS_ISYSTEM_END)
 
 %build_linklib mmake=contrib-fryingpan-framework-generic \
- libname="Generic" files= cxxfiles="$(FILES)"
+ libname="Generic" libdir=$(GENDIR)/$(CURDIR)/.. files= cxxfiles="$(FILES)"

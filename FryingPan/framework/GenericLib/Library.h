@@ -29,16 +29,22 @@ extern "C"
 {
 #endif
 
+#if defined(__AROS__)
+#include <aros/libcall.h>
+#include <aros/asmcall.h>
+#include <aros/symbolsets.h>
+#endif
+
    extern struct Library*      SysBase;
    extern struct Library*      OurBase;
    
+#if !defined(__AROS__)
    extern uint                 LIB_FuncTable[];    // LIB_FT_Begin + LIB_FT_Function + LIB_FT_End
-
+#endif
    extern bool                 Lib_SetUp();        // user defined setup with weak local binding
    extern void                 Lib_CleanUp();      // in these functions you should only perform your own
    extern bool                 Lib_Acquire();      // initializations. returning false means library should
    extern void                 Lib_Release();      // not allow opening.
-
 #ifdef __cplusplus
 };
 #endif

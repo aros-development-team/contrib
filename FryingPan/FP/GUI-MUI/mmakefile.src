@@ -47,10 +47,10 @@ CXXFILES := \
  Components/MUIPictureClass \
 
 USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../../framework \
-        $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../..  $(CFLAGS_ISYSTEM_END)
+        $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../..  $(CFLAGS_ISYSTEM_END) -I $(GENDIR)/$(CURDIR)/../../framework/include
 USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) 
-USER_LDFLAGS := -static-libstdc++
+USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -Wl,--start-group -L$(GENDIR)/$(CURDIR)/../../framework -lGeneric -lLibrary -lC -lposixc_rel -lstdc_rel -lautoinit
 
 %build_prog mmake=contrib-fryingpan-fp-guimui \
  progname="mui.interface" targetdir=$(DESTDIR) files= cxxfiles="$(CXXFILES)" \
- uselibs="Generic C Library" usestartup=no lto=no
+ uselibs="" usestartup=no lto=no

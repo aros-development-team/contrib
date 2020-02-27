@@ -4,9 +4,43 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 FILES := LibWrapper_aros Library
 
-USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/.. $(CFLAGS_ISYSTEM_END)
+USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/.. $(CFLAGS_ISYSTEM_END) -I$(GENDIR)/$(CURDIR)/../include
 USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) 
 USER_LDFLAGS := -static-libstdc++
 
+GENINCDIRS := $(GENDIR)/$(CURDIR)/../include $(GENDIR)/$(CURDIR)/../include/proto $(GENDIR)/$(CURDIR)/../include/clib $(GENDIR)/$(CURDIR)/../include/defines $(GENDIR)/$(CURDIR)/../include/inline
+
+#MM
+fryingpan-framework-genericlib-gen-stubs: $(GENDIR)/$(CURDIR)/.stubs-generated
+
+$(GENDIR)/$(CURDIR)/../include $(GENDIR)/$(CURDIR)/../include/proto $(GENDIR)/$(CURDIR)/../include/clib $(GENDIR)/$(CURDIR)/../include/defines $(GENDIR)/$(CURDIR)/../include/inline :
+	%mkdir_q dir="$@"
+
+$(GENDIR)/$(CURDIR)/.stubs-generated : | $(GENINCDIRS)
+	@$(ECHO) "Generating GenericLib API stubs..."
+	@$(GENMODULE) -c $(SRCDIR)/$(CURDIR)/LibWrapper.conf -d $(GENDIR)/$(CURDIR) writefiles LibWrapper library
+	@$(TOUCH) $@
+
+#
+# use genmodule to generate the AROS LibWrapper API headers
+#
+
+#MM
+fryingpan-framework-genericlib-gen-includes: $(GENDIR)/$(CURDIR)/.includes-generated
+
+$(GENDIR)/$(CURDIR)/.includes-generated : $(GENMODULE) | $(GENINCDIRS)
+	@$(ECHO) "Generating GenericLib API headers..."
+	@$(GENMODULE) -c $(SRCDIR)/$(CURDIR)/LibWrapper.conf -d $(GENDIR)/$(CURDIR)/../include writeincludes LibWrapper library
+	@$(GENMODULE) -c $(SRCDIR)/$(CURDIR)/LibWrapper.conf -d $(GENDIR)/$(CURDIR)/../include writelibdefs LibWrapper library
+	@$(SED) -i.orig -e '/^#define MOD_NAME_STRING/d' -e '/^#define MOD_VERS_STRING/d' -e '/^#define VERSION_NUMBER/d' -e '/^#define MAJOR_VERSION/d' -e '/^#define REVISION_NUMBER/d' -e '/^#define MINOR_VERSION/d' -e '/^#define VERSION_STRING/d' -e '/^#define COPYRIGHT_STRING/d' -e 's/RTF_COLDSTART|//g' $(GENDIR)/$(CURDIR)/../include/LibWrapper_libdefs.h
+	@$(TOUCH) $@
+
+#MM- fryingpan-framework-genericlib-gen : fryingpan-framework-genericlib-gen-includes fryingpan-framework-genericlib-gen-stubs
+#MM contrib-fryingpan-framework-genericlib : fryingpan-framework-genericlib-gen
+
+GENFILES := \
+            $(wildcard $(GENDIR)/$(CURDIR)/*_start.c) \
+            $(wildcard $(GENDIR)/$(CURDIR)/*_end.c)
+
 %build_linklib mmake=contrib-fryingpan-framework-genericlib \
- libname="Library" cxxfiles="$(FILES)"
+ libname="Library" libdir=$(GENDIR)/$(CURDIR)/.. files="$(GENFILES:.c=)" cxxfiles="$(FILES)"

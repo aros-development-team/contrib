@@ -18,79 +18,42 @@
  */
 
 #include "Library.h"
-#include "LibWrapper_aros.h"
+
+extern "C" {
 #define __NOLIBBASE__
 #include <exec/resident.h>
 #include <proto/exec.h>
-
-struct LibInitStruct LIB_InitStruct =
-{
-   (unsigned long)   sizeof(struct Library),
-   (void*)           LIB_FuncTable,
-   (void*)           NULL,
-   (void (*)(void)) &LIB_Init
-};
-
-   struct Library      *OurBase  = 0;
-   void                *SegList  = 0;
-
-struct Library *LIB_Init(Library *pOurBase, void *pSegList, ExecBase *pSysBase)
-{
-   SysBase = (Library*)pSysBase;
-   OurBase = pOurBase;
-   SegList = pSegList;
-
-   if (true == Lib_SetUp())
-      return OurBase;
-   
-   FreeMem((void*)((IPTR)(OurBase) - OurBase->lib_NegSize), OurBase->lib_NegSize + OurBase->lib_PosSize);
-   return 0;
 }
 
-IPTR LIB_Expunge(void)
+#include "LibWrapper_aros.h"
+
+static int LibLibrary_Init(struct Library *pOurBase)
 {
-   if (OurBase->lib_OpenCnt)
-   {
-      OurBase->lib_Flags |= LIBF_DELEXP;
-      return 0;
-   }
-
-   Lib_CleanUp();
-
-   Forbid();
-   Remove(&OurBase->lib_Node);
-   Permit();
-
-   FreeMem((void*)((IPTR)(OurBase) - OurBase->lib_NegSize), OurBase->lib_NegSize + OurBase->lib_PosSize);
-
-   return (IPTR)SegList;
+    if (true == Lib_SetUp())
+        return TRUE;
+    return FALSE;
 }
 
-struct Library *LIB_Open(void)
+static int LibLibrary_Expunge(struct Library *pOurBase)
 {
-   if (false == Lib_Acquire())
-      return 0;
-   OurBase->lib_Flags &= ~LIBF_DELEXP;
-   OurBase->lib_OpenCnt++;
-   return OurBase;
+    Lib_CleanUp();
+    return TRUE;
 }
 
-IPTR LIB_Close(void) 
+static int LibLibrary_Open(struct Library *pOurBase)
 {
-   if (OurBase->lib_OpenCnt == 0)
-      return 0;
-
-   Lib_Release();
-
-   if ((--OurBase->lib_OpenCnt) == 0)
-   {
-      if (OurBase->lib_Flags & LIBF_DELEXP)
-         return (LIB_Expunge());
-   }
-   return 0;
+    if (false == Lib_Acquire())
+        return FALSE;
+    return TRUE;
 }
 
-IPTR LIB_Reserved(void)
+static int LibLibrary_Close(struct Library *pOurBase)
 {
-   return 0;
+    Lib_Release();
+    return TRUE;
 }
+
+ADD2INITLIB(LibLibrary_Init, 0);
+ADD2OPENLIB(LibLibrary_Open, 0);
+ADD2CLOSELIB(LibLibrary_Close, 0);
+ADD2EXPUNGELIB(LibLibrary_Expunge, 0);

@@ -42,7 +42,9 @@
    struct Library         *__InternalDOSBase;
    struct Library         *__InternalIntuitionBase;
    struct Library         *__InternalUtilityBase;
+#if !defined(__AROS__)
    struct Library         *SysBase;
+#endif
 
 #ifdef __AMIGAOS4__
    struct DOSIFace        *__InternalDOSIFace;
@@ -69,7 +71,7 @@ int __setup()
    
    // 2. Initialize semaphore
    InitSemaphore(&__InternalSemaphore);
-   
+
    // 2.a Open Libraries
    __InternalDOSBase          = OpenLibrary(dosname, 37);
    __InternalIntuitionBase    = OpenLibrary(intname, 37);
