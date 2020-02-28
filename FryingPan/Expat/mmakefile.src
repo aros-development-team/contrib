@@ -2,9 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-##MM- contrib-fryingpan-expat: $(CROSSTOOLS_TARGET)
-
-#MM contrib-fryingpan-expat: \
+#MM contrib-fryingpan-expat : \
 #MM     contrib-fryingpan-framework-generic \
 #MM     contrib-fryingpan-framework-genericlib \
 #MM     contrib-fryingpan-framework-libc
@@ -20,10 +18,10 @@ CXXFILES := \
  LibWrapper
 
 USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../framework \
-        $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/..  $(CFLAGS_ISYSTEM_END)
+        $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/..  $(CFLAGS_ISYSTEM_END) -I $(GENDIR)/$(CURDIR)/../framework/include
 USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) 
-USER_LDFLAGS := -static-libstdc++
+USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -Wl,--start-group -L$(GENDIR)/$(CURDIR)/../framework -lGeneric -lLibrary -lC -lposixc_rel -lstdc_rel -lautoinit
 
 %build_prog mmake=contrib-fryingpan-expat \
  progname="expat2.library" targetdir=$(DESTDIR) files="$(FILES)" \
- cxxfiles="$(CXXFILES)" uselibs="Generic Library C"
+ cxxfiles="$(CXXFILES)" uselibs="" usestartup=no

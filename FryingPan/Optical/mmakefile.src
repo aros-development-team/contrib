@@ -2,9 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-fryingpan-optical: $(CROSSTOOLS_TARGET)
-
-#MM contrib-fryingpan-optical: \
+#MM contrib-fryingpan-optical : \
 #MM     contrib-fryingpan-framework-generic \
 #MM     contrib-fryingpan-framework-genericlib \
 #MM     contrib-fryingpan-framework-libc
@@ -48,10 +46,10 @@ NOWARN_FLAGS := \
     $(NOWARN_ATTRIBUTES) \
     $(NOWARN_INT_IN_BOOL_CONTEXT)
 
-USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../framework $(CFLAGS_ISYSTEM_END)
+USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../framework $(CFLAGS_ISYSTEM_END) -I $(GENDIR)/$(CURDIR)/../framework/include
 USER_CXXFLAGS := $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) $(NOWARN_FLAGS)
-USER_LDFLAGS := -static-libstdc++
+USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -Wl,--start-group -L$(GENDIR)/$(CURDIR)/../framework -lGeneric -lLibrary -lC -lposixc_rel -lstdc_rel -lautoinit
 
 %build_prog mmake=contrib-fryingpan-optical progname="Optical" \
  targetdir=$(DESTDIR) files= cxxfiles="$(CXXFILES)" \
- uselibs="Generic Library C"
+ uselibs="" usestartup=no
