@@ -1,11 +1,15 @@
-# Copyright © 2008-2020, The AROS Development Team. All rights reserved.
+# Copyright Â© 2008-2020, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+OPENSSL_RELEASE=1.1.0
 REPOSITORIES = http://www.openssl.org/source/ \
- ftp://mirror.switch.ch/mirror/openssl/source/
-OPENSSL_VERSION=1.1.0h
+ ftp://mirror.switch.ch/mirror/openssl/source/ \
+ http://www.openssl.org/source/old/$(OPENSSL_RELEASE)/ \
+ ftp://mirror.switch.ch/mirror/openssl/source/old/$(OPENSSL_RELEASE)/
+
+OPENSSL_VERSION=$(OPENSSL_RELEASE)h
 ARCHBASE := openssl-$(OPENSSL_VERSION)
 OPENSSL_SOURCE := $(PORTSDIR)/openssl/$(ARCHBASE)
 OPENSSL_BUILD_DIR := $(GENDIR)/$(CURDIR)/$(ARCHBASE)
