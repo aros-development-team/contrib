@@ -1,4 +1,4 @@
-# Copyright © 2012-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2012-2020, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -6,7 +6,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-development : contrib-cairo
 #MM- contrib-cairo : development-cairo
 
-#MM- development-cairo : workbench-libs-freetype-complete contrib-fontconfig
+#MM- development-cairo : workbench-libs-freetype-complete contrib-fontconfig contrib-gfx-libs-pixman-includes
 
 CAIRO_OPTIONS= \
     --enable-ft \
