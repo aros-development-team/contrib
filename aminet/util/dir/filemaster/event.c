@@ -27,7 +27,6 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 #include <proto/layers.h>
-#include <stdio.h>  
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <exec/memory.h>
@@ -47,17 +46,14 @@
 #include <devices/inputevent.h>
 #include <aros/oldprograms.h> 
 #include <proto/icon.h>
-#include <proto/exec.h>
-#include <proto/dos.h>
-#include <proto/intuition.h>
-#include <stdio.h> 
 #include <exec/types.h>
 #include <intuition/intuition.h>
-#include <libraries/gadtools.h>
 #include <intuition/gadgetclass.h>
 #include <workbench/startup.h>
+
 #include <strings.h>
 #include <stdio.h>
+#include <string.h>
 
 #define ENABLE_RT 1
 #include <aros/rt.h>
