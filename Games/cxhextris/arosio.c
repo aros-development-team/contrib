@@ -35,6 +35,8 @@
 #include <devices/timer.h>
 #include <devices/rawkeycodes.h>
 
+#include <string.h>
+
 #include "header.h"
 
 struct Screen *scr;
