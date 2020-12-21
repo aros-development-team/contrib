@@ -17,6 +17,8 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include <string.h>
+
 #define list_format_single "P=\033l"
 #define list_format_multi  "P=\033r BAR,"
 
