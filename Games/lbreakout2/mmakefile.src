@@ -31,6 +31,6 @@ LB2OPTS := \
 
 %fetch_and_build mmake=contrib-games-lbreakout2 package=$(LB2NAME) version=$(LB2VERS) \
     package_repo="$(LB2REPO)" \
-    nix=yes patch=yes \
+    nix=yes gnuflags=no xflag=no patch=yes \
     prefix=$(AROS_CONTRIB)/Games/Action/LBreakout2 nix_dir_layout=no \
     extraoptions="$(LB2OPTS)"

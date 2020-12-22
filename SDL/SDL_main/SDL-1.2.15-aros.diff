@@ -1,5 +1,5 @@
 diff -ruN SDL-1.2.15/SDL.conf SDL-1.2.15.aros/SDL.conf
---- SDL-1.2.15/SDL.conf	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/SDL.conf	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/SDL.conf	2019-12-22 23:28:15.190000000 +0000
 @@ -0,0 +1,242 @@
 +##begin config
@@ -245,7 +245,7 @@ diff -ruN SDL-1.2.15/SDL.conf SDL-1.2.15.aros/SDL.conf
 +int SDL_GetWMInfo (SDL_SysWMinfo *info) (A0)
 +##end functionlist
 diff -ruN SDL-1.2.15/SDL_intern.h SDL-1.2.15.aros/SDL_intern.h
---- SDL-1.2.15/SDL_intern.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/SDL_intern.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/SDL_intern.h	2019-12-18 21:05:38.127224100 +0000
 @@ -0,0 +1,161 @@
 +#ifndef	_SDL_INTERN_H
@@ -410,7 +410,7 @@ diff -ruN SDL-1.2.15/SDL_intern.h SDL-1.2.15.aros/SDL_intern.h
 +
 +#endif
 diff -ruN SDL-1.2.15/aros/sdl-config SDL-1.2.15.aros/aros/sdl-config
---- SDL-1.2.15/aros/sdl-config	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/aros/sdl-config	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/aros/sdl-config	2019-12-18 21:05:38.127224100 +0000
 @@ -0,0 +1,58 @@
 +#!/bin/sh
@@ -472,7 +472,7 @@ diff -ruN SDL-1.2.15/aros/sdl-config SDL-1.2.15.aros/aros/sdl-config
 +  shift
 +done
 diff -ruN SDL-1.2.15/aros/sdl.pc SDL-1.2.15.aros/aros/sdl.pc
---- SDL-1.2.15/aros/sdl.pc	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/aros/sdl.pc	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/aros/sdl.pc	2019-12-18 21:05:38.127224100 +0000
 @@ -0,0 +1,15 @@
 +# sdl pkg-config source file
@@ -491,7 +491,7 @@ diff -ruN SDL-1.2.15/aros/sdl.pc SDL-1.2.15.aros/aros/sdl.pc
 +Libs.private: -lSDL   -lm -lGL
 +Cflags: -I${includedir}/SDL -D_GNU_SOURCE=1
 diff -ruN SDL-1.2.15/aros_init.c SDL-1.2.15.aros/aros_init.c
---- SDL-1.2.15/aros_init.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/aros_init.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/aros_init.c	2019-12-18 21:05:38.127224100 +0000
 @@ -0,0 +1,148 @@
 +/* Copyright 2013 The AROS Development Team. All rights reserved. */
@@ -784,7 +784,7 @@ diff -ruN SDL-1.2.15/include/SDL_config.h SDL-1.2.15.aros/include/SDL_config.h
  #elif defined(__MACOS__)
  #include "SDL_config_macos.h"
 diff -ruN SDL-1.2.15/include/SDL_config_aros.h SDL-1.2.15.aros/include/SDL_config_aros.h
---- SDL-1.2.15/include/SDL_config_aros.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/include/SDL_config_aros.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/include/SDL_config_aros.h	2019-12-18 21:05:38.127224100 +0000
 @@ -0,0 +1,152 @@
 +/*
@@ -3398,7 +3398,7 @@ diff -ruN SDL-1.2.15/src/audio/SDL_wave.c SDL-1.2.15.aros/src/audio/SDL_wave.c
  	chunk->magic	= SDL_ReadLE32(src);
  	chunk->length	= SDL_ReadLE32(src);
 diff -ruN SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.c
---- SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.c	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,528 @@
 +/*
@@ -3930,7 +3930,7 @@ diff -ruN SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c SDL-1.2.15.aros/src/audio/ahi/
 +	SetTaskPri(task, 1);
 +}
 diff -ruN SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.h SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.h
---- SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.h	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,64 @@
 +/*
@@ -4726,7 +4726,7 @@ diff -ruN SDL-1.2.15/src/cdrom/SDL_syscdrom.h SDL-1.2.15.aros/src/cdrom/SDL_sysc
  
 +#endif
 diff -ruN SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.c SDL-1.2.15.aros/src/cdrom/aros/SDL_syscdrom.c
---- SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/cdrom/aros/SDL_syscdrom.c	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,635 @@
 +/*
@@ -5365,7 +5365,7 @@ diff -ruN SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.c SDL-1.2.15.aros/src/cdrom/aro
 +	D(bug("CDRom : SDL_SYS_CDQuit\n"));
 +}
 diff -ruN SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.h SDL-1.2.15.aros/src/cdrom/aros/SDL_syscdrom.h
---- SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/cdrom/aros/SDL_syscdrom.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/cdrom/aros/SDL_syscdrom.h	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,107 @@
 +/*
@@ -7731,7 +7731,7 @@ diff -ruN SDL-1.2.15/src/joystick/SDL_sysjoystick.h SDL-1.2.15.aros/src/joystick
 +#define SDL_SYS_JoystickQuit() SDL_SYS_JoystickQuitI(SDLBase)
 +#endif
 diff -ruN SDL-1.2.15/src/joystick/aros/SDL_sysjoystick.c SDL-1.2.15.aros/src/joystick/aros/SDL_sysjoystick.c
---- SDL-1.2.15/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/joystick/aros/SDL_sysjoystick.c	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,506 @@
 +/*
@@ -8290,7 +8290,7 @@ diff -ruN SDL-1.2.15/src/loadso/dummy/SDL_sysloadso.c SDL-1.2.15.aros/src/loadso
      /* no-op. */
  }
 diff -ruN SDL-1.2.15/src/main/aros/mydebug.h SDL-1.2.15.aros/src/main/aros/mydebug.h
---- SDL-1.2.15/src/main/aros/mydebug.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/main/aros/mydebug.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/main/aros/mydebug.h	2019-12-18 21:05:38.137224100 +0000
 @@ -0,0 +1,8 @@
 +#ifndef MYDEBUG
@@ -8580,7 +8580,7 @@ diff -ruN SDL-1.2.15/src/thread/SDL_thread_c.h SDL-1.2.15.aros/src/thread/SDL_th
 -
  #endif /* _SDL_thread_c_h */
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_syscond.c SDL-1.2.15.aros/src/thread/aros/SDL_syscond.c
---- SDL-1.2.15/src/thread/aros/SDL_syscond.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_syscond.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_syscond.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,297 @@
 +/*
@@ -8881,7 +8881,7 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_syscond.c SDL-1.2.15.aros/src/thread/ar
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_sysmutex.c SDL-1.2.15.aros/src/thread/aros/SDL_sysmutex.c
---- SDL-1.2.15/src/thread/aros/SDL_sysmutex.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_sysmutex.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_sysmutex.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,179 @@
 +/*
@@ -9064,7 +9064,7 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_sysmutex.c SDL-1.2.15.aros/src/thread/a
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_syssem.c SDL-1.2.15.aros/src/thread/aros/SDL_syssem.c
---- SDL-1.2.15/src/thread/aros/SDL_syssem.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_syssem.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_syssem.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,658 @@
 +/*
@@ -9726,7 +9726,7 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_syssem.c SDL-1.2.15.aros/src/thread/aro
 +}
 +
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread.c SDL-1.2.15.aros/src/thread/aros/SDL_systhread.c
---- SDL-1.2.15/src/thread/aros/SDL_systhread.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_systhread.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,173 @@
 +/*
@@ -9903,7 +9903,7 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread.c SDL-1.2.15.aros/src/thread/
 +	Signal((struct Task *)thread->handle,SIGBREAKF_CTRL_C);
 +}
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread_c.h SDL-1.2.15.aros/src/thread/aros/SDL_systhread_c.h
---- SDL-1.2.15/src/thread/aros/SDL_systhread_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_systhread_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_systhread_c.h	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,36 @@
 +/*
@@ -9943,7 +9943,7 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread_c.h SDL-1.2.15.aros/src/threa
 +#define SYS_ThreadHandle struct Task *
 +
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_thread.c SDL-1.2.15.aros/src/thread/aros/SDL_thread.c
---- SDL-1.2.15/src/thread/aros/SDL_thread.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/thread/aros/SDL_thread.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/thread/aros/SDL_thread.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,408 @@
 +/*
@@ -10611,7 +10611,7 @@ diff -ruN SDL-1.2.15/src/timer/SDL_timer_c.h SDL-1.2.15.aros/src/timer/SDL_timer
 +#endif
 \ No newline at end of file
 diff -ruN SDL-1.2.15/src/timer/aros/SDL_systimer.c SDL-1.2.15.aros/src/timer/aros/SDL_systimer.c
---- SDL-1.2.15/src/timer/aros/SDL_systimer.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/timer/aros/SDL_systimer.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/timer/aros/SDL_systimer.c	2019-12-18 21:05:38.147224100 +0000
 @@ -0,0 +1,337 @@
 +/*
@@ -14582,7 +14582,7 @@ diff -ruN SDL-1.2.15/src/video/SDL_yuvfuncs.h SDL-1.2.15.aros/src/video/SDL_yuvf
 +#endif
  };
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxaccel.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxaccel.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxaccel.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxaccel.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxaccel.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,701 @@
 +/*
@@ -15287,7 +15287,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxaccel.c SDL-1.2.15.aros/src/video/cgx/
 +
 +#endif
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxaccel_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxaccel_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxaccel_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxaccel_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxaccel_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,64 @@
 +/*
@@ -15355,7 +15355,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxaccel_c.h SDL-1.2.15.aros/src/video/cg
 +#define CGX_FillHWRect(this, dst, dstrect, colo) CGX_FillHWRectI(this, dst, dstrect, colo, SDLBase)
 +#endif
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxevents.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxevents.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxevents.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxevents.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxevents.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,491 @@
 +/*
@@ -15850,7 +15850,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxevents.c SDL-1.2.15.aros/src/video/cgx
 +	MISC_keymap[RAWKEY_END			] = SDLK_END;
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxevents_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxevents_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxevents_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxevents_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxevents_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,35 @@
 +/*
@@ -15889,7 +15889,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxevents_c.h SDL-1.2.15.aros/src/video/c
 +
 +
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_CreateContext.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_CreateContext.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_CreateContext.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_CreateContext.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_CreateContext.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,119 @@
 +/*
@@ -16012,7 +16012,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_CreateContext.c SDL-1.2.15.aros/src
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_DestroyContext.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_DestroyContext.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_DestroyContext.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_DestroyContext.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_DestroyContext.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,57 @@
 +/*
@@ -16073,7 +16073,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_DestroyContext.c SDL-1.2.15.aros/sr
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetAttribute.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_GetAttribute.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetAttribute.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetAttribute.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_GetAttribute.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,103 @@
 +/*
@@ -16180,7 +16180,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetAttribute.c SDL-1.2.15.aros/src/
 +}
 +#endif /* SDL_VIDEO_OPENGL */
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetProcAddress.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_GetProcAddress.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetProcAddress.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetProcAddress.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_GetProcAddress.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,59 @@
 +/*
@@ -16243,7 +16243,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_GetProcAddress.c SDL-1.2.15.aros/sr
 +}
 +#endif /* SDL_VIDEO_OPENGL */
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_LoadLibrary.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_LoadLibrary.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_LoadLibrary.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_LoadLibrary.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_LoadLibrary.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,70 @@
 +/*
@@ -16317,7 +16317,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_LoadLibrary.c SDL-1.2.15.aros/src/v
 +}
 +#endif /* SDL_VIDEO_OPENGL */
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_MakeCurrent.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_MakeCurrent.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_MakeCurrent.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_MakeCurrent.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_MakeCurrent.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,57 @@
 +/*
@@ -16378,7 +16378,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_MakeCurrent.c SDL-1.2.15.aros/src/v
 +}
 +#endif /* SDL_VIDEO_OPENGL */
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_Quit.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_Quit.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_Quit.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_Quit.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_Quit.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,58 @@
 +/*
@@ -16440,7 +16440,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_Quit.c SDL-1.2.15.aros/src/video/cg
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_SwapBuffers.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_SwapBuffers.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_SwapBuffers.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_SwapBuffers.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_SwapBuffers.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,55 @@
 +/*
@@ -16499,7 +16499,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_SwapBuffers.c SDL-1.2.15.aros/src/v
 +}
 +#endif /* SDL_VIDEO_OPENGL */
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_UpdateContext.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_UpdateContext.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_UpdateContext.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_UpdateContext.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_UpdateContext.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,67 @@
 +/*
@@ -16570,7 +16570,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_UpdateContext.c SDL-1.2.15.aros/src
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxgl_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxgl_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxgl_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,77 @@
 +/*
@@ -16651,7 +16651,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxgl_c.h SDL-1.2.15.aros/src/video/cgx/S
 +
 +#undef _THIS
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgximage.c SDL-1.2.15.aros/src/video/cgx/SDL_cgximage.c
---- SDL-1.2.15/src/video/cgx/SDL_cgximage.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgximage.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgximage.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,306 @@
 +/*
@@ -16961,7 +16961,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgximage.c SDL-1.2.15.aros/src/video/cgx/
 +#endif
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgximage_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgximage_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgximage_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgximage_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgximage_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,45 @@
 +/*
@@ -17010,7 +17010,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgximage_c.h SDL-1.2.15.aros/src/video/cg
 +#define CGX_RefreshDisplay(this) CGX_RefreshDisplayI(this, SDLBase)
 +#endif
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmodes.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxmodes.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxmodes.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxmodes.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxmodes.c	2019-12-24 13:40:36.380000000 +0000
 @@ -0,0 +1,235 @@
 +/*
@@ -17249,7 +17249,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmodes.c SDL-1.2.15.aros/src/video/cgx/
 +    }
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmodes_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxmodes_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxmodes_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxmodes_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxmodes_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,47 @@
 +/*
@@ -17300,7 +17300,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmodes_c.h SDL-1.2.15.aros/src/video/cg
 +#define CGX_FreeVideoModes(this) CGX_FreeVideoModesI(this, SDLBase)
 +#endif
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmouse.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxmouse.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxmouse.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxmouse.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxmouse.c	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,266 @@
 +/*
@@ -17570,7 +17570,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmouse.c SDL-1.2.15.aros/src/video/cgx/
 +	/* under AROS the mouse mode is always absolute => nothing to be done*/
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmouse_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxmouse_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxmouse_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxmouse_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxmouse_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,44 @@
 +/*
@@ -17618,7 +17618,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxmouse_c.h SDL-1.2.15.aros/src/video/cg
 +#define CGX_WarpWMCursor(this, x, y) CGX_WarpWMCursorI(this, x, y, SDLBase)
 +#endif
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxvideo.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxvideo.c	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxvideo.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxvideo.c	2019-12-24 13:40:23.080000000 +0000
 @@ -0,0 +1,1518 @@
 +/*
@@ -19140,8 +19140,8 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.c SDL-1.2.15.aros/src/video/cgx/
 +	return(-1);
 +}
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxvideo.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxvideo.h	2019-12-18 21:05:38.157224100 +0000
+--- SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxvideo.h	2020-12-21 15:04:38.340000000 +0000
 @@ -0,0 +1,138 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -19188,7 +19188,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h SDL-1.2.15.aros/src/video/cgx/
 +
 +/* Hidden "this" pointer for the video functions */
 +#define _THIS	SDL_VideoDevice *this
-+#define WINDOW_NAME_BUFFER_SIZE	256
++#define WINDOW_NAME_BUFFER_SIZE	255
 +
 +/* Private display data */
 +struct SDL_PrivateVideoData {
@@ -19196,8 +19196,8 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h SDL-1.2.15.aros/src/video/cgx/
 +    struct Screen 	*GFX_Display;		/* Used for graphics and colormap stuff */
 +    struct Window 	*SDL_Window;		/* The SDL Window */
 +	struct RastPort *RP;
-+	TEXT			WindowName[WINDOW_NAME_BUFFER_SIZE];
-+	
++	TEXT			WindowName[WINDOW_NAME_BUFFER_SIZE + 1];
++
 +    unsigned char *BlankCursor;			/* The invisible cursor */
 +
 +    /* The variables used for displaying graphics */
@@ -19282,8 +19282,8 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxvideo.h SDL-1.2.15.aros/src/video/cgx/
 +#endif /* _SDL_cgxvideo_h */
 +
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxwm.c SDL-1.2.15.aros/src/video/cgx/SDL_cgxwm.c
---- SDL-1.2.15/src/video/cgx/SDL_cgxwm.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxwm.c	2019-12-22 23:49:43.710000000 +0000
+--- SDL-1.2.15/src/video/cgx/SDL_cgxwm.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxwm.c	2020-12-21 15:05:27.800000000 +0000
 @@ -0,0 +1,113 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -19349,7 +19349,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxwm.c SDL-1.2.15.aros/src/video/cgx/SDL
 +void CGX_SetCaptionI(_THIS, const char *title, const char *icon, struct SDLBase *SDLBase)
 +#endif
 +{
-+	strncpy(this->hidden->WindowName, title, WINDOW_NAME_BUFFER_SIZE - 1);
++	strncpy(this->hidden->WindowName, title, WINDOW_NAME_BUFFER_SIZE);
 +	this->hidden->WindowName[WINDOW_NAME_BUFFER_SIZE] = '\0';
 +	if(SDL_Window) SetWindowTitles(SDL_Window, this->hidden->WindowName, NULL);
 +}
@@ -19399,7 +19399,7 @@ diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxwm.c SDL-1.2.15.aros/src/video/cgx/SDL
 +}
 +
 diff -ruN SDL-1.2.15/src/video/cgx/SDL_cgxwm_c.h SDL-1.2.15.aros/src/video/cgx/SDL_cgxwm_c.h
---- SDL-1.2.15/src/video/cgx/SDL_cgxwm_c.h	1970-01-01 01:00:00.000000000 +0100
+--- SDL-1.2.15/src/video/cgx/SDL_cgxwm_c.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL-1.2.15.aros/src/video/cgx/SDL_cgxwm_c.h	2019-12-18 21:05:38.157224100 +0000
 @@ -0,0 +1,45 @@
 +/*

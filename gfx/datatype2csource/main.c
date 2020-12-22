@@ -50,6 +50,7 @@
 
 #include <datatypes/pictureclass.h>
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <bzlib.h>

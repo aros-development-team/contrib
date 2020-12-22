@@ -19,9 +19,11 @@
 
 #include <exec/types.h>
 #include <exec/memory.h>
+#include <dos/dos.h>
+
 #include <strings.h>
 #include <stdarg.h>
-#include <dos/dos.h>
+#include <string.h>
 
 #include "fmnode.h"
 #include "fmlocale.h"

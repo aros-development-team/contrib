@@ -19,16 +19,19 @@
 
 #include <aros/debug.h>
 
-#include <time.h>
 #include <dos/datetime.h>
 #include <proto/locale.h>
 #include <exec/types.h>
 #include <exec/memory.h>
-#include <strings.h>
-#include <stdarg.h>
 #include <dos/dos.h>
 #include <proto/locale.h>
 #include <clib/locale_protos.h>
+
+#include <time.h>
+#include <strings.h>
+#include <stdarg.h>
+#include <string.h>
+
 #include "fmnode.h"
 #include "fmlocale.h"
 

@@ -16,8 +16,7 @@
      along with this program; if not, write to the Free Software
      Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-#include <stdio.h>
- 
+
 #include <aros/bigendianio.h>
 #include <graphics/gfxbase.h>
 #include <workbench/workbench.h>
@@ -35,8 +34,11 @@
 #include <exec/tasks.h>
 #include <devices/timer.h>
 #include <utility/hooks.h>
+
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
+
 #include "fmnode.h"
 #include "fmlocale.h"
 #include "commodity.h"

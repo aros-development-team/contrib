@@ -21,6 +21,7 @@
 #include <exec/memory.h>
 #include <devices/timer.h>
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
 #include "fmnode.h"
 #include "fmlocale.h"
