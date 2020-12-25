@@ -21,6 +21,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-complete : contrib-pack
 #MM- contrib-complete : contrib-scout
 #MM- contrib-complete : contrib-multimedia
+#MM- contrib-complete : contrib-workbench
 
 CONTRIB_SRC_DIR := $(AROSDIR)/contrib
 

@@ -8,13 +8,13 @@ DESCFILES 		:= MPEGVideo
 
 DTFILES		:= $(foreach f, $(DESCFILES), $(DTDIR)/$(f))
 
-#MM- workbench-datatypes-animation : workbench-datatype-mpegvideo
-#MM workbench-datatype-mpegvideo : includes linklibs
+#MM- contrib-datatypes-completen : contrib-datatype-mpegvideo
+#MM contrib-datatype-mpegvideo : includes linklibs
 
 USER_CPPFLAGS   := -DDEBUG=1
 USER_LDFLAGS := -static
 
-%build_module mmake=workbench-datatype-mpegvideo \
+%build_module mmake=contrib-datatype-mpegvideo \
     modname=mpegvideo modtype=datatype \
     files=$(FILES) uselibs="romhack"
 
