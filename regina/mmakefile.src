@@ -6,7 +6,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 include $(SRCDIR)/$(CURDIR)/regina.ver
 
-#MM- AROS : contrib-regina
 #MM- contrib-complete : contrib-regina
 
 #MM- contrib-regina : contrib-regina-exes contrib-regina-module \
