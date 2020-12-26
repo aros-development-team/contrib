@@ -13,7 +13,7 @@ FILES := about commodity config copy dir diskinfo drives event execute \
 
 EXEDIR := $(AROS_CONTRIB)/Misc/aminet/FileMaster
 
-USER_CFLAGS := -DAROS -DV39 
+USER_CPPFLAGS := -DAROS -DV39 
 
 #MM aminet-util-dir-filemaster : includes linklibs contrib-bgui setup-filemaster-catalogs
 

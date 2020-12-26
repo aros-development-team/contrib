@@ -23,8 +23,11 @@
 #include <datatypes/datatypesclass.h>
 #include <datatypes/pictureclass.h>
 #include <proto/datatypes.h>
+
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
+
 #include "fmnode.h"
 #include "fmlocale.h"
 

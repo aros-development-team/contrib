@@ -18,45 +18,40 @@
 */
 
 /*#define DEBUG 1*/
+#include <aros/debug.h>
 
-#include <dos/dos.h>
-#include <graphics/gfx.h> 
-#include <graphics/gfxmacros.h>
-#include <utility/tagitem.h>   
 #include <proto/exec.h>
-#include <proto/intuition.h>
 #include <proto/graphics.h>
 #include <proto/layers.h>
-#include <stdio.h>  
 #include <proto/dos.h>
-#include <proto/exec.h>
+#include <proto/icon.h>
+#include <proto/intuition.h>
+
+#include <exec/types.h>
+#include <aros/bigendianio.h>
+#include <aros/oldprograms.h> 
 #include <exec/memory.h>
 #include <exec/lists.h>
 #include <exec/semaphores.h>
 #include <exec/ports.h>
+#include <dos/dos.h>
+#include <graphics/gfx.h> 
+#include <graphics/gfxmacros.h>
+#include <utility/tagitem.h>   
 #include <intuition/intuition.h>
 #include <intuition/sghooks.h>
 #include <intuition/iobsolete.h>
 #include <intuition/intuitionbase.h>   
-#include <intuition/intuition.h>
-#include <aros/debug.h>
-#include <aros/bigendianio.h>
 #include <graphics/gfxbase.h>
 #include <workbench/workbench.h>
 #include <workbench/icon.h>
 #include <devices/inputevent.h>
-#include <aros/oldprograms.h> 
-#include <proto/icon.h>
-#include <proto/exec.h>
-#include <proto/dos.h>
-#include <proto/intuition.h>
-#include <stdio.h> 
-#include <exec/types.h>
-#include <intuition/intuition.h>
 #include <libraries/gadtools.h>
 #include <intuition/gadgetclass.h>
 #include <workbench/startup.h>
+
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
 
 #define ENABLE_RT 1

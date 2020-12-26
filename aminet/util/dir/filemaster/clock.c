@@ -35,8 +35,11 @@
 #include <exec/tasks.h>
 #include <devices/timer.h>
 #include <utility/hooks.h>
+
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
+
 #include "fmnode.h"
 #include "fmlocale.h"
 #include "commodity.h"

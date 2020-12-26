@@ -20,8 +20,11 @@
 #include <exec/types.h>
 #include <dos/dostags.h>
 #include <dos/dosextens.h>
+
 #include <strings.h>
+#include <string.h>
 #include <stdio.h>
+
 #include "fmnode.h"
 #include "fmlocale.h"
 #include "fmgui.h"
