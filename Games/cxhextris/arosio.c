@@ -24,16 +24,18 @@
 /* This file contains the X I/O handling routines for hextris.
  */
 
-#include <stdio.h>
-#include <strings.h>
-#include <stdlib.h>
-#include <sys/time.h>
-
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 #include <proto/exec.h>
 #include <devices/timer.h>
 #include <devices/rawkeycodes.h>
+
+#include <sys/time.h>
+
+#include <strings.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "header.h"
 
