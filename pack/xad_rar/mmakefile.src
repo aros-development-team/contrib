@@ -5,10 +5,10 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 NOWARN_FLAGS := $(NOWARN_ATTRIBUTES) $(NOWARN_UNKNOWN_PRAGMAS)\
  $(NOWARN_MAYBE_UNINITIALIZED) $(NOWARN_VOLATILE_REGISTER_VAR)
-USER_CFLAGS := -I$(AROS_INCLUDES)/SDI\
- -I$(SRCDIR)/$(CURDIR)/Rar_Extractor-0.2.1/unrarlib/unrarlib
+USER_INCLUDES := \
+        -I$(AROS_INCLUDES)/SDI\
+        -I$(SRCDIR)/$(CURDIR)/Rar_Extractor-0.2.1/unrarlib/unrarlib
 USER_CXXFLAGS := $(NOWARN_FLAGS)
-LDFLAGS += -nostartfiles
 
 CONFIG_CXXFLAGS := $(subst -Werror ,,$(CONFIG_CXXFLAGS))
 
@@ -22,4 +22,4 @@ CONFIG_CXXFLAGS := $(subst -Werror ,,$(CONFIG_CXXFLAGS))
 
 %build_prog mmake=xadmaster-client-rar \
     files="extheader xad_rar" cxxfiles="Rar_Extractor-0.2.1/unrarlib/unrarlib" progname=RAR targetdir=$(AROS_LIBRARIES)/XAD \
-    uselibs="rarextract debug stdc++ stdcio stdc pthread posixc"
+    uselibs="rarextract debug stdc++ stdcio stdc pthread posixc" usestartup=no
