@@ -29,9 +29,17 @@ LONG  SPrintf(UBYTE *str, const UBYTE *format, ...);
 
 #if !defined(__AROS__)
 LONG VSNPrintf(UBYTE *str, ULONG n, const UBYTE *format, va_list args);
-#endif
 LONG  SNPrintf(UBYTE *str, ULONG n, const UBYTE *format, ...);
+#else
+#define SNPrintf(str, n,format, ...) \
+({ \
+    LONG size; \
+    const IPTR _args[] = {AROS_PP_VARIADIC_CAST2IPTR(__VA_ARGS__) }; \
+    size = VSNPrintf(buf, len, fmt, (RAWARG)_args);     \
+    size; \
+})
 
+#endif
 /*------------------------------------------------------------------------*/
 
 #endif
