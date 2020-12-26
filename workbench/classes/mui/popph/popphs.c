@@ -4,7 +4,6 @@
 ** © 1999-2000 Marcin Orlowski <carlos@amiga.com.pl>
 */
 
-#include <stdlib.h>	/* abs() */
 #include <aros/debug.h>
 
 #include "Popplaceholder_mcc.h"
@@ -16,6 +15,9 @@
 #include <proto/utility.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+
+#include <string.h>	/* strlen() */
+#include <stdlib.h>	/* abs() */
 
 // _DoCopy
 int _DoCopy( Object *obj, struct PPHS_Data *data  )
