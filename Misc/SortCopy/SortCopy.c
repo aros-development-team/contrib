@@ -1,5 +1,5 @@
 /*
-    Copyright © 2000, The AROS Development Team. All rights reserved.
+    Copyright © 2000-2020, The AROS Development Team. All rights reserved.
     $Id$
 
     Desc: SortCopy from Thomas Richter
@@ -46,6 +46,7 @@
 #endif
 
 #include <strings.h>
+#include <string.h>
 #include <stdarg.h>
 
 ///
