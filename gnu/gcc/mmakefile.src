@@ -52,6 +52,9 @@ GCC_EXTRA_OPTS += --disable-libstdcxx-pch
 GCC_EXTRA_OPTS += --disable-build-with-cxx
 GCC_EXTRA_OPTS += --disable-build-poststage1-with-cxx
 
+development-gcc--TARGET_CFLAGS := $(TARGET_ISA_CFLAGS)
+development-gcc--TARGET_CXFLAGS := $(TARGET_ISA_CXXFLAGS)
+
 GCC_HOST_VARS += \
 	am_cv_lib_iconv=no \
 	am_cv_func_iconv=no \
