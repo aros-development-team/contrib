@@ -1369,7 +1369,7 @@ void RunTool( STRPTR srcname )
                     if( srclock )
                     {
                       UnLock( srclock );
-                      srclock = NULL;
+                      srclock = BNULL;
                     }
 
                     if( Strlen( srcname ) )
