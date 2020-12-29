@@ -175,7 +175,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 	d1(kprintf("%s/%s/%ld: fmt=<%s>\n", __FILE__, __FUNC__, __LINE__, fmt));
 
 	do	{
-		ULONG *pArg;
+		IPTR *pArg;
 
 		if (!inst->spli_fInitialized)
 			break;
