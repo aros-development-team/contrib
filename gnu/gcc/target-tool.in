@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# This is wrapper around AROS-targetted compiler needed to correctly pass in the ISA flags
+exec @aros_wraptarget_tool@ @aros_wraptarget_args@ "$@"
