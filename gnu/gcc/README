@@ -1,6 +1,9 @@
 INDEX
 =====
 
+Before reading this document, please read the notes about changes
+needed to the gcc patches, in target-tool.in.
+
 1. What is this?
 2. Required knowledges
 3. What is and how to build a cross compiler for AROS?
@@ -75,33 +78,41 @@ INDEX
 
   6) Type "make" and then "make install",
 
-- IMPORTANT: to be able to build the compiler you need to have built the
-             linker and related utilities first. Such tools are part of the
-             "binutils" package, which is compilable for AROS out of the box
-	     (no need for patches). Get the latest version from
-	     http://www.gnu.org/software/binutils/
+- IMPORTANT:
+              Multilib toolchains in GCC may include soft and
+              hard-float ABI versions (e.g. ARM). AROS components are only
+              built for the target float ABI configuration, so compilation of
+              libatomic for the multilib targets fails. For these targets libatomic
+              is built using a separate manual build.
 
-- IMPORTANT2: to be able to produce working AROS executables, you also
-              need a tool named collect-aros, which is part of the
-	      AROS build system. The version produced during AROS build
-	      have hardcoded paths to binutils, so it won't work with
-	      standalone toolchain. Instructions for building a correct
-	      version of collect-aros for standalone toolchain can be
-	      found in its README file. Compiled collect-aros can be
-	      placed into <your_install_prefix)/<cpu>-aros/bin
-	      directory (there you'll also see some binutils stuff).
+- IMPORTANT2:
+              Production of working AROS executables requires a 
+              tool named collect-aros. collect-aros is part of the
+	      AROS build system.
+              Versions produced during the AROS build have hardcoded
+              paths to binutils, and as such will not work with standalone
+              toolchains. Instructions to build a correct version of collect-aros
+              for standalone toolchain can be found in its README file.
+              A compiled collect-aros can be placed into the following
+	      directory (there you'll also see some binutils stuff) -:
+              
+	           <your_install_prefix>/<cpu>-aros/bin
 
-- IMPORTANT3: to be able to build a cross-toolchain under MacOS X you
-	      need to specify the following additional arguments to
-	      configure:
 
-     binutils: --disable-werror
-     gcc     : --with-libiconv-prefix=/opt/local --with-gmp=/opt/local --with-mpfr=/opt/local
+- IMPORTANT3:
+	      Compiling the GCC cross-compiler requires that you have built the
+	      necessary dependancies for it first. These will include at the least
+	      the "binutils" package, to provide a suitable linker, which is compilable
+              for AROS out of the box (no need for patches).
+              The latest version can be obtained from http://www.gnu.org/software/binutils/
 
-- IMPORTANT4: (ARM-specific) Multilib in gcc v4.5.1 includes hardfloat versions
-              by default. AROS does not support this yet, so the build will fail
-              (libstdc++ will fail to configure because AROS does not have
-              hardfloat version of libc). Supply --disable-fpu to configure.
+- IMPORTANT4:
+	      MacOS X cross-toolchain compilation requires the following
+	      additional arguments to be passed to configure:
+
+	           binutils: --disable-werror
+	           gcc     : --with-libiconv-prefix=/opt/local --with-gmp=/opt/local --with-mpfr=/opt/local
+
 
 4. What is and how to build a native compiler for AROS?
 
@@ -175,7 +186,7 @@ INDEX
 
 5. Supported version(s)
 
-Currently only a patch for version 4.6.2 of gcc is maintained.
+Currently only patches for GCC 6.5.0 and newer are maintained.
 Out-of-date patches for older versions of gcc are available in the
 history of the AROS subversion repository.
 If one wants to patch another version of gcc it probably is better
@@ -184,7 +195,5 @@ up-to-date.
 
 6. Contact
 
-For more information about AROS and using this compiler you can post a
-mail on the developers maillist (aros_dev@aros.org) or on the aros-exec
-forum (http://www.aros-exec.org).
-
+For more information about AROS and using this compiler you should
+join the AROS Developer Team Slack, and enquire in the toolchain channel.
