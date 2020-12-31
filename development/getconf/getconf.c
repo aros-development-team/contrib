@@ -374,8 +374,10 @@ static int a_flag = 0;		/* list all variables */
 #if defined(__AROS__)
 static size_t confstr(int name, char *buf, size_t len)
 {
+    /* "If name does not correspond to a valid configuration variable,
+     * confstr() returns 0, and errno is set to EINVAL." */
     errno = EINVAL;
-    return -1;
+    return 0;
 }
 #endif
 
