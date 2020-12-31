@@ -1,5 +1,5 @@
 /*
-    Copyright © 2012-2017, The AROS Development Team. All rights reserved.
+    Copyright © 2012-2020, The AROS Development Team. All rights reserved.
     $Id$
 */
 
@@ -20,6 +20,7 @@
 #include <zune/customclasses.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "unarcgroup_class.h"
 #include "locale.h"
