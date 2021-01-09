@@ -41,9 +41,9 @@ inline void *ExchangePtr(XchgPtr *ptr, void *newval)
 /* Atomics using GCC intrinsics */
 #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)) && !defined(__QNXNTO__)
 
-inline int ExchangeInt(volatile int *ptr, int newval)
+inline static int ExchangeInt(volatile int *ptr, int newval)
 { return __sync_lock_test_and_set(ptr, newval); }
-inline void *ExchangePtr(XchgPtr *ptr, void *newval)
+inline static void *ExchangePtr(XchgPtr *ptr, void *newval)
 { return __sync_lock_test_and_set(ptr, newval); }
 
 
@@ -297,13 +297,13 @@ int _al_invalid_atomic_size(); /* not defined */
 typedef unsigned int uint;
 typedef ATOMIC(uint) RefCount;
 
-inline void InitRef(RefCount *ptr, uint value)
+inline static void InitRef(RefCount *ptr, uint value)
 { ATOMIC_INIT(ptr, value); }
-inline uint ReadRef(RefCount *ptr)
+inline static uint ReadRef(RefCount *ptr)
 { return ATOMIC_LOAD(ptr); }
-inline uint IncrementRef(RefCount *ptr)
+inline static uint IncrementRef(RefCount *ptr)
 { return ATOMIC_ADD(uint, ptr, 1)+1; }
-inline uint DecrementRef(RefCount *ptr)
+inline static uint DecrementRef(RefCount *ptr)
 { return ATOMIC_SUB(uint, ptr, 1)-1; }
 
 #ifdef __cplusplus
