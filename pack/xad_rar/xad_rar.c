@@ -81,7 +81,9 @@ BOOL rar_RecogData(ULONG size, STRPTR data, struct xadMasterBase *xadMasterBase)
 #ifdef __amigaos4__
 LONG rar_GetInfo(struct xadArchiveInfo *ai,
 struct xadMasterIFace *IxadMaster)
+#define FUNCLIBBASE     IxadMaster
 #else
+#define FUNCLIBBASE     xadMasterBase
 #if !defined(__AROS__)
 ASM(LONG) rar_GetInfo(REG(a0, struct xadArchiveInfo *ai),
 REG(a6, struct xadMasterBase *xadMasterBase))
@@ -109,54 +111,52 @@ xadERROR rar_GetInfo(struct xadArchiveInfo *ai, struct xadMasterBase *xadMasterB
 # endif
 #else
     if (!set_call_funcs(SETNAME(INIT), 1, 1))
-        return (xadERROR)NULL;
+        err = XADERR_UNKNOWN;
 #endif
 
-    ai->xai_PrivateClient = xadAllocVec(sizeof(struct xadrarprivate),MEMF_PRIVATE | MEMF_CLEAR);
-    xadrar = (struct xadrarprivate *)ai->xai_PrivateClient;
-
-#ifdef __amigaos4__
-    filecounter = urarlib_list(&rarlist, IxadMaster, ai );
-#else
-    filecounter = urarlib_list(&rarlist, xadMasterBase, ai );
-#endif
-
-    xadrar->List = rarlist;  // might need this later
-    templist = rarlist;
-
-    for (i = 0; i < filecounter; i++)
+    if (err == XADERR_OK)
     {
-        fi = (struct xadFileInfo *) xadAllocObjectA(XADOBJ_FILEINFO, NULL);
-        if (!fi)
-            return(XADERR_NOMEMORY);
+        ai->xai_PrivateClient = xadAllocVec(sizeof(struct xadrarprivate),MEMF_PRIVATE | MEMF_CLEAR);
+        xadrar = (struct xadrarprivate *)ai->xai_PrivateClient;
 
-        fi->xfi_PrivateInfo = templist;
-        fi->xfi_DataPos = 0;
-        fi->xfi_Size = templist->item.UnpSize;
-        if (!(fi->xfi_FileName = xadConvertName(CHARSET_HOST,
-                                                XAD_STRINGSIZE,templist->item.NameSize,
-                                                XAD_CSTRING,templist->item.Name,
-                                                TAG_DONE))) return(XADERR_NOMEMORY);
+        filecounter = urarlib_list(&rarlist, FUNCLIBBASE, ai );
 
-        xadConvertDates(XAD_DATEMSDOS,templist->item.FileTime,
-                                XAD_GETDATEXADDATE,&fi->xfi_Date,
-                                TAG_DONE);
+        xadrar->List = rarlist;  // might need this later
+        templist = rarlist;
 
-        fi->xfi_DosProtect = templist->item.FileAttr;
-
-        fi->xfi_CrunchSize  = templist->item.PackSize; //(long) (db->Database.PackSizes[i] << 32); //fi->xfi_Size;
-
-        fi->xfi_Flags = 0;
-
-        if(templist->item.FileAttr == 16)
+        for (i = 0; i < filecounter; i++)
         {
-            fi->xfi_Flags |= XADFIF_DIRECTORY;
+            fi = (struct xadFileInfo *) xadAllocObjectA(XADOBJ_FILEINFO, NULL);
+            if (!fi)
+                return(XADERR_NOMEMORY);
+
+            fi->xfi_PrivateInfo = templist;
+            fi->xfi_DataPos = 0;
+            fi->xfi_Size = templist->item.UnpSize;
+            if (!(fi->xfi_FileName = xadConvertName(CHARSET_HOST,
+                                                    XAD_STRINGSIZE,templist->item.NameSize,
+                                                    XAD_CSTRING,templist->item.Name,
+                                                    TAG_DONE))) return(XADERR_NOMEMORY);
+
+            xadConvertDates(XAD_DATEMSDOS,templist->item.FileTime,
+                                    XAD_GETDATEXADDATE,&fi->xfi_Date,
+                                    TAG_DONE);
+
+            fi->xfi_DosProtect = templist->item.FileAttr;
+
+            fi->xfi_CrunchSize  = templist->item.PackSize; //(long) (db->Database.PackSizes[i] << 32); //fi->xfi_Size;
+
+            fi->xfi_Flags = 0;
+
+            if(templist->item.FileAttr == 16)
+            {
+                fi->xfi_Flags |= XADFIF_DIRECTORY;
+            }
+
+            if ((err = xadAddFileEntryA(fi, ai, NULL))) return(XADERR_NOMEMORY);
+            templist = (ArchiveList_struct*)templist->next;
         }
-
-        if ((err = xadAddFileEntryA(fi, ai, NULL))) return(XADERR_NOMEMORY);
-        templist = (ArchiveList_struct*)templist->next;
     }
-
     return(err);
 }
 
@@ -194,18 +194,16 @@ xadERROR rar_UnArchive(struct xadArchiveInfo *ai, struct xadMasterBase *xadMaste
 # endif
 #else
     if (!set_call_funcs(SETNAME(INIT), 1, 1))
-        return (xadERROR)NULL;
+        err = XADERR_UNKNOWN;
 #endif
     
-#ifdef __amigaos4__
-    if(!urarlib_get(&data_size, templist->item.Name, IxadMaster, ai))
-#else
-    if(!urarlib_get(&data_size, templist->item.Name, xadMasterBase, ai))
-#endif
+    if (err == XADERR_OK)
     {
-        err=XADERR_UNKNOWN;
+        if(!urarlib_get(&data_size, templist->item.Name, FUNCLIBBASE, ai))
+        {
+            err=XADERR_UNKNOWN;
+        }
     }
-
     return(err);
 }
 
