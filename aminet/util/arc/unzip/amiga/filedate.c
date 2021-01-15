@@ -319,7 +319,9 @@ LONG FileDate(filename, u)
     return SetFileDate(filename, &pDate);  /* native routine at 2.0+ */
 } /* FileDate() */
 
-
+#if (!defined(_XOPEN_SOURCE) && \
+     !defined(_POSIX_SOURCE) && \
+     !defined(_BSD_SOURCE))
 char *getenv(const char *var)         /* not reentrant! */
 {
     static char space[ENVSIZE];
@@ -355,6 +357,7 @@ char *getenv(const char *var)         /* not reentrant! */
     me->pr_WindowPtr = old_window;
     return ret;
 }
+#endif
 
 #ifdef __SASC
 int setenv(const char *var, const char *value, int overwrite)
