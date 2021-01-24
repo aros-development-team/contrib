@@ -1,23 +1,28 @@
 #include <fcntl.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
-#include <stdarg.h>
+//#include <stdarg.h>
 #include <GL/gl.h>
-#include <GL/glx.h>
+//#include <GL/glx.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
 #include <signal.h>
-#include <string.h>
-#include <stdarg.h>
+//#include <string.h>
+//#include <stdarg.h>
 #include <unistd.h>
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
+#ifdef __AROS__
+typedef LONG int32;
+typedef ULONG uint32;
+#else
 typedef int int32;
 typedef unsigned int uint32;
+#endif
 
 #define SWAPTIME 20
 
@@ -972,6 +977,8 @@ SDL_Event event;
 int code;
 int isdown = 0;
 
+#ifdef __AROS__
+#else
 	itval.it_interval.tv_sec=itval.it_value.tv_sec=0;
 	itval.it_interval.tv_usec=itval.it_value.tv_usec=10000;
 	thandler(0);
@@ -979,8 +986,12 @@ int isdown = 0;
 
 	inittime();
 	nexttime=INTERVAL*1000;
+#endif
 	while(!exitflag)
 	{
+#ifdef __AROS__
+        usleep(INTERVAL*1000);
+#else
 		int hct;
 		if(!hc) pause();
 		hct=hc;
@@ -994,7 +1005,7 @@ int isdown = 0;
 			nexttime+=INTERVAL*1000;
 			nframes=0;
 		}
-
+#endif
 		draw();
 
 		++nframes;
