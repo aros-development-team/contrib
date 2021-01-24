@@ -8,14 +8,14 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 DESTDIR 	:= $(AROS_CONTRIB)/Demos/InfPlane
 
-ifneq (,$(findstring x86_64,$(AROS_TARGET_CPU)))
-INFPLANE_ASM += refresh-x86_64
-else
 ifneq (,$(findstring i386,$(AROS_TARGET_CPU)))
 INFPLANE_ASM += refresh-i386
 else
 USER_CFLAGS += -DC_FUNCTION
 endif
+ifneq (,$(findstring x86_64,$(AROS_TARGET_CPU)))
+OPTIMIZATION_CFLAGS := -O3
+TARGET_ISA_CFLAGS += -msse
 endif
 
 %build_prog mmake=demo-infplane-binary \
