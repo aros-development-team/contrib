@@ -30,7 +30,7 @@ USER_INCLUDES := \
 
 NOWARN_FLAGS := $(NOWARN_WRITE_STRINGS) $(NOWARN_ARRAY_BOUNDS) $(NOWARN_MISLEADING_INDENTATION)
 
-USER_CFLAGS := $(NOWARN_FLAGS) -fno-asynchronous-unwind-tables -fno-exceptions 
+USER_CFLAGS := $(NOWARN_FLAGS) $(CFLAGS_NO_ASYNCHRONOUS_UNWIND_TABLES) $(CFLAGS_NO_EXCEPTIONS) 
 
 %build_prog mmake=demos-gl-fractals-mbrot \
     progname=Mandelbrot targetdir=$(EXEDIR) \

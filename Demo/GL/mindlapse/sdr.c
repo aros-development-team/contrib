@@ -2,7 +2,22 @@
 #include <stdlib.h>
 #include <GL/gl.h>
 
-#ifdef __unix__
+#if defined(__AROS__)
+extern PFNGLCREATESHADEROBJECTARBPROC glCreateShaderObjectARB;
+extern PFNGLSHADERSOURCEARBPROC glShaderSourceARB;
+extern PFNGLCOMPILESHADERARBPROC glCompileShaderARB;
+extern PFNGLCREATEPROGRAMOBJECTARBPROC glCreateProgramObjectARB;
+extern PFNGLATTACHOBJECTARBPROC glAttachObjectARB;
+extern PFNGLLINKPROGRAMARBPROC glLinkProgramARB;
+extern PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
+extern PFNGLGETUNIFORMLOCATIONARBPROC glGetUniformLocationARB;
+extern PFNGLGETINFOLOGARBPROC glGetInfoLogARB;
+extern PFNGLGETOBJECTPARAMETERIVARBPROC glGetObjectParameterivARB;
+extern PFNGLUNIFORM1FPROC glUniform1f;
+extern PFNGLUNIFORM1IPROC glUniform1i;
+extern PFNGLUNIFORM2FPROC glUniform2f;
+#else
+#if defined(__unix__)
 GLhandleARB glCreateShaderObjectARB(GLenum);
 void glShaderSourceARB(GLhandleARB, int, const char**, int*);
 void glCompileShaderARB(GLhandleARB);
@@ -16,6 +31,7 @@ GLint glGetUniformLocationARB(GLhandleARB, const char*);
 void glUniform1f(GLint location, GLfloat v0);
 void glUniform1i(GLint location, GLint v0);
 void glUniform2f(GLint location, GLfloat v0, GLfloat v1);
+#endif
 #endif
 
 unsigned int setup_shader(const char *fname) {
