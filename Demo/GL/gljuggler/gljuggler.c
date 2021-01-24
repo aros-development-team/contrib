@@ -1036,7 +1036,11 @@ int isdown = 0;
 			case SDL_KEYDOWN:
 				code=event.key.keysym.sym;
 				if(code==SDLK_ESCAPE) exitflag=1;
+#ifdef __AROS__
+				if(code=='g') saveppm("T:gljuggler-save.ppm");
+#else
 				if(code=='g') saveppm("/ram/save.ppm");
+#endif
 				processkey(code, 1);
 				break;
 			case SDL_KEYUP:
@@ -1157,7 +1161,7 @@ int tx, ty;
 	}
 
 	screen = setvideomode(sizex, sizey);
-	SDL_WM_SetCaption("glcircles", "glcircles");
+	SDL_WM_SetCaption("gljuggler", "gljuggler");
 
 	resize(sizex, sizey);
 
