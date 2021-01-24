@@ -32,12 +32,10 @@ memshset:
 	pushq	%rsi
 	pushq	%rbx
 
-	movq	8(%rbp),%rdi      /* dst */
-	movq	12(%rbp),%rax
-	movq	16(%rbp),%rbx	  /* fixed point */
-	movq	20(%rbp),%rcx	  /* half length */
+	movq	%rsi,%rax
+	movq	%rdx,%rbx	  /* fixed point */
 
-	orq	%rcx,%rcx
+	orl	%ecx,%ecx
 	jz	2f
 
 	movq	%rdi,%rsi
@@ -107,10 +105,8 @@ starsh:
 	movq	%rsp,%rbp
 	
 	pushq	%rdi
-	
-	movq	8(%rbp),%rdi      /* dst */
-	movq	12(%rbp),%rdx     /* inc */
 
+	movq	%rsi,%rdx     /* inc */
 	addb	%dl,(W)(%rdi)
 	jnc	3f
 	movb	$255,(W)(%rdi)
@@ -183,33 +179,32 @@ mblur:
 	pushq	%rsi
 	pushq	%rbx
 	
-	movq	8(%rbp),%rdi      /* dst */
-	movq	12(%rbp),%rcx     /* number */
-	movq	$0x7f7f7f7f,%rdx  /* clear 1 upper bits */
-	movq	$0x1f1f1f1f,%rsi  /* clear 3 upper bits */
-	shrq	$2,%rcx
+	xor %rax,%rax
+	xor %rdx,%rdx
+
+	movq	%rsi,%rcx     /* number */
+	movl	$0x7f7f7f7f,%edx  /* clear 1 upper bits */
+	movl	$0x1f1f1f1f,%esi  /* clear 3 upper bits */
+	shrl	$2,%ecx
 	jz	2f
 
 1:
-	movq	(%rdi),%rax
+	movl	(%rdi),%eax
 	addq	$4,%rdi
 	
-	movq	%rax,%rbx
-	shrq	$1,%rax
+	movl	%eax,%ebx
+	shrl	$1,%eax
+	
+	shrl	$3,%ebx
+	andl	%edx,%eax
+	
+	andl	%esi,%ebx
+	addl	%ebx,%eax
 
-	
-	shrq	$3,%rbx
-	andq	%rdx,%rax
-	
-	andq	%rsi,%rbx
-	addq	%rbx,%rax
-
-	decq	%rcx
-	movq	%rax,-4(%rdi)
-	
+	decl	%ecx
+	movl	%eax,-4(%rdi)
 
 	jnz	1b
-
 
 2:
 	popq	%rbx
