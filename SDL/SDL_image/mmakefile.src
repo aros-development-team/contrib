@@ -14,12 +14,13 @@ include $(SRCDIR)/config/aros-contrib.cfg
 USER_INCLUDES := -I$(AROS_CONTRIB_INCLUDES)
 USER_LDFLAGS := -L$(AROS_CONTRIB_LIB)
 
+SDLIMAGEVERS := 1.2.12
 REPOSITORIES := https://www.libsdl.org/projects/SDL_image/release \
  http://downloads.openmoko.org/sources \
  http://ftp.riken.jp/Linux/momonga/1/PKGS/SOURCES \
  http://kaneda.bohater.net/slackware/packages/source
 
-%fetch_and_build_gnu_development package=SDL_image version=1.2.3 patch=yes \
+%fetch_and_build_gnu_development package=SDL_image version=$(SDLIMAGEVERS) patch=no \
     package_repo="$(REPOSITORIES)" \
     suffixes="tar.gz" extraoptions="libdir=$(AROS_LIB)"
 
