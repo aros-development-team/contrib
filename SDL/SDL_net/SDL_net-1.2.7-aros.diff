@@ -1,51 +1,676 @@
+diff -ruN SDL_net-1.2.7/SDL_net.h SDL_net-1.2.7.aros/SDL_net.h
+--- SDL_net-1.2.7/SDL_net.h	2007-07-15 05:59:03.000000000 +0000
++++ SDL_net-1.2.7.aros/SDL_net.h	2007-07-20 12:41:49.000000000 +0000
+@@ -30,7 +30,9 @@
+ #include "SDL_version.h"
+ #include "begin_code.h"
+ 
+-
++#ifdef __AROS__
++#include <proto/socket.h>
++#endif /* AROS */
+ 
+ /* Set up for C function definitions, even when using C++ */
+ #ifdef __cplusplus
+@@ -59,17 +61,6 @@
+  */
+ extern DECLSPEC const SDL_version * SDLCALL SDLNet_Linked_Version(void);
+ 
+-/* Initialize/Cleanup the network API
+-   SDL must be initialized before calls to functions in this library,
+-   because this library uses utility functions from the SDL library.
+-*/
+-extern DECLSPEC int  SDLCALL SDLNet_Init(void);
+-extern DECLSPEC void SDLCALL SDLNet_Quit(void);
+-
+-/***********************************************************************/
+-/* IPv4 hostname resolution API                                        */
+-/***********************************************************************/
+-
+ typedef struct {
+ 	Uint32 host;			/* 32-bit IPv4 host address */
+ 	Uint16 port;			/* 16-bit protocol port */
+@@ -90,6 +81,43 @@
+ #ifndef INADDR_BROADCAST
+ #define INADDR_BROADCAST	0xFFFFFFFF
+ #endif
++
++typedef struct _TCPsocket *TCPsocket;
++
++/* The maximum channels on a a UDP socket */
++#define SDLNET_MAX_UDPCHANNELS	32
++/* The maximum addresses bound to a single UDP socket channel */
++#define SDLNET_MAX_UDPADDRESSES	4
++
++typedef struct _UDPsocket *UDPsocket;
++typedef struct {
++	int channel;		/* The src/dst channel of the packet */
++	Uint8 *data;		/* The packet data */
++	int len;		/* The length of the packet data */
++	int maxlen;		/* The size of the data buffer */
++	int status;		/* packet status after sending */
++	IPaddress address;		/* The source/dest address of an incoming/outgoing packet */
++} UDPpacket;
++
++typedef struct _SDLNet_SocketSet *SDLNet_SocketSet;
++
++/* Any network socket can be safely cast to this socket type */
++typedef struct {
++	int ready;
++} *SDLNet_GenericSocket;
++
++#if !defined(__AROS__)
++/* Initialize/Cleanup the network API
++   SDL must be initialized before calls to functions in this library,
++   because this library uses utility functions from the SDL library.
++*/
++extern DECLSPEC int  SDLCALL SDLNet_Init(void);
++extern DECLSPEC void SDLCALL SDLNet_Quit(void);
++
++/***********************************************************************/
++/* IPv4 hostname resolution API                                        */
++/***********************************************************************/
++
+ extern DECLSPEC int SDLCALL SDLNet_ResolveHost(IPaddress *address, const char *host, Uint16 port);
+ 
+ /* Resolve an ip address to a host name in canonical form.
+@@ -104,8 +132,6 @@
+ /* TCP network API                                                     */
+ /***********************************************************************/
+ 
+-typedef struct _TCPsocket *TCPsocket;
+-
+ /* Open a TCP network socket
+    If ip.host is INADDR_NONE or INADDR_ANY, this creates a local server
+    socket on the given port, otherwise a TCP connection to the remote
+@@ -150,21 +176,6 @@
+ /* UDP network API                                                     */
+ /***********************************************************************/
+ 
+-/* The maximum channels on a a UDP socket */
+-#define SDLNET_MAX_UDPCHANNELS	32
+-/* The maximum addresses bound to a single UDP socket channel */
+-#define SDLNET_MAX_UDPADDRESSES	4
+-
+-typedef struct _UDPsocket *UDPsocket;
+-typedef struct {
+-	int channel;		/* The src/dst channel of the packet */
+-	Uint8 *data;		/* The packet data */
+-	int len;		/* The length of the packet data */
+-	int maxlen;		/* The size of the data buffer */
+-	int status;		/* packet status after sending */
+-	IPaddress address;		/* The source/dest address of an incoming/outgoing packet */
+-} UDPpacket;
+-
+ /* Allocate/resize/free a single UDP packet 'size' bytes long.
+    The new packet is returned, or NULL if the function ran out of memory.
+  */
+@@ -266,13 +277,6 @@
+ /* Hooks for checking sockets for available data                       */
+ /***********************************************************************/
+ 
+-typedef struct _SDLNet_SocketSet *SDLNet_SocketSet;
+-
+-/* Any network socket can be safely cast to this socket type */
+-typedef struct {
+-	int ready;
+-} *SDLNet_GenericSocket;
+-
+ /* Allocate a socket set for use with SDLNet_CheckSockets()
+    This returns a socket set for up to 'maxsockets' sockets, or NULL if
+    the function ran out of memory.
+@@ -280,17 +284,9 @@
+ extern DECLSPEC SDLNet_SocketSet SDLCALL SDLNet_AllocSocketSet(int maxsockets);
+ 
+ /* Add a socket to a set of sockets to be checked for available data */
+-#define SDLNet_TCP_AddSocket(set, sock) \
+-			SDLNet_AddSocket(set, (SDLNet_GenericSocket)sock)
+-#define SDLNet_UDP_AddSocket(set, sock) \
+-			SDLNet_AddSocket(set, (SDLNet_GenericSocket)sock)
+ extern DECLSPEC int SDLCALL SDLNet_AddSocket(SDLNet_SocketSet set, SDLNet_GenericSocket sock);
+ 
+ /* Remove a socket from a set of sockets to be checked for available data */
+-#define SDLNet_TCP_DelSocket(set, sock) \
+-			SDLNet_DelSocket(set, (SDLNet_GenericSocket)sock)
+-#define SDLNet_UDP_DelSocket(set, sock) \
+-			SDLNet_DelSocket(set, (SDLNet_GenericSocket)sock)
+ extern DECLSPEC int SDLCALL SDLNet_DelSocket(SDLNet_SocketSet set, SDLNet_GenericSocket sock);
+ 
+ /* This function checks to see if data is available for reading on the
+@@ -302,6 +298,78 @@
+ */
+ extern DECLSPEC int SDLCALL SDLNet_CheckSockets(SDLNet_SocketSet set, Uint32 timeout);
+ 
++/* Free a set of sockets allocated by SDL_NetAllocSocketSet() */
++extern DECLSPEC void SDLCALL SDLNet_FreeSocketSet(SDLNet_SocketSet set);
++#else
++extern DECLSPEC int  SDLCALL AROSSDLNet_Init(struct Library *SocketBase);
++#define SDLNet_Init()	AROSSDLNet_Init(SocketBase)
++extern DECLSPEC void SDLCALL AROSSDLNet_Quit(struct Library *SocketBase);
++#define SDLNet_Quit()	AROSSDLNet_Quit(SocketBase)
++extern DECLSPEC int SDLCALL AROSSDLNet_ResolveHost(struct Library *SocketBase, IPaddress *address, const char *host, Uint16 port);
++#define SDLNet_ResolveHost(address,host,port) AROSSDLNet_ResolveHost(SocketBase, address, host, port)
++extern DECLSPEC const char * SDLCALL AROSSDLNet_ResolveIP(struct Library *SocketBase, IPaddress *ip);
++#define SDLNet_ResolveIP(ip) AROSSDLNet_ResolveIP(SocketBase, ip)
++extern DECLSPEC TCPsocket SDLCALL AROSSDLNet_TCP_Open(struct Library *SocketBase, IPaddress *ip);
++#define SDLNet_TCP_Open(ip) AROSSDLNet_TCP_Open(SocketBase, ip)
++extern DECLSPEC TCPsocket SDLCALL AROSSDLNet_TCP_Accept(struct Library *SocketBase, TCPsocket server);
++#define SDLNet_TCP_Accept(server) AROSSDLNet_TCP_Accept(SocketBase, server)
++extern DECLSPEC IPaddress * SDLCALL AROSSDLNet_TCP_GetPeerAddress(struct Library *SocketBase, TCPsocket sock);
++#define SDLNet_TCP_GetPeerAddress(sock) AROSSDLNet_TCP_GetPeerAddress(SocketBase, sock)
++extern DECLSPEC int SDLCALL AROSSDLNet_TCP_Send(struct Library *SocketBase, TCPsocket sock, const void *data,
++		int len);
++#define SDLNet_TCP_Send(sock,data,len) AROSSDLNet_TCP_Send(SocketBase, sock, data, len)
++extern DECLSPEC int SDLCALL AROSSDLNet_TCP_Recv(struct Library *SocketBase, TCPsocket sock, void *data, int maxlen);
++#define SDLNet_TCP_Recv(sock, data, maxlen) AROSSDLNet_TCP_Recv(SocketBase, sock, data, maxlen)
++extern DECLSPEC void SDLCALL AROSSDLNet_TCP_Close(struct Library *SocketBase, TCPsocket sock);
++#define SDLNet_TCP_Close(sock) AROSSDLNet_TCP_Close(SocketBase, sock)
++extern DECLSPEC UDPpacket * SDLCALL AROSSDLNet_AllocPacket(struct Library *SocketBase, int size);
++#define SDLNet_AllocPacket(size) AROSSDLNet_AllocPacket(SocketBase, size)
++extern DECLSPEC int SDLCALL AROSSDLNet_ResizePacket(struct Library *SocketBase, UDPpacket *packet, int newsize);
++#define SDLNet_ResizePacket(packet, newsize) AROSSDLNet_ResizePacket(SocketBase, packet, newsize)
++extern DECLSPEC void SDLCALL AROSSDLNet_FreePacket(struct Library *SocketBase, UDPpacket *packet);
++#define SDLNet_FreePacket(packet) AROSSDLNet_FreePacket(SocketBase, packet)
++extern DECLSPEC UDPpacket ** SDLCALL AROSSDLNet_AllocPacketV(struct Library *SocketBase, int howmany, int size);
++#define SDLNet_AllocPacketV(howmany,size) AROSSDLNet_AllocPacketV(SocketBase, howmany, size)
++extern DECLSPEC void SDLCALL AROSSDLNet_FreePacketV(struct Library *SocketBase, UDPpacket **packetV);
++#define SDLNet_FreePacketV(packetV) AROSSDLNet_FreePacketV(SocketBase, packetV)
++extern DECLSPEC UDPsocket SDLCALL AROSSDLNet_UDP_Open(struct Library *SocketBase, Uint16 port);
++#define SDLNet_UDP_Open(port) AROSSDLNet_UDP_Open(SocketBase, port)
++extern DECLSPEC int SDLCALL AROSSDLNet_UDP_Bind(struct Library *SocketBase, UDPsocket sock, int channel, IPaddress *address);
++#define SDLNet_UDP_Bind(sock, channel, address) AROSSDLNet_UDP_Bind(SocketBase, sock, channel, address)
++extern DECLSPEC void SDLCALL AROSSDLNet_UDP_Unbind(struct Library *SocketBase, UDPsocket sock, int channel);
++#define SDLNet_UDP_Unbind(sock, channel) AROSSDLNet_UDP_Unbind(SocketBase, sock, channel) AROSSDLNet_UDP_GetPeerAddress(SocketBase, sock, channel)
++extern DECLSPEC int SDLCALL AROSSDLNet_UDP_SendV(struct Library *SocketBase, UDPsocket sock, UDPpacket **packets, int npackets);
++#define SDLNet_UDP_SendV(sock, packets, npackets) AROSSDLNet_UDP_SendV(SocketBase, sock, packets, npackets)
++extern DECLSPEC int SDLCALL AROSSDLNet_UDP_Send(struct Library *SocketBase, UDPsocket sock, int channel, UDPpacket *packet);
++#define SDLNet_UDP_Send(sock, channel, packet) AROSSDLNet_UDP_Send(SocketBase, sock, channel, packet)
++extern DECLSPEC int SDLCALL AROSSDLNet_UDP_RecvV(struct Library *SocketBase, UDPsocket sock, UDPpacket **packets);
++#define SDLNet_UDP_RecvV(sock, packets) AROSSDLNet_UDP_RecvV(SocketBase, sock, packets)
++extern DECLSPEC int SDLCALL AROSSDLNet_UDP_Recv(struct Library *SocketBase, UDPsocket sock, UDPpacket *packet);
++#define SDLNet_UDP_Recv(sock, packet) AROSSDLNet_UDP_Recv(SocketBase, sock, packet)
++extern DECLSPEC void SDLCALL AROSSDLNet_UDP_Close(struct Library *SocketBase, UDPsocket sock);
++#define SDLNet_UDP_Close(sock) AROSSDLNet_UDP_Close(SocketBase, sock)
++extern DECLSPEC SDLNet_SocketSet SDLCALL AROSSDLNet_AllocSocketSet(struct Library *SocketBase, int maxsockets);
++#define SDLNet_AllocSocketSet(maxsockets) AROSSDLNet_AllocSocketSet(SocketBase, maxsockets)
++extern DECLSPEC int SDLCALL AROSSDLNet_AddSocket(struct Library *SocketBase, SDLNet_SocketSet set, SDLNet_GenericSocket sock);
++#define SDLNet_AddSocket(set, sock) AROSSDLNet_AddSocket(SocketBase, set, sock)
++extern DECLSPEC int SDLCALL AROSSDLNet_DelSocket(struct Library *SocketBase, SDLNet_SocketSet set, SDLNet_GenericSocket sock);
++#define SDLNet_DelSocket(set, sock) AROSSDLNet_DelSocket(SocketBase, set, sock)
++extern DECLSPEC int SDLCALL AROSSDLNet_CheckSockets(struct Library *SocketBase, SDLNet_SocketSet set, Uint32 timeout);
++#define SDLNet_CheckSockets(set, timeout) AROSSDLNet_CheckSockets(SocketBase, set, timeout)
++extern DECLSPEC void SDLCALL AROSSDLNet_FreeSocketSet(struct Library *SocketBase, SDLNet_SocketSet set);
++#define SDLNet_FreeSocketSet(set) AROSSDLNet_FreeSocketSet(SocketBase, set)
++#endif
++
++#define SDLNet_TCP_AddSocket(set, sock) \
++			SDLNet_AddSocket(set, (SDLNet_GenericSocket)sock)
++#define SDLNet_UDP_AddSocket(set, sock) \
++			SDLNet_AddSocket(set, (SDLNet_GenericSocket)sock)
++
++#define SDLNet_TCP_DelSocket(set, sock) \
++			SDLNet_DelSocket(set, (SDLNet_GenericSocket)sock)
++#define SDLNet_UDP_DelSocket(set, sock) \
++			SDLNet_DelSocket(set, (SDLNet_GenericSocket)sock)
++
+ /* After calling SDLNet_CheckSockets(), you can use this function on a
+    socket that was in the socket set, to find out if data is available
+    for reading.
+@@ -309,10 +377,6 @@
+ #define SDLNet_SocketReady(sock) \
+ 		((sock != NULL) && ((SDLNet_GenericSocket)sock)->ready)
+ 
+-/* Free a set of sockets allocated by SDL_NetAllocSocketSet() */
+-extern DECLSPEC void SDLCALL SDLNet_FreeSocketSet(SDLNet_SocketSet set);
+-
+-
+ /***********************************************************************/
+ /* Platform-independent data conversion functions                      */
+ /***********************************************************************/
 diff -ruN SDL_net-1.2.7/SDLnet.c SDL_net-1.2.7.aros/SDLnet.c
---- SDL_net-1.2.7/SDLnet.c	2007-07-02 04:04:03.000000000 +0200
-+++ SDL_net-1.2.7.aros/SDLnet.c	2011-03-12 11:51:28.977323996 +0100
-@@ -29,6 +29,11 @@
+--- SDL_net-1.2.7/SDLnet.c	2007-07-02 02:04:03.000000000 +0000
++++ SDL_net-1.2.7.aros/SDLnet.c	2021-01-28 00:39:53.604088300 +0000
+@@ -29,6 +29,12 @@
  #include "SDLnetsys.h"
  #include "SDL_net.h"
  
 +#ifdef __AROS__
 +#include <proto/exec.h>
-+struct Library * SocketBase = NULL;
++/*struct Library * SocketBase = NULL;*/
 +extern int errno;
++int *errno_ptr = NULL;
 +#endif
  
  const SDL_version *SDLNet_Linked_Version(void)
  {
-@@ -292,6 +297,17 @@
+@@ -280,7 +286,11 @@
+ #endif
+ 
+ /* Initialize/Cleanup the network API */
++#if !defined(__AROS__)
+ int  SDLNet_Init(void)
++#else
++int  AROSSDLNet_Init(struct Library *SocketBase)
++#endif
+ {
+ 	if ( !SDLNet_started ) {
+ #ifdef __USE_W32_SOCKETS
+@@ -292,6 +302,13 @@
  			SDLNet_SetError("Couldn't initialize Winsock 1.1\n");
  			return(-1);
  		}
 +#elif defined __AROS__
-+		if ( !(SocketBase = OpenLibrary("bsdsocket.library", 4 ))) {
-+			SDLNet_SetError("No TCP/IP Stack running!\n");
-+			return(-1);
-+		}
-+
-+		if ( SocketBaseTags(SBTM_SETVAL(SBTC_ERRNOPTR(sizeof(errno))), (IPTR)&errno,
-+				    TAG_DONE )) {
-+			SDLNet_SetError("Error initializing bsdsocket\n");
-+			return(-1);
++		if (SocketBase)
++		{
++			if ( SocketBaseTags(SBTM_GETVAL(SBTC_ERRNOPTR(sizeof(errno_ptr))), (IPTR)&errno_ptr,
++						TAG_DONE )) {
++			}
 +		}
  #else
  		/* SIGPIPE is generated when a remote socket is closed */
  		void (*handler)(int);
-@@ -318,6 +334,11 @@
+@@ -304,7 +321,12 @@
+ 	++SDLNet_started;
+ 	return(0);
+ }
++
++#if !defined(__AROS__)
+ void SDLNet_Quit(void)
++#else
++void AROSSDLNet_Quit(struct Library *SocketBase)
++#endif
+ {
+ 	if ( SDLNet_started == 0 ) {
+ 		return;
+@@ -318,7 +340,7 @@
  				WSACleanup();
  			}
  		}
-+#elif defined __AROS__
-+		if ( SocketBase ) {
-+			CloseLibrary(SocketBase);
-+			SocketBase = NULL;
-+		}
- #else
+-#else
++#elif !defined __AROS__
  		/* Restore the SIGPIPE handler */
  		void (*handler)(int);
+ 		handler = signal(SIGPIPE, SIG_DFL);
+@@ -330,7 +352,11 @@
+ }
+ 
+ /* Resolve a host name and port to an IP address in network form */
++#if !defined(__AROS__)
+ int SDLNet_ResolveHost(IPaddress *address, const char *host, Uint16 port)
++#else
++int AROSSDLNet_ResolveHost(struct Library *SocketBase, IPaddress *address, const char *host, Uint16 port)
++#endif
+ {
+ 	int retval = 0;
+ 
+@@ -365,7 +391,11 @@
+  * Main Programmer of Arianne RPG.
+  * http://come.to/arianne_rpg
+  */
++#if !defined(__AROS__)
+ const char *SDLNet_ResolveIP(IPaddress *ip)
++#else
++const char *AROSSDLNet_ResolveIP(struct Library *SocketBase, IPaddress *ip)
++#endif
+ {
+ 	struct hostent *hp;
+ 
+diff -ruN SDL_net-1.2.7/SDLnetTCP.c SDL_net-1.2.7.aros/SDLnetTCP.c
+--- SDL_net-1.2.7/SDLnetTCP.c	2007-07-15 05:55:42.000000000 +0000
++++ SDL_net-1.2.7.aros/SDLnetTCP.c	2007-07-20 12:41:49.000000000 +0000
+@@ -695,7 +695,11 @@
+    otherwise a TCP connection to the remote host and port is attempted.
+    The newly created socket is returned, or NULL if there was an error.
+ */
++#if !defined(__AROS__)
+ TCPsocket SDLNet_TCP_Open(IPaddress *ip)
++#else
++TCPsocket AROSSDLNet_TCP_Open(struct Library *SocketBase, IPaddress *ip)
++#endif
+ {
+ 	TCPsocket sock;
+ 	struct sockaddr_in sock_addr;
+@@ -813,7 +817,11 @@
+ /* Accept an incoming connection on the given server socket.
+    The newly created socket is returned, or NULL if there was an error.
+ */
++#if !defined(__AROS__)
+ TCPsocket SDLNet_TCP_Accept(TCPsocket server)
++#else
++TCPsocket AROSSDLNet_TCP_Accept(struct Library *SocketBase, TCPsocket server)
++#endif
+ {
+ 	TCPsocket sock;
+ 	struct sockaddr_in sock_addr;
+@@ -874,7 +882,11 @@
+ /* Get the IP address of the remote system associated with the socket.
+    If the socket is a server socket, this function returns NULL.
+ */
++#if !defined(__AROS__)
+ IPaddress *SDLNet_TCP_GetPeerAddress(TCPsocket sock)
++#else
++IPaddress *AROSSDLNet_TCP_GetPeerAddress(struct Library *SocketBase, TCPsocket sock)
++#endif
+ {
+ 	if ( sock->sflag ) {
+ 		return(NULL);
+@@ -887,7 +899,11 @@
+    is less than the amount of data sent, then either the remote connection was
+    closed, or an unknown socket error occurred.
+ */
++#if !defined(__AROS__)
+ int SDLNet_TCP_Send(TCPsocket sock, const void *datap, int len)
++#else
++int AROSSDLNet_TCP_Send(struct Library *SocketBase, TCPsocket sock, const void *datap, int len)
++#endif
+ {
+ 	const Uint8 *data = (const Uint8 *)datap;	/* For pointer arithmetic */
+ 	int sent, left;
+@@ -920,7 +936,11 @@
+    value is less than or equal to zero, then either the remote connection was
+    closed, or an unknown socket error occurred.
+ */
++#if !defined(__AROS__)
+ int SDLNet_TCP_Recv(TCPsocket sock, void *data, int maxlen)
++#else
++int AROSSDLNet_TCP_Recv(struct Library *SocketBase, TCPsocket sock, void *data, int maxlen)
++#endif
+ {
+ 	int len;
+ 
+@@ -940,7 +960,11 @@
+ }
+ 
+ /* Close a TCP network socket */
++#if !defined(__AROS__)
+ void SDLNet_TCP_Close(TCPsocket sock)
++#else
++void AROSSDLNet_TCP_Close(struct Library *SocketBase, TCPsocket sock)
++#endif
+ {
+ 	if ( sock != NULL ) {
+ 		if ( sock->channel != INVALID_SOCKET ) {
+diff -ruN SDL_net-1.2.7/SDLnetUDP.c SDL_net-1.2.7.aros/SDLnetUDP.c
+--- SDL_net-1.2.7/SDLnetUDP.c	2007-07-02 02:04:03.000000000 +0000
++++ SDL_net-1.2.7.aros/SDLnetUDP.c	2007-07-20 12:41:49.000000000 +0000
+@@ -185,7 +185,11 @@
+ /* Allocate/free a single UDP packet 'size' bytes long.
+    The new packet is returned, or NULL if the function ran out of memory.
+  */
++#if !defined(__AROS__)
+ extern UDPpacket *SDLNet_AllocPacket(int size)
++#else
++extern UDPpacket *AROSSDLNet_AllocPacket(struct Library *SocketBase, int size)
++#endif
+ {
+ 	UDPpacket *packet;
+ 	int error;
+@@ -206,7 +210,11 @@
+ 	}
+ 	return(packet);
+ }
++#if !defined(__AROS__)
+ int SDLNet_ResizePacket(UDPpacket *packet, int newsize)
++#else
++int AROSSDLNet_ResizePacket(struct Library *SocketBase, UDPpacket *packet, int newsize)
++#endif
+ {
+ 	Uint8 *newdata;
+ 
+@@ -218,7 +226,11 @@
+ 	}
+ 	return(packet->maxlen);
+ }
++#if !defined(__AROS__)
+ extern void SDLNet_FreePacket(UDPpacket *packet)
++#else
++extern void AROSSDLNet_FreePacket(struct Library *SocketBase, UDPpacket *packet)
++#endif
+ {
+ 	if ( packet ) {
+ 		if ( packet->data )
+@@ -232,7 +244,11 @@
+    A pointer to the packet array is returned, or NULL if the function ran out
+    of memory.
+  */
++#if !defined(__AROS__)
+ UDPpacket **SDLNet_AllocPacketV(int howmany, int size)
++#else
++UDPpacket **AROSSDLNet_AllocPacketV(struct Library *SocketBase, int howmany, int size)
++#endif
+ {
+ 	UDPpacket **packetV;
+ 
+@@ -254,7 +270,11 @@
+ 	}
+ 	return(packetV);
+ }
++#if !defined(__AROS__)
+ void SDLNet_FreePacketV(UDPpacket **packetV)
++#else
++void AROSSDLNet_FreePacketV(struct Library *SocketBase, UDPpacket **packetV)
++#endif
+ {
+ 	if ( packetV ) {
+ 		int i;
+@@ -272,7 +292,11 @@
+ /* Open a UDP network socket
+    If 'port' is non-zero, the UDP socket is bound to a fixed local port.
+ */
++#if !defined(__AROS__)
+ extern UDPsocket SDLNet_UDP_Open(Uint16 port)
++#else
++extern UDPsocket AROSSDLNet_UDP_Open(struct Library *SocketBase, Uint16 port)
++#endif
+ {
+ 	UDPsocket sock;
+ #ifdef MACOS_OPENTRANSPORT
+@@ -405,7 +429,11 @@
+ }
+ 
+ /* Verify that the channel is in the valid range */
++#if !defined(__AROS__)
+ static int ValidChannel(int channel)
++#else
++static int _ValidChannel(struct Library *SocketBase, int channel)
++#endif
+ {
+ 	if ( (channel < 0) || (channel >= SDLNET_MAX_UDPCHANNELS) ) {
+ 		SDLNet_SetError("Invalid channel");
+@@ -413,6 +441,9 @@
+ 	}
+ 	return(1);
+ }
++#if defined(__AROS__)
++#define ValidChannel(x) _ValidChannel(SocketBase,x)
++#endif
+ 
+ /* Bind the address 'address' to the requested channel on the UDP socket.
+    If the channel is -1, then the first unbound channel will be bound with
+@@ -423,7 +454,11 @@
+    address, to which all outbound packets on the channel are sent.
+    This function returns the channel which was bound, or -1 on error.
+ */
++#if !defined(__AROS__)
+ int SDLNet_UDP_Bind(UDPsocket sock, int channel, IPaddress *address)
++#else
++int AROSSDLNet_UDP_Bind(struct Library *SocketBase, UDPsocket sock, int channel, IPaddress *address)
++#endif
+ {
+ 	struct UDP_channel *binding;
+ 
+@@ -449,7 +484,11 @@
+ }
+ 
+ /* Unbind all addresses from the given channel */
++#if !defined(__AROS__)
+ void SDLNet_UDP_Unbind(UDPsocket sock, int channel)
++#else
++void AROSSDLNet_UDP_Unbind(struct Library *SocketBase, UDPsocket sock, int channel)
++#endif
+ {
+ 	if ( (channel >= 0) && (channel < SDLNET_MAX_UDPCHANNELS) ) {
+ 		sock->binding[channel].numbound = 0;
+@@ -460,7 +499,11 @@
+    socket and channel.
+    If the channel is not bound, this function returns NULL.
+  */
++#if !defined(__AROS__)
+ IPaddress *SDLNet_UDP_GetPeerAddress(UDPsocket sock, int channel)
++#else
++IPaddress *AROSSDLNet_UDP_GetPeerAddress(struct Library *SocketBase, UDPsocket sock, int channel)
++#endif
+ {
+ 	IPaddress *address;
+ 
+@@ -488,7 +531,11 @@
+    been sent, -1 if the packet send failed.
+    This function returns the number of packets sent.
+ */
++#if !defined(__AROS__)
+ int SDLNet_UDP_SendV(UDPsocket sock, UDPpacket **packets, int npackets)
++#else
++int AROSSDLNet_UDP_SendV(struct Library *SocketBase, UDPsocket sock, UDPpacket **packets, int npackets)
++#endif
+ {
+ 	int numsent, i, j;
+ 	struct UDP_channel *binding;
+@@ -605,7 +652,11 @@
+ 	return(numsent);
+ }
+ 
++#if !defined(__AROS__)
+ int SDLNet_UDP_Send(UDPsocket sock, int channel, UDPpacket *packet)
++#else
++int AROSSDLNet_UDP_Send(struct Library *SocketBase, UDPsocket sock, int channel, UDPpacket *packet)
++#endif
+ {
+ 	/* This is silly, but... */
+ 	packet->channel = channel;
+@@ -613,7 +664,11 @@
+ }
+ 
+ /* Returns true if a socket is has data available for reading right now */
++#if !defined(__AROS__)
+ static int SocketReady(SOCKET sock)
++#else
++static int _SocketReady(struct Library *SocketBase, SOCKET sock)
++#endif
+ {
+ 	int retval = 0;
+ #ifdef MACOS_OPENTRANSPORT
+@@ -661,6 +716,9 @@
+ 
+ 	return(retval == 1);
+ }
++#if defined(__AROS__)
++#define SocketReady(sock) _SocketReady(SocketBase, sock)
++#endif
+ 
+ /* Receive a vector of pending packets from the UDP socket.
+    The returned packets contain the source address and the channel they arrived
+@@ -669,7 +727,11 @@
+    This function returns the number of packets read from the network, or -1
+    on error.  This function does not block, so can return 0 packets pending.
+ */
++#if !defined(__AROS__)
+ extern int SDLNet_UDP_RecvV(UDPsocket sock, UDPpacket **packets)
++#else
++extern int AROSSDLNet_UDP_RecvV(struct Library *SocketBase, UDPsocket sock, UDPpacket **packets)
++#endif
+ {
+ 	int numrecv, i, j;
+ 	struct UDP_channel *binding;
+@@ -766,7 +828,11 @@
+    This function returns the number of packets read from the network, or -1
+    on error.  This function does not block, so can return 0 packets pending.
+ */
++#if !defined(__AROS__)
+ int SDLNet_UDP_Recv(UDPsocket sock, UDPpacket *packet)
++#else
++int AROSSDLNet_UDP_Recv(struct Library *SocketBase, UDPsocket sock, UDPpacket *packet)
++#endif
+ {
+ 	UDPpacket *packets[2];
+ 
+@@ -777,7 +843,11 @@
+ }
+ 
+ /* Close a UDP network socket */
++#if !defined(__AROS__)
+ extern void SDLNet_UDP_Close(UDPsocket sock)
++#else
++extern void AROSSDLNet_UDP_Close(struct Library *SocketBase, UDPsocket sock)
++#endif
+ {
+ 	if ( sock != NULL ) 
+ 	{
+diff -ruN SDL_net-1.2.7/SDLnetselect.c SDL_net-1.2.7.aros/SDLnetselect.c
+--- SDL_net-1.2.7/SDLnetselect.c	2007-07-02 02:04:03.000000000 +0000
++++ SDL_net-1.2.7.aros/SDLnetselect.c	2007-07-20 12:41:49.000000000 +0000
+@@ -45,7 +45,11 @@
+    This returns a socket set for up to 'maxsockets' sockets, or NULL if 
+    the function ran out of memory. 
+  */
++#if !defined(__AROS__)
+ SDLNet_SocketSet SDLNet_AllocSocketSet(int maxsockets)
++#else
++SDLNet_SocketSet AROSSDLNet_AllocSocketSet(struct Library *SocketBase, int maxsockets)
++#endif
+ {
+ 	struct _SDLNet_SocketSet *set;
+ 	int i;
+@@ -69,7 +73,11 @@
+ }
+ 
+ /* Add a socket to a set of sockets to be checked for available data */
++#if !defined(__AROS__)
+ int SDLNet_AddSocket(SDLNet_SocketSet set, SDLNet_GenericSocket sock)
++#else
++int AROSSDLNet_AddSocket(struct Library *SocketBase, SDLNet_SocketSet set, SDLNet_GenericSocket sock)
++#endif
+ {
+ 	if ( sock != NULL ) {
+ 		if ( set->numsockets == set->maxsockets ) {
+@@ -82,7 +90,11 @@
+ }
+ 
+ /* Remove a socket from a set of sockets to be checked for available data */
++#if !defined(__AROS__)
+ int SDLNet_DelSocket(SDLNet_SocketSet set, SDLNet_GenericSocket sock)
++#else
++int AROSSDLNet_DelSocket(struct Library*SocketBase, SDLNet_SocketSet set, SDLNet_GenericSocket sock)
++#endif
+ {
+ 	int i;
+ 
+@@ -169,7 +181,11 @@
+ 	return(numReady);
+ }
+ #else
++#if !defined(__AROS__)
+ int SDLNet_CheckSockets(SDLNet_SocketSet set, Uint32 timeout)
++#else
++int AROSSDLNet_CheckSockets(struct Library *SocketBase, SDLNet_SocketSet set, Uint32 timeout)
++#endif
+ {
+ 	int i;
+ 	SOCKET maxfd;
+@@ -216,7 +232,11 @@
+ #endif /* MACOS_OPENTRANSPORT */
+    
+ /* Free a set of sockets allocated by SDL_NetAllocSocketSet() */
++#if !defined(__AROS__)
+ extern void SDLNet_FreeSocketSet(SDLNet_SocketSet set)
++#else
++extern void AROSSDLNet_FreeSocketSet(struct Library *SocketBase, SDLNet_SocketSet set)
++#endif
+ {
+ 	if ( set ) {
+ 		free(set->sockets);
 diff -ruN SDL_net-1.2.7/SDLnetsys.h SDL_net-1.2.7.aros/SDLnetsys.h
---- SDL_net-1.2.7/SDLnetsys.h	2007-07-02 04:04:03.000000000 +0200
-+++ SDL_net-1.2.7.aros/SDLnetsys.h	2011-03-12 13:38:02.083471002 +0100
+--- SDL_net-1.2.7/SDLnetsys.h	2007-07-02 02:04:03.000000000 +0000
++++ SDL_net-1.2.7.aros/SDLnetsys.h	2007-07-20 12:41:49.000000000 +0000
 @@ -60,6 +60,10 @@
  #endif
  #include <netdb.h>
