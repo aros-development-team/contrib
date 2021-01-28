@@ -27,7 +27,7 @@ LB2OPTS := \
     --disable-sdltest \
     --with-docdir='$$(PROGDIR)docs' \
     --program-prefix='' \
-    LIBS='-lmikmod -lvorbisfile -lvorbis -logg -lSDL_net'
+    LIBS='-lmikmod -lvorbisfile -lvorbis -logg -lSDL_net -lnet'
 
 %fetch_and_build mmake=contrib-games-lbreakout2 package=$(LB2NAME) version=$(LB2VERS) \
     package_repo="$(LB2REPO)" \
