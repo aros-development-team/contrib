@@ -54,9 +54,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define ENABLE_RT 1
-#include <aros/rt.h>
-
 #include "fmnode.h"
 #include "fmlocale.h"
 #include "fmgui.h"
