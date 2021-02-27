@@ -6,7 +6,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 FILES := svgclass stubs memory
 
-#MM- contrib-datatypes-complete: contrib-datatypes-svg
+##MM- contrib-datatypes-complete: contrib-datatypes-svg
 
 USER_INCLUDES := -I$(AROS_INCLUDES)/libxml2
 

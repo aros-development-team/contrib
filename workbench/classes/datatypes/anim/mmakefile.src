@@ -25,13 +25,13 @@ DESCFILES 		:= ANIM
 
 DTFILES		:= $(foreach f, $(DESCFILES), $(DTDIR)/$(f))
 
-#MM- workbench-datatypes-animation : workbench-datatype-anim
-#MM workbench-datatype-anim : includes linklibs
+#MM- contrib-datatypes-complete : contrib-datatype-anim
+#MM contrib-datatype-anim : includes linklibs
 
 USER_CPPFLAGS   := -DDEBUG=0
 USER_LDFLAGS := -static
 
-%build_module mmake=workbench-datatype-anim \
+%build_module mmake=contrib-datatype-anim \
     modname=anim modtype=datatype \
     files="$(ANIMDTFILES) $(ANIMDTFORMATS)"
 
