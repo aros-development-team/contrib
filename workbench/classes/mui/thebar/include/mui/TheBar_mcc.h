@@ -94,18 +94,18 @@
 ** TheBar.mcc Methods structures
 */
 
-struct MUIP_TheBar_AddButton       { STACKED ULONG MethodID; STACKED struct MUIS_TheBar_Button *button; };
-struct MUIP_TheBar_AddSpacer       { STACKED ULONG MethodID; STACKED ULONG ID; STACKED ULONG type; };
-struct MUIP_TheBar_GetObject       { STACKED ULONG MethodID; STACKED ULONG ID; };
-struct MUIP_TheBar_DoOnButton      { STACKED ULONG MethodID; STACKED ULONG ID; STACKED ULONG method; /* ...args... */ };
-struct MUIP_TheBar_SetAttr         { STACKED ULONG MethodID; STACKED ULONG ID; STACKED Tag attr; STACKED ULONG value; };
-struct MUIP_TheBar_GetAttr         { STACKED ULONG MethodID; STACKED ULONG ID; STACKED Tag attr; STACKED ULONG *storage; };
-struct MUIP_TheBar_Sort            { STACKED ULONG MethodID; STACKED LONG obj[1]; };
-struct MUIP_TheBar_Remove          { STACKED ULONG MethodID; STACKED ULONG ID; };
-struct MUIP_TheBar_GetDragImage    { STACKED ULONG MethodID; STACKED ULONG horiz; STACKED ULONG flags; };
-struct MUIP_TheBar_Notify          { STACKED ULONG MethodID; STACKED ULONG ID; STACKED Tag attr; STACKED ULONG value; STACKED Object *dest; STACKED ULONG followParams; /* ... */ };
-struct MUIP_TheBar_KillNotify      { STACKED ULONG MethodID; STACKED ULONG ID; STACKED Tag attr; STACKED Object *dest; };
-struct MUIP_TheBar_NoNotifySetAttr { STACKED ULONG MethodID; STACKED ULONG ID; STACKED Tag attr; STACKED ULONG value; };
+struct MUIP_TheBar_AddButton       { STACKED IPTR MethodID; STACKED struct MUIS_TheBar_Button *button; };
+struct MUIP_TheBar_AddSpacer       { STACKED IPTR MethodID; STACKED IPTR ID; STACKED IPTR type; };
+struct MUIP_TheBar_GetObject       { STACKED IPTR MethodID; STACKED IPTR ID; };
+struct MUIP_TheBar_DoOnButton      { STACKED IPTR MethodID; STACKED IPTR ID; STACKED IPTR method; /* ...args... */ };
+struct MUIP_TheBar_SetAttr         { STACKED IPTR MethodID; STACKED IPTR ID; STACKED Tag attr; STACKED IPTR value; };
+struct MUIP_TheBar_GetAttr         { STACKED IPTR MethodID; STACKED IPTR ID; STACKED Tag attr; STACKED IPTR *storage; };
+struct MUIP_TheBar_Sort            { STACKED IPTR MethodID; STACKED LONG obj[1]; };
+struct MUIP_TheBar_Remove          { STACKED IPTR MethodID; STACKED IPTR ID; };
+struct MUIP_TheBar_GetDragImage    { STACKED IPTR MethodID; STACKED IPTR horiz; STACKED IPTR flags; };
+struct MUIP_TheBar_Notify          { STACKED IPTR MethodID; STACKED IPTR ID; STACKED Tag attr; STACKED IPTR value; STACKED Object *dest; STACKED IPTR followParams; /* ... */ };
+struct MUIP_TheBar_KillNotify      { STACKED IPTR MethodID; STACKED IPTR ID; STACKED Tag attr; STACKED Object *dest; };
+struct MUIP_TheBar_NoNotifySetAttr { STACKED IPTR MethodID; STACKED IPTR ID; STACKED Tag attr; STACKED IPTR value; };
 
 /* MUIM_TheBar_SetAttr, MUIM_TheBar_NoNotifySetAttr, MUIM_TheBar_GetAttr attributes */
 #define MUIV_TheBar_Attr_Hide      (TBTAGBASE+0) /* v11 */
