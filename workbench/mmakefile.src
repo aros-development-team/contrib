@@ -2,6 +2,6 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-workbench : contrib-datatypes-complete
+#MM- contrib-workbench : contrib-datatypes-complete contrib-zune
 
 %common
