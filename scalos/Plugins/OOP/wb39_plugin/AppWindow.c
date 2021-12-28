@@ -472,7 +472,7 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 					if (mmaw->maw_ActiveDropZone != dzz)
 						{
 #ifdef __AROS__
-						AROS_CALL4(VOID, origSCA_DrawDrag,
+						AROS_CALL4NR(VOID, origSCA_DrawDrag,
 							AROS_LDA(struct DragHandle *, draghandle, A0),
 							AROS_LDA(LONG, 400 + win->WScreen->Width, D0),
 							AROS_LDA(LONG, 400 + win->WScreen->Height, D1),
@@ -506,7 +506,7 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 				d1(kprintf(__FUNC__ "/%ld: OUTSIDE \n", __LINE__));
 
 #ifdef __AROS__
-				AROS_CALL4(VOID, origSCA_DrawDrag,
+				AROS_CALL4NR(VOID, origSCA_DrawDrag,
 					AROS_LDA(struct DragHandle *, draghandle, A0),
 					AROS_LDA(LONG, 400 + win->WScreen->Width, D0),
 					AROS_LDA(LONG, 400 + win->WScreen->Height, D1),
@@ -528,7 +528,7 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 		}
 
 #ifdef __AROS__
-	AROS_CALL4(VOID, origSCA_DrawDrag,
+	AROS_CALL4NR(VOID, origSCA_DrawDrag,
 		AROS_LCA(struct DragHandle *, draghandle, A0),
 		AROS_LCA(LONG, X, D0),
 		AROS_LCA(LONG, Y, D1),
