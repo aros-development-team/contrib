@@ -35,7 +35,7 @@ void cleanup_usleep(void) {
 
 int usleep(useconds_t usec) {
 	timer_io->tr_node.io_Command = TR_ADDREQUEST;
-	timer_io->tr_time.tv_sec = usec / 1000000UL;
-	timer_io->tr_time.tv_usec = usec % 1000000UL;
+	timer_io->tr_time.tv_secs = usec / 1000000UL;
+	timer_io->tr_time.tv_micro = usec % 1000000UL;
 	return DoIO(&timer_io->tr_node) ? -1 : 0;
 }
