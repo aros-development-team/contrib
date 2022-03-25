@@ -56,7 +56,7 @@ int win,state;
             else if (offx>drag_sprite.Width*16) offx=drag_sprite.Width*16;
             offy=y-(scrdata_dirwin_ypos[data_active_window]+(a*scrdata_font_ysize));
         }
-        if ((b=select(win,a))==2) {
+        if ((b=_select(win,a))==2) {
             return;
         }
         if (!b || !selectedentry) drag=0;
@@ -339,7 +339,7 @@ int win;
     }
 }
 
-int select(win,o)
+int _select(win,o)
 int win,o;
 {
     int a,dbclick/*=0*/,sel=1,foundcount;

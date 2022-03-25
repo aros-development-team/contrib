@@ -43,7 +43,6 @@ int smartcountlines(struct ViewData *);
 int ansicountlines(struct ViewData *);
 void removetabs(struct ViewData *);
 int getusage(void);
-void dprintf (char *,char *,...);
 int filteroff(void);
 void filteron(void);
 
@@ -530,7 +529,7 @@ int getrenamedata(char *,char *);
 
 void doselection(int,int);
 void dormbscroll(int);
-int select(int,int);
+int _select(int,int);
 int unselect(int,struct Directory *);
 void defselect(int,int,int);
 void globalselect(int,int);
