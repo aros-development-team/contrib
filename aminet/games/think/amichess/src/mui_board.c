@@ -93,7 +93,7 @@ MUI_Redraw(obj,MADF_DRAWOBJECT);
 }
 
 #ifdef __AROS__
-AROS_UFH3S(ULONG, Dispatcher,
+AROS_UFH3S(IPTR, Dispatcher,
     AROS_UFHA(struct IClass *, cl, A0),
     AROS_UFHA(Object *, obj, A2),
     AROS_UFHA(Msg, msg, A1))
@@ -110,7 +110,7 @@ static ULONG Dispatcher(register __a0 struct IClass *cl,register __a2 Object *ob
 {
 #endif
 
-ULONG retval = 0;
+IPTR retval = 0;
 switch(msg->MethodID)
 	{
 	case OM_NEW:
