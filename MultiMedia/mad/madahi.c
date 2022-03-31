@@ -64,8 +64,18 @@ static enum mad_flow input(void *data, struct mad_stream *stream);
 static inline signed int scale(mad_fixed_t sample);
 static enum mad_flow output(void *data, struct mad_header const *header, struct mad_pcm *pcm);
 static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_frame *frame);
+#if (MAD_VERSION_MAJOR>=1) || \
+    ((MAD_VERSION_MAJOR==0) && \
+     ((MAD_VERSION_MINOR>14) || \
+       ((MAD_VERSION_MINOR==14) && \
+       (MAD_VERSION_PATCH>=2))))
+#define MadErrorString(x) mad_stream_errorstr(x)
+#else
 static const char *MadErrorString(const struct mad_stream *Stream);
+#endif
 static void PrintFrameInfo(struct mad_header *Header);
+
+const TEXT version[] = "$VER: MADAHI 0.15 (31.03.2022)\n";
 
 int main (int argc, char *argv[])
 {
@@ -390,13 +400,10 @@ static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_fra
 	return MAD_FLOW_STOP;
 }
 
-#if (MAD_VERSION_MAJOR>=1) || \
-    ((MAD_VERSION_MAJOR==0) && \
-     (((MAD_VERSION_MINOR==14) && \
-       (MAD_VERSION_PATCH>=2)) || \
-      (MAD_VERSION_MINOR>14)))
-#define MadErrorString(x) mad_stream_errorstr(x)
-#else
+#if (MAD_VERSION_MAJOR<1) && \
+     ((MAD_VERSION_MINOR<14) || \
+       ((MAD_VERSION_MINOR==14) && \
+       (MAD_VERSION_PATCH<2)))
 static const char *MadErrorString(const struct mad_stream *Stream)
 {
 	switch(Stream->error)

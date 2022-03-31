@@ -1,6 +1,6 @@
 /*
- * mad - MPEG audio decoder
- * Copyright (C) 2000-2001 Robert Leslie
+ * libmad - MPEG audio decoder library
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: timer.h,v 1.16 2004/01/23 09:41:33 rob Exp $
  */
 
 # ifndef LIBMAD_TIMER_H
@@ -79,7 +79,7 @@ enum mad_units {
   MAD_UNITS_59_94_FPS	 =   -60
 };
 
-# define mad_timer_reset(timer)	(*(timer) = mad_timer_zero)
+# define mad_timer_reset(timer)	((void) (*(timer) = mad_timer_zero))
 
 int mad_timer_compare(mad_timer_t, mad_timer_t);
 

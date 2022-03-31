@@ -1,6 +1,6 @@
 /*
- * mad - MPEG audio decoder
- * Copyright (C) 2000-2001 Robert Leslie
+ * libmad - MPEG audio decoder library
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: decoder.c,v 1.22 2004/01/23 09:41:32 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -25,7 +25,9 @@
 
 # include "global.h"
 
-# include <sys/types.h>
+# ifdef HAVE_SYS_TYPES_H
+#  include <sys/types.h>
+# endif
 
 # ifdef HAVE_SYS_WAIT_H
 #  include <sys/wait.h>
@@ -35,27 +37,38 @@
 #  include <unistd.h>
 # endif
 
-# include <stdio.h>
-# include <fcntl.h>
+# ifdef HAVE_FCNTL_H
+#  include <fcntl.h>
+# endif
+
 # include <stdlib.h>
-# include <errno.h>
+
+# ifdef HAVE_ERRNO_H
+#  include <errno.h>
+# endif
 
 # include "stream.h"
 # include "frame.h"
 # include "synth.h"
 # include "decoder.h"
 
-#undef SUPPORT_ASYNC
-
+/*
+ * NAME:	decoder->init()
+ * DESCRIPTION:	initialize a decoder object with callback routines
+ */
 void mad_decoder_init(struct mad_decoder *decoder, void *data,
-		      enum mad_flow (*input_func)(void *, struct mad_stream *),
+		      enum mad_flow (*input_func)(void *,
+						  struct mad_stream *),
 		      enum mad_flow (*header_func)(void *,
 						   struct mad_header const *),
-		      enum mad_flow (*filter_func)(void *, struct mad_frame *),
+		      enum mad_flow (*filter_func)(void *,
+						   struct mad_stream const *,
+						   struct mad_frame *),
 		      enum mad_flow (*output_func)(void *,
 						   struct mad_header const *,
 						   struct mad_pcm *),
-		      enum mad_flow (*error_func)(void *, struct mad_stream *,
+		      enum mad_flow (*error_func)(void *,
+						  struct mad_stream *,
 						  struct mad_frame *),
 		      enum mad_flow (*message_func)(void *,
 						    void *, unsigned int *))
@@ -82,16 +95,15 @@ void mad_decoder_init(struct mad_decoder *decoder, void *data,
 
 int mad_decoder_finish(struct mad_decoder *decoder)
 {
-#ifdef SUPPORT_ASYNC
+# if defined(USE_ASYNC)
   if (decoder->mode == MAD_DECODER_MODE_ASYNC && decoder->async.pid) {
     pid_t pid;
     int status;
 
     close(decoder->async.in);
 
-    do {
+    do
       pid = waitpid(decoder->async.pid, &status, 0);
-    }
     while (pid == -1 && errno == EINTR);
 
     decoder->mode = -1;
@@ -107,10 +119,12 @@ int mad_decoder_finish(struct mad_decoder *decoder)
 
     return (!WIFEXITED(status) || WEXITSTATUS(status)) ? -1 : 0;
   }
-#endif
+# endif
+
   return 0;
 }
-#ifdef NEVER
+
+# if defined(USE_ASYNC)
 static
 enum mad_flow send_io(int fd, void const *data, size_t len)
 {
@@ -118,9 +132,8 @@ enum mad_flow send_io(int fd, void const *data, size_t len)
   ssize_t count;
 
   while (len) {
-    do {
+    do
       count = write(fd, ptr, len);
-    }
     while (count == -1 && errno == EINTR);
 
     if (count == -1)
@@ -140,9 +153,8 @@ enum mad_flow receive_io(int fd, void *buffer, size_t len)
   ssize_t count;
 
   while (len) {
-    do {
+    do
       count = read(fd, ptr, len);
-    }
     while (count == -1 && errno == EINTR);
 
     if (count == -1)
@@ -278,7 +290,8 @@ enum mad_flow check_message(struct mad_decoder *decoder)
 
   return result;
 }
-#endif
+# endif
+
 static
 enum mad_flow error_default(void *data, struct mad_stream *stream,
 			    struct mad_frame *frame)
@@ -345,7 +358,7 @@ int run_sync(struct mad_decoder *decoder)
     }
 
     while (1) {
-#ifdef SUPPORT_ASYNC
+# if defined(USE_ASYNC)
       if (decoder->mode == MAD_DECODER_MODE_ASYNC) {
 	switch (check_message(decoder)) {
 	case MAD_FLOW_IGNORE:
@@ -357,7 +370,8 @@ int run_sync(struct mad_decoder *decoder)
 	  goto done;
 	}
       }
-#endif
+# endif
+
       if (decoder->header_func) {
 	if (mad_header_decode(&frame->header, stream) == -1) {
 	  if (!MAD_RECOVERABLE(stream->error))
@@ -407,7 +421,7 @@ int run_sync(struct mad_decoder *decoder)
 	bad_last_frame = 0;
 
       if (decoder->filter_func) {
-	switch (decoder->filter_func(decoder->cb_data, frame)) {
+	switch (decoder->filter_func(decoder->cb_data, stream, frame)) {
 	case MAD_FLOW_STOP:
 	  goto done;
 	case MAD_FLOW_BREAK:
@@ -448,7 +462,7 @@ int run_sync(struct mad_decoder *decoder)
   return result;
 }
 
-#ifdef SUPPORT_ASYNC
+# if defined(USE_ASYNC)
 static
 int run_async(struct mad_decoder *decoder)
 {
@@ -510,8 +524,12 @@ int run_async(struct mad_decoder *decoder)
   /* not reached */
   return -1;
 }
-#endif
+# endif
 
+/*
+ * NAME:	decoder->run()
+ * DESCRIPTION:	run the decoder thread either synchronously or asynchronously
+ */
 int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
 {
   int result;
@@ -523,11 +541,9 @@ int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
     break;
 
   case MAD_DECODER_MODE_ASYNC:
-#ifdef SUPPORT_ASYNC
+# if defined(USE_ASYNC)
     run = run_async;
-#else
-    printf("ERROR: No ASYNC Mode !\n");
-#endif
+# endif
     break;
   }
 
@@ -545,15 +561,22 @@ int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
 
   return result;
 }
-#ifdef NEVER
+
+/*
+ * NAME:	decoder->message()
+ * DESCRIPTION:	send a message to and receive a reply from the decoder process
+ */
 int mad_decoder_message(struct mad_decoder *decoder,
 			void *message, unsigned int *len)
 {
+# if defined(USE_ASYNC)
   if (decoder->mode != MAD_DECODER_MODE_ASYNC ||
       send(decoder->async.out, message, *len) != MAD_FLOW_CONTINUE ||
       receive(decoder->async.in, &message, len) != MAD_FLOW_CONTINUE)
     return -1;
 
   return 0;
+# else
+  return -1;
+# endif
 }
-#endif

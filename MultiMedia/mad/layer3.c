@@ -1,6 +1,6 @@
 /*
- * mad - MPEG audio decoder
- * Copyright (C) 2000-2001 Robert Leslie
+ * libmad - MPEG audio decoder library
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: layer3.c,v 1.43 2004/01/23 09:41:32 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -27,7 +27,10 @@
 
 # include <stdlib.h>
 # include <string.h>
-# include <assert.h>
+
+# ifdef HAVE_ASSERT_H
+#  include <assert.h>
+# endif
 
 # ifdef HAVE_LIMITS_H
 #  include <limits.h>
@@ -49,6 +52,11 @@ enum {
   scalefac_scale     = 0x02,
   preflag	     = 0x04,
   mixed_block_flag   = 0x08
+};
+
+enum {
+  I_STEREO  = 0x1,
+  MS_STEREO = 0x2
 };
 
 struct sideinfo {
@@ -280,8 +288,8 @@ unsigned char const sfb_8000_short[] = {
 # define sfb_12000_mixed  sfb_16000_mixed
 # define sfb_11025_mixed  sfb_12000_mixed
 
-/* the 8000 Hz short block scalefactor bands do not break after the first 36
-   frequency lines, so this is probably wrong */
+/* the 8000 Hz short block scalefactor bands do not break after
+   the first 36 frequency lines, so this is probably wrong */
 static
 unsigned char const sfb_8000_mixed[] = {
   /* long */  12, 12, 12,
@@ -374,7 +382,7 @@ mad_fixed_t const ca[8] = {
  * IMDCT coefficients for short blocks
  * derived from section 2.4.3.4.10.2 of ISO/IEC 11172-3
  *
- * imdct_s[i/even][k] = cos((PI / 24) * (2 * (i / 2) + 7) * (2 * k + 1))
+ * imdct_s[i/even][k] = cos((PI / 24) * (2 *       (i / 2) + 7) * (2 * k + 1))
  * imdct_s[i /odd][k] = cos((PI / 24) * (2 * (6 + (i-1)/2) + 7) * (2 * k + 1))
  */
 static
@@ -453,7 +461,7 @@ mad_fixed_t const is_table[7] = {
  * derived from section 2.4.3.2 of ISO/IEC 13818-3
  *
  * is_lsf_table[0][i] = (1 / sqrt(sqrt(2)))^(i + 1)
- * is_lsf_table[1][i] = (1 / sqrt(2))^(i + 1)
+ * is_lsf_table[1][i] = (1 /      sqrt(2)) ^(i + 1)
  */
 static
 mad_fixed_t const is_lsf_table[2][15] = {
@@ -503,7 +511,7 @@ enum mad_error III_sideinfo(struct mad_bitptr *ptr, unsigned int nch,
 			    unsigned int *priv_bitlen)
 {
   unsigned int ngr, gr, ch, i;
-  enum mad_error result = 0;
+  enum mad_error result = MAD_ERROR_NONE;
 
   *data_bitlen = 0;
   *priv_bitlen = lsf ? ((nch == 1) ? 1 : 2) : ((nch == 1) ? 5 : 3);
@@ -602,7 +610,7 @@ unsigned int III_scalefactors_lsf(struct mad_bitptr *ptr,
   index = (channel->block_type == 2) ?
     ((channel->flags & mixed_block_flag) ? 2 : 1) : 0;
 
-  if (!((mode_extension & 0x1) && gr1ch)) {
+  if (!((mode_extension & I_STEREO) && gr1ch)) {
     if (scalefac_compress < 400) {
       slen[0] = (scalefac_compress >> 4) / 5;
       slen[1] = (scalefac_compress >> 4) % 5;
@@ -643,7 +651,7 @@ unsigned int III_scalefactors_lsf(struct mad_bitptr *ptr,
     while (n < 39)
       channel->scalefac[n++] = 0;
   }
-  else {  /* (mode_extension & 0x1) && gr1ch (i.e. ch == 1) */
+  else {  /* (mode_extension & I_STEREO) && gr1ch (i.e. ch == 1) */
     scalefac_compress >>= 1;
 
     if (scalefac_compress < 180) {
@@ -775,6 +783,28 @@ unsigned int III_scalefactors(struct mad_bitptr *ptr, struct channel *channel,
 }
 
 /*
+ * The Layer III formula for requantization and scaling is defined by
+ * section 2.4.3.4.7.1 of ISO/IEC 11172-3, as follows:
+ *
+ *   long blocks:
+ *   xr[i] = sign(is[i]) * abs(is[i])^(4/3) *
+ *           2^((1/4) * (global_gain - 210)) *
+ *           2^-(scalefac_multiplier *
+ *               (scalefac_l[sfb] + preflag * pretab[sfb]))
+ *
+ *   short blocks:
+ *   xr[i] = sign(is[i]) * abs(is[i])^(4/3) *
+ *           2^((1/4) * (global_gain - 210 - 8 * subblock_gain[w])) *
+ *           2^-(scalefac_multiplier * scalefac_s[sfb][w])
+ *
+ *   where:
+ *   scalefac_multiplier = (scalefac_scale + 1) / 2
+ *
+ * The routines III_exponents() and III_requantize() facilitate this
+ * calculation.
+ */
+
+/*
  * NAME:	III_exponents()
  * DESCRIPTION:	calculate scalefactor exponents
  */
@@ -856,23 +886,7 @@ mad_fixed_t III_requantize(unsigned int value, signed int exp)
   signed int frac;
   struct fixedfloat const *power;
 
-  /*
-   * long blocks:
-   * xr[i] = sign(is[i]) * abs(is[i])^(4/3) *
-   *         2^((1/4) * (global_gain - 210)) *
-   *         2^-(scalefac_multiplier *
-   *             (scalefac_l[sfb] + preflag * pretab[sfb]))
-   *
-   * short blocks:
-   * xr[i] = sign(is[i]) * abs(is[i])^(4/3) *
-   *         2^((1/4) * (global_gain - 210 - 8 * subblock_gain[w])) *
-   *         2^-(scalefac_multiplier * scalefac_s[sfb][w])
-   *
-   * where:
-   * scalefac_multiplier = (scalefac_scale + 1) / 2
-   */
-
-  frac = exp % 4;
+  frac = exp % 4;  /* assumes sign(frac) == sign(exp) */
   exp /= 4;
 
   power = &rq_table[value];
@@ -884,8 +898,10 @@ mad_fixed_t III_requantize(unsigned int value, signed int exp)
       /* underflow */
       requantized = 0;
     }
-    else
+    else {
+      requantized += 1L << (-exp - 1);
       requantized >>= -exp;
+    }
   }
   else {
     if (exp >= 5) {
@@ -1251,7 +1267,7 @@ enum mad_error III_huffdecode(struct mad_bitptr *ptr, mad_fixed_t xr[576],
     xrptr += 2;
   }
 
-  return 0;
+  return MAD_ERROR_NONE;
 }
 
 # undef MASK
@@ -1266,36 +1282,38 @@ void III_reorder(mad_fixed_t xr[576], struct channel const *channel,
 		 unsigned char const sfbwidth[39])
 {
   mad_fixed_t tmp[32][3][6];
-  unsigned int sb, l, sfbi, f, w, sbw[3], sw[3];
+  unsigned int sb, l, f, w, sbw[3], sw[3];
 
   /* this is probably wrong for 8000 Hz mixed blocks */
 
-  if (channel->flags & mixed_block_flag)
-    sb = 2, sfbi = 3 * 3;
-  else
-    sb = 0, sfbi = 0;
+  sb = 0;
+  if (channel->flags & mixed_block_flag) {
+    sb = 2;
+
+    l = 0;
+    while (l < 36)
+      l += *sfbwidth++;
+  }
 
   for (w = 0; w < 3; ++w) {
     sbw[w] = sb;
     sw[w]  = 0;
   }
 
-  f = sfbwidth[sfbi];
+  f = *sfbwidth++;
   w = 0;
 
   for (l = 18 * sb; l < 576; ++l) {
+    if (f-- == 0) {
+      f = *sfbwidth++ - 1;
+      w = (w + 1) % 3;
+    }
+
     tmp[sbw[w]][w][sw[w]++] = xr[l];
 
     if (sw[w] == 6) {
       sw[w] = 0;
       ++sbw[w];
-    }
-
-    if (--f == 0) {
-      if (++w == 3)
-	w = 0;
-
-      f = sfbwidth[++sfbi];
     }
   }
 
@@ -1315,11 +1333,6 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
   short modes[39];
   unsigned int sfbi, l, n, i;
 
-  enum {
-    i_stereo  = 0x1,
-    ms_stereo = 0x2
-  };
-
   if (granule->ch[0].block_type !=
       granule->ch[1].block_type ||
       (granule->ch[0].flags & mixed_block_flag) !=
@@ -1331,7 +1344,7 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
 
   /* intensity stereo */
 
-  if (header->mode_extension & i_stereo) {
+  if (header->mode_extension & I_STEREO) {
     struct channel const *right_ch = &granule->ch[1];
     mad_fixed_t const *right_xr = xr[1];
     unsigned int is_pos;
@@ -1387,14 +1400,14 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
       /* long blocks */
 
       for (i = 0; i < lower; ++i)
-	modes[i] = header->mode_extension & ~i_stereo;
+	modes[i] = header->mode_extension & ~I_STEREO;
 
       /* short blocks */
 
       w = 0;
       for (i = start; i < max; ++i) {
 	if (i < bound[w])
-	  modes[i] = header->mode_extension & ~i_stereo;
+	  modes[i] = header->mode_extension & ~I_STEREO;
 
 	w = (w + 1) % 3;
       }
@@ -1417,7 +1430,7 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
       }
 
       for (i = 0; i < bound; ++i)
-	modes[i] = header->mode_extension & ~i_stereo;
+	modes[i] = header->mode_extension & ~I_STEREO;
     }
 
     /* now do the actual processing */
@@ -1432,11 +1445,11 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
       for (sfbi = l = 0; l < 576; ++sfbi, l += n) {
 	n = sfbwidth[sfbi];
 
-	if (!(modes[sfbi] & i_stereo))
+	if (!(modes[sfbi] & I_STEREO))
 	  continue;
 
 	if (illegal_pos[sfbi]) {
-	  modes[sfbi] &= ~i_stereo;
+	  modes[sfbi] &= ~I_STEREO;
 	  continue;
 	}
 
@@ -1468,13 +1481,13 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
       for (sfbi = l = 0; l < 576; ++sfbi, l += n) {
 	n = sfbwidth[sfbi];
 
-	if (!(modes[sfbi] & i_stereo))
+	if (!(modes[sfbi] & I_STEREO))
 	  continue;
 
 	is_pos = right_ch->scalefac[sfbi];
 
 	if (is_pos >= 7) {  /* illegal intensity position */
-	  modes[sfbi] &= ~i_stereo;
+	  modes[sfbi] &= ~I_STEREO;
 	  continue;
 	}
 
@@ -1492,7 +1505,7 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
 
   /* middle/side stereo */
 
-  if (header->mode_extension & ms_stereo) {
+  if (header->mode_extension & MS_STEREO) {
     register mad_fixed_t invsqrt2;
 
     header->flags |= MAD_FLAG_MS_STEREO;
@@ -1502,7 +1515,7 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
     for (sfbi = l = 0; l < 576; ++sfbi, l += n) {
       n = sfbwidth[sfbi];
 
-      if (modes[sfbi] != ms_stereo)
+      if (modes[sfbi] != MS_STEREO)
 	continue;
 
       for (i = 0; i < n; ++i) {
@@ -1517,7 +1530,7 @@ enum mad_error III_stereo(mad_fixed_t xr[2][576],
     }
   }
 
-  return 0;
+  return MAD_ERROR_NONE;
 }
 
 /*
@@ -1533,15 +1546,12 @@ void III_aliasreduce(mad_fixed_t xr[576], int lines)
   bound = &xr[lines];
   for (xr += 18; xr < bound; xr += 18) {
     for (i = 0; i < 8; ++i) {
-      register mad_fixed_t *aptr, *bptr, a, b;
+      register mad_fixed_t a, b;
       register mad_fixed64hi_t hi;
       register mad_fixed64lo_t lo;
 
-      aptr = &xr[-1 - i];
-      bptr = &xr[     i];
-
-      a = *aptr;
-      b = *bptr;
+      a = xr[-1 - i];
+      b = xr[     i];
 
 # if defined(ASO_ZEROCHECK)
       if (a | b) {
@@ -1549,12 +1559,12 @@ void III_aliasreduce(mad_fixed_t xr[576], int lines)
 	MAD_F_ML0(hi, lo,  a, cs[i]);
 	MAD_F_MLA(hi, lo, -b, ca[i]);
 
-	*aptr = MAD_F_MLZ(hi, lo);
+	xr[-1 - i] = MAD_F_MLZ(hi, lo);
 
 	MAD_F_ML0(hi, lo,  b, cs[i]);
 	MAD_F_MLA(hi, lo,  a, ca[i]);
 
-	*bptr = MAD_F_MLZ(hi, lo);
+	xr[     i] = MAD_F_MLZ(hi, lo);
 # if defined(ASO_ZEROCHECK)
       }
 # endif
@@ -1565,6 +1575,193 @@ void III_aliasreduce(mad_fixed_t xr[576], int lines)
 # if defined(ASO_IMDCT)
 void III_imdct_l(mad_fixed_t const [18], mad_fixed_t [36], unsigned int);
 # else
+#  if 1
+static
+void fastsdct(mad_fixed_t const x[9], mad_fixed_t y[18])
+{
+  mad_fixed_t a0,  a1,  a2,  a3,  a4,  a5,  a6,  a7,  a8,  a9,  a10, a11, a12;
+  mad_fixed_t a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25;
+  mad_fixed_t m0,  m1,  m2,  m3,  m4,  m5,  m6,  m7;
+
+  enum {
+    c0 =  MAD_F(0x1f838b8d),  /* 2 * cos( 1 * PI / 18) */
+    c1 =  MAD_F(0x1bb67ae8),  /* 2 * cos( 3 * PI / 18) */
+    c2 =  MAD_F(0x18836fa3),  /* 2 * cos( 4 * PI / 18) */
+    c3 =  MAD_F(0x1491b752),  /* 2 * cos( 5 * PI / 18) */
+    c4 =  MAD_F(0x0af1d43a),  /* 2 * cos( 7 * PI / 18) */
+    c5 =  MAD_F(0x058e86a0),  /* 2 * cos( 8 * PI / 18) */
+    c6 = -MAD_F(0x1e11f642)   /* 2 * cos(16 * PI / 18) */
+  };
+
+  a0 = x[3] + x[5];
+  a1 = x[3] - x[5];
+  a2 = x[6] + x[2];
+  a3 = x[6] - x[2];
+  a4 = x[1] + x[7];
+  a5 = x[1] - x[7];
+  a6 = x[8] + x[0];
+  a7 = x[8] - x[0];
+
+  a8  = a0  + a2;
+  a9  = a0  - a2;
+  a10 = a0  - a6;
+  a11 = a2  - a6;
+  a12 = a8  + a6;
+  a13 = a1  - a3;
+  a14 = a13 + a7;
+  a15 = a3  + a7;
+  a16 = a1  - a7;
+  a17 = a1  + a3;
+
+  m0 = mad_f_mul(a17, -c3);
+  m1 = mad_f_mul(a16, -c0);
+  m2 = mad_f_mul(a15, -c4);
+  m3 = mad_f_mul(a14, -c1);
+  m4 = mad_f_mul(a5,  -c1);
+  m5 = mad_f_mul(a11, -c6);
+  m6 = mad_f_mul(a10, -c5);
+  m7 = mad_f_mul(a9,  -c2);
+
+  a18 =     x[4] + a4;
+  a19 = 2 * x[4] - a4;
+  a20 = a19 + m5;
+  a21 = a19 - m5;
+  a22 = a19 + m6;
+  a23 = m4  + m2;
+  a24 = m4  - m2;
+  a25 = m4  + m1;
+
+  /* output to every other slot for convenience */
+
+  y[ 0] = a18 + a12;
+  y[ 2] = m0  - a25;
+  y[ 4] = m7  - a20;
+  y[ 6] = m3;
+  y[ 8] = a21 - m6;
+  y[10] = a24 - m1;
+  y[12] = a12 - 2 * a18;
+  y[14] = a23 + m0;
+  y[16] = a22 + m7;
+}
+
+static inline
+void sdctII(mad_fixed_t const x[18], mad_fixed_t X[18])
+{
+  mad_fixed_t tmp[9];
+  int i;
+
+  /* scale[i] = 2 * cos(PI * (2 * i + 1) / (2 * 18)) */
+  static mad_fixed_t const scale[9] = {
+    MAD_F(0x1fe0d3b4), MAD_F(0x1ee8dd47), MAD_F(0x1d007930),
+    MAD_F(0x1a367e59), MAD_F(0x16a09e66), MAD_F(0x125abcf8),
+    MAD_F(0x0d8616bc), MAD_F(0x08483ee1), MAD_F(0x02c9fad7)
+  };
+
+  /* divide the 18-point SDCT-II into two 9-point SDCT-IIs */
+
+  /* even input butterfly */
+
+  for (i = 0; i < 9; i += 3) {
+    tmp[i + 0] = x[i + 0] + x[18 - (i + 0) - 1];
+    tmp[i + 1] = x[i + 1] + x[18 - (i + 1) - 1];
+    tmp[i + 2] = x[i + 2] + x[18 - (i + 2) - 1];
+  }
+
+  fastsdct(tmp, &X[0]);
+
+  /* odd input butterfly and scaling */
+
+  for (i = 0; i < 9; i += 3) {
+    tmp[i + 0] = mad_f_mul(x[i + 0] - x[18 - (i + 0) - 1], scale[i + 0]);
+    tmp[i + 1] = mad_f_mul(x[i + 1] - x[18 - (i + 1) - 1], scale[i + 1]);
+    tmp[i + 2] = mad_f_mul(x[i + 2] - x[18 - (i + 2) - 1], scale[i + 2]);
+  }
+
+  fastsdct(tmp, &X[1]);
+
+  /* output accumulation */
+
+  for (i = 3; i < 18; i += 8) {
+    X[i + 0] -= X[(i + 0) - 2];
+    X[i + 2] -= X[(i + 2) - 2];
+    X[i + 4] -= X[(i + 4) - 2];
+    X[i + 6] -= X[(i + 6) - 2];
+  }
+}
+
+static inline
+void dctIV(mad_fixed_t const y[18], mad_fixed_t X[18])
+{
+  mad_fixed_t tmp[18];
+  int i;
+
+  /* scale[i] = 2 * cos(PI * (2 * i + 1) / (4 * 18)) */
+  static mad_fixed_t const scale[18] = {
+    MAD_F(0x1ff833fa), MAD_F(0x1fb9ea93), MAD_F(0x1f3dd120),
+    MAD_F(0x1e84d969), MAD_F(0x1d906bcf), MAD_F(0x1c62648b),
+    MAD_F(0x1afd100f), MAD_F(0x1963268b), MAD_F(0x1797c6a4),
+    MAD_F(0x159e6f5b), MAD_F(0x137af940), MAD_F(0x11318ef3),
+    MAD_F(0x0ec6a507), MAD_F(0x0c3ef153), MAD_F(0x099f61c5),
+    MAD_F(0x06ed12c5), MAD_F(0x042d4544), MAD_F(0x0165547c)
+  };
+
+  /* scaling */
+
+  for (i = 0; i < 18; i += 3) {
+    tmp[i + 0] = mad_f_mul(y[i + 0], scale[i + 0]);
+    tmp[i + 1] = mad_f_mul(y[i + 1], scale[i + 1]);
+    tmp[i + 2] = mad_f_mul(y[i + 2], scale[i + 2]);
+  }
+
+  /* SDCT-II */
+
+  sdctII(tmp, X);
+
+  /* scale reduction and output accumulation */
+
+  X[0] /= 2;
+  for (i = 1; i < 17; i += 4) {
+    X[i + 0] = X[i + 0] / 2 - X[(i + 0) - 1];
+    X[i + 1] = X[i + 1] / 2 - X[(i + 1) - 1];
+    X[i + 2] = X[i + 2] / 2 - X[(i + 2) - 1];
+    X[i + 3] = X[i + 3] / 2 - X[(i + 3) - 1];
+  }
+  X[17] = X[17] / 2 - X[16];
+}
+
+/*
+ * NAME:	imdct36
+ * DESCRIPTION:	perform X[18]->x[36] IMDCT using Szu-Wei Lee's fast algorithm
+ */
+static inline
+void imdct36(mad_fixed_t const x[18], mad_fixed_t y[36])
+{
+  mad_fixed_t tmp[18];
+  int i;
+
+  /* DCT-IV */
+
+  dctIV(x, tmp);
+
+  /* convert 18-point DCT-IV to 36-point IMDCT */
+
+  for (i =  0; i <  9; i += 3) {
+    y[i + 0] =  tmp[9 + (i + 0)];
+    y[i + 1] =  tmp[9 + (i + 1)];
+    y[i + 2] =  tmp[9 + (i + 2)];
+  }
+  for (i =  9; i < 27; i += 3) {
+    y[i + 0] = -tmp[36 - (9 + (i + 0)) - 1];
+    y[i + 1] = -tmp[36 - (9 + (i + 1)) - 1];
+    y[i + 2] = -tmp[36 - (9 + (i + 2)) - 1];
+  }
+  for (i = 27; i < 36; i += 3) {
+    y[i + 0] = -tmp[(i + 0) - 27];
+    y[i + 1] = -tmp[(i + 1) - 27];
+    y[i + 2] = -tmp[(i + 2) - 27];
+  }
+}
+#  else
 /*
  * NAME:	imdct36
  * DESCRIPTION:	perform X[18]->x[36] IMDCT
@@ -1855,6 +2052,7 @@ void imdct36(mad_fixed_t const X[18], mad_fixed_t x[36])
 
   x[26] = x[27] = MAD_F_MLZ(hi, lo) + t5;
 }
+#  endif
 
 /*
  * NAME:	III_imdct_l()
@@ -1919,7 +2117,11 @@ void III_imdct_l(mad_fixed_t const X[18], mad_fixed_t z[36],
     break;
 
   case 1:  /* start block */
-    for (i =  0; i < 18; ++i) z[i] = mad_f_mul(z[i], window_l[i]);
+    for (i =  0; i < 18; i += 3) {
+      z[i + 0] = mad_f_mul(z[i + 0], window_l[i + 0]);
+      z[i + 1] = mad_f_mul(z[i + 1], window_l[i + 1]);
+      z[i + 2] = mad_f_mul(z[i + 2], window_l[i + 2]);
+    }
     /*  (i = 18; i < 24; ++i) z[i] unchanged */
     for (i = 24; i < 30; ++i) z[i] = mad_f_mul(z[i], window_s[i - 18]);
     for (i = 30; i < 36; ++i) z[i] = 0;
@@ -1929,7 +2131,11 @@ void III_imdct_l(mad_fixed_t const X[18], mad_fixed_t z[36],
     for (i =  0; i <  6; ++i) z[i] = 0;
     for (i =  6; i < 12; ++i) z[i] = mad_f_mul(z[i], window_s[i - 6]);
     /*  (i = 12; i < 18; ++i) z[i] unchanged */
-    for (i = 18; i < 36; ++i) z[i] = mad_f_mul(z[i], window_l[i]);
+    for (i = 18; i < 36; i += 3) {
+      z[i + 0] = mad_f_mul(z[i + 0], window_l[i + 0]);
+      z[i + 1] = mad_f_mul(z[i + 1], window_l[i + 1]);
+      z[i + 2] = mad_f_mul(z[i + 2], window_l[i + 2]);
+    }
     break;
   }
 }
@@ -2032,31 +2238,31 @@ void III_overlap(mad_fixed_t const output[36], mad_fixed_t overlap[18],
     tmp2 = overlap[1];
 
     for (i = 0; i < 16; i += 2) {
-      sample[i + 0][sb] = output[i + 0] + tmp1;
+      sample[i + 0][sb] = output[i + 0 +  0] + tmp1;
       overlap[i + 0]    = output[i + 0 + 18];
       tmp1 = overlap[i + 2];
 
-      sample[i + 1][sb] = output[i + 1] + tmp2;
+      sample[i + 1][sb] = output[i + 1 +  0] + tmp2;
       overlap[i + 1]    = output[i + 1 + 18];
       tmp2 = overlap[i + 3];
     }
 
-    sample[16][sb] = output[16] + tmp1;
+    sample[16][sb] = output[16 +  0] + tmp1;
     overlap[16]    = output[16 + 18];
-    sample[17][sb] = output[17] + tmp2;
+    sample[17][sb] = output[17 +  0] + tmp2;
     overlap[17]    = output[17 + 18];
   }
 # elif 0
   for (i = 0; i < 18; i += 2) {
-    sample[i + 0][sb] = output[i + 0] + overlap[i + 0];
+    sample[i + 0][sb] = output[i + 0 +  0] + overlap[i + 0];
     overlap[i + 0]    = output[i + 0 + 18];
 
-    sample[i + 1][sb] = output[i + 1] + overlap[i + 1];
+    sample[i + 1][sb] = output[i + 1 +  0] + overlap[i + 1];
     overlap[i + 1]    = output[i + 1 + 18];
   }
 # else
   for (i = 0; i < 18; ++i) {
-    sample[i][sb] = output[i] + overlap[i];
+    sample[i][sb] = output[i +  0] + overlap[i];
     overlap[i]    = output[i + 18];
   }
 # endif
@@ -2141,8 +2347,8 @@ void III_freqinver(mad_fixed_t sample[18][32], unsigned int sb)
  * DESCRIPTION:	decode frame main_data
  */
 static
-int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
-		struct sideinfo *si, unsigned int nch)
+enum mad_error III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
+			  struct sideinfo *si, unsigned int nch)
 {
   struct mad_header *header = &frame->header;
   unsigned int sfreqi, ngr, gr;
@@ -2169,7 +2375,7 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
 
   for (gr = 0; gr < ngr; ++gr) {
     struct granule *granule = &si->gr[gr];
-    unsigned char const *sfbwidth = 0;
+    unsigned char const *sfbwidth[2];
     mad_fixed_t xr[2][576];
     unsigned int ch;
     enum mad_error error;
@@ -2178,9 +2384,9 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
       struct channel *channel = &granule->ch[ch];
       unsigned int part2_length;
 
-      sfbwidth = sfbwidth_table[sfreqi].l;
+      sfbwidth[ch] = sfbwidth_table[sfreqi].l;
       if (channel->block_type == 2) {
-	sfbwidth = (channel->flags & mixed_block_flag) ?
+	sfbwidth[ch] = (channel->flags & mixed_block_flag) ?
 	  sfbwidth_table[sfreqi].m : sfbwidth_table[sfreqi].s;
       }
 
@@ -2194,7 +2400,7 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
 					gr == 0 ? 0 : si->scfsi[ch]);
       }
 
-      error = III_huffdecode(ptr, xr[ch], channel, sfbwidth, part2_length);
+      error = III_huffdecode(ptr, xr[ch], channel, sfbwidth[ch], part2_length);
       if (error)
 	return error;
     }
@@ -2202,7 +2408,7 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
     /* joint stereo processing */
 
     if (header->mode == MAD_MODE_JOINT_STEREO && header->mode_extension) {
-      error = III_stereo(xr, granule, header, sfbwidth);
+      error = III_stereo(xr, granule, header, sfbwidth[0]);
       if (error)
 	return error;
     }
@@ -2216,7 +2422,7 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
       mad_fixed_t output[36];
 
       if (channel->block_type == 2) {
-	III_reorder(xr[ch], channel, sfbwidth_table[sfreqi].s);
+	III_reorder(xr[ch], channel, sfbwidth[ch]);
 
 # if !defined(OPT_STRICT)
 	/*
@@ -2300,7 +2506,7 @@ int III_decode(struct mad_bitptr *ptr, struct mad_frame *frame,
     }
   }
 
-  return 0;
+  return MAD_ERROR_NONE;
 }
 
 /*
@@ -2444,12 +2650,12 @@ int mad_layer_III(struct mad_stream *stream, struct mad_frame *frame)
       stream->error = error;
       result = -1;
     }
+
+    /* designate ancillary bits */
+
+    stream->anc_ptr    = ptr;
+    stream->anc_bitlen = md_len * CHAR_BIT - data_bitlen;
   }
-
-  /* designate ancillary bits */
-
-  stream->anc_ptr    = ptr;
-  stream->anc_bitlen = md_len * CHAR_BIT - data_bitlen;
 
 # if 0 && defined(DEBUG)
   fprintf(stderr,
