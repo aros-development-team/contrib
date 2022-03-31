@@ -89,24 +89,24 @@ int main (int argc, char *argv[])
     buffer.framecount = 0;
     if (argc != 2)
     {
-	printf ("Usage: madahi <filename>\n");
-	return -1;
+		printf ("Usage: madahi <filename>\n");
+		return -1;
     }
 
     buffer.srcbuffer = AllocVec(SRCBUFSIZE, MEMF_ANY);
     if (!buffer.srcbuffer)
     {
-	printf ("allocvec src error\n");
-	cleanup(&buffer);
-	return -1;
+		printf ("allocvec src error\n");
+		cleanup(&buffer);
+		return -1;
     }
 
     destbuffer = AllocVec(DESTBUFSIZE * 2, MEMF_ANY);
     if (!destbuffer)
     {
-	printf ("allocvec dest error\n");
-	cleanup(&buffer);
-	return -1;
+		printf ("allocvec dest error\n");
+		cleanup(&buffer);
+		return -1;
     }
     buffer.destbuffer1 = destbuffer;
     buffer.destbuffer2 = (short *)((UBYTE *)buffer.destbuffer1 + DESTBUFSIZE);
@@ -114,24 +114,24 @@ int main (int argc, char *argv[])
     buffer.infh = Open(argv[1], MODE_OLDFILE);
     if (buffer.infh == 0)
     {
-	printf ("error %ld opening file\n", IoErr());
-	cleanup(&buffer);
-	return -1;
+		printf ("error %ld opening file\n", IoErr());
+		cleanup(&buffer);
+		return -1;
     }
     
     AHImp = CreateMsgPort();
     if (!AHImp) 
     {
-	printf("Could not create msgport\n");
-	cleanup(&buffer);
-	return -1;
+		printf("Could not create msgport\n");
+		cleanup(&buffer);
+		return -1;
     }
 
     if (!(AHIio = (struct AHIRequest *)CreateIORequest(AHImp, sizeof(struct AHIRequest))))
     {
-	printf("Could not create AHI request\n");
+		printf("Could not create AHI request\n");
     	cleanup(&buffer);
-	return -1;
+		return -1;
     }
 
     AHIio->ahir_Version = 4;
@@ -139,21 +139,21 @@ int main (int argc, char *argv[])
     if (AHIDevice)
     {
     	printf("Unable to open ahi.device\n");
-	cleanup(&buffer);
-	return -1;
+		cleanup(&buffer);
+		return -1;
     }
-    
+
     AHIiocopy = AllocMem(sizeof(struct AHIRequest), MEMF_ANY);
     if (!AHIiocopy)
     {
     	printf("Failed to make copy of AHI Request\n");
     	cleanup(&buffer);
-	return -1;
+		return -1;
     }
     CopyMem(AHIio, AHIiocopy, sizeof(struct AHIRequest));
     AHIios[0] = AHIio;
     AHIios[1] = AHIiocopy;
-    
+
     /* configure input, output, and error functions */
     mad_decoder_init(&decoder, &buffer,
 		     input, 0 /* header */, 0 /* filter */, output,
@@ -172,26 +172,32 @@ static void cleanup(struct buffer *buffer)
 {
     if (AHIios[0])
     {
-    	if (!CheckIO((struct IORequest *)AHIios[0])) AbortIO((struct IORequest *)AHIios[0]);
-	WaitIO((struct IORequest *)AHIios[0]);
+    	if (!CheckIO((struct IORequest *)AHIios[0]))
+			AbortIO((struct IORequest *)AHIios[0]);
+		WaitIO((struct IORequest *)AHIios[0]);
     }
 
     if (AHIios[1])
     {
-    	if (!CheckIO((struct IORequest *)AHIios[1])) AbortIO((struct IORequest *)AHIios[1]);
-	WaitIO((struct IORequest *)AHIios[1]);
+    	if (!CheckIO((struct IORequest *)AHIios[1]))
+			AbortIO((struct IORequest *)AHIios[1]);
+		WaitIO((struct IORequest *)AHIios[1]);
     }
     
     if (!AHIDevice)
     	CloseDevice((struct IORequest *)AHIio);
 	
     DeleteIORequest((struct IORequest *)AHIio);
-    if (AHIiocopy) FreeMem(AHIiocopy, sizeof(struct AHIRequest));
+    if (AHIiocopy)
+		FreeMem(AHIiocopy, sizeof(struct AHIRequest));
     DeleteMsgPort(AHImp);
     
-    if(buffer->infh) Close(buffer->infh);
-    if(buffer->srcbuffer) FreeVec(buffer->srcbuffer);
-    if(destbuffer) FreeVec(destbuffer);
+    if(buffer->infh)
+		Close(buffer->infh);
+    if(buffer->srcbuffer)
+		FreeVec(buffer->srcbuffer);
+    if(destbuffer)
+		FreeVec(destbuffer);
 }
 
 /* input function: called when more input is needed; refill stream buffer */
@@ -204,8 +210,8 @@ static enum mad_flow input(void *data, struct mad_stream *stream)
     //printf("1 buffer %x bufend %x thispos %d next %x buflen %d\n", stream->buffer, stream->bufend, stream->this_frame - stream->buffer, stream->next_frame, stream->bufend - stream->buffer);
     if( stream->next_frame != NULL )
     {
-	remainingbytes = stream->bufend - stream->next_frame;
-	memcpy( (void*)stream->buffer, stream->this_frame, remainingbytes );
+		remainingbytes = stream->bufend - stream->next_frame;
+		memcpy( (void*)stream->buffer, stream->this_frame, remainingbytes );
     }
     else remainingbytes = 0;
 
@@ -214,11 +220,11 @@ static enum mad_flow input(void *data, struct mad_stream *stream)
     //printf("read %d remainingbytes %d srcstart %x\n", readlength, remainingbytes, (int)srcstart);
     if( readlength<0 )
     {
-	printf("error reading file\n");
-	return MAD_FLOW_STOP;
+		printf("error reading file\n");
+		return MAD_FLOW_STOP;
     }
     if( readlength==0 )
-	return MAD_FLOW_STOP;
+		return MAD_FLOW_STOP;
     mad_stream_buffer(stream, buffer->srcbuffer, readlength + remainingbytes);
     //printf("2 buffer %x bufend %x thispos %d next %x buflen %d\n", stream->buffer, stream->bufend, stream->this_frame - stream->buffer, stream->next_frame, stream->bufend - stream->buffer);
 
@@ -230,13 +236,13 @@ static inline signed int scale(mad_fixed_t sample)
 {
     /* round */
     sample += (1L << (MAD_F_FRACBITS - 16));
-    
+
     /* clip */
     if (sample >= MAD_F_ONE)
-	sample = MAD_F_ONE - 1;
+		sample = MAD_F_ONE - 1;
     else if (sample < -MAD_F_ONE)
-	sample = -MAD_F_ONE;
-    
+		sample = -MAD_F_ONE;
+
     /* quantize */
     return sample >> (MAD_F_FRACBITS + 1 - 16);
 }
@@ -248,13 +254,12 @@ static enum mad_flow output(void *data, struct mad_header const *header, struct 
     unsigned int nchannels, nsamples;
     mad_fixed_t const *left_ch, *right_ch;
     signed short *ptr;
-    signed int sample;
     int length;
     struct DateStamp date;
     static struct DateStamp startdate;
     static int step;
     static int offset;
-    
+
     /* pcm->samplerate contains the sampling frequency */
     nchannels = pcm->channels;
     nsamples  = pcm->length;
@@ -266,33 +271,29 @@ static enum mad_flow output(void *data, struct mad_header const *header, struct 
     {
     	DateStamp(&startdate);
     }
-    
+
     if(buffer->framecount==0)
     {
-	PrintFrameInfo((struct mad_header *)header);
+		PrintFrameInfo((struct mad_header *)header);
     }
     buffer->framecount++;
 
     length = nsamples*2;
     if( nchannels == 2 )
-	length *= 2;
+		length *= 2;
     if( length > DESTBUFSIZE )
     {
-	printf("buffer overflow\n");
-	return MAD_FLOW_STOP;
+		printf("buffer overflow\n");
+		return MAD_FLOW_STOP;
     }
     
     ptr = buffer->destbuffer1 + offset;
     while (nsamples--)
     {
-	/* output sample(s) in 16-bit signed little-endian PCM */
-	sample = scale(*left_ch++);
-	*ptr++ = sample;
-	if (nchannels == 2)
-	{
-	    sample = scale(*right_ch++);
-	    *ptr++ = sample;
-	}
+		/* output sample(s) in 16-bit signed little-endian PCM */
+		*ptr++ = scale(*left_ch++);
+		if (nchannels == 2)
+			*ptr++ = scale(*right_ch++);
     }
 
 //kprintf("madlength: %d\n", length);
@@ -325,64 +326,64 @@ static enum mad_flow output(void *data, struct mad_header const *header, struct 
 
     DateStamp(&date);
     
+#if (0)
     {
-	static ULONG totbytes;
-	
-	totbytes += length;
-	
-	//ULONG sec = (date.ds_Minute * 60 + date.ds_Tick / 50) -
-	//   (startdate.ds_Minute * 60 + startdate.ds_Tick / 50);
-	
-    	//kprintf("\nmadahi: writing %d bytes. time %d.%02d  sec %d  b/sec %d\n",
-    	//length, date.ds_Tick / 50, date.ds_Tick % 50,
-    	// sec, sec ? totbytes / sec : 0);
+		static ULONG totbytes;
+		totbytes += length;
+
+		ULONG sec = (date.ds_Minute * 60 + date.ds_Tick / 50) -
+	      (startdate.ds_Minute * 60 + startdate.ds_Tick / 50);
+
+    	kprintf("\nmadahi: writing %d bytes. time %d.%02d  sec %d  b/sec %d\n",
+				length, date.ds_Tick / 50, date.ds_Tick % 50,
+				sec, sec ? totbytes / sec : 0);
     }
+#endif
     if (iolink)
     {
-    #if 0
+#if 0
     	ULONG signals = Wait(SIGBREAKF_CTRL_C | (1L << AHImp->mp_SigBit));
-    #else
+#else
         ULONG signals = SetSignal(0L,0L);
-    #endif	
-	if (signals & SIGBREAKF_CTRL_C)
-	{
-	    return MAD_FLOW_STOP;
-	}
+#endif	
+		if (signals & SIGBREAKF_CTRL_C)
+		{
+			return MAD_FLOW_STOP;
+		}
 
-    #if 0
-    #else
-        if (CheckIO((struct IORequest *)iolink))
-	{
-            kprintf("Buffer underflow!\n");
-        }
-    #endif
-    
-	if (WaitIO((struct IORequest *)iolink))
-	{
-	    kprintf("WaitIO!?\n");
-	}
+#if 0
+#else
+		if (CheckIO((struct IORequest *)iolink))
+		{
+			kprintf("Buffer underflow!\n");
+		}
+#endif
+		
+		if (WaitIO((struct IORequest *)iolink))
+		{
+			kprintf("WaitIO!?\n");
+		}
 
         DateStamp(&date);
 
     	//kprintf("madahi: WAITIO returned. time %d.%02d\n", date.ds_Tick / 50, date.ds_Tick % 50);	
     }
     iolink = AHIios[0];
-    
+
     /* swap destbuffer1, destbuffer2 */
     {
     	short *tmp = buffer->destbuffer1;
-	buffer->destbuffer1 = buffer->destbuffer2;
-	buffer->destbuffer2 = tmp;
+		buffer->destbuffer1 = buffer->destbuffer2;
+		buffer->destbuffer2 = tmp;
     }
-    
+
     /* swap AHI requests */
-    
     {
     	struct AHIRequest *tmp = AHIios[0];
-	AHIios[0] = AHIios[1];
-	AHIios[1] = tmp;
+		AHIios[0] = AHIios[1];
+		AHIios[1] = tmp;
     }
-    
+
     return MAD_FLOW_CONTINUE;
 }
 
@@ -395,9 +396,9 @@ static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_fra
 	   stream->error, stream->this_frame - stream->buffer, MadErrorString(stream));
 
     if( MAD_RECOVERABLE(stream->error) )
-	return MAD_FLOW_CONTINUE;
-    else
-	return MAD_FLOW_STOP;
+		return MAD_FLOW_CONTINUE;
+	else
+		return MAD_FLOW_STOP;
 }
 
 #if (MAD_VERSION_MAJOR<1) && \
