@@ -217,28 +217,28 @@ static unsigned short MACEtab4[][8] = {
 { 0x38F0,0x7FFF,0x8000,0xC70F,0,0,0,0 }, { 0x3B7A,0x7FFF,0x8000,0xC485,0,0,0,0 },
 { 0x3E22,0x7FFF,0x8000,0xC1DD,0,0,0,0 }, { 0x40E7,0x7FFF,0x8000,0xBF18,0,0,0,0 }};
 
-short index, lev, factor, prev2, previous, level;
+short idx, lev, factor, prev2, previous, level;
 unsigned char *outPtr;
 
 void chomp3(unsigned char val, unsigned short tab1[], unsigned short tab2[][8], unsigned long numChannels)
 {
   short current;
 
-  current=(short)tab2[(index & 0x7f0) >> 4][val];
+  current=(short)tab2[(idx & 0x7f0) >> 4][val];
   if (current+lev > 32767) current=32767;
   else if (current+lev < -32768) current=-32767;
   else current+=lev;
   lev=current-(current >> 3);
   *outPtr=current >> 8;
   outPtr += numChannels; /* FIXME */
-  if ( ( index += tab1[val]-(index>>5) ) < 0 ) index = 0;
+  if ( ( idx += tab1[val]-(idx>>5) ) < 0 ) idx = 0;
 }
 
 void Exp1to3(const unsigned char *inBuffer, void *outBuffer, unsigned long cnt, unsigned long numChannels, unsigned long whichChannel)
 {
    unsigned char pkt;
 
-   index=lev=0;
+   idx=lev=0;
 
    inBuffer+=(whichChannel-1)*2;
 
@@ -263,7 +263,7 @@ void chomp6(unsigned char val, unsigned short tab1[], unsigned short tab2[][8], 
 {
   short current;
 
-  current=(short)tab2[(index & 0x7f0) >> 4][val];
+  current=(short)tab2[(idx & 0x7f0) >> 4][val];
 
   if ((previous^current)>=0) {
     if (factor+506>32767) factor=32767;
@@ -288,14 +288,14 @@ void chomp6(unsigned char val, unsigned short tab1[], unsigned short tab2[][8], 
   prev2=previous;
   previous=current;
 
-  if( ( index += tab1[val]-(index>>5) ) < 0 ) index = 0;
+  if( ( idx += tab1[val]-(idx>>5) ) < 0 ) idx = 0;
 }
 
 void Exp1to6(unsigned char *inBuffer, void *outBuffer, unsigned long cnt, unsigned long numChannels, unsigned long whichChannel)
 {
    unsigned char pkt;
 
-   previous=prev2=index=level=factor=0;
+   previous=prev2=idx=level=factor=0;
 
    inBuffer+=(whichChannel-1);
    outPtr=outBuffer;

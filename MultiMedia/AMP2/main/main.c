@@ -82,7 +82,7 @@ void close_libraries()
     UtilityBase = NULL;
   }
   if (GfxBase != NULL) {
-    CloseLibrary(GfxBase);
+    CloseLibrary((struct Library *)GfxBase);
     GfxBase = NULL;
   }
   if (GadToolsBase != NULL) {
@@ -90,14 +90,14 @@ void close_libraries()
     GadToolsBase = NULL;
   }
   if (IntuitionBase != NULL) {
-    CloseLibrary(IntuitionBase);
+    CloseLibrary((struct Library *)IntuitionBase);
     IntuitionBase = NULL;
   }
 }
 
 void open_libraries()
 {
-  IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
+  IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 39);
   if (IntuitionBase == NULL) {
     printf("Could not open intuition.library v39 or later!\n");
     close_libraries();
@@ -111,7 +111,7 @@ void open_libraries()
     exit(0);
   }
 
-  GfxBase = OpenLibrary("graphics.library", 39);
+  GfxBase = (struct GfxBase *)OpenLibrary("graphics.library", 39);
   if (GfxBase == NULL) {
     printf("Could not open graphics.library v39 or later!\n");
     close_libraries();
@@ -143,7 +143,7 @@ void open_libraries()
   CGXVideoBase = OpenLibrary("cgxvideo.library", 41);
 }
 
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
 #define TEMPLATE "FILE/A,REQ/S,PAL/S,HIPAL/S,GRAY/S," \
                  "HALF/S,GRAYDEPTH/N,LOWCOLOR/S,HIGHCOLOR/S,TRUECOLOR/S,WINDOW/S,DEBUG/S," \
                  "VERBOSE/S,OVERLAY/S,STEREO/S,NOVIDEO/S,NOAUDIO/S,DEVICE/K,UNIT/N," \
@@ -193,8 +193,7 @@ void open_libraries()
 
 #define OPT_SPEEDTEST    29
 
-#if !defined(__AROS__)
-#warning "TODO: AROS could probably support HAM?"
+#if !defined(__AROS__) || defined(__mc68000__)
 #define OPT_HAM          30
 #define OPT_HAMDEPTH     31
 #define OPT_HAMWIDTH     32
@@ -225,7 +224,7 @@ void handle_arguments(int argc, char *argv[])
     if (opts[OPT_PAL]) prefs.screenmode = PREFS_PAL;
     if (opts[OPT_HIPAL]) prefs.screenmode = PREFS_HIPAL;
 
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
     if (opts[OPT_HAM]) prefs.colormode = PREFS_HAM;
     if (opts[OPT_HAMDEPTH]) prefs.ham_depth = *((unsigned long *)opts[OPT_HAMDEPTH]);
     if (opts[OPT_HAMWIDTH]) prefs.ham_width = *((unsigned long *)opts[OPT_HAMWIDTH]);
@@ -248,7 +247,7 @@ void handle_arguments(int argc, char *argv[])
     if (opts[OPT_DEVICE]) strcpy(prefs.device, (char *)opts[OPT_DEVICE]);
     if (opts[OPT_UNIT]) prefs.unit = *((int *)opts[OPT_UNIT]);
 
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
     if (opts[OPT_AHI])
 #endif
       prefs.ahi = PREFS_ON;
@@ -298,7 +297,7 @@ void handle_arguments(int argc, char *argv[])
 
     printf("GRAY/S        : gray output (def: color).\n");
 
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
     printf("HAM/S         : HAM output (def: color).\n\n");
     printf("HAMDEPTH/N    : HAM depth (6 or 8 bitplanes, def: 8).\n");
     printf("HAMWIDTH/N    : HAM width (1, 2 or 4 HAM pixels per RGB pixel, def: 2).\n");
@@ -325,7 +324,7 @@ void handle_arguments(int argc, char *argv[])
     printf("DEVICE/K      : device of the CD/DVD for VCD/CD-i/DVD playback (def: ata.device).\n");
     printf("UNIT/N        : unit of the CD/DVD for VCD/CD-i/DVD playback (def: 2).\n\n");
 
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
     printf("AHI/S         : use AHI instead of audio.device (def: on).\n");
 #endif
 

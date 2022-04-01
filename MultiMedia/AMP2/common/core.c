@@ -62,10 +62,15 @@ static struct timeval st = { 0, 0 };
 /* <- Variables protected by the semaphore */
 
 /* Task handling */
-
+#if !defined(__AROS__)
 static struct TaskPPC *audio_decoder_task = NULL;
 static struct TaskPPC *video_decoder_task = NULL;
 static struct TaskPPC *main_task = NULL;
+#else
+static struct Task *audio_decoder_task = NULL;
+static struct Task *video_decoder_task = NULL;
+static struct Task *main_task = NULL;
+#endif
 
 static unsigned long amp_signals[3] = { 0, 0, 0 };
 
@@ -516,11 +521,11 @@ int plugin_set_id(unsigned long id, unsigned long subid)
 
 int plugin_video_init(unsigned long type, unsigned long fourcc, int width, int height, int depth, double framerate)
 {
-  struct TagItem ti[]={{TASKATTR_CODE, (ULONG)video_decoder},
-                       {TASKATTR_NAME, (ULONG)video_decoder_name},
+  struct TagItem ti[]={{TASKATTR_CODE, (IPTR)video_decoder},
+                       {TASKATTR_NAME, (IPTR)video_decoder_name},
                        {TASKATTR_STACKSIZE, STACKSIZE},
                        {TASKATTR_INHERITR2, TRUE},
-                       {NULL, 0}};
+                       {TAG_DONE, 0}};
 
   /* Store type and fourcc */
   local.video_type = type;
@@ -577,11 +582,11 @@ int plugin_video_init(unsigned long type, unsigned long fourcc, int width, int h
 
 int plugin_audio_init(unsigned long type, unsigned long fourcc, int rate, int bits, int channels)
 {
-  struct TagItem ti[]={{TASKATTR_CODE, (ULONG)audio_decoder},
-                       {TASKATTR_NAME, (ULONG)audio_decoder_name},
+  struct TagItem ti[]={{TASKATTR_CODE, (IPTR)audio_decoder},
+                       {TASKATTR_NAME, (IPTR)audio_decoder_name},
                        {TASKATTR_STACKSIZE, STACKSIZE},
                        {TASKATTR_INHERITR2, TRUE},
-                       {NULL, 0}};
+                       {TAG_DONE, 0}};
 
   /* Store type and fourcc */
   local.audio_type = type;

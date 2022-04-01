@@ -134,7 +134,7 @@ static void make_task_name(audio_t *audio)
 #if defined(__PPC__)
 static void ahi_task(register audio_t *audio asm ("3"))
 #elif defined(__AROS__)
-static void ahi_task( u8 *str,  s32 length)
+static void ahi_task(audio_t *audio)
 #else
 static void ahi_task(register u8 *str asm ("a0"), register s32 length asm ("d0"))
 #endif
@@ -144,7 +144,7 @@ static void ahi_task(register u8 *str asm ("a0"), register s32 length asm ("d0")
   u32 device, signals, used, flags;
   struct AHIRequest *link = NULL;
 
-#ifndef __PPC__
+#if !defined(__PPC__) && !defined(__AROS__)
   audio_t *audio = NULL;
   s32 addr, mult;
 
@@ -169,7 +169,7 @@ DEBUG("task started\n");
     if ((AHIMP2 = CreateMsgPort())) {
       if ((AHIIO1 = (struct AHIRequest *)CreateIORequest(AHIMP1, sizeof(struct AHIRequest)))) {
         if ((AHIIO2 = (struct AHIRequest *)CreateIORequest(AHIMP2, sizeof(struct AHIRequest)))) {
-          device = OpenDevice(AHINAME, 0, (struct IORequest *)AHIIO1, NULL);
+          device = OpenDevice(AHINAME, 0, (struct IORequest *)AHIIO1, 0);
         }
       }
     }
@@ -392,21 +392,28 @@ DEBUG("allocate semaphore\n");
 DEBUG("create task\n");
 
   if (1) {
-#ifdef __PPC__
-    struct TagItem ti[]={{TASKATTR_CODE, (ULONG)ahi_task},
-                         {TASKATTR_NAME, (ULONG)audio->task_name},
+#if defined(__PPC__)
+    struct TagItem ti[]={{TASKATTR_CODE, (IPTR)ahi_task},
+                         {TASKATTR_NAME, (IPTR)audio->task_name},
                          {TASKATTR_INHERITR2, TRUE},
                          {TASKATTR_STACKSIZE, 4 * 65536}, /* 64KB should be enough */
                          {TASKATTR_PRI, 10},
-                         {TASKATTR_R3, (ULONG)audio},
+                         {TASKATTR_R3, (IPTR)audio},
+                         {TAG_DONE, 0}};
+#elif defined(__AROS__)
+    struct TagItem ti[]={{NP_Entry, (IPTR)ahi_task},
+                         {NP_Name, (IPTR)audio->task_name},
+                         {NP_StackSize, 4 * 65536}, /* 64KB should be enough */
+                         {NP_Priority, 10},
+                         {NP_Arguments, (IPTR)audio},
                          {TAG_DONE, 0}};
 #else
     u8 addr[16];
-    struct TagItem ti[]={{NP_Entry, (ULONG)ahi_task},
-                         {NP_Name, (ULONG)audio->task_name},
+    struct TagItem ti[]={{NP_Entry, (IPTR)ahi_task},
+                         {NP_Name, (IPTR)audio->task_name},
                          {NP_StackSize, 4 * 65536}, /* 64KB should be enough */
                          {NP_Priority, 10},
-                         {NP_Arguments, (ULONG)addr},
+                         {NP_Arguments, (IPTR)addr},
                          {TAG_DONE, 0}};
     sprintf(addr, "%d", (int)audio);
 #endif

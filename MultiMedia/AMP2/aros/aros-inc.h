@@ -21,7 +21,7 @@
 
 // AMP uses PPC defines, so patch them with ours
 
-#ifndef AROS_AMPSUPPORT
+#if(0)
 extern struct Task *CreateTask( struct TagItem *);
 #endif
 
@@ -65,6 +65,6 @@ extern struct Task *CreateTask( struct TagItem *);
 #define WaitPPC Wait
 #define GetSysTimePPC GetSysTime
 #define SubTimePPC SubTime
-#define CreateTaskPPC CreateTask
+#define CreateTaskPPC NewCreateTaskA
 #define FindTaskPPC FindTask
 

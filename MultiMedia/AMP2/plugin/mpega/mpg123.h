@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#if !defined(__AROS__)
 #include <sys/signal.h>
+#endif
 #include <unistd.h>
 #include <math.h>
 

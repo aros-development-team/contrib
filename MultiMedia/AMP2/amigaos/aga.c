@@ -75,7 +75,7 @@ void close_screen_aga()
   }
 }
 
-unsigned long get_screenmode_aga(int width, int height, int depth, unsigned long id)
+ULONG get_screenmode_aga(int width, int height, int depth, ULONG id)
 {
   aga_width = width;
   aga_height = height;
@@ -169,9 +169,9 @@ unsigned long get_screenmode_aga(int width, int height, int depth, unsigned long
   return id;
 }
 
-int open_screen_aga(int width, int height, unsigned long id)
+int open_screen_aga(int width, int height, ULONG id)
 {
-  unsigned long dispid, rgbtab[1+3*256+1], free_mem;
+  ULONG dispid, rgbtab[1+3*256+1], free_mem;
   unsigned char *temp;
   int i, j, colors, b;
 
@@ -212,7 +212,7 @@ int open_screen_aga(int width, int height, unsigned long id)
 
   /* Open screen */
   screen = OpenScreenTags(NULL,
-               SA_BitMap,(int)&agabitmap[0],
+               SA_BitMap,(IPTR)&agabitmap[0],
                SA_Width,aga_width,
                SA_Height,aga_height,
                SA_Depth,aga_depth,
@@ -264,7 +264,7 @@ int open_screen_aga(int width, int height, unsigned long id)
 
   /* Set HAM palette if required */
   if ((prefs.ham_width == 1) && (prefs.ham_quality == PREFS_HIGH)) {
-    unsigned long rgbtab[1+3*256+1];
+    ULONG rgbtab[1+3*256+1];
     int i, red, green, blue;
 
     if (prefs.ham_depth == 8) {

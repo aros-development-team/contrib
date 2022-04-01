@@ -322,7 +322,7 @@ int SetupVCD(void)
 void mpegio_fclose(void)
 {
   if (cd_error == 0) {
-    CloseDevice(CDIO);
+    CloseDevice((struct IORequest *)CDIO);
     cd_error = 1; /* Must be non-zero */
   }
   if (CDIO != NULL) {
