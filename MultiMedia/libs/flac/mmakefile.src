@@ -4,6 +4,7 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-multimedia : development-flac
+#MM development-flac : development-libogg
 
 EXTRAOPTS := --disable-doxygen-docs --disable-xmms-plugin --disable-valgrind-testing --disable-exhaustive-tests --disable-thorough-tests 
 
