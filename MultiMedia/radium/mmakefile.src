@@ -3,7 +3,8 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM contrib-radium : workbench-libs-realtime-linklib
+#MM- contrib-multimedia : contrib-multimedia-radium
+#MM contrib-multimedia-radium : workbench-libs-realtime-linklib
 
 VERSION=0.55
 VERSION_LETTER=
@@ -98,7 +99,9 @@ EXEDIR := $(AROS_CONTRIB)/MultiMedia/Audio/Radium
 NOWARN_FLAGS := \
     $(NOWARN_FORMAT_OVERFLOW)
 USER_CFLAGS := $(NOWARN_FLAGS)
-USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/$(AD) -I$(SRCDIR)/$(CURDIR)/$(AR) \
+USER_INCLUDES := \
+    -I$(SRCDIR)/$(CURDIR)/$(AD) \
+    -I$(SRCDIR)/$(CURDIR)/$(AR) \
     -I$(SRCDIR)/$(CURDIR)/$(CD)
 USER_CPPFLAGS := \
     -DVERSION=$(VERSION) \
@@ -115,12 +118,12 @@ USER_CPPFLAGS := \
 # -DMEMORY_DEBUG
 # -DTRACKER_GB
 
-%build_prog mmake=contrib-radium \
+%build_prog mmake=contrib-multimedia-radium \
     progname=Radium targetdir=$(EXEDIR) \
     files=$(FILES) uselibs="realtime"
 
 #MM
-contrib-radium : $(EXEDIR)/Execute.Me
+contrib-multimedia-radium : $(EXEDIR)/Execute.Me
 
 $(EXEDIR)/Execute.Me : $(SRCDIR)/$(CURDIR)/RADIUM.RUN
 	$(MKDIR) $(EXEDIR)
