@@ -3,7 +3,10 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 # The apps target points back to config/$(ARCH)/mmakefile:
-#MM- contrib : includes linklibs contrib-complete contrib-setup-dirs
+#MM- contrib : \
+#MM     includes linklibs \
+#MM     contrib-setup-dirs \
+#MM     contrib-complete
 
 #MM- contrib-complete : contrib-aminet
 #MM- contrib-complete : contrib-fish
@@ -14,7 +17,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-complete : contrib-fryingpan-$(AROS_TARGET_CPU)
 #MM- contrib-complete : contrib-bgui
 #MM- contrib-complete : contrib-gfx
-#MM- contrib-complete : contrib-radium
 #MM- contrib-complete : contrib-development
 #MM- contrib-complete : contrib-gnu
 #MM- contrib-complete : contrib-networking
