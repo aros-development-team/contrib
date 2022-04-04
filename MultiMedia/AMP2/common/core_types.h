@@ -34,6 +34,10 @@
  * People with slow computers should use the lores version for better speed.
  */
 
+#if defined(__AROS__)
+#include <aros/cpu.h>
+#endif
+
 /* Types */
 
 #define TYPE_VIDEO (0x80000000)
@@ -64,7 +68,11 @@
 #define GET_TYPES(a)   ((a) & 0xe0ff0000) /* Mask out type and subtype */
 
 /* FOURCC */
-#define FOURCC(a,b,c,d) ((a << 24) | (b << 16) | (c << 8) | (d)) /* Create FOURCC */
+#if !defined(__AROS__) || (AROS_BIG_ENDIAN  == 1)
+#define FOURCC(a,b,c,d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d)) /* Create FOURCC */
+#else
+#define FOURCC(a,b,c,d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
+#endif
 
 /* FOURCC, Common */
 #define FOURCC_NONE FOURCC(0x00,0x00,0x00,0x00) /* Use for stream based formats like MPEG */

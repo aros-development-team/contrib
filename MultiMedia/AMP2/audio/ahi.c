@@ -28,7 +28,7 @@
 
 #else
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
 
 #define PRINTF(a...)
 //#define PRINTF(a...) printf(a)
@@ -70,7 +70,7 @@ struct audio_s {
 
   /* tasks 'n' stuff */
   u8 task_name[32];
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   struct TaskPPC *main_task;
   struct TaskPPC *audio_task;
   struct SignalSemaphorePPC *semaphore;
@@ -90,7 +90,7 @@ struct audio_s {
 #include "string.h"
 #endif
 
-#ifndef __PPC__
+#if defined(__AROS__) || !defined(__PPC__)
 #define InitSemaphorePPC(a...) InitSemaphore(a)
 #define ObtainSemaphorePPC(a...) ObtainSemaphore(a)
 #define ReleaseSemaphorePPC(a...) ReleaseSemaphore(a)
@@ -131,32 +131,29 @@ static void make_task_name(audio_t *audio)
 
 #define FLAG_EXIT (1 << 0)
 
-#if defined(__PPC__)
+#if !defined(__AROS__) && defined(__PPC__)
 static void ahi_task(register audio_t *audio asm ("3"))
+{
 #elif defined(__AROS__)
-static void ahi_task(audio_t *audio)
+AROS_PROCH(ahi_task, str, length, SysBase)
+{
+  AROS_PROCFUNC_INIT
+
 #else
 static void ahi_task(register u8 *str asm ("a0"), register s32 length asm ("d0"))
-#endif
 {
+#endif
   struct AHIRequest *AHIIO = NULL, *AHIIO1 = NULL, *AHIIO2 = NULL;
   struct MsgPort *AHIMP1 = NULL, *AHIMP2 = NULL;
   u32 device, signals, used, flags;
   struct AHIRequest *link = NULL;
 
-#if !defined(__PPC__) && !defined(__AROS__)
-  audio_t *audio = NULL;
-  s32 addr, mult;
-
-  mult = 1;
-  addr = 0;
-  while (length > 0) {
-    addr += (str[length - 1] - '0') * mult;
-    mult *= 10;
-    length--;
-  }
-
-  audio = (audio_t *)addr;
+#if defined(__AROS__) || !defined(__PPC__)
+#if !defined(__WORDSIZE) || __WORDSIZE==32
+  audio_t *audio = (audio_t *)strtoul(str, NULL,16);
+#else
+  audio_t *audio = (audio_t *)strtoull(str, NULL,16);
+#endif
 #endif
 
 DEBUG("task started\n");
@@ -317,6 +314,9 @@ DEBUG("AHI closed\n");
 
   /* send error signal in case we failed */
   SignalPPC(audio->main_task, SIGBREAKF_CTRL_E);
+#if defined(__AROS__)
+  AROS_PROCFUNC_EXIT
+#endif
 }
 
 audio_t *ahi_open(u32 frequency, u32 mode, u32 fragsize, u32 frags, u32 samples_to_bytes, void (*audio_sync)(u32 time))
@@ -370,7 +370,7 @@ DEBUG("remove signals\n");
 DEBUG("allocate semaphore\n");
 
   /* allocate semaphore */
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   audio->semaphore = (struct SignalSemaphorePPC *)MALLOC(sizeof(struct SignalSemaphorePPC));
   if (audio->semaphore == NULL) {
     goto fail;
@@ -392,20 +392,13 @@ DEBUG("allocate semaphore\n");
 DEBUG("create task\n");
 
   if (1) {
-#if defined(__PPC__)
+#if !defined(__AROS__) && defined(__PPC__)
     struct TagItem ti[]={{TASKATTR_CODE, (IPTR)ahi_task},
                          {TASKATTR_NAME, (IPTR)audio->task_name},
                          {TASKATTR_INHERITR2, TRUE},
                          {TASKATTR_STACKSIZE, 4 * 65536}, /* 64KB should be enough */
                          {TASKATTR_PRI, 10},
                          {TASKATTR_R3, (IPTR)audio},
-                         {TAG_DONE, 0}};
-#elif defined(__AROS__)
-    struct TagItem ti[]={{NP_Entry, (IPTR)ahi_task},
-                         {NP_Name, (IPTR)audio->task_name},
-                         {NP_StackSize, 4 * 65536}, /* 64KB should be enough */
-                         {NP_Priority, 10},
-                         {NP_Arguments, (IPTR)audio},
                          {TAG_DONE, 0}};
 #else
     u8 addr[16];
@@ -415,12 +408,12 @@ DEBUG("create task\n");
                          {NP_Priority, 10},
                          {NP_Arguments, (IPTR)addr},
                          {TAG_DONE, 0}};
-    sprintf(addr, "%d", (int)audio);
+    sprintf(addr, "%p", audio);
 #endif
 
     Forbid();
     make_task_name(audio);
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
     audio->audio_task = CreateTaskPPC(ti);
 #else
     audio->audio_process = CreateNewProc(ti);
@@ -432,7 +425,7 @@ DEBUG("create task\n");
     }
   }
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   SetNiceValue(audio->audio_task, -20); /* give highest priority */
 #endif
 

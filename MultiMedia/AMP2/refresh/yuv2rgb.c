@@ -178,7 +178,7 @@ void yuv2bgr24(rect_type *rect, unsigned char *src[])
   }
 }
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
 
   /* This is what we have to do to get the bits in the right position.
    *

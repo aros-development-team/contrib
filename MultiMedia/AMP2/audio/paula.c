@@ -76,7 +76,7 @@ struct audio_s {
 
   /* tasks 'n' stuff */
   u8 task_name[32];
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   struct TaskPPC *main_task;
   struct TaskPPC *audio_task;
 #else
@@ -94,7 +94,7 @@ struct audio_s {
 #define FREE(x) if (x != NULL) { FreeVec(x); x = NULL; }
 
 /* hack */
-#ifndef __PPC__
+#if defined(__AROS__) || !defined(__PPC__)
 #define SetSignalPPC(a...) SetSignal(a)
 #define SignalPPC(a...) Signal(a)
 #define WaitPPC(a...) Wait(a)
@@ -246,14 +246,18 @@ static void make_task_name(audio_t *audio)
   }
 }
 
-#if defined(__PPC__)
+#if !defined(__AROS__) && defined(__PPC__)
 static void paula_task(register audio_t *audio asm ("3"))
+{
 #elif defined(__AROS__)
-static void paula_task( u8 *str, s32 length)
+AROS_PROCH(paula_task, str, length, SysBase)
+{
+  AROS_PROCFUNC_INIT
+
 #else
 static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0"))
-#endif
 {
+#endif
   volatile unsigned char *filter = (unsigned char *)0xbfe001;
   struct Custom *custom = (struct Custom *)0xdff000;
   int dma_channels, channels, period, channelnr = 0;
@@ -265,19 +269,12 @@ static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0
   struct Library *GfxBase = NULL;
   short OldINTENA = 0;
 
-#ifndef __PPC__
-  audio_t *audio = NULL;
-  s32 addr, mult;
-
-  mult = 1;
-  addr = 0;
-  while (length > 0) {
-    addr += (str[length - 1] - '0') * mult;
-    mult *= 10;
-    length--;
-  }
-
-  audio = (audio_t *)addr;
+#if defined(__AROS__) || !defined(__PPC__)
+#if !defined(__WORDSIZE) || __WORDSIZE==32
+  audio_t *audio = (audio_t *)strtoul(str, NULL,16);
+#else
+  audio_t *audio = (audio_t *)strtoull(str, NULL,16);
+#endif
 #endif
 
   audio->audio_68k->sig_num = AllocSignal(-1);
@@ -286,21 +283,13 @@ static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0
   audio->audio_68k->sig_task = FindTaskPPC(NULL);
 
   audio_clock = 3546895; /* PAL */
-
   GfxBase = OpenLibrary("graphics.library", 39);
-  if (GfxBase != NULL) {
-    if (((struct GfxBase *)GfxBase)->DisplayFlags & REALLY_PAL) {
-      audio_clock = 3546895; /* PAL */
-    } else {
+  if ((GfxBase != NULL) && !(((struct GfxBase *)GfxBase)->DisplayFlags & REALLY_PAL))
       audio_clock = 3579545; /* NTSC */
-    }
-  }
 
-  if (audio->mode & MODE_STEREO) {
-    channels = 2;
-  } else {
-    channels = 1;
-  }
+  channels = 1;
+  if (audio->mode & MODE_STEREO)
+    channels <<= 1;
 
   period = audio_clock / audio->frequency;
   audio->real_frequency = audio_clock / period; /* actual frequency */
@@ -331,7 +320,7 @@ static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0
 
     buffer = &audio->audio_68k->audio_buffers[audio->audio_68k->max_68k];
 
-    dma_channels = ((ULONG)audioio->ioa_Request.io_Unit) & 0x0f;
+    dma_channels = ((IPTR)audioio->ioa_Request.io_Unit) & 0x0f;
 
     AudioInt.is_Node.ln_Type = NT_INTERRUPT;
     AudioInt.is_Node.ln_Pri = 0;
@@ -353,7 +342,7 @@ static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0
 
     if (audio->audio_68k->bits14) {
       /* disable audio and any modulation for our channels */
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
       custom->dmacon = DMAF_AUDIO;
       custom->adkcon = ADKF_USE3PN|ADKF_USE2P3|ADKF_USE1P2|ADKF_USE0P1|
                        ADKF_USE3VN|ADKF_USE2V3|ADKF_USE1V2|ADKF_USE0V1;
@@ -444,7 +433,7 @@ static void paula_task(register u8 *str asm ("a0"), register s32 length asm ("d0
     *(short *)0xdff09a = OldINTENA | (0xc000 | (0x0080 << channelnr));
 
     /* start playing using the dma channels */
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
     custom->dmacon = DMAF_SETCLR|dma_channels;
 #endif
 
@@ -516,6 +505,9 @@ DEBUG("PAULA closed\n");
 
   /* send error signal in case we failed */
   SignalPPC(audio->main_task, SIGBREAKF_CTRL_E);
+#if defined(__AROS__)
+  AROS_PROCFUNC_EXIT
+#endif
 }
 
 audio_t *paula_open(u32 frequency, u32 mode, u32 fragsize, u32 frags, u32 samples_to_bytes, void (*audio_sync)(u32 time), u32 khz56, u32 bits14, u8 *calibration)
@@ -662,7 +654,7 @@ DEBUG("alloc buffers\n");
 DEBUG("create task\n");
 
   if (1) {
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
     struct TagItem ti[]={{TASKATTR_CODE, (ULONG)paula_task},
                          {TASKATTR_NAME, (ULONG)audio->task_name},
                          {TASKATTR_INHERITR2, TRUE},
@@ -672,18 +664,18 @@ DEBUG("create task\n");
                          {TAG_DONE, 0}};
 #else
     u8 addr[16];
-    struct TagItem ti[]={{NP_Entry, (ULONG)paula_task},
-                         {NP_Name, (ULONG)audio->task_name},
+    struct TagItem ti[]={{NP_Entry, (IPTR)paula_task},
+                         {NP_Name, (IPTR)audio->task_name},
                          {NP_StackSize, 4 * 65536}, /* 64KB should be enough */
                          {NP_Priority, 10},
-                         {NP_Arguments, (ULONG)addr},
+                         {NP_Arguments, (IPTR)addr},
                          {TAG_DONE, 0}};
-    sprintf(addr, "%d", (int)audio);
+    sprintf(addr, "%p", audio);
 #endif
 
     Forbid();
     make_task_name(audio);
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
     audio->audio_task = CreateTaskPPC(ti);
 #else
     audio->audio_process = CreateNewProc(ti);
@@ -695,7 +687,7 @@ DEBUG("create task\n");
     }
   }
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   SetNiceValue(audio->audio_task, -20); /* give highest priority */
 #endif
 
