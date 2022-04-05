@@ -38,9 +38,9 @@ endif
 
 USER_CFLAGS := -DHAVE_CONFIG_H $(LIBMAD_CPUFLAGS) $(NOWARN_FLAGS)
 
-#MM sound-madoss : workbench-libs-oss-unix
+#MM contrib-multimedia-madoss : workbench-libs-oss-unix
 
-%build_prog mmake=sound-madoss \
+%build_prog mmake=contrib-multimedia-madoss \
     progname=madoss targetdir=$(EXEDIR) \
     files="$(FILES)"
 
@@ -58,9 +58,10 @@ FILES  := madahi \
 	  timer \
 	  version
 
-#MM sound-madahi : workbench-devs-AHI
+#MM- contrib-multimedia : contrib-multimedia-madahi
+#MM contrib-multimedia-madahi : workbench-devs-AHI
 
-%build_prog mmake=sound-madahi \
+%build_prog mmake=contrib-multimedia-madahi \
     progname=madahi targetdir=$(EXEDIR) \
     files="$(FILES)"
 
