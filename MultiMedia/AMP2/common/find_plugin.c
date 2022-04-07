@@ -45,7 +45,7 @@ static char plugin_file[256+64+64];
 
 /* SCAN */
 
-BPTR lock = NULL;
+BPTR lock = BNULL;
 struct FileInfoBlock fiblock;
 
 static unsigned char *scan_buf = NULL;
@@ -251,7 +251,7 @@ void scan_dir(void)
       }
     }
     UnLock(lock);
-    lock = NULL;
+    lock = BNULL;
 
     if (serial > 0) {
       strcpy(plugin_file, plugin_path);

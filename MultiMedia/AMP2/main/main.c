@@ -381,7 +381,7 @@ void verbose_printf(const char *fmt, ...)
 
 int main(int argc, char *argv[])
 {
-  BPTR lock = NULL;
+  BPTR lock = BNULL;
 
   /* Set default preferences */
   set_prefs();

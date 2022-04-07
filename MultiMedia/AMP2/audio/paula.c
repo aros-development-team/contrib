@@ -12,7 +12,7 @@
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <devices/audio.h>
-#if !defined(__AROS__)
+#if !defined(__AROS__) || defined(__mc68000__)
 #include <hardware/dmabits.h>
 #include <hardware/adkbits.h>
 #endif
@@ -103,7 +103,7 @@ struct audio_s {
 
 static void build_table(audio_t *audio, u8 *calib)
 {
-  BPTR fp = NULL;
+  BPTR fp = BNULL;
   int len = 0, i;
 
   /* create 14bit conversion tables */
@@ -112,7 +112,7 @@ static void build_table(audio_t *audio, u8 *calib)
 
   if ((calib != NULL) && (calib[0] != '\0')) {
     fp = Open(calib, MODE_OLDFILE);
-    if (fp != NULL) {
+    if (fp != BNULL) {
       len = FRead(fp, audio->additive_array, 1, 256);
       Close(fp);
     }
