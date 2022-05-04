@@ -1,7 +1,7 @@
 /*
 ** $Id$
 **
-** © 1999-2000 Marcin Orlowski <carlos@amiga.com.pl>
+** Â© 1999-2000 Marcin Orlowski <carlos@amiga.com.pl>
 */
 
 #include <aros/debug.h>
@@ -16,7 +16,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
-#include <string.h>
+#include <string.h>	/* strlen() */
 #include <stdlib.h>	/* abs() */
 
 // _DoCopy

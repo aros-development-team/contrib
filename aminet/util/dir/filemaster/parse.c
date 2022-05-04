@@ -22,8 +22,8 @@
 #include <dos/dos.h>
 
 #include <strings.h>
-#include <stdarg.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "fmnode.h"
 #include "fmlocale.h"

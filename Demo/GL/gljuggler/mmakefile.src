@@ -1,0 +1,26 @@
+# Copyright © 2021 The AROS Development Team. All rights reserved.
+# $Id$
+
+# Makefile to make gljuggler.
+
+include $(SRCDIR)/config/aros.cfg
+
+#MM- contrib-demo-gl : demos-gl-gljuggler
+
+EXEDIR := $(AROS_CONTRIB)/Demos/GL
+
+FILES := \
+    gljuggler 
+
+NOWARN_FLAGS  :=
+USER_CFLAGS   := $(NOWARN_FLAGS)
+USER_INCLUDES := -I$(AROS_CONTRIB_INCLUDES)
+USER_LDFLAGS  := 
+
+#MM demos-gl-gljuggler : contrib-sdl
+
+%build_prog mmake=demos-gl-gljuggler \
+    progname=gljuggler targetdir=$(EXEDIR) \
+    files=$(FILES) uselibs="GL SDL"
+
+%common

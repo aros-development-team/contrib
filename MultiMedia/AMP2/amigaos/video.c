@@ -207,7 +207,7 @@ unsigned long get_screenmode_ID(int *width, int *height)
                       BIDTAG_NominalHeight, *height,
                       BIDTAG_Depth, 8);
       if (id != INVALID_ID) {
-        if (GetDisplayInfoData(NULL, &dim, sizeof(dim), DTAG_DIMS, id) == 0) {
+        if (GetDisplayInfoData(NULL, (APTR)&dim, sizeof(dim), DTAG_DIMS, id) == 0) {
           id = 0;
         }
         *width = dim.Nominal.MaxX + 1;
@@ -235,7 +235,7 @@ unsigned long get_screenmode_ID(int *width, int *height)
         }
 
         if (asl_done == 0) {
-          if (GetDisplayInfoData(NULL, &dim, sizeof(dim), DTAG_DIMS, id) == 0) {
+          if (GetDisplayInfoData(NULL, (APTR)&dim, sizeof(dim), DTAG_DIMS, id) == 0) {
             id = 0;
           } else {
             *width = dim.Nominal.MaxX + 1;
@@ -384,7 +384,7 @@ static void aga_window_refresh_init()
 
 static void aga_window_refresh_exit()
 {
-  WriteChunkyPixels(window->RPort, 0, 0, refresh_rect.width, refresh_rect.height, refresh_rect.dst, refresh_rect.width);
+  WriteChunkyPixels(window->RPort, 0, 0, refresh_rect.width, refresh_rect.height, (UBYTE *)refresh_rect.dst, refresh_rect.width);
 }
 
 /* Returns "depth", i.e. 8 or 32 which are the only supported ones or -1 on error */
@@ -465,11 +465,11 @@ int open_screen(int width, int height, int mode)
 
     if ((CyberGfxBase != NULL) && (screentype == CGFX)) {
       UnLockBitMap(LockBitMapTags(window->RPort->BitMap,
-                                  LBMI_PIXFMT, (ULONG)&pixfmt,
-                                  LBMI_BASEADDRESS, (ULONG)&baseaddress[free_sbuffer],
-                                  LBMI_BYTESPERPIX, (ULONG)&bpp,
-                                  LBMI_BYTESPERROW, (ULONG)&bpr,
-                                  LBMI_DEPTH, (ULONG)&my_depth,
+                                  LBMI_PIXFMT, (IPTR)&pixfmt,
+                                  LBMI_BASEADDRESS, (IPTR)&baseaddress[free_sbuffer],
+                                  LBMI_BYTESPERPIX, (IPTR)&bpp,
+                                  LBMI_BYTESPERROW, (IPTR)&bpr,
+                                  LBMI_DEPTH, (IPTR)&my_depth,
                                   TAG_END));
 
       if (pixfmt == PIXFMT_LUT8) {
@@ -521,10 +521,10 @@ int open_screen(int width, int height, int mode)
       window_bitmap = AllocBitMap(width, height, my_depth, BMF_CLEAR|BMF_DISPLAYABLE|BMF_INTERLEAVED|BMF_MINPLANES, window->RPort->BitMap);
 
       UnLockBitMap(LockBitMapTags(window_bitmap,
-                                  LBMI_PIXFMT, (ULONG)&pixfmt,
-                                  LBMI_BASEADDRESS, (ULONG)&baseaddress[free_sbuffer],
-                                  LBMI_BYTESPERROW, (ULONG)&bpr,
-                                  LBMI_BYTESPERPIX, (ULONG)&bpp,
+                                  LBMI_PIXFMT, (IPTR)&pixfmt,
+                                  LBMI_BASEADDRESS, (IPTR)&baseaddress[free_sbuffer],
+                                  LBMI_BYTESPERROW, (IPTR)&bpr,
+                                  LBMI_BYTESPERPIX, (IPTR)&bpp,
                                   TAG_END));
     }
     prefs.gray_depth = 8; /* Always use as many grays as possible for window playback */
@@ -574,7 +574,7 @@ int open_screen(int width, int height, int mode)
 
     /* Open window */
     window = OpenWindowTags(NULL,
-                 WA_CustomScreen,(int)screen,
+                 WA_CustomScreen, (IPTR)screen,
                  WA_Width,screen->Width,
                  WA_Height,screen->Height,
                  WA_Flags,WFLG_RMBTRAP,

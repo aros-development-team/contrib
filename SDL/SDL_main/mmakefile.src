@@ -1,4 +1,4 @@
-# Copyright © 2009-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2009-2022, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -8,6 +8,9 @@ include $(SRCDIR)/config/aros-contrib.cfg
 ##MM- SDL-aros-lib : contrib-sdl-sdl-main-fetch SDL-aros-staticlib
 #MM- SDL-aros : SDL-aros-lib SDL-aros-tests
 ##MM- SDL-aros-tests : SDL-aros-standardtests SDL-aros-gltests
+
+# Special target
+#MM- development-sdl : SDL-aros-includes SDL-aros-sharedlib-includes SDL-aros-sharedlib-linklib
 
 #MM SDL-aros-sharedlib : SDL-aros-includes workbench-devs-AHI workbench-libs-mesa-linklib \
 #MM  development-libiconv SDL-aros-config

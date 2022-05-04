@@ -40,7 +40,8 @@ NOWARN_FLAGS := $(NOWARN_WRITE_STRINGS) $(NOWARN_ARRAY_BOUNDS) $(NOWARN_MISLEADI
 USER_CFLAGS := $(NOWARN_FLAGS) -fno-asynchronous-unwind-tables -fno-exceptions 
 
 # Remove C-only flags
-CXX_FLAGS := $(CFLAGS) $(USER_CFLAGS) -fno-rtti -nostdinc++
+CXX_FLAGS := $(CFLAGS) $(USER_CFLAGS) -fno-rtti
+#CXX_FLAGS +=  -nostdinc++
 CXX_FLAGS := $(subst -Wno-pointer-sign,, $(subst -Werror-implicit-function-declaration,, $(CXX_FLAGS)))
 
 # Define the use of cross compiler

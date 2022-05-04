@@ -1,0 +1,7 @@
+#   $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-workbench : contrib-datatypes-complete
+
+%common

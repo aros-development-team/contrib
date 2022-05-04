@@ -1,0 +1,10 @@
+This model code was taken from Michael Birkin's java recreation of the
+Amiga juggler demo. I just ported some of the model generation code from
+java to c. The link to Michael's page is here:
+http://meatfighter.com/juggler/
+
+It's just an OpenGL implementation of the ray tracing demo. Real time using
+polygon models and lighting as opposed to ray tracing, that's why there
+are no reflections or shadows. It was just a quick hack after all...
+
+Dave Ashley  October 27, 2011

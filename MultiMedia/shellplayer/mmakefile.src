@@ -1,23 +1,21 @@
-# Copyright © 2007, The AROS Development Team. All rights reserved.
-# $Id$
+# Copyright © 2007-2022, The AROS Development Team. All rights reserved.
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib : contrib-shellplayer
-
-#MM contrib-shellplayer : includes linklibs contrib-ptplay-lib contrib-shellplayer-cpy
+#MM- contrib-multimedia : contrib-multimedia-shellplayer
+#MM contrib-multimedia-shellplayer : includes linklibs contrib-ptplay-lib contrib-multimedia-shellplayer-cpy
 
 EXE    := ShellPlayer
 EXEDIR := $(AROS_CONTRIB)/MultiMedia/Audio/Shellplayer
 
 FILES  := ShellPlayer
 
-%build_prog mmake=contrib-shellplayer \
+%build_prog mmake=contrib-multimedia-shellplayer \
     progname=$(EXE) targetdir=$(EXEDIR) \
     files=$(FILES) uselibs="ptplay"
 
 #MM
-contrib-shellplayer-cpy : $(EXEDIR)/README.aros $(EXEDIR)/ShellPlayer.readme
+contrib-multimedia-shellplayer-cpy : $(EXEDIR)/README.aros $(EXEDIR)/ShellPlayer.readme
 
 $(EXEDIR)/README.aros : README.aros
 	$(MKDIR) $(EXEDIR)

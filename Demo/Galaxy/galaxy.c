@@ -367,9 +367,17 @@ void drawshdisk(int x0, int y0, int r){
 
 }
 
-
+#if (1)
 void mblur (char *src, int nbpixels);
-
+#else
+void c_mblur (char *src, int nbpixels)
+{
+	int i;
+	for (i = 0; i < nbpixels; i++)
+		src[i]= ((src[i] >> 3) & 0x1f1f1f1f) & ((src[i] >> 1) & 0x7f7f7f7f) ;  
+}
+#define mblur c_mblur
+#endif
 
 void drawgalaxy(){
   int r;
@@ -405,13 +413,6 @@ void drawgalaxy(){
     oc=240*osin(c);
 
     if (motion_blur){
-  /*
-    mblur does something like that:
-    (or did, perhaps it's another version!..)
-
-  for (i=0; i<W*H; i++)   
-  b8[i]= (b8[i]>>3) + (b8[i]>>1) ;  
-*/
       mblur (b8, W*H);
     }
     else

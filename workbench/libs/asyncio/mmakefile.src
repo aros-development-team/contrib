@@ -1,13 +1,13 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- workbench-libs-complete : workbench-libs-asyncio
+#MM- contrib-workbench : contrib-libs-asyncio
 
-#MM- workbench-libs-asyncio :  workbench-libs-asyncio-test
-#MM workbench-libs-asyncio-test :  workbench-libs-asyncio-includes workbench-libs-asyncio-linklib
+#MM- contrib-libs-asyncio :  contrib-libs-asyncio-test
+#MM contrib-libs-asyncio-test :  contrib-libs-asyncio-includes contrib-libs-asyncio-linklib
 
 TARGETDIR := $(AROS_TESTS)/asyncio
 
-%build_prog mmake=workbench-libs-asyncio-test \
+%build_prog mmake=contrib-libs-asyncio-test \
     progname=testasync targetdir=$(TARGETDIR) \
     uselibs=asyncio
 

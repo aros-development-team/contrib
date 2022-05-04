@@ -1,0 +1,12 @@
+# Copyright 2021, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- iconset-Gorilla-contrib-icons-extras-demos : iconset-Gorilla-contrib-icons-extras-demosgl
+
+ICONS := GLExcess \
+         Mindlapse
+
+#MM- iconset-Gorilla-contrib-icons-extras-clean : iconset-Gorilla-contrib-icons-extras-demosgl-clean
+%build_icons mmake=iconset-Gorilla-contrib-icons-extras-demosgl icons=$(ICONS) dir=$(AROS_CONTRIB)/Demos/GL

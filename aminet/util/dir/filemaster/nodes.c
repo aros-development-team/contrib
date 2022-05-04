@@ -27,10 +27,9 @@
 #include <proto/locale.h>
 #include <clib/locale_protos.h>
 
-#include <time.h>
 #include <strings.h>
-#include <stdarg.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "fmnode.h"
 #include "fmlocale.h"

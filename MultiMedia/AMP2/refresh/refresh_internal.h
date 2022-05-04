@@ -230,7 +230,7 @@ for (i=0; i<len; i+=4) { \
  * compile a 68k version or similar one day.
  */
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
 
   #define SWAP32_W(address, val) \
     ({ unsigned long rS = (val), rB = (unsigned long)(address); asm("stwbrx %0,0,%1" : : "r" (rS), "r" (rB)); })

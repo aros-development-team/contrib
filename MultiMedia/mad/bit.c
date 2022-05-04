@@ -1,6 +1,6 @@
 /*
- * mad - MPEG audio decoder
- * Copyright (C) 2000-2001 Robert Leslie
+ * libmad - MPEG audio decoder library
+ * Copyright (C) 2000-2004 Underbit Technologies, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: bit.c,v 1.12 2004/01/23 09:41:32 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -197,22 +197,39 @@ void mad_bit_write(struct mad_bitptr *bitptr, unsigned int len,
 unsigned short mad_bit_crc(struct mad_bitptr bitptr, unsigned int len,
 			   unsigned short init)
 {
-  register unsigned int crc, data;
+  register unsigned int crc;
 
-# if CHAR_BIT == 8
-  for (crc = init; len >= 8; len -= 8) {
-    crc = (crc << 8) ^
-      crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
+  for (crc = init; len >= 32; len -= 32) {
+    register unsigned long data;
+
+    data = mad_bit_read(&bitptr, 32);
+
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >> 24)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >> 16)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >>  8)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >>  0)) & 0xff];
   }
-# else
-  crc = init;
-# endif
+
+  switch (len / 8) {
+  case 3: crc = (crc << 8) ^
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
+  case 2: crc = (crc << 8) ^
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
+  case 1: crc = (crc << 8) ^
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
+
+  len %= 8;
+
+  case 0: break;
+  }
 
   while (len--) {
-    data = mad_bit_read(&bitptr, 1) ^ (crc >> 15);
+    register unsigned int msb;
+
+    msb = mad_bit_read(&bitptr, 1) ^ (crc >> 15);
 
     crc <<= 1;
-    if (data & 1)
+    if (msb & 1)
       crc ^= CRC_POLY;
   }
 

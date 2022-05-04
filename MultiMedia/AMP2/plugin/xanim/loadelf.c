@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   #include <powerpc/powerpc.h>
   #include <powerpc/powerpc_protos.h>
 #endif
@@ -398,7 +398,7 @@ PRINTF("reloc: %08lx, %d (%s), %ld, symbol: %d, %ld (%s) (addr: %08lx)\n",
 relocation->r_offset,
 relocation->r_type,
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
 r_powerpc[relocation->r_type],
 #else
 r_386[relocation->r_type],
@@ -413,7 +413,7 @@ symbol->st_type, symbol->st_name, strtab + symbol->st_name, symbol->st_addr);
 
 PRINTF("taget: %08lx, offset: %ld\n", *(u32 *)target, relocation->r_offset);
 
-#ifdef __PPC__ // PowerPC
+#if !defined(__AROS__) && defined(__PPC__) // PowerPC
 
           switch(relocation->r_type) {
 
@@ -591,7 +591,7 @@ S This means the value of the symbol whose index resides in the relocation entry
 
   PRINTF("elf @ %08lx\n", (u32)elf->file);
 
-#ifdef __PPC__
+#if !defined(__AROS__) && defined(__PPC__)
   /* Flush the cache */
   SetCache(CACHE_ICACHEINV, 0, 0);
   SetCache(CACHE_DCACHEFLUSH, 0, 0);

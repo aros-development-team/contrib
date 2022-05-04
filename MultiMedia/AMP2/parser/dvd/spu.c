@@ -72,7 +72,7 @@ static int get_nibble (void)
   }
 }
 
-static void send_rle(length, colorid)
+static void send_rle(int length, unsigned char colorid)
 {
 #if 0
   if (trans[colorid] > 0) {

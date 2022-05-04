@@ -9,7 +9,7 @@ diff -ruN SDL-1.2.15/SDL.conf SDL-1.2.15.aros/SDL.conf
 +rootbase_field rootSDLBase
 +version 1.215
 +date 30.08.2016
-+copyright Copyright (C) 2013-216 The AROS Development Team, 1997-2012 Sam Lantinga
++copyright Copyright (C) 2013-2016 The AROS Development Team, 1997-2012 Sam Lantinga
 +options peropenerbase
 +rellib posixc
 +rellib stdc
@@ -9727,8 +9727,8 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_syssem.c SDL-1.2.15.aros/src/thread/aro
 +
 diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread.c SDL-1.2.15.aros/src/thread/aros/SDL_systhread.c
 --- SDL-1.2.15/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL-1.2.15.aros/src/thread/aros/SDL_systhread.c	2019-12-18 21:05:38.147224100 +0000
-@@ -0,0 +1,173 @@
++++ SDL-1.2.15.aros/src/thread/aros/SDL_systhread.c	2021-01-29 22:43:08.000000000 +0000
+@@ -0,0 +1,181 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2006 Sam Lantinga
@@ -9787,23 +9787,35 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread.c SDL-1.2.15.aros/src/thread/
 +void __aros_setoffsettable(void *base);
 +#endif
 +
-+Uint32 RunThread(char *args)
++static AROS_UFH3(Uint32, RunThread,
++    AROS_UFHA(char *,              args, A0),
++    AROS_UFHA(ULONG,               argSize, D0),
++    AROS_UFHA(struct ExecBase *,   SysBase, A6))
 +{
-+	thread_args *data=FindTask(NULL)->tc_UserData;
++    AROS_USERFUNC_INIT
++
++	struct Task *Parent, *thisTask = FindTask(NULL);
++	thread_args *threadArgs = (thread_args *)thisTask->tc_UserData;
++
++	D(bug("[SDL] %s: Entered Thread (0x%p:0x%p)\n", __func__, thisTask, threadArgs));
++
 +#if defined(PROTO_SDL_H)
 +	/* Have child use parent library base */
-+	__aros_setoffsettable(data->base);
++	__aros_setoffsettable(threadArgs->base);
 +#endif
-+	struct Task *Father;
 +
-+	D(bug("Received data: %lx\n",data));
-+	Father=data->wait;
++	Parent = threadArgs->wait;
++	D(bug("[SDL] %s: Parent @ 0x%p\n", __func__, Parent));
 +
-+	SDL_RunThread(data);
++	SDL_RunThread(threadArgs);
 +
-+	Signal(Father,SIGBREAKF_CTRL_F);
-+	D(bug("Thread with data %lx ended\n",data));
++	D(bug("[SDL] %s: Thread (0x%p:0x%p) ended\n", __func__, thisTask, threadArgs));
++	if (Parent)
++		Signal(Parent, SIGBREAKF_CTRL_F);
++
 +	return(0);
++
++    AROS_USERFUNC_EXIT
 +}
 +
 +#if !defined(PROTO_SDL_H)
@@ -9812,42 +9824,38 @@ diff -ruN SDL-1.2.15/src/thread/aros/SDL_systhread.c SDL-1.2.15.aros/src/thread/
 +int SDL_SYS_CreateThreadI(SDL_Thread *thread, void *args, struct SDLBase *SDLBase)
 +#endif
 +{
-+	/* Create the thread and go! */
-+	char buffer[20];
++	struct Task *thisTask = FindTask(NULL);
++	char argbuff[20];
++	char *subtaskname;
++	int stnlen;
 +
-+	D(bug("Sending %lx to the new thread...\n",args));
++	D(bug("[SDL] %s: Creating new process with NP_Arguments = %ld  (0x%p)\n", __func__, args, args));
 +
++	/* prepare NP_Arguments */
 +	if(args)
-+		SDL_snprintf(buffer, SDL_arraysize(buffer),"%ld",(unsigned long)args);
++		SDL_snprintf(argbuff, SDL_arraysize(argbuff),"%ld",(unsigned long)args);
 +
-+#if defined(__AROS__)
-+        char tasknmtmp[1024];
-+        struct Task *thisTask = FindTask(NULL);
-+        
-+        if ((thread->threadno = (SDL_numthreads - 1)) > 0)
-+        {
-+            sprintf(tasknmtmp, "%s SDL subtask #%u", ((struct Node *)thisTask)->ln_Name, (unsigned int)thread->threadno);
-+        }
-+        else
-+        {
-+            sprintf(tasknmtmp, "%s SDL subtask", ((struct Node *)thisTask)->ln_Name);
-+        }
-+        char *subtaskname = AllocVec(strlen(tasknmtmp) + 1, MEMF_CLEAR);
-+        CopyMem(tasknmtmp, subtaskname, strlen(tasknmtmp));
-+#endif
++	/* create a suitable name for the subtask */
++	if ((thread->threadno = (SDL_numthreads - 1)) > 0)
++	{
++		stnlen = snprintf(NULL, 0, "%s SDL thread #%u", ((struct Node *)thisTask)->ln_Name, (unsigned int)thread->threadno);
++		subtaskname = AllocVec(stnlen + 1, MEMF_PUBLIC);
++		snprintf(subtaskname, stnlen + 1, "%s SDL thread #%u", ((struct Node *)thisTask)->ln_Name, (unsigned int)thread->threadno);
++	}
++	else
++	{
++		stnlen  = snprintf(NULL, 0, "%s SDL thread", ((struct Node *)thisTask)->ln_Name);
++		subtaskname = AllocVec(stnlen + 1, MEMF_PUBLIC);
++		snprintf(subtaskname, stnlen + 1, "%s SDL thread", ((struct Node *)thisTask)->ln_Name);
++	}
++
++	/* and launch it. .. */
 +	thread->handle=(struct Task *)CreateNewProcTags(NP_Output,Output(),
-+#if !defined(__AROS__)
-+					NP_Name,(ULONG)"SDL subtask",
-+					NP_StackSize, 98304,
-+					NP_Entry,(ULONG)RunThread,
-+					args ? NP_Arguments : TAG_IGNORE,(ULONG)buffer,
-+#else
 +					NP_Name, (IPTR)subtaskname,
 +					NP_StackSize, (IPTR)(thisTask->tc_SPUpper - thisTask->tc_SPLower),
 +					NP_Entry, (IPTR)RunThread,
-+					args ? NP_Arguments : TAG_IGNORE, (IPTR)buffer,
++					args ? NP_Arguments : TAG_IGNORE, (IPTR)argbuff,
 +					NP_UserData, args,
-+#endif
 +					NP_CloseOutput, FALSE,
 +					TAG_DONE);
 +

@@ -407,9 +407,9 @@ int main( int ac, STRPTR *av )
     struct WBArg      *wbarg;
     struct DiskObject *tooldobj,
                       *projectdobj;
-    BPTR               oldToolLock    = NULL,
-                       oldProjectLock = NULL;
-    BPTR               oldOutput      = NULL;
+    BPTR               oldToolLock    = BNULL,
+                       oldProjectLock = BNULL;
+    BPTR               oldOutput      = BNULL;
 
   D(bug("[DTConvert] %s()\n", __func__);)
 
@@ -835,7 +835,7 @@ void RunTool( STRPTR srcname )
 
         if( appport = CreateMsgPort() )
         {
-          BPTR srclock = NULL;
+          BPTR srclock = BNULL;
 
           if( Strlen( srcname ) )
           {
@@ -1221,7 +1221,7 @@ void RunTool( STRPTR srcname )
 
                                   for( i = 0UL ; i < (amsg -> am_NumArgs) ; i++ )
                                   {
-                                    BPTR oldProjectLock = NULL;
+                                    BPTR oldProjectLock = BNULL;
 
                                     if( amsg -> am_ArgList[ i ] . wa_Lock )
                                     {
@@ -1369,7 +1369,7 @@ void RunTool( STRPTR srcname )
                     if( srclock )
                     {
                       UnLock( srclock );
-                      srclock = NULL;
+                      srclock = BNULL;
                     }
 
                     if( Strlen( srcname ) )

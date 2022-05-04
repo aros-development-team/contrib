@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# This is a wrapper around the AROS-target compiler, needed to correctly pass in the ISA
+# flags to GCC's build for generic/multilib crosscompilers.
+#
+# Before the wrapper "workaround" can be removed, the following GCC cross-compiler fixes need made  -:
+#
+# (1) The GCC "target" cross-compiler needs to be built as $(AROS_TARGET_CPU)-unknown-aros if it is a generic
+#     compiler (multilib), not just $(AROS_TARGET_CPU)-aros.
+# (2) The GCC "host" detection patches need to
+#     correctly distinguish between AROS hosts (aros-raspi-arm, aros-pc-i386) and use the appropriate
+#     toolchain.
+# (3) the GCC "host" toolchain should be an alias or wrapper around the GCC "target" cross-compiler.
+#
+# This should allow GCC to then distinguish the host and target as different, allowing the correct ISA
+# flags to be passed when compiling code for the host, without polluting flags needed by GCC for the target.
+
+exec @aros_wraptarget_tool@ @aros_wraptarget_args@ "$@"

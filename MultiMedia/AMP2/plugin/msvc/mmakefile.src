@@ -8,7 +8,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 # Objects
 
-COMMON = ../../common/plugin
+COMMON = $(SRCDIR)/$(CURDIR)/../../common/plugin
 
 MAIN = main
 
@@ -16,7 +16,7 @@ OBJS = $(MAIN) $(COMMON)
 
 EXEDIR := $(AROS_CONTRIB)/MultiMedia/AMP2/Plugin
 
-USER_CFLAGS := -I$(SRCDIR)/$(CURDIR)/../../common -I$(SRCDIR)/$(CURDIR)/../../aros
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/../../common -I$(SRCDIR)/$(CURDIR)/../../aros
 
 #MM contrib-mmedia-amp2-plug-MSVC : contrib-mmedia-amp2
 

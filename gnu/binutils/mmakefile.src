@@ -13,6 +13,8 @@ BINUTILS_EXTRAOPTS := --with-sysroot=/$(AROS_DIR_DEVELOPER)
 BINUTILS_EXTRAOPTS += --with-build-sysroot=$(AROS_DEVELOPER)
 BINUTILS_EXTRAOPTS += --libdir=$(AROS_LIB)
 
+BINUTILS_CFLAGS := -DPOSIXC_NO_VAARGS
+
 %fetch_and_build_gnu_development package=binutils version=$(BINUTILS_VERSION) patch=yes \
-    extraoptions=$(BINUTILS_EXTRAOPTS)
+    extraoptions=$(BINUTILS_EXTRAOPTS) extracflags="$(BINUTILS_CFLAGS)"
 

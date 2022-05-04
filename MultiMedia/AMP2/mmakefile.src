@@ -1,10 +1,12 @@
-# $Id$
+# Copyright © 2015-2022 The AROS Development Team. All rights reserved.
+#
+# Makefile for AMP2
+#
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#
-# Makefile for AMP2 (030415)
-#
+#MM- contrib-multimedia : contrib-multimedia-amp2
+#MM contrib-multimedia-amp2 : includes linklibs workbench-libs-cgxvideo-includes contrib-mmedia-amp2-plugins
 
 # Objects
 
@@ -16,7 +18,7 @@ AUDIO=audio/ahi audio/audio_main audio/paula audio/paula_int
 
 COMMON = common/amp common/find_plugin common/core common/ampio
 
-MAIN = main/main main/prefs main/plugin main/types main/keyfile main/buffer \
+MAIN = main/main main/prefs $(SRCDIR)/$(CURDIR)/main/plugin main/types main/keyfile main/buffer \
 main/version main/mpegio main/mount
 
 REFRESH = refresh/refresh refresh/osd refresh/subtitle \
@@ -49,10 +51,8 @@ OBJS = $(MAIN) $(AROSFILES) $(AMIGAOS) $(COMMON) $(AUDIO) $(REFRESH) $(DVD) $(PA
 
 EXEDIR := $(AROS_CONTRIB)/MultiMedia/AMP2
 
-USER_CFLAGS := -I$(SRCDIR)/$(CURDIR)/aros -I$(SRCDIR)/$(CURDIR)/amigaos -I$(SRCDIR)/$(CURDIR)/audio -I$(SRCDIR)/$(CURDIR)/common -I$(SRCDIR)/$(CURDIR)/main -I$(SRCDIR)/$(CURDIR)/parser -I$(SRCDIR)/$(CURDIR)/parser/dvd -I$(SRCDIR)/$(CURDIR)/parser/dvd/dvdnav -I$(SRCDIR)/$(CURDIR)/parser/dvd/dvdread  -I$(SRCDIR)/$(CURDIR)/parser/mpeg  -I$(SRCDIR)/$(CURDIR)/parser/vcd  -I$(SRCDIR)/$(CURDIR)/parser/qt -I$(SRCDIR)/$(CURDIR)/plugin -Irefresh
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/aros -I$(SRCDIR)/$(CURDIR)/amigaos -I$(SRCDIR)/$(CURDIR)/audio -I$(SRCDIR)/$(CURDIR)/common -I$(SRCDIR)/$(CURDIR)/main -I$(SRCDIR)/$(CURDIR)/parser -I$(SRCDIR)/$(CURDIR)/parser/dvd -I$(SRCDIR)/$(CURDIR)/parser/dvd/dvdnav -I$(SRCDIR)/$(CURDIR)/parser/dvd/dvdread  -I$(SRCDIR)/$(CURDIR)/parser/mpeg  -I$(SRCDIR)/$(CURDIR)/parser/vcd  -I$(SRCDIR)/$(CURDIR)/parser/qt -I$(SRCDIR)/$(CURDIR)/plugin -I$(SRCDIR)/$(CURDIR)/refresh
 
-#MM contrib-mmedia-amp2 : includes linklibs workbench-libs-cgxvideo-includes contrib-mmedia-amp2-plugins
-
-%build_prog mmake=contrib-mmedia-amp2 progname=AMP targetdir=$(EXEDIR) files=$(OBJS) uselibs="z"
+%build_prog mmake=contrib-multimedia-amp2 progname=AMP targetdir=$(EXEDIR) files="$(OBJS)" uselibs="z"
 
 %common

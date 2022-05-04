@@ -40,7 +40,7 @@ extern struct ScreenBuffer *sbuffer[3];
 
 /* CGFX variables */
 unsigned char *baseaddress[3] = { NULL, NULL, NULL };
-unsigned long pixfmt = 0, bpr = 0, bpp = 1;
+ULONG pixfmt = 0, bpr = 0, bpp = 1;
 
 void close_screen_cgfx()
 {
@@ -65,9 +65,9 @@ void close_screen_cgfx()
   }
 }
 
-int open_screen_cgfx(int width, int height, unsigned long id)
+int open_screen_cgfx(int width, int height, ULONG id)
 {
-  unsigned long rgbtab[1+3*256+1];
+  ULONG rgbtab[1+3*256+1];
   int i, depth;
 
   /* Get VideoMode information */
@@ -111,10 +111,10 @@ int open_screen_cgfx(int width, int height, unsigned long id)
     for (i=0; i<3; i++) {
       /* Get screenmode information */
       UnLockBitMap(LockBitMapTags(sbuffer[i]->sb_BitMap,
-                                  LBMI_PIXFMT, (ULONG)&pixfmt,
-                                  LBMI_BASEADDRESS, (ULONG)&baseaddress[i],
-                                  LBMI_BYTESPERROW, (ULONG)&bpr,
-                                  LBMI_BYTESPERPIX, (ULONG)&bpp,
+                                  LBMI_PIXFMT, (IPTR)&pixfmt,
+                                  LBMI_BASEADDRESS, (IPTR)&baseaddress[i],
+                                  LBMI_BYTESPERROW, (IPTR)&bpr,
+                                  LBMI_BYTESPERPIX, (IPTR)&bpp,
                                   TAG_END));
 
       memset(baseaddress[i], 0, (height*bpr));
@@ -122,10 +122,10 @@ int open_screen_cgfx(int width, int height, unsigned long id)
   } else {
     /* Get screenmode information */
     UnLockBitMap(LockBitMapTags(screen->RastPort.BitMap,
-                                LBMI_PIXFMT, (ULONG)&pixfmt,
-                                LBMI_BASEADDRESS, (ULONG)&baseaddress[0],
-                                LBMI_BYTESPERROW, (ULONG)&bpr,
-                                LBMI_BYTESPERPIX, (ULONG)&bpp,
+                                LBMI_PIXFMT, (IPTR)&pixfmt,
+                                LBMI_BASEADDRESS, (IPTR)&baseaddress[0],
+                                LBMI_BYTESPERROW, (IPTR)&bpr,
+                                LBMI_BYTESPERPIX, (IPTR)&bpp,
                                 TAG_END));
 
     memset(baseaddress[0], 0, (height*bpr));

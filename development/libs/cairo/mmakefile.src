@@ -3,7 +3,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-##MM- contrib-development : contrib-cairo
+#MM- contrib-development : contrib-cairo
 #MM- contrib-cairo : development-cairo
 
 #MM- development-cairo : workbench-libs-freetype-complete contrib-fontconfig contrib-gfx-libs-pixman-includes

@@ -61,12 +61,12 @@ diff -Naur SDL_mixer-1.2.11-orig/Makefile.in SDL_mixer-1.2.11/Makefile.in
 -$(objects)/playwave$(EXE): $(objects)/playwave.lo $(objects)/$(TARGET)
 -	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
 +$(objects)/playwave$(EXE): $(objects)/playwave.lo $(objects)/$(SDL_TARGET)
-+	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(SDL_TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(LDFLAGS) $(EXTRA_LDFLAGS) $(SDL_LIBS) $(objects)/$(SDL_TARGET)
  
 -$(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(TARGET)
 -	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
 +$(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(SDL_TARGET)
-+	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(SDL_TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(LDFLAGS) $(EXTRA_LDFLAGS) $(SDL_LIBS) $(objects)/$(SDL_TARGET)
  
  install: all install-hdrs install-lib #install-bin
  install-hdrs:
