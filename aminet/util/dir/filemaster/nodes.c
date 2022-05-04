@@ -19,7 +19,6 @@
 
 #include <aros/debug.h>
 
-#include <time.h>
 #include <dos/datetime.h>
 #include <proto/locale.h>
 #include <exec/types.h>

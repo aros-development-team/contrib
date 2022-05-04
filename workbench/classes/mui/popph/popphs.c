@@ -1,7 +1,7 @@
 /*
 ** $Id$
 **
-** © 1999-2000 Marcin Orlowski <carlos@amiga.com.pl>
+** Â© 1999-2000 Marcin Orlowski <carlos@amiga.com.pl>
 */
 
 #include <aros/debug.h>
