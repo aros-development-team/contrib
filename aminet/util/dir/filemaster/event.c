@@ -53,7 +53,6 @@
 #include <strings.h>
 #include <string.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "fmnode.h"
 #include "fmlocale.h"
