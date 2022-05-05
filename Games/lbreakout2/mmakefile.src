@@ -25,6 +25,7 @@ LB2OPTS := \
     --localstatedir='$$(PROGDIR)var' \
     --docdir='$$(PROGDIR)docs' \
     --disable-sdltest \
+    --disable-nls \
     --with-docdir='$$(PROGDIR)docs' \
     --program-prefix='' \
     LIBS='-lmikmod -lvorbisfile -lvorbis -logg -lSDL_net -lnet'
