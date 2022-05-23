@@ -50,7 +50,7 @@ Application::Application()
       }
       Interface = 0;
       _d(Lvl_Info, "%s: Freeing module...", (IPTR)__PRETTY_FUNCTION__);
-      Module->FreeInstance();
+    //   Module->FreeInstance();
    }
    else
    {
