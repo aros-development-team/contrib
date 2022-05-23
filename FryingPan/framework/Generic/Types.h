@@ -43,7 +43,9 @@ typedef WORD               int16;   /**< @brief signed 16bit integer */
 typedef BYTE               int8;    /**< @brief signed 8bit integer  */
 
 typedef SIPTR              sint;    /**< @brief architecture specific signed int: sizeof(s_int) = sizeof(void*) */
-typedef IPTR               uint;    /**< @brief architecture specific unsigned int: sizeof(u_int) = sizeof(void*) */
+// Disabled because it conflicts with uint definition in C library
+// FIXME: This probably breaks FP in many places, review usage of uint and replace with uintptr_t
+//typedef IPTR               uint;    /**< @brief architecture specific unsigned int: sizeof(u_int) = sizeof(void*) */
 
 #else
 typedef unsigned long long uint64;  /**< @brief unsigned 64bit integer */
