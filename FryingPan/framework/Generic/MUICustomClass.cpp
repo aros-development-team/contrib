@@ -32,7 +32,7 @@ void *MUICustomClass::getDispatcher()
    return (void*)&FDispatchCaller;
 }
 
-uint MUICustomClass::dispatch(IClass *cls, Object* obj, IPTR msg)
+IPTR MUICustomClass::dispatch(IClass *cls, Object* obj, IPTR msg)
 {
    GenericBOOPSI       *co;
    GenericBOOPSI      **ptr;

@@ -548,7 +548,7 @@ IPTR GUI::doUserAction(ActionID act, IPTR)
    switch (act)
    {
       case Action_AboutMUI:
-         DoMtd((Object *)pApp, ARRAY(MUIM_Application_AboutMUI, (uint)pWin));
+         DoMtd((Object *)pApp, ARRAY(MUIM_Application_AboutMUI, (uintptr_t)pWin));
          break;
 
       case Action_MUISettings:

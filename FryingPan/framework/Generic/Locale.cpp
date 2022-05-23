@@ -66,7 +66,7 @@ void GenNS::Localization::Add(GenNS::Localization::LocaleSet set[], const char* 
    }
 }
 
-const GenNS::String& GenNS::Localization::operator[] (uint val)
+const GenNS::String& GenNS::Localization::operator[] (uintptr_t val)
 {
    return hash.GetVal(val).str;
 }

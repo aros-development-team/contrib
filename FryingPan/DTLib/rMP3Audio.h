@@ -63,7 +63,7 @@ protected:
    static bool                   checkMP3(BPTR fh, EDtError &rc);
    static long                   verifyFrame(unsigned char* pFrame, EDtError &rc);
 
-   uint                          access(void* handle, MPEGA_ACCESS *acc);
+   uintptr_t                     access(void* handle, MPEGA_ACCESS *acc);
 public:
    static IFileReader           *openRead(const char* sFile, EDtError &rc);
    static bool                   checkFile(const char* sFileName, EDtError &rc);

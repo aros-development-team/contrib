@@ -36,18 +36,18 @@ namespace GenNS
     */
    class Set
    {
-      uint                  val;
+      uintptr_t                  val;
    public:
       Set();
-      Set(uint val);
+      Set(uintptr_t val);
       virtual                ~Set();
-      virtual Set&            operator << (uint);
-      virtual Set&            operator >> (uint);
-      virtual Set&            operator =  (uint);
-      virtual bool            operator == (uint);
-      virtual bool            ContainsAny(uint);
-      virtual bool            ContainsAll(uint);
-      virtual                 operator uint ();
+      virtual Set&            operator << (uintptr_t);
+      virtual Set&            operator >> (uintptr_t);
+      virtual Set&            operator =  (uintptr_t);
+      virtual bool            operator == (uintptr_t);
+      virtual bool            ContainsAny(uintptr_t);
+      virtual bool            ContainsAll(uintptr_t);
+      virtual                 operator uintptr_t ();
    };
 };
 #endif
