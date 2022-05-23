@@ -21,11 +21,11 @@
 
 void bzero(void* dest, size_t count)
 {
-   uint* v = (uint*)dest;
+   uint32* v = (uint32*)dest;
    uint8* b;
 
-   while ((count & (sizeof(uint)-1)) > 0)
-      *v++ = 0, count -= sizeof(uint);
+   while ((count & (sizeof(uint32)-1)) > 0)
+      *v++ = 0, count -= sizeof(uint32);
 
    b = (uint8*)v;
    while (count > 0)
