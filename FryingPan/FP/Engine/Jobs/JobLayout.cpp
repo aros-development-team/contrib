@@ -136,7 +136,7 @@ void JobLayout::analyse(EOpticalError ret)
                   ((fsize * 100) >> 10) % 100,
                   (IPTR)suff.Data(),
                   scurr,
-                  ssize,
+                  ssize
                   ));
          numblocks = scurr;
       }
