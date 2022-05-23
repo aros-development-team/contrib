@@ -78,7 +78,7 @@ bool GenNS::Localization::ReadCatalog(const char* name, sint version)
 
    if (locale != 0)
    {
-      Catalog *cat = locale->OpenCatalogA(0, name, TAGARRAY(OC_Version, static_cast<IPTR>(version), TAG_DONE, 0));
+      Catalog *cat = locale->OpenCatalogA(0, name, ARRAY(OC_Version, static_cast<IPTR>(version), TAG_DONE, 0)); //CODE 2
       if (cat != 0)
       {
          res = true;

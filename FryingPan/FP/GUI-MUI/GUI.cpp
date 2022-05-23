@@ -313,7 +313,7 @@ bool GUI::start()
    Record->start();
 
    _dx(Lvl_Info, "*pop*");
-   Intuition->SetAttrsA(pWin, TAGARRAY(
+   Intuition->SetAttrsA(pWin, ARRAY(
             MUIA_Window_Open, true,
             TAG_DONE,         0));
 
@@ -356,7 +356,7 @@ void GUI::stop()
       return;
 
    _dx(Lvl_Info, "Hiding main window");
-   Intuition->SetAttrsA(pWin, TAGARRAY(
+   Intuition->SetAttrsA(pWin, ARRAY(
             MUIA_Window_Open, false,
             TAG_DONE,         0));
 
@@ -387,12 +387,12 @@ IPTR GUI::doShowHide(IPTR, IPTR)
 {
    _dx(Lvl_Info, "Switching UI");
    _dx(Lvl_Info, "Hiding main window");
-   Intuition->SetAttrsA(pWin, TAGARRAY(
+   Intuition->SetAttrsA(pWin, ARRAY(
             MUIA_Window_Open,     false,
             TAG_DONE,             0));
 
    _dx(Lvl_Info, "Rearranging elements (new state: %ld)", !bCompact);
-   Intuition->SetAttrsA(elements, TAGARRAY(
+   Intuition->SetAttrsA(elements, ARRAY(
       MUIA_ShowMe,   (unsigned)bCompact,
       TAG_DONE,      0
    ));
@@ -400,13 +400,13 @@ IPTR GUI::doShowHide(IPTR, IPTR)
    bCompact = !bCompact;
 
    _dx(Lvl_Info, "Applying new ID");
-   Intuition->SetAttrsA(pWin, TAGARRAY(
+   Intuition->SetAttrsA(pWin, ARRAY(
             MUIA_Window_ID,       bCompact ?
                MAKE_ID('M', 'I', 'N', 'I') : MAKE_ID('M', 'A', 'I', 'N'),
             TAG_DONE,             0));
 
    _dx(Lvl_Info, "Showing main window");
-   Intuition->SetAttrsA(pWin, TAGARRAY(
+   Intuition->SetAttrsA(pWin, ARRAY(
             MUIA_Window_Open,     true,
             TAG_DONE,             0));
 
