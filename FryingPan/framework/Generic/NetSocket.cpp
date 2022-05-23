@@ -32,12 +32,6 @@
 
 using namespace GenNS;
 
-struct timeval
-{
-   uint32      seconds;
-   uint32      micro;
-};
-
    int32          NetSocket::stTrue    = 1;
    int32          NetSocket::stFalse   = 0;
 
