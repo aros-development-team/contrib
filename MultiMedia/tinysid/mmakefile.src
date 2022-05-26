@@ -1,0 +1,22 @@
+# Copyright (C) 2022, The AROS Development Team. All rights reserved.
+
+include $(SRCDIR)/config/aros.cfg
+
+FILES	:= sidengine soundcard tinysid
+
+EXEDIR  := $(AROS_CONTRIB)/MultiMedia/Audio/TinySID
+
+#MM contrib-multimedia-tinysid : includes linklibs contrib-multimedia-tinysid-cpy
+
+%build_prog mmake=contrib-multimedia-tinysid \
+    progname=TinySID targetdir=$(EXEDIR) \
+    files=$(FILES) uselibs=pthread
+
+#MM
+contrib-multimedia-tinysid-cpy : $(EXEDIR)/Freeze.sid
+
+$(EXEDIR)/Freeze.sid : Freeze.sid | $(EXEDIR)
+	$(CP) $< $@
+
+%common
+
