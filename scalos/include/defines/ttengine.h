@@ -32,13 +32,13 @@
 
 #define TT_CloseFont(___font) __TT_CloseFont_WB(TTENGINE_BASE_NAME, ___font)
 #define __TT_CloseFont_WB(___base, ___font) \
-	AROS_LC1(VOID, TT_CloseFont, \
+	AROS_LC1NR(VOID, TT_CloseFont, \
 	AROS_LCA(APTR, (___font), A0), \
 	struct Library*, (___base), 7, Ttengine)
 
 #define TT_Text(___rp, ___string, ___count) __TT_Text_WB(TTENGINE_BASE_NAME, ___rp, ___string, ___count)
 #define __TT_Text_WB(___base, ___rp, ___string, ___count) \
-	AROS_LC3(VOID, TT_Text, \
+	AROS_LC3NR(VOID, TT_Text, \
 	AROS_LCA(struct RastPort *, (___rp), A1), \
 	AROS_LCA(APTR, (___string), A0), \
 	AROS_LCA(ULONG, (___count), D0), \
@@ -80,7 +80,7 @@
 
 #define TT_TextExtent(___rp, ___string, ___count, ___te) __TT_TextExtent_WB(TTENGINE_BASE_NAME, ___rp, ___string, ___count, ___te)
 #define __TT_TextExtent_WB(___base, ___rp, ___string, ___count, ___te) \
-	AROS_LC4(VOID, TT_TextExtent, \
+	AROS_LC4NR(VOID, TT_TextExtent, \
 	AROS_LCA(struct RastPort *, (___rp), A1), \
 	AROS_LCA(APTR, (___string), A0), \
 	AROS_LCA(WORD, (___count), D0), \
@@ -117,13 +117,13 @@
 
 #define TT_FreePixmap(___pixmap) __TT_FreePixmap_WB(TTENGINE_BASE_NAME, ___pixmap)
 #define __TT_FreePixmap_WB(___base, ___pixmap) \
-	AROS_LC1(VOID, TT_FreePixmap, \
+	AROS_LC1NR(VOID, TT_FreePixmap, \
 	AROS_LCA(struct TT_Pixmap *, (___pixmap), A0), \
 	struct Library*, (___base), 15, Ttengine)
 
 #define TT_DoneRastPort(___rp) __TT_DoneRastPort_WB(TTENGINE_BASE_NAME, ___rp)
 #define __TT_DoneRastPort_WB(___base, ___rp) \
-	AROS_LC1(VOID, TT_DoneRastPort, \
+	AROS_LC1NR(VOID, TT_DoneRastPort, \
 	AROS_LCA(struct RastPort *, (___rp), A1), \
 	struct Library*, (___base), 16, Ttengine)
 
@@ -147,7 +147,7 @@
 
 #define TT_FreeRequest(___request) __TT_FreeRequest_WB(TTENGINE_BASE_NAME, ___request)
 #define __TT_FreeRequest_WB(___base, ___request) \
-	AROS_LC1(VOID, TT_FreeRequest, \
+	AROS_LC1NR(VOID, TT_FreeRequest, \
 	AROS_LCA(APTR, (___request), A0), \
 	struct Library*, (___base), 19, Ttengine)
 
@@ -165,7 +165,7 @@
 
 #define TT_FreeFamilyList(___list) __TT_FreeFamilyList_WB(TTENGINE_BASE_NAME, ___list)
 #define __TT_FreeFamilyList_WB(___base, ___list) \
-	AROS_LC1(VOID, TT_FreeFamilyList, \
+	AROS_LC1NR(VOID, TT_FreeFamilyList, \
 	AROS_LCA(STRPTR *, (___list), A0), \
 	struct Library*, (___base), 21, Ttengine)
 

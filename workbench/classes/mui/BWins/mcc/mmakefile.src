@@ -5,7 +5,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM contrib-zune-classes-bwin-mcc : includes linklibs workbench-libs-popupmenu
 
 FILES := libinit_aros \
-	 init \
 	 utils \
 	 loc \
 	 sgad \

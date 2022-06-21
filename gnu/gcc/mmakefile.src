@@ -90,7 +90,7 @@ GCC_EXTRA_OPTS += --disable-build-poststage1-with-cxx
 $(TOOLDIR)/% : $(SRCDIR)/$(CURDIR)/target-tool.in
 	@$(ECHO) "Creating cross-compile wrapper for $@"
 	@$(SED) -e 's#@aros_wraptarget_tool@#$(CROSSTOOLSDIR)/$*#g' \
-		-e 's#@aros_wraptarget_args@#$(GCC_ISA_FLAGS)#g' \
+		-e 's#@aros_wraptarget_args@#--sysroot $(AROS_DEVELOPER) $(GCC_ISA_FLAGS)#g' \
 		$< > $@ && chmod 0744 $@
 
 GCC_HOST_VARS += \

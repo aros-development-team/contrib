@@ -2241,7 +2241,7 @@ mHandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
     }
   }
 
-  result = DoSuperMethodA(cl, obj, (Msg)msg);
+  result = 0; /* DoSuperMethodA(cl, obj, (Msg)msg); */
 
   RETURN(result);
   return result;
