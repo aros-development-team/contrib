@@ -32,6 +32,7 @@
 #if defined(__AROS__)
 #include <exec/types.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 typedef UQUAD              uint64;  /**< @brief unsigned 64bit integer */
 typedef ULONG              uint32;  /**< @brief unsigned 32bit integer */
@@ -96,6 +97,7 @@ enum TriState
 
 
 #ifdef __cplusplus
+#include <utility/tagitem.h>
 
 #include <cstdint>
 #include <array>

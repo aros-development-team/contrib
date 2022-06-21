@@ -21,6 +21,7 @@
 #define _BSDSOCKET_H_
 
 #include <Generic/Types.h>
+#include <sys/select.h>
 #include <libdata/bsdsocket/socket.h>
 #include <libclass/exec.h>
 
