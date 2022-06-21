@@ -52,7 +52,7 @@ else
 endif
 
 $(GLEXCESS_SOURCES) :
-%compile_q cmd=$(CXX_CC) opt=$(CXX_FLAGS) from=$(SRCDIR)/$(CURDIR)/$@.cpp to="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $@)))"
+%compile_q cmd="$(CXX_CC) $(TARGET_SYSROOT)" opt=$(CXX_FLAGS) from=$(SRCDIR)/$(CURDIR)/$@.cpp to="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $@)))"
 
 #MM
 demos-gl-glexcess-cpp : demos-gl-glexcess-cpp-directories-setup $(GLEXCESS_SOURCES)
@@ -65,7 +65,7 @@ USER_LDFLAGS := -L$(AROS_LIB) -static-libstdc++
 
 #MM
 demos-gl-glexcess :
-%link_q cmd=$(TARGET_CXX) from="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $(GLEXCESS_SOURCES))))" to=$(AROS_CONTRIB)/Demos/GL/GLExcess/GLExcess libs="-lglut -lGL -lGLU"
+%link_q cmd="$(TARGET_CXX) $(TARGET_SYSROOT)" from="$(addsuffix .o,$(addprefix $(GENDIR)/$(CURDIR)/,$(notdir $(GLEXCESS_SOURCES))))" to=$(AROS_CONTRIB)/Demos/GL/GLExcess/GLExcess libs="-lglut -lGL -lGLU"
 
 #MM
 demos-gl-glexcess-copyfiles :
