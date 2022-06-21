@@ -499,7 +499,7 @@ bool                  rMP3Audio::readData(const IOptItem* item, void* buff, int 
    return true;
 }
    
-uint                  rMP3Audio::access(void* , MPEGA_ACCESS *acc)
+uintptr_t                  rMP3Audio::access(void* , MPEGA_ACCESS *acc)
 {
    register uint32 d;
 
@@ -513,7 +513,7 @@ uint                  rMP3Audio::access(void* , MPEGA_ACCESS *acc)
          DOS->Seek(handle, stream_start, OFFSET_BEGINNING);
          current_location = 0;
          _D(Lvl_Info, "%s: MPEGA_OPEN - Opening virtual stream. Current location: %ld", (uint)__PRETTY_FUNCTION__, current_location);
-         return (uint)this;
+         return (uintptr_t)this;
 
       case MPEGA_BSFUNC_CLOSE:
          /*

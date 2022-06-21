@@ -35,8 +35,8 @@
 
    void*                   __InternalMemPool;
    SignalSemaphore         __InternalSemaphore;
-   BPTR                    stdin;
-   BPTR                    stdout;
+   BPTR                    __stdin;
+   BPTR                    __stdout;
    WBStartup              *__WBStartup = 0;
 
    struct Library         *__InternalDOSBase;
@@ -87,8 +87,8 @@ int __setup()
 
    if (0 != __InternalDOSBase)
    {
-      stdin    = Input();
-      stdout   = Output();
+      __stdin    = Input();
+      __stdout   = Output();
    }
 
    // 3. Set up a memory pool. we will need it for our initializations (mem allocs etc)
@@ -226,7 +226,7 @@ void _error(const char* text, ...)
    if (0 != __InternalIntuitionBase)
       EasyRequestArgs(0, (struct EasyStruct*)&es, 0, AROS_SLOWSTACKFORMAT_ARG(text));
    else if (0 != __InternalDOSBase)
-      VFPrintf(stdout, (char*)text, AROS_SLOWSTACKFORMAT_ARG(text));
+      VFPrintf(__stdout, (char*)text, AROS_SLOWSTACKFORMAT_ARG(text));
    AROS_SLOWSTACKFORMAT_POST(text);
 }
 };

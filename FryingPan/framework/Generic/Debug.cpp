@@ -142,11 +142,11 @@ void DbgHandler::InitH()
       DOS->UnLock(DOS->CreateDir(i->Data()));
    }
 
-   j->FormatStr("%s_%05ld.txt", ARRAY((uint)name.Data(), Utility->GetUniqueID()));
+   j->FormatStr("%s_%05ld.txt", ARRAY((uintptr_t)name.Data(), Utility->GetUniqueID()));
    i->AddPath(j->Data());
    DOS->DeleteFile(i->Data());
    fh1 = DOS->Open(i->Data(), MODE_READWRITE);
-   i->FormatStr("con:0/10//80/Debug: %s/auto/close/wait", ARRAY((uint)name.Data()));
+   i->FormatStr("con:0/10//80/Debug: %s/auto/close/wait", ARRAY((uintptr_t)name.Data()));
    if (!silent) fh2 = DOS->Open(i->Data(), MODE_NEWFILE);
    delete i;
    delete j;
@@ -184,8 +184,8 @@ void DbgHandler::PutDate() const
 
    DOS->DateStamp(&CDT.dat_Stamp);
    DOS->DateToStr(&CDT);
-   if (fh2 != 0) DOS->VFPrintf(fh2, "[%s] ", (void*)ARRAY((uint)&TM));
-   if (fh1 != 0) DOS->VFPrintf(fh1, "[%s] ", (void*)ARRAY((uint)&TM));
+   if (fh2 != 0) DOS->VFPrintf(fh2, "[%s] ", (void*)ARRAY((uintptr_t)&TM));
+   if (fh1 != 0) DOS->VFPrintf(fh1, "[%s] ", (void*)ARRAY((uintptr_t)&TM));
 }
 
 void DbgHandler::DoAsync(DbgLevel l, const char* sFmtString, uint vFmtArgs, void* bMemBlock, int lMemLen) const

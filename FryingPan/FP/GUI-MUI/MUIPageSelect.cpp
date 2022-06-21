@@ -163,7 +163,7 @@ void MUIPageSelect::stop()
    return;
 }
 
-IPTR MUIPageSelect::pageSel(MUIToolBar*, uint page)
+IPTR MUIPageSelect::pageSel(MUIToolBar*, IPTR page)
 {
    return callBack(this, page);
 }

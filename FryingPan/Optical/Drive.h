@@ -74,7 +74,7 @@ class Drive
    bool                       bLockInterOperations;   // true if we dont want additional operations inbetween our calls
 
    HookT<Drive, Thread*, void*>                 hHkProcMsgs;
-   HookT<Drive, uint, uint*>                  hHkProcHandle;
+   HookT<Drive, uint, uintptr_t*>                  hHkProcHandle;
    
    CfgHardware         *hwconfig;
 
@@ -145,11 +145,11 @@ public:
    CfgHardware         *GetHardwareConfig()
       {  return hwconfig;                    };
 
-   uint                             GetDriveAttrs(uint, uint);
+   uintptr_t                        GetDriveAttrs(uint, uintptr_t);
    uint                             SetDriveAttrs(uint, uint);
 
    uint32                            SetDriveAttrs(TagItem*);
-   uint                             HandleMessages(uint Cmd, uint *Msg);
+   uintptr_t                         HandleMessages(uint Cmd, uintptr_t *Msg);
 
    Page<Page_Write>                &GetWritePage();
    Page<Page_Capabilities>         &GetCapabilitiesPage();

@@ -117,7 +117,7 @@ void ISODate::setDate(const struct DateStamp *pDS)
    Date hDate(pDS);
    
    s.FormatStr("%04ld%02ld%02ld%02ld%02ld%02ld%02ld", ARRAY(
-         hDate.Year, 
+         (IPTR)hDate.Year,
          hDate.Month,
          hDate.Day,
          hDate.Hour,

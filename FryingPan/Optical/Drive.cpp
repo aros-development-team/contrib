@@ -426,7 +426,7 @@ void Drive::AnalyseDrive(void)
    Cfg->onWrite();
 }
 
-uint Drive::HandleMessages(uint ACmd, uint *msg)
+uintptr_t Drive::HandleMessages(uint ACmd, uintptr_t *msg)
 {
    if (drive_status == DRT_DriveStatus_NotOpened)
       return (unsigned)ODE_NoHandler;
@@ -667,13 +667,13 @@ long Drive::LockDrive(long lLockType)
 }
 
 
-uint Drive::GetDriveAttrs(uint tag, uint attr)
+uintptr_t Drive::GetDriveAttrs(uint tag, uintptr_t attr)
 {
    if (drive_status == DRT_DriveStatus_NotOpened)
       return 0;
   
    register Disc* d = current_disc.ObtainRead(); 
-   register uint res = 0;
+   register uintptr_t res = 0;
       
    switch (tag)
    {
@@ -684,7 +684,7 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
           break;
 
       case DRA_DeviceName:                   
-          res = (uint)drive_name.Data();
+          res = (uintptr_t)drive_name.Data();
           break;
 
       case DRA_UnitNumber:                   
@@ -705,11 +705,11 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
 
 
       case DRA_Drive_ReadSpeeds:             
-          res = d ? (uint)d->GetReadSpeeds() : 0;
+          res = d ? (uintptr_t)d->GetReadSpeeds() : 0;
           break;
 
       case DRA_Drive_WriteSpeeds:
-          res = d ? (uint)d->GetWriteSpeeds() : 0;
+          res = d ? (uintptr_t)d->GetWriteSpeeds() : 0;
           break;
 
       case DRA_Drive_CurrentOperation:       
@@ -721,7 +721,7 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
           break;
 
       case DRA_Drive_SenseData:
-          res = (uint)driveio->Sense();
+          res = (uintptr_t)driveio->Sense();
           break;
 
       case DRA_Drive_Status:
@@ -741,19 +741,19 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
           break;
 
       case DRA_Drive_Vendor:                 
-          res = (uint)((inquiry) ? inquiry->VendorID() : "");
+          res = (uintptr_t)((inquiry) ? inquiry->VendorID() : "");
           break;
 
       case DRA_Drive_Product:                
-          res = (uint)((inquiry) ? inquiry->ProductID() : "");
+          res = (uintptr_t)((inquiry) ? inquiry->ProductID() : "");
           break;
 
       case DRA_Drive_Version:                
-          res = (uint)((inquiry) ? inquiry->ProductVersion() : "");
+          res = (uintptr_t)((inquiry) ? inquiry->ProductVersion() : "");
           break;
 
       case DRA_Drive_Firmware:               
-          res = (uint)((inquiry) ? inquiry->FirmwareVersion() : "");
+          res = (uintptr_t)((inquiry) ? inquiry->FirmwareVersion() : "");
           break;
 
       case DRA_Drive_ReadsMedia:             
@@ -818,7 +818,7 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
           break;
 
       case DRA_Disc_Contents:                
-          res = d ? (uint)d->GetContents() : 0;
+          res = d ? (uintptr_t)d->GetContents() : 0;
           break;
 
       case DRA_Disc_SubType:                 
@@ -870,7 +870,7 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
           break;
 
       case DRA_Disc_NextWritableTrack:       
-         res = d ? (uint)d->GetNextWritableTrack((IOptItem*)attr) : 0;
+         res = d ? (uintptr_t)d->GetNextWritableTrack((IOptItem*)attr) : 0;
          break;
 
       case DRA_Disc_WriteMethod:             
@@ -882,7 +882,7 @@ uint Drive::GetDriveAttrs(uint tag, uint attr)
          break;
 
       case DRA_Disc_Vendor:                  
-         res = d ? (uint)d->DiscVendor() : 0;
+         res = d ? (uintptr_t)d->DiscVendor() : 0;
          break;
 
       default:
@@ -1042,20 +1042,20 @@ uint32 Drive::ScanDevice(char* sDeviceName)
    _NDS("Device Scan");
    DriveIO    *pIO  = new DriveIO(DEBUG_ENGINE);   // has to be here, called once debug is initialized.
 
-   _D(Lvl_Info, "Checking if device %s is harmless...", (int)sDeviceName);
+   _D(Lvl_Info, "Checking if device %s is harmless...", (uintptr_t)sDeviceName);
    switch (Cfg->Drivers()->isHarmful(sDeviceName))
    {
       case stYes:
          {
             _D(Lvl_Warning, "Device is harmful.");
-            request("Error", "Device %s is considered harmful\nOperation aborted.", "Ok", ARRAY((uint)sDeviceName));
+            request("Error", "Device %s is considered harmful\nOperation aborted.", "Ok", ARRAY((uintptr_t)sDeviceName));
          }
          break;
 
       case stUnknown:
          {
             _D(Lvl_Warning, "Device is not recorded yet.");
-            if (0 == request("Warning", "Device %s is not known and may be harmful.\nDo you want to continue?", "Yes|No", ARRAY((uint)sDeviceName)))
+            if (0 == request("Warning", "Device %s is not known and may be harmful.\nDo you want to continue?", "Yes|No", ARRAY((uintptr_t)sDeviceName)))
             {
                Cfg->Drivers()->addDevice(sDeviceName, true);
                break;

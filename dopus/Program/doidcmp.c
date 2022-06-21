@@ -987,7 +987,7 @@ prevgadgetbank:
                             struct dopusfiletype *type;
                             struct Directory *file;
 
-                            select(win,a - dopus_curwin[win]->offset);
+                            _select(win,a - dopus_curwin[win]->offset);
                             for (file = dopus_curwin[win]->firstentry; a--; file=file->next);
                             strcpy(buf,str_pathbuffer[win]);
                             TackOn(buf,file->name,256);

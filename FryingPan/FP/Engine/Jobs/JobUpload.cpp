@@ -138,7 +138,7 @@ void JobUpload::execute()
    }
 }
 
-uint JobUpload::onData(void* mem, int sectors)
+uintptr_t JobUpload::onData(void* mem, int sectors)
 {
    EOpticalError ret = ODE_OK;
 

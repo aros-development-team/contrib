@@ -33,9 +33,15 @@ int main()
 {
    LibrarySpool::Init();
 
-   delete new Application();
+// FIXME
+// There is some sort of problem where operator new from LibC is used
+// but operator delete is used form standard C++ library which causes
+// crashes at exit
 
-   LibrarySpool::Exit();
+//    delete
+   new Application();
+
+//    LibrarySpool::Exit();
 
    return 0;
 }

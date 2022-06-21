@@ -134,7 +134,7 @@ void JobMediumAction::closeTracks()
 {
    const IOptItem *dsc, *ses, *trk;
 
-   pOptical->OptDoMethodA(ARRAY(DRV_GetAttrs, Drive, DRA_Disc_Contents, (uint)&dsc, 0));
+   pOptical->OptDoMethodA(ARRAY(DRV_GetAttrs, Drive, DRA_Disc_Contents, (uintptr_t)&dsc, 0));
 
    if (dsc)
    {

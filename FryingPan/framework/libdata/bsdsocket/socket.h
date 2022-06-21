@@ -281,17 +281,4 @@ struct omsghdr
    int32          msg_accrightslen;
 };
 
-/*** Defines and macros for select() *****************************************/
-
-typedef struct fd_set 
-{
-        uint32    fds_bits[2];
-} fd_set;
-
-#define FD_SET(n, p)    ((p)->fds_bits[(n)>>5] |=  (1 << ((n) & 31)))
-#define FD_CLR(n, p)    ((p)->fds_bits[(n)>>5] &= ~(1 << ((n) & 31)))
-#define FD_ISSET(n, p)  ((p)->fds_bits[(n)>>5] &   (1 << ((n) & 31)))
-#define FD_COPY(f, t)   memcpy(t, f, sizeof(*(f)))
-#define FD_ZERO(p)      memset(p, 0, sizeof(*(p)))
-
 #endif /* _DATA_SOCKET_SOCKET_H */

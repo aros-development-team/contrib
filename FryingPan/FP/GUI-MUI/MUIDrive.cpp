@@ -160,7 +160,7 @@ IPTR MUIDrive::getObject()
    if (popDevice == 0)
    {
       _dx(Lvl_Info, "Setting up PopDevice");
-      popDevice = new MUIPopDevice(Glb.Loc[loc_DrivePopDevice], (const char**)ARRAY((IPTR)Glb.Loc[loc_ColDevDevices].Data(), 0));
+      popDevice = new MUIPopDevice(Glb.Loc[loc_DrivePopDevice], (const char**)(APTR)ARRAY((IPTR)Glb.Loc[loc_ColDevDevices].Data(), 0));
       popDevice->setID(ID_DeviceSelect);
       popDevice->setCallbackHook(hHkButtonHook.GetHook());
    }
@@ -168,7 +168,7 @@ IPTR MUIDrive::getObject()
    if (popUnit == 0)
    {
       _dx(Lvl_Info, "Setting up PopUnit");
-      popUnit   = new MUIPopUnit(Glb, Glb.Loc[loc_DrivePopUnit], (const char**)ARRAY(
+      popUnit   = new MUIPopUnit(Glb, Glb.Loc[loc_DrivePopUnit], (const char**)(APTR)ARRAY(
                (IPTR)Glb.Loc[loc_ColUnitNumber].Data(),
                (IPTR)Glb.Loc[loc_ColUnitVendor].Data(),
                (IPTR)Glb.Loc[loc_ColUnitDrive].Data(),

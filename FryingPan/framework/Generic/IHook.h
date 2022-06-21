@@ -79,11 +79,11 @@ namespace GenNS
        * \arg a1 - Object parameter passed to CallHookPkt()
        * \arg a2 - Message parameter passed to CallHookPkt()
        */
-      virtual uint Call(uint a1, uint a2) = 0;
+      virtual uintptr_t Call(uintptr_t a1, uintptr_t a2) = 0;
 
    protected:
 #if defined (__AROS__) || defined (__AMIGAOS4__)
-      static uint subCaller(Hook *pHook, uint pObject, uint pMessage);
+      static uintptr_t subCaller(Hook *pHook, uintptr_t pObject, uintptr_t pMessage);
 #elif defined (__MORPHOS__) || defined(__mc68000)
       static uint subCaller();
 #endif
