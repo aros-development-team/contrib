@@ -181,6 +181,8 @@ static struct List MenuImageList;
 
 static struct ScalosMenuChunk *MainMenuBuffer = NULL;
 static struct ScalosMenuChunk *PopupMenuBuffer[MAX_PopupMenu];
+static struct ScalosMenuTree *AdjustedMainMenuBuffer = NULL;
+static struct ScalosMenuTree *AdjustedPopupMenuBuffer[MAX_PopupMenu];
 
 static ULONG MenuPrefsCRC = 0;
 
@@ -743,6 +745,8 @@ ULONG ReadMenuPrefs(void)
 
 				MainMenuBuffer = MenuChunk;
 				MenuChunk = NULL;
+				AdjustedMainMenuBuffer = AdjustedMenu;
+				AdjustedMenu = NULL;
 				break;
 
 			case SCMID_Popup_Disk:
@@ -754,7 +758,9 @@ ULONG ReadMenuPrefs(void)
 			case SCMID_Popup_Desktop:
 				d1(KPrintF("%s/%s/%ld: smch_MenuID=%lu\n", __FILE__, __FUNC__, __LINE__, MenuChunk->smch_MenuID));
 				PopupMenuBuffer[MenuChunk->smch_MenuID] = MenuChunk;
+				AdjustedPopupMenuBuffer[MenuChunk->smch_MenuID] = AdjustedMenu;
 				PopupMenus[MenuChunk->smch_MenuID - 1] = GeneratePopupMenu(MenuChunk, AdjustedMenu, MenuChunk->smch_MenuID - 1);
+				AdjustedMenu = NULL;
 				MenuChunk = NULL;
 				break;
 				}
@@ -823,12 +829,22 @@ void FreeMenuPrefs(void)
 		ScalosFree(MainMenuBuffer);
 		MainMenuBuffer = NULL;
 		}
+	if (AdjustedMainMenuBuffer)
+		{
+		ScalosFree(AdjustedMainMenuBuffer);
+		AdjustedMainMenuBuffer = NULL;
+		}
 	for (n=0; n<MAX_PopupMenu; n++)
 		{
 		if (PopupMenuBuffer[n])
 			{
 			ScalosFree(PopupMenuBuffer[n]);
 			PopupMenuBuffer[n] = NULL;
+			}
+		if (AdjustedPopupMenuBuffer[n])
+			{
+			ScalosFree(AdjustedPopupMenuBuffer[n]);
+			AdjustedPopupMenuBuffer[n] = NULL;
 			}
 		}
 	for (n=0; n<SCPOPUPMENU_Last; n++)
