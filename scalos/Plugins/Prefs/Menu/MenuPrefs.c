@@ -159,7 +159,7 @@ struct MenuListEntry
 
 struct MenuInsertEntry
 	{
-	struct SCALOS_MENUTREE *mie_TreeEntry;
+	struct ScalosMenuTree *mie_TreeEntry;
 	ULONG mie_MenuFlags;
 	};
 
@@ -190,7 +190,7 @@ struct ScalosMenuChunk
 	{
 	UWORD smch_MenuID;		// enum ScalosMenuChunkId
 	UWORD smch_Entries;		// number of entries
-	struct ScalosMenuTree smch_Menu[1];	// (variable) the menu entries
+	struct ScalosMenuTreeDisk smch_Menu[1];	// (variable) the menu entries
 	};
 
 struct CommandTableEntry
@@ -303,8 +303,8 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *baseAd
 static LONG SaveIcon(struct MenuPrefsInst *inst, CONST_STRPTR IconName);
 static void ClearMenuList(struct MenuPrefsInst *inst);
 static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace);
-static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE *MenuTree, const UBYTE *BaseAddr);
-static void GenerateMenuList(struct MenuPrefsInst *inst, struct SCALOS_MENUTREE *mTree,
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr);
+static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *mTree,
 	Object *ListTree, struct MUI_NListtree_TreeNode *MenuNode);
 static BOOL RequestTdFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
 static BOOL RequestParmFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
@@ -2624,7 +2624,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 	struct MUI_NListtree_TreeNode *ParentNode;
 	struct MUI_NListtree_TreeNode *PrevNode;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mTree.mtre_type = SCAMENUTYPE_Menu;
@@ -2663,7 +2663,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 		{
 		struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mTree.mtre_type = SCAMENUTYPE_Command;
@@ -2727,7 +2727,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 		{
 		struct MUI_NListtree_TreeNode *newNode;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mTree.mtre_type = SCAMENUTYPE_MenuItem;
@@ -2775,7 +2775,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 	BOOL iffOpened = FALSE;
 	struct ScalosMenuChunk *menuChunk;
 #if defined(__AROS__) && __WORDSIZE==64
-        struct SCALOS_MENUTREE *adjustedMenu;
+        struct ScalosMenuTree *adjustedMenu;
 #endif
 
 	set(inst->mpb_Objects[OBJNDX_MainListView], MUIA_NListtree_Quiet, TRUE);
@@ -3400,13 +3400,13 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 		if (MenuTree->mtre_tree)
 			{
 			RemoveAddresses((struct ScalosMenuTree *)((IPTR)BaseAddr + (IPTR)MenuTree->mtre_tree), BaseAddr);
-			MenuTree->mtre_tree = (SMTPTR32) (((IPTR) MenuTree->mtre_tree) - (IPTR) BaseAddr);
-			MenuTree->mtre_tree = (SMTPTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_tree);
+			MenuTree->mtre_tree = (PTR32) (((IPTR) MenuTree->mtre_tree) - (IPTR) BaseAddr);
+			MenuTree->mtre_tree = (PTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_tree);
 			}
 		if (MenuTree->mtre_Next)
 			{
-			MenuTree->mtre_Next = (SMTPTR32) (((IPTR) MenuTree->mtre_Next) - (IPTR) BaseAddr);
-			MenuTree->mtre_Next = (SMTPTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_Next);
+			MenuTree->mtre_Next = (PTR32) (((IPTR) MenuTree->mtre_Next) - (IPTR) BaseAddr);
+			MenuTree->mtre_Next = (PTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_Next);
 			}
 
 		MenuTree = MenuTreeNext;
@@ -3531,7 +3531,7 @@ static void ClearMenuList(struct MenuPrefsInst *inst)
 }
 
 
-static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE *MenuTree, const UBYTE *BaseAddr)
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 {
 	while (MenuTree)
 		{
@@ -3575,20 +3575,20 @@ static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE 
 		MenuTree->mtre_tree = SCA_BE_ADDR(srcTree->mtre_tree);
 		if (MenuTree->mtre_tree)
 			{
-			MenuTree->mtre_tree = (struct SCALOS_MENUTREE *) (((UBYTE *) MenuTree->mtre_tree) + (IPTR) BaseAddr);
-			AddAddresses((struct ScalosMenuTree *)((IPTR)BaseAddr + (IPTR)srcTree->mtre_tree), MenuTree->mtre_tree, BaseAddr);
+			MenuTree->mtre_tree = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_tree) + (IPTR) BaseAddr);
+			AddAddresses((struct ScalosMenuTreeDisk *)((IPTR)BaseAddr + (IPTR)srcTree->mtre_tree), MenuTree->mtre_tree, BaseAddr);
 			}
 		MenuTree->mtre_Next = SCA_BE_ADDR(srcTree->mtre_Next);
 		if (MenuTree->mtre_Next)
 			{
-			MenuTree->mtre_Next = (struct SCALOS_MENUTREE *) (((UBYTE *) MenuTree->mtre_Next) + (IPTR) BaseAddr);
+			MenuTree->mtre_Next = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_Next) + (IPTR) BaseAddr);
 			}
 		MenuTree = MenuTree->mtre_Next;
 		}
 }
 
 
-static void GenerateMenuList(struct MenuPrefsInst *inst, struct SCALOS_MENUTREE *mTree,
+static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *mTree,
 	Object *ListTree, struct MUI_NListtree_TreeNode *MenuNode)
 {
 	while (mTree)
@@ -3693,7 +3693,7 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 		struct MUI_NListtree_TreeNode *SubNode = NULL;
 		struct MUI_NListtree_TreeNode *CmdNode = NULL;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mie.mie_TreeEntry = &mTree;
@@ -4044,7 +4044,7 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 		struct MUI_NListtree_TreeNode *CmdNode;
 		char Line[512];
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mie.mie_TreeEntry = &mTree;
@@ -4456,7 +4456,7 @@ static SAVEDS(APTR) INTERRUPT AppMessageHookFunc(struct Hook *hook, Object *o, M
 				else
 					{
 					struct MenuInsertEntry mie;
-					struct SCALOS_MENUTREE mTree;
+					struct ScalosMenuTree mTree;
 
 					memset(&mTree, 0, sizeof(mTree));
 					mie.mie_TreeEntry = &mTree;
@@ -4513,7 +4513,7 @@ static struct MUI_NListtree_TreeNode *AppMessage_Menu(struct MenuPrefsInst *inst
 	struct MUI_NListtree_TreeNode *NewTreeNode;
 	struct MenuListEntry *mle;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mie.mie_TreeEntry = &mTree;
@@ -4803,7 +4803,7 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *i
 	struct MUI_NListtree_TreeNode *tnNew;
 	struct MUI_NListtree_TreeNode *tnChild;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 	STRPTR IconNames = NULL;
 
 	memset(&mTree, 0, sizeof(mTree));
@@ -5351,7 +5351,7 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 	struct MUI_NListtree_TreeNode *LastNode[4];
 	Object *Listtree = NULL;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	mie.mie_TreeEntry = &mTree;
 
@@ -5619,7 +5619,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 {
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mie.mie_TreeEntry = &mTree;

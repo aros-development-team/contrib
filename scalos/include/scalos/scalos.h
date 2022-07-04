@@ -610,7 +610,7 @@ struct SM_MenuCmd
 struct SM_RunMenuCmd
 	{
 	struct ScalosMessage    ScalosMessage;
-	struct SCALOS_MENUTREE	*smrm_MenuItem;
+	struct ScalosMenuTree	*smrm_MenuItem;
 	struct ScaIconNode	*smrm_IconNode;
 	ULONG			smrm_Flags;
 	};

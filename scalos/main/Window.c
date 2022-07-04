@@ -59,7 +59,7 @@
 struct AsyncArexxMenuCmdArg
 	{
 	struct internalScaWindowTask *asm_iwt;
-	struct SCALOS_MENUTREE *asm_MenuTree;
+	struct ScalosMenuTree *asm_MenuTree;
 	struct ScaIconNode *asm_IconNode;
 	};
 
@@ -71,16 +71,16 @@ struct AsyncArexxMenuCmdArg
 // local functions
 
 static void RunMenuCmd_Internal(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in, ULONG Flags);
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in, ULONG Flags);
 static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in);
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in);
 static void RunMenuCmd_CLI(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in);
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in);
 static void RunMenuCmd_ARexx(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in);
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in);
 static SAVEDS(void) AsyncARexxMenuCmdStart(APTR xarg, struct SM_RunProcess *msg);
 static void RunMenuCmd_Plugin(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in);
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in);
 static STRPTR InsertCliArgDeviceName(struct internalScaWindowTask *iwt, STRPTR Buffer,
 	size_t *BuffLen, struct ScaIconNode *in);
 static STRPTR InsertCliArgs(struct internalScaWindowTask *iwt, STRPTR Buffer, 
@@ -375,7 +375,7 @@ BOOL isAlternateLssoQualifier(ULONG Qualifier)
 
 
 void RunMenuCommand(struct internalScaWindowTask *iwt, 
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in, ULONG Flags)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in, ULONG Flags)
 {
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  mtr=%08lx Next=%08lx  in=%08lx  Flags=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, mtr, mtr->mtre_Next, in, Flags));
@@ -443,7 +443,7 @@ void RunMenuCommand(struct internalScaWindowTask *iwt,
 
 
 void RunMenuCommandExt(struct internalScaWindowTask *iwt, struct internalScaWindowTask *iwtDest,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in, ULONG Flags)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in, ULONG Flags)
 {
 	d1(KPrintF("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, in ? GetIconName(in) : (STRPTR) ""));
 
@@ -470,7 +470,7 @@ void RunMenuCommandExt(struct internalScaWindowTask *iwt, struct internalScaWind
 
 
 static void RunMenuCmd_Internal(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in, ULONG Flags)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in, ULONG Flags)
 {
 	IPTR IconType = WBTOOL;
 
@@ -510,7 +510,7 @@ static void RunMenuCmd_Internal(struct internalScaWindowTask *iwt,
 
 
 static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in)
 {
 	struct WBArg *args;
 	ULONG ArgCount = 1;
@@ -586,7 +586,7 @@ static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
 
 
 static void RunMenuCmd_CLI(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in)
 {
 	STRPTR Buffer;
 	BPTR oldDir = NOT_A_LOCK;
@@ -774,7 +774,7 @@ static void RunMenuCmd_CLI(struct internalScaWindowTask *iwt,
 
 
 static void RunMenuCmd_ARexx(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in)
 {
 	struct AsyncArexxMenuCmdArg Args;
 
@@ -931,7 +931,7 @@ static SAVEDS(void) AsyncARexxMenuCmdStart(APTR xarg, struct SM_RunProcess *msg)
 
 
 static void RunMenuCmd_Plugin(struct internalScaWindowTask *iwt,
-	struct SCALOS_MENUTREE *mtr, struct ScaIconNode *in)
+	struct ScalosMenuTree *mtr, struct ScaIconNode *in)
 {
 	struct Library *ScalosMenuPluginBase;
 #ifdef __amigaos4__
@@ -1811,17 +1811,17 @@ void UnLockWindow(struct internalScaWindowTask *iwt)
 }
 
 
-struct SCALOS_MENUTREE *CloneMenuTree(const struct SCALOS_MENUTREE *mtr)
+struct ScalosMenuTree *CloneMenuTree(const struct ScalosMenuTree *mtr)
 {
-	struct SCALOS_MENUTREE *newNodeList = NULL;
+	struct ScalosMenuTree *newNodeList = NULL;
 
 	while (mtr)
 		{
-		struct SCALOS_MENUTREE *mtrNew;
+		struct ScalosMenuTree *mtrNew;
 
 		d1(KPrintF("%s/%s/%ld:  mtr=%08lx  Next=%08lx\n", __FILE__, __FUNC__, __LINE__, mtr, mtr->mtre_Next));
 
-		mtrNew = ScalosAlloc(sizeof(struct SCALOS_MENUTREE));
+		mtrNew = ScalosAlloc(sizeof(struct ScalosMenuTree));
 		if (NULL == mtrNew)
 			{
 			DisposeMenuTree(newNodeList);
@@ -1850,11 +1850,11 @@ struct SCALOS_MENUTREE *CloneMenuTree(const struct SCALOS_MENUTREE *mtr)
 }
 
 
-void DisposeMenuTree(struct SCALOS_MENUTREE *mtr)
+void DisposeMenuTree(struct ScalosMenuTree *mtr)
 {
 	while (mtr)
 		{
-		struct SCALOS_MENUTREE *mtrNext = mtr->mtre_Next;
+		struct ScalosMenuTree *mtrNext = mtr->mtre_Next;
 
 		DisposeMenuTree(mtr->mtre_tree);
 
@@ -1882,7 +1882,7 @@ void DisposeMenuTree(struct SCALOS_MENUTREE *mtr)
 }
 
 
-void AppendToMenuTree(struct SCALOS_MENUTREE **mtreList, struct SCALOS_MENUTREE *mTree)
+void AppendToMenuTree(struct ScalosMenuTree **mtreList, struct ScalosMenuTree *mTree)
 {
 	while (*mtreList)
 		{

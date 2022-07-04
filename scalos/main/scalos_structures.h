@@ -1285,7 +1285,7 @@ struct FileTypeDef
 
 	STRPTR ftd_Description;				// textual description of file type
 
-	struct SCALOS_MENUTREE *ftd_DefaultAction;	// default action on double click
+	struct ScalosMenuTree *ftd_DefaultAction;	// default action on double click
 
 	BPTR ftd_FileTypesDirLock;			// Lock on filetype descriptions' directory
 
