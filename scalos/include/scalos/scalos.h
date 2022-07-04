@@ -87,7 +87,7 @@
 
 #define SCALOSNAME "scalos.library"
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack(2)
 #endif /* __GNUC__ */
 
@@ -2809,7 +2809,7 @@ struct ScalosBase
 
 /****************************************************************************/
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack()
 #endif /* __GNUC__ */
 
