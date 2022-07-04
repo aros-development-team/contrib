@@ -2462,7 +2462,7 @@ void WindowCastShadow(struct Window *win, LONG ShadowWidth, LONG ShadowHeight)
 		0, win->Height - ShadowHeight,
 		win->Width - ShadowWidth, ShadowHeight,
 		ShadowWidth, 0,
-                SHADOWFLAG_BOTTOM);
+		SHADOWFLAG_BOTTOM);
 
 	// Render bottom right shadow corner
 	WindowBlitTransparentShadow(win,
