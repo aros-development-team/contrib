@@ -2222,6 +2222,8 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 				break;
 
 			len = SCA_BE2LONG(len);
+			len = (len >> 2);
+			len *= sizeof(STRPTR);
 
 			d1(KPrintF("%s/%s/%ld: Size of ToolTypes Array read Ok, %lu.\n", __FILE__, __FUNC__, __LINE__, len));
 			inst->aio_ToolTypesLength = len;
