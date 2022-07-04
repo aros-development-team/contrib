@@ -211,16 +211,7 @@ static void GenerateMainMenu(struct ScalosMenuTree *mTree, struct NewMenu **nm, 
 static struct PopupMenu *GeneratePopupMenu(struct ScalosMenuChunk *MenuChunk, struct ScalosMenuTree *AdjustedMenu, LONG Level);
 static struct PopupMenu *BuildPopupMenu(struct ScalosMenuTree *mTree, LONG Level);
 static struct PopupMenu *MakePopupMenuItem(struct ScalosMenuTree *mTree);
-#if !defined(__AROS__) || __WORDSIZE!=64
-#define __alias __attribute((__may_alias__))
-#else
-#define __alias
-#endif
-static void AddAddresses(struct ScalosMenuTreeDisk *srcTree __alias, struct ScalosMenuTree *MenuTree __alias, const UBYTE *srcBase, const UBYTE *treeBase
-#if defined(__AROS__) && __WORDSIZE==64
-    ,IPTR *end
-#endif
-);
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *srcBase, const UBYTE *treeBase, IPTR *end);
 static void ParseMenuItem(struct MenuItem *theItem, ULONG *MenuNumber, ULONG MenuNumIncrement);
 static void MenuFunc_ViewByIcon(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
 static void MenuFunc_ViewByText(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
@@ -545,10 +536,8 @@ ULONG ReadMenuPrefs(void)
 	ULONG Error;
 	BOOL iffOpened = FALSE;
 	struct ScalosMenuChunk *MenuChunk = NULL;
-#if defined(__AROS__) && __WORDSIZE==64
 	struct ScalosMenuTree *AdjustedMenu = NULL;
 	IPTR end;
-#endif
 
 	d1(KPrintF("\n" "%s/%s/%ld: Start\n", __FILE__, __FUNC__, __LINE__));
 
@@ -621,7 +610,6 @@ ULONG ReadMenuPrefs(void)
 			MenuChunk->smch_MenuID = SCA_BE2WORD(MenuChunk->smch_MenuID);
 			MenuChunk->smch_Entries = SCA_BE2WORD(MenuChunk->smch_Entries);
 
-#if defined(__AROS__) && __WORDSIZE==64
 			// sizeof in-memory = 48 on 64-bit, sizeof on-disk = 21
 			AdjustedMenu = ScalosAlloc((cn->cn_Size << 2));
 			if (NULL == AdjustedMenu)
@@ -632,14 +620,7 @@ ULONG ReadMenuPrefs(void)
 				break;
 				}
 			end = (IPTR)AdjustedMenu;
-#else
-#define AdjustedMenu  (MenuChunk->smch_Menu)
-#endif
-			AddAddresses(MenuChunk->smch_Menu, AdjustedMenu, (UBYTE *) MenuChunk, (UBYTE *) AdjustedMenu
-#if defined(__AROS__) && __WORDSIZE==64
-				, &end
-#endif
-				);
+			AddAddresses(MenuChunk->smch_Menu, AdjustedMenu, (UBYTE *) MenuChunk, (UBYTE *) AdjustedMenu, &end);
 
 			switch (MenuChunk->smch_MenuID)
 				{
@@ -768,13 +749,11 @@ ULONG ReadMenuPrefs(void)
 			if (RETURN_OK != Error)
 				break;
 
-#if defined(__AROS__) && __WORDSIZE==64
 			if (AdjustedMenu)
 				{
 				ScalosFree(AdjustedMenu);
 				AdjustedMenu = NULL;
 				}
-#endif
 			if (MenuChunk)
 				{
 				ScalosFree(MenuChunk);
@@ -784,10 +763,8 @@ ULONG ReadMenuPrefs(void)
 		
 		} while (0);
 
-#if defined(__AROS__) && __WORDSIZE==64
 	if (AdjustedMenu)
 		ScalosFree(AdjustedMenu);
-#endif
 	if (MenuChunk)
 		ScalosFree(MenuChunk);
 	if (iffHandle)
@@ -803,10 +780,6 @@ ULONG ReadMenuPrefs(void)
 
 	return Error;
 }
-
-#if !defined(__AROS__) || __WORDSIZE != 64
-#undef AdjustedMenu
-#endif
 
 void FreeMenuPrefs(void)
 {
@@ -1217,27 +1190,21 @@ static struct PopupMenu *MakePopupMenuItem(struct ScalosMenuTree *mTree)
 	return pm;
 }
 
-static void AddAddresses(struct ScalosMenuTreeDisk *srcTree __alias, struct ScalosMenuTree *MenuTree __alias, const UBYTE *srcBase, const UBYTE *treeBase
-#if defined(__AROS__) && __WORDSIZE==64
-	, IPTR *end
-#endif
-)
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *srcBase, const UBYTE *treeBase, IPTR *end)
 {
 	while (MenuTree)
 		{
-#if defined(__AROS__) && __WORDSIZE == 64
 		*end = (IPTR)*end + sizeof(struct ScalosMenuTree);
 		MenuTree->mtre_type = srcTree->mtre_type;
 		MenuTree->mtre_flags = srcTree->mtre_flags;
 		MenuTree->mtre_Next = NULL;
 		MenuTree->mtre_tree = NULL;
-#endif
+
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
-#if defined(__AROS__) && __WORDSIZE == 64
 			MenuTree->MenuCombo.MenuCommand.mcom_flags = srcTree->MenuCombo.MenuCommand.mcom_flags;
 			MenuTree->MenuCombo.MenuCommand.mcom_type = srcTree->MenuCombo.MenuCommand.mcom_type;
-#endif
+
 			MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_BE_ADDR(srcTree->MenuCombo.MenuCommand.mcom_name);
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				MenuTree->MenuCombo.MenuCommand.mcom_name += (IPTR) srcBase;
@@ -1245,10 +1212,9 @@ static void AddAddresses(struct ScalosMenuTreeDisk *srcTree __alias, struct Scal
 			}
 		else
 			{
-#if defined(__AROS__) && __WORDSIZE == 64
 			MenuTree->MenuCombo.MenuTree.mtre_hotkey[0] = srcTree->MenuCombo.MenuTree.mtre_hotkey[0];
 			MenuTree->MenuCombo.MenuTree.mtre_hotkey[1] = srcTree->MenuCombo.MenuTree.mtre_hotkey[1];
-#endif
+
 			MenuTree->MenuCombo.MenuTree.mtre_name = SCA_BE_ADDR(srcTree->MenuCombo.MenuTree.mtre_name);
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				MenuTree->MenuCombo.MenuTree.mtre_name += (IPTR) srcBase;
@@ -1274,36 +1240,17 @@ static void AddAddresses(struct ScalosMenuTreeDisk *srcTree __alias, struct Scal
 		if (srcTree->mtre_tree)
 			{
 			struct ScalosMenuTreeDisk *src;
-#if defined(__AROS__) && __WORDSIZE == 64
 #define AdjustedMenu (MenuTree->mtre_tree)
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (*end);
 			src = (struct ScalosMenuTreeDisk *)((IPTR)srcBase + (IPTR)srcTree->mtre_tree);
-#else
-			srcTree->mtre_tree = (struct ScalosMenuTree *)((IPTR)srcBase + (IPTR)srcTree->mtre_tree);
-			src = srcTree->mtre_tree;
-#define AdjustedMenu    src
-#endif
-			AddAddresses(src, AdjustedMenu, srcBase, treeBase
-#if defined(__AROS__) && __WORDSIZE == 64
-#undef AdjustedMenu
-				, end
-#endif
-				);
+			AddAddresses(src, AdjustedMenu, srcBase, treeBase, end);
 			}
 		srcTree->mtre_Next = (PTR32)SCA_BE2LONG((IPTR)srcTree->mtre_Next);
 		if (srcTree->mtre_Next)
 			{
-#if defined(__AROS__) && __WORDSIZE == 64
 			MenuTree->mtre_Next = (struct ScalosMenuTree *) (*end);
-#else
-			srcTree->mtre_Next = (struct ScalosMenuTree *)((IPTR)srcTree->mtre_Next + (IPTR)srcBase);
-#endif
 			}
-#if defined(__AROS__) && __WORDSIZE == 64
 		srcTree = (struct ScalosMenuTreeDisk *)((IPTR)srcBase + (IPTR)srcTree->mtre_Next);
-#else
-		srcTree = srcTree->mtre_Next;
-#endif
 		MenuTree = (struct ScalosMenuTree *)MenuTree->mtre_Next;
 		}
 }
