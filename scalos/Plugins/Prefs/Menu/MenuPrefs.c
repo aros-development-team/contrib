@@ -1644,7 +1644,7 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 		d1(KPrintF("%s/%s/%ld: llist_name=<%s>  mtre_type=%ld\n", __FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->mtre_type));
 
 		d1(KPrintF("%s/%s/%ld: mtre_iconnames=%08lx\n", __FILE__, __FUNC__, __LINE__, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames));
-		if ((mie->mie_TreeEntry->mtre_flags & MTREFLGF_IconNames) &&
+		if ((mie) && (mie->mie_TreeEntry->mtre_flags & MTREFLGF_IconNames) &&
 			mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames)
 			{
 			stccpy(mle->llist_UnselectedIconName, (const char *)mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames,
@@ -1674,30 +1674,34 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 
 		ltcm->UserData = mle;
 		ltcm->Name = mle->llist_name;
-		mle->llist_EntryType = mie->mie_TreeEntry->mtre_type;
-		mle->llist_Flags = mie->mie_MenuFlags;
 
-		d1(kprintf("%s/%s/%ld: EntryName=<%s> mie_MenuFlags=%02lx  EntryType=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, ltcm->Name, mie->mie_MenuFlags, mie->mie_TreeEntry->mtre_type));
-
-		d1(kprintf("%s/%s/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey));
-
-		stccpy(mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
-
-		if (SCAMENUTYPE_Command == mle->llist_EntryType)
+		if (mie)
 			{
-			d1(kprintf("%s/%s/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
-				__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
+			mle->llist_EntryType = mie->mie_TreeEntry->mtre_type;
+			mle->llist_Flags = mie->mie_MenuFlags;
 
-			stccpy(mle->llist_name,
-				mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name ? mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name : (STRPTR) "",
-				sizeof(mle->llist_name));
+			d1(kprintf("%s/%s/%ld: EntryName=<%s> mie_MenuFlags=%02lx  EntryType=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, ltcm->Name, mie->mie_MenuFlags, mie->mie_TreeEntry->mtre_type));
 
-			mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
-			mle->llist_CommandType = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_type;
-			mle->llist_CommandFlags = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_flags;
-			mle->llist_Stack = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_stack;
+			d1(kprintf("%s/%s/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey));
+
+			stccpy(mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
+
+			if (SCAMENUTYPE_Command == mle->llist_EntryType)
+				{
+				d1(kprintf("%s/%s/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
+
+				stccpy(mle->llist_name,
+					mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name ? mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name : (STRPTR) "",
+					sizeof(mle->llist_name));
+
+				mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
+				mle->llist_CommandType = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_type;
+				mle->llist_CommandFlags = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_flags;
+				mle->llist_Stack = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_stack;
+				}
 			}
 		}
 
