@@ -299,7 +299,7 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 	const struct MUI_NListtree_TreeNode *TreeNode,
 	struct ScalosMenuTree **MenuSpace, STRPTR *StringSpace,
 	struct ScalosMenuTree **Parent);
-static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *baseAddr);
+static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *dstBase, IPTR *nextFree);
 static LONG SaveIcon(struct MenuPrefsInst *inst, CONST_STRPTR IconName);
 static void ClearMenuList(struct MenuPrefsInst *inst);
 static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace);
@@ -3122,6 +3122,7 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 {
 	LONG Result;
 	struct ScalosMenuChunk *mChunk = NULL;
+	struct ScalosMenuTree *MenuTreeSpace = NULL;
 
 	do	{
 		const struct MUI_NListtree_TreeNode *SubNode;
@@ -3129,7 +3130,8 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 		STRPTR StringSpace;
 		UWORD nodeCount;
 		size_t Length;
-		struct ScalosMenuTree *MenuTreeSpace;
+		struct ScalosMenuTree *MenuSpace;
+		IPTR nextFree;
 
 		SubNode = (const struct MUI_NListtree_TreeNode *) DoMethod(TreeNode->mpn_Listtree,
 			MUIM_NListtree_GetEntry, TreeNode->mpn_ListNode,
@@ -3143,10 +3145,17 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 
 		nodeCount = CountMenuEntries(inst, TreeNode->mpn_Listtree, SubNode, &StringSpaceSize);
 
-		Length = sizeof(struct ScalosMenuChunk) + (nodeCount * sizeof(struct ScalosMenuChunk)) + StringSpaceSize;
+		Length = sizeof(struct ScalosMenuChunk) + (nodeCount * sizeof(struct ScalosMenuTreeDisk)) + StringSpaceSize;
 
 		mChunk = calloc(1, Length);
 		if (NULL == mChunk)
+			{
+			Result = ERROR_NO_FREE_STORE;
+			break;
+			}
+
+		MenuTreeSpace = calloc(1, nodeCount * sizeof(struct ScalosMenuTree));
+		if (NULL == MenuTreeSpace)
 			{
 			Result = ERROR_NO_FREE_STORE;
 			break;
@@ -3162,13 +3171,14 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 		d1(kprintf("%s/%s/%ld: ChunkID=%ld  Count=%ld  StringSpaceSize=%lu\n", \
 			__FILE__, __FUNC__, __LINE__, mChunk->smch_MenuID, mChunk->smch_Entries, StringSpaceSize));
 
-		MenuTreeSpace = mChunk->smch_Menu;
+		MenuSpace = MenuTreeSpace;
 
-		Result = BuildMenuTree(inst, TreeNode->mpn_Listtree, SubNode, &MenuTreeSpace, &StringSpace, NULL);
+		Result = BuildMenuTree(inst, TreeNode->mpn_Listtree, SubNode, &MenuSpace, &StringSpace, NULL);
 		if (RETURN_OK != Result)
 			break;
 
-		RemoveAddresses(mChunk->smch_Menu, (UBYTE *) mChunk);
+		nextFree = (IPTR)mChunk->smch_Menu;
+		RemoveAddresses(MenuTreeSpace, (UBYTE *) mChunk, &nextFree);
 
 		Result = PushChunk(iff, 0, ID_MENU, IFFSIZE_UNKNOWN);
 		if (RETURN_OK != Result)
@@ -3187,6 +3197,9 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 
 	if (mChunk)
 		free(mChunk);
+
+	if (MenuTreeSpace)
+		free(MenuTreeSpace);
 
 	return Result;
 }
@@ -3244,11 +3257,7 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 		struct ScalosMenuTree *mTree = *(struct ScalosMenuTree **) MenuSpace;
 		const struct MUI_NListtree_TreeNode *SubNode;
 		const struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
-#if !defined(__AROS__) || __WORDSIZE != 64
 		STRPTR MenuName;
-#else
-		STRPTR MenuName __unused;
-#endif
 
 		d1(KPrintF("%s/%s/%ld: TreeNode=%08lx  <%s>  mTree=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, TreeNode, TreeNode->tn_Name ? TreeNode->tn_Name : (STRPTR) "===BAR===", mTree));
@@ -3256,8 +3265,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 		if (Parent)
 			*Parent = mTree;
 
-		mTree->mtre_Next = 0;
-		mTree->mtre_tree = 0;
+		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->mtre_type = mle->llist_EntryType;
 		mTree->mtre_flags = mle->llist_Flags;
@@ -3279,31 +3288,24 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 			mTree->MenuCombo.MenuCommand.mcom_type = mle->llist_CommandType;
 			mTree->MenuCombo.MenuCommand.mcom_stack = mle->llist_Stack;
 			mTree->MenuCombo.MenuCommand.mcom_pri = mle->llist_Priority;
-#if !defined(__AROS__) || __WORDSIZE != 64
 			mTree->MenuCombo.MenuCommand.mcom_name = MenuName;
-#else
-//FIXME!!
-#endif
 			}
 		else
 			{
 			if (strlen(mle->llist_UnselectedIconName) > 0
 				|| strlen(mle->llist_SelectedIconName) > 0)
 				{
-				STRPTR IconName __unused;
+				STRPTR IconName;
 
 				IconName = AddMenuString(mle->llist_UnselectedIconName, StringSpace);
 				AddMenuString(mle->llist_SelectedIconName, StringSpace);
-#if !defined(__AROS__) || __WORDSIZE != 64
 				mTree->MenuCombo.MenuTree.mtre_iconnames = IconName;
-#else
-//FIXME!!
-#endif
+
 				mTree->mtre_flags |= MTREFLGF_IconNames;
 				}
 			else
 				{
-				mTree->MenuCombo.MenuTree.mtre_iconnames = 0;
+				mTree->MenuCombo.MenuTree.mtre_iconnames = NULL;
 				mTree->mtre_flags &= ~MTREFLGF_IconNames;
 				}
 
@@ -3313,11 +3315,7 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 
 			stccpy(mTree->MenuCombo.MenuTree.mtre_hotkey, mle->llist_HotKey, 
 				sizeof(mTree->MenuCombo.MenuTree.mtre_hotkey));
-#if !defined(__AROS__) || __WORDSIZE != 64
 			mTree->MenuCombo.MenuTree.mtre_name = MenuName;
-#else
-//FIXME!!
-#endif
 			}
 
 		SubNode = (const struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
@@ -3326,12 +3324,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 
 		if (SubNode)
 			{
-#if !defined(__AROS__) || __WORDSIZE != 64
-			Result = BuildMenuTree(inst, ListTree, SubNode, MenuSpace, StringSpace, (struct ScalosMenuTree **)&mTree->mtre_tree);
+			Result = BuildMenuTree(inst, ListTree, SubNode, MenuSpace, StringSpace, &mTree->mtre_tree);
 			if (RETURN_OK != Result)
-#else
-//FIXME!!
-#endif
 				break;
 			}
 
@@ -3339,12 +3333,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 			MUIM_NListtree_GetEntry, TreeNode, MUIV_NListtree_GetEntry_Position_Next,
 			MUIV_NListtree_GetEntry_Flag_SameLevel);
 
-#if !defined(__AROS__) || __WORDSIZE != 64
 		if (TreeNode)
-			Parent = (struct ScalosMenuTree **)&mTree->mtre_Next;
-#else
-//FIXME!!
-#endif
+			Parent = &mTree->mtre_Next;
 		}
 
 	return Result;
@@ -3362,30 +3352,42 @@ static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace)
 }
 
 
-static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
+static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *dstBase, IPTR *nextFree)
 {
 	while (MenuTree)
 		{
-		struct ScalosMenuTree *MenuTreeNext = (APTR)((IPTR)BaseAddr + (IPTR)MenuTree->mtre_Next);
+		struct ScalosMenuTree *MenuTreeNext = MenuTree->mtre_Next;
+		struct ScalosMenuTreeDisk *dstTree = (struct ScalosMenuTreeDisk *)(*nextFree);
+		*nextFree = (*nextFree) + sizeof(struct ScalosMenuTreeDisk);
+		dstTree->mtre_type = MenuTree->mtre_type;
+		dstTree->mtre_flags = MenuTree->mtre_flags;
+		dstTree->mtre_Next = 0;
+		dstTree->mtre_tree = 0;
 
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
+			dstTree->MenuCombo.MenuCommand.mcom_flags = MenuTree->MenuCombo.MenuCommand.mcom_flags;
+			dstTree->MenuCombo.MenuCommand.mcom_type = MenuTree->MenuCombo.MenuCommand.mcom_type;
+
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				{
-				MenuTree->MenuCombo.MenuCommand.mcom_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuCommand.mcom_name - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuCommand.mcom_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuCommand.mcom_name - (IPTR)dstBase);
 				}
-			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
+			dstTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
+			dstTree->MenuCombo.MenuTree.mtre_hotkey[0] = MenuTree->MenuCombo.MenuTree.mtre_hotkey[0];
+			dstTree->MenuCombo.MenuTree.mtre_hotkey[1] = MenuTree->MenuCombo.MenuTree.mtre_hotkey[1];
+
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_name - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuTree.mtre_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_name - (IPTR)dstBase);
 				}
 
 			if ((MenuTree->mtre_flags & MTREFLGF_IconNames) && MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_iconnames = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_iconnames - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuTree.mtre_iconnames = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_iconnames - (IPTR)dstBase);
 				}
 
 			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
@@ -3394,16 +3396,15 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			}
 		if (MenuTree->mtre_tree)
 			{
-			RemoveAddresses((struct ScalosMenuTree *)((IPTR)BaseAddr + (IPTR)MenuTree->mtre_tree), BaseAddr);
-			MenuTree->mtre_tree = (PTR32) (((IPTR) MenuTree->mtre_tree) - (IPTR) BaseAddr);
-			MenuTree->mtre_tree = (PTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_tree);
+			dstTree->mtre_tree = (PTR32) ((*nextFree) - (IPTR) dstBase);
+			dstTree->mtre_tree = (PTR32) SCA_LONG2BE((IPTR)dstTree->mtre_tree);
+			RemoveAddresses(MenuTree->mtre_tree, dstBase, nextFree);
 			}
 		if (MenuTree->mtre_Next)
 			{
-			MenuTree->mtre_Next = (PTR32) (((IPTR) MenuTree->mtre_Next) - (IPTR) BaseAddr);
-			MenuTree->mtre_Next = (PTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_Next);
+			dstTree->mtre_Next = (PTR32) ((*nextFree) - (IPTR) dstBase);
+			dstTree->mtre_Next = (PTR32) SCA_LONG2BE((IPTR)dstTree->mtre_Next);
 			}
-
 		MenuTree = MenuTreeNext;
 		}
 }
