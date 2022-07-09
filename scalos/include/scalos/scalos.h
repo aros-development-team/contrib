@@ -437,9 +437,9 @@ typedef ULONG (*RUNPROCFUNC)(APTR, struct SM_RunProcess *);
 
 struct ScalosMessage
 	{
-	STACKED struct Message		sm_Message;
-	STACKED ULONG			sm_Signature;		// ID_IMSG
-	STACKED ULONG			sm_MessageType;		// SCA_AllocMessage() type
+	struct Message		sm_Message;
+	ULONG			sm_Signature;		// ID_IMSG
+	ULONG			sm_MessageType;		// SCA_AllocMessage() type
 	};
 
 struct UpdateIconData
@@ -748,11 +748,11 @@ struct SM_StartChildProcess
 struct SM_RootEvent
 	{
 	struct ScalosMessage    ScalosMessage;
-	STACKED ULONG 		smre_MethodID;		// the MethodID of the event
-	STACKED APTR 		smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
-	STACKED Class 		*smre_Class;		// Class variable of the method call
-	STACKED Object 		*smre_Object;		// Object variable of the method call
-	STACKED Msg 		smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
+	ULONG 		smre_MethodID;		// the MethodID of the event
+	APTR 		smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
+	Class 		*smre_Class;		// Class variable of the method call
+	Object 		*smre_Object;		// Object variable of the method call
+	Msg 		smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
 	};
 
 // ------------------------------------------------------------------
