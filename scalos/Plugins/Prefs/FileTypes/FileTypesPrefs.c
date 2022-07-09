@@ -5977,10 +5977,7 @@ STRPTR GetAttributeValueString(const struct FtAttribute *fta, char *Buffer, size
 		case ATTRTYPE_CommandStacksize:
 		case ATTRTYPE_CommandPriority:
 		case ATTRTYPE_SpaceSize:
-                        {
-                            IPTR *sizePtr = (IPTR *)fta->fta_Data;
-                            sprintf(Buffer, "%ld", *sizePtr);
-                        }
+			sprintf(Buffer, "%ld", *((ULONG *) fta->fta_Data));
 			break;
 
 		case ATTRTYPE_CommandWbArgs:
