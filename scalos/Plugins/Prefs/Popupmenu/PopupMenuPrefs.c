@@ -1890,8 +1890,6 @@ static SAVEDS(void) INTERRUPT FrameTypeSelectHookFunc(struct Hook *hook, Object 
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
 
-	set(o, MUIA_Selected, TRUE);
-
 	// turn off selected state for all frame type buttons except <o>
 	if (o != inst->mpb_Objects[OBJNDX_Button_FrameThin])
 		set(inst->mpb_Objects[OBJNDX_Button_FrameThin], MUIA_Selected, FALSE);
@@ -1912,8 +1910,6 @@ static SAVEDS(void) INTERRUPT FrameTypeSelectHookFunc(struct Hook *hook, Object 
 static SAVEDS(void) INTERRUPT SelFrameTypeSelectHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
-
-	set(o, MUIA_Selected, TRUE);
 
 	// turn off selected state for all selected frame type buttons except <o>
 	if (o != inst->mpb_Objects[OBJNDX_Button_Raised])
