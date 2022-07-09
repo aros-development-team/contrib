@@ -5957,21 +5957,21 @@ STRPTR GetAttributeValueString(const struct FtAttribute *fta, char *Buffer, size
 			break;
 
 		case ATTRTYPE_GroupOrientation:
-                        {
-                            enum TTLayoutMode *goEnum = (enum TTLayoutMode *)fta->fta_Data;
-                            switch (*goEnum)
-                                    {
-                            case TTL_Horizontal:
-                                    stccpy(Buffer, "horizontal", BuffLen);
-                                    break;
-                            case TTL_Vertical:
-                                    stccpy(Buffer, "vertical", BuffLen);
-                                    break;
-                            default:
-                                    sprintf(Buffer, "??unknown_Orientation??:%d", *goEnum);
-                                    break;
-                                    }
-                        }
+			{
+			enum TTLayoutMode *goEnum = (enum TTLayoutMode *)fta->fta_Data;
+			switch (*goEnum)
+				{
+				case TTL_Horizontal:
+					stccpy(Buffer, "horizontal", BuffLen);
+					break;
+				case TTL_Vertical:
+					stccpy(Buffer, "vertical", BuffLen);
+					break;
+				default:
+					sprintf(Buffer, "??unknown_Orientation??:%d", *goEnum);
+					break;
+				}
+			}
 			break;
 
 		case ATTRTYPE_CommandStacksize:
