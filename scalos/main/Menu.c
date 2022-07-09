@@ -1240,10 +1240,9 @@ static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTr
 		if (srcTree->mtre_tree)
 			{
 			struct ScalosMenuTreeDisk *src;
-#define AdjustedMenu (MenuTree->mtre_tree)
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (*end);
 			src = (struct ScalosMenuTreeDisk *)((IPTR)srcBase + (IPTR)srcTree->mtre_tree);
-			AddAddresses(src, AdjustedMenu, srcBase, treeBase, end);
+			AddAddresses(src, MenuTree->mtre_tree, srcBase, treeBase, end);
 			}
 		srcTree->mtre_Next = (PTR32)SCA_BE2LONG((IPTR)srcTree->mtre_Next);
 		if (srcTree->mtre_Next)
