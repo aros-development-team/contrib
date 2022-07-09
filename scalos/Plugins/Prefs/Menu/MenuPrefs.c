@@ -4951,6 +4951,17 @@ static struct MUI_NListtree_TreeNode *CopyMenuEntry(struct MenuPrefsInst *inst,
 		// Clone entry
 		*mleDest = *mleSrc;
 
+		if (mleDest->llist_UnSelImageObj)
+			{
+			mleDest->llist_UnSelImageObj = DataTypesImageObject,
+				MUIA_ScaDtpic_Name,  (IPTR) mleDest->llist_UnselectedIconName,
+				End;
+
+			d1(KPrintF("%s/%s/%ld: llist_UnSelImageObj=%08lx\n", __FILE__, __FUNC__, __LINE__, mleDest->llist_UnSelImageObj));
+
+			DoMethod(ListTreeDest, MUIM_NList_UseImage, mleDest->llist_UnSelImageObj, mleDest->llist_UnSelImageIndex, 0);
+			}
+
 		SubNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTreeSrc,
 				MUIM_NListtree_GetEntry,
 				Src,
