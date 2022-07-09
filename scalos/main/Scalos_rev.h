@@ -9,7 +9,7 @@
 #include <Year.h>
 
 #define VERSION			41
-#define REVISION		8
+#define REVISION		9
 #define	VERS_REV_STR            STR(VERSION) "." STR(REVISION)
 #define	RELEASE			"1.9"
 #define	BUILDNR			STR(SVN_VERSION)

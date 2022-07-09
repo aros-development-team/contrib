@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 
 	APP_Main = ApplicationObject,
 		MUIA_Application_Title,		(IPTR)GetLocString(MSGID_TITLENAME),
-		MUIA_Application_Version,	(IPTR)"$VER: Scalos FileTypes Prefs V40.24 (" __DATE__ ")" COMPILER_STRING,
+		MUIA_Application_Version,	(IPTR)"$VER: Scalos FileTypes Prefs V40.25 (" __DATE__ ")" COMPILER_STRING,
 		MUIA_Application_Copyright,	(IPTR)"The Scalos Team, 2000" CURRENTYEAR,
 		MUIA_Application_Author,	(IPTR)"The Scalos Team",
 		MUIA_Application_Description,	(IPTR)"Scalos FileTypes preferences editor",

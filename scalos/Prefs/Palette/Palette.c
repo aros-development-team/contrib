@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 
 	APP_Main = ApplicationObject,
 		MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
-		MUIA_Application_Version,	"$VER: Scalos Palette 40.11 (" __DATE__ ")" COMPILER_STRING,
+		MUIA_Application_Version,	"$VER: Scalos Palette 40.12 (" __DATE__ ")" COMPILER_STRING,
 		MUIA_Application_Copyright,	"The Scalos Team, 2000" CURRENTYEAR,
 		MUIA_Application_Author,	"The Scalos Team",
 		MUIA_Application_Description,	"Scalos Palette preferences editor",
