@@ -567,7 +567,7 @@ static ULONG mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 
 DISPATCHER(MUI_DataTypesMCC)
 {
-	ULONG Result;
+	IPTR Result;
 
 	switch (msg->MethodID)
 		{

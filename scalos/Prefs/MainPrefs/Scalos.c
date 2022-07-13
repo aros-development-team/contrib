@@ -2993,7 +2993,7 @@ DISPATCHER_END
 
 DISPATCHER(ThumbnailLifetimeSlider)
 {
-	ULONG Result;
+	IPTR Result;
 
 	switch (msg->MethodID)
 		{

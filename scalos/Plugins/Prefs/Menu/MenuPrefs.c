@@ -635,11 +635,11 @@ BOOL closePlugin(struct PluginBase *PluginBase)
 }
 
 
-LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
+LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5);
 {
-	ULONG result;
+	IPTR result;
 
 	d1(kprintf("%s/%s/%ld: which=%ld\n", __FILE__, __FUNC__, __LINE__, which));
 
@@ -5192,7 +5192,7 @@ static void SwitchPopButton(struct MenuPrefsInst *inst, UBYTE CommandType)
 DISPATCHER(myNListTree)
 {
 	struct MenuPrefsInst *inst = NULL;
-	ULONG Result;
+	IPTR Result;
 
 	d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 

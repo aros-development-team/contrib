@@ -711,7 +711,7 @@ void DisplayScreenTitleError(struct internalScaWindowTask *iwt, ULONG MsgId);
 BOOL ExistsAssign(CONST_STRPTR AssignName);
 LONG ScalosTagListInit(struct ScalosTagList *tagList);
 void ScalosTagListCleanup(struct ScalosTagList *tagList);
-LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, ULONG data);
+LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, IPTR data);
 void ScalosTagListEnd(struct ScalosTagList *tagList);
 struct TagItem *ScalosVTagList(ULONG FirstTag, va_list args);
 ULONG TranslateViewModesFromIcon(ULONG IconViewMode);

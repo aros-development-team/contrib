@@ -264,7 +264,7 @@ static ULONG mSet(struct IClass *cl,Object *obj, struct opSet *ops)
 
 DISPATCHER(FontSampleMCC)
 {
-	ULONG Result;
+	IPTR Result;
 
 	d1(KPrintF("%s/%ld: START  MethodID=%08lx\n", __FUNC__, __LINE__, msg->MethodID));
 

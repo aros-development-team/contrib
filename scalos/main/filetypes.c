@@ -642,7 +642,7 @@ static IPTR FtString(struct FileTypeDef *ftd, IPTR *ArgArray)
 	enum TTVertAlign vAlign = TTVERTALIGN_Top;
 	ULONG Style = FS_NORMAL;
 	ULONG TextPen = iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN];
-	ULONG TitleTag, TitleData;
+	ULONG TitleTag; IPTR TitleData;
 	char FontName[128];
 	char *TTFontDescriptor = NULL;
 	struct TextAttr ftTextAttr;

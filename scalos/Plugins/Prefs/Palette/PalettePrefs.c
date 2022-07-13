@@ -489,7 +489,7 @@ LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5);
 {
-	ULONG result;
+	IPTR result;
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: which=%ld\n", __LINE__, which));
 

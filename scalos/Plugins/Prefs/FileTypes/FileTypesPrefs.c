@@ -1651,11 +1651,11 @@ BOOL closePlugin(struct PluginBase *PluginBase)
 }
 
 
-LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
+LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5)
 {
-	ULONG result;
+	IPTR result;
 
 	(void) PluginBase;
 
@@ -1692,7 +1692,7 @@ DISPATCHER(FileTypesPrefs)
 {
 	struct FileTypesPrefsInst *inst;
 	ULONG n;
-	ULONG result = 0;
+	IPTR result = 0;
 
 	d1(kprintf("%s/%ld:  START obj=%08lx\n", __FUNC__, __LINE__, obj));
 
