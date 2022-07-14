@@ -3078,10 +3078,10 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 
 			if (SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 				{
-				StringLength += 1 + strlen(cgy->cgy_NormalImage);
-				StringLength += 1 + strlen(cgy->cgy_SelectedImage);
-				StringLength += 1 + strlen(cgy->cgy_DisabledImage);
-				StringLength += 1 + strlen(cgy->cgy_HelpText);
+				StringLength += 1 + (cgy->cgy_NormalImage ? strlen(cgy->cgy_NormalImage) : 0);
+				StringLength += 1 + (cgy->cgy_SelectedImage ? strlen(cgy->cgy_SelectedImage) : 0);
+				StringLength += 1 + (cgy->cgy_DisabledImage ? strlen(cgy->cgy_DisabledImage) : 0);
+				StringLength += 1 + (cgy->cgy_HelpText ? strlen(cgy->cgy_HelpText) : 0);
 				}
 			}
 
@@ -3112,20 +3112,20 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 			if (SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 				{
 				sgy.sgy_NormalImageIndex = SCA_LONG2BE(StringIndex);
-				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_NormalImage);
-				StringIndex += 1 + strlen(cgy->cgy_NormalImage);
+				if (cgy->cgy_NormalImage) strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_NormalImage);
+				StringIndex += 1 + (cgy->cgy_NormalImage ? strlen(cgy->cgy_NormalImage) : 0);
 
 				sgy.sgy_SelectedImageIndex = SCA_LONG2BE(StringIndex);
-				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_SelectedImage);
-				StringIndex += 1 + strlen(cgy->cgy_SelectedImage);
+				if (cgy->cgy_SelectedImage) strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_SelectedImage);
+				StringIndex += 1 + (cgy->cgy_SelectedImage ? strlen(cgy->cgy_SelectedImage) : 0);
 
 				sgy.sgy_DisabledImageIndex = SCA_LONG2BE(StringIndex);
-				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_DisabledImage);
-				StringIndex += 1 + strlen(cgy->cgy_DisabledImage);
+				if (cgy->cgy_DisabledImage) strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_DisabledImage);
+				StringIndex += 1 + (cgy->cgy_DisabledImage ? strlen(cgy->cgy_DisabledImage) : 0);
 
 				sgy.sgy_HelpTextIndex = SCA_LONG2BE(StringIndex);
-				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_HelpText);
-				StringIndex += 1 + strlen(cgy->cgy_HelpText);
+				if (cgy->cgy_HelpText) strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_HelpText);
+				StringIndex += 1 + (cgy->cgy_HelpText ? strlen(cgy->cgy_HelpText) : 0);
 				}
 
 			d1(KPrintF("%s/%s/%ld: Entry=%ld  sgy_GadgetType=%ld\n", __FILE__, __FUNC__, __LINE__, Entry, sgy.sgy_GadgetType));
