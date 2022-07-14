@@ -1238,7 +1238,11 @@ struct ScalosNodeList
 
 // auxiliary macro to combine the WORD x/y values into one longword
 // for useage with DoMethod(...)
+#if defined __AROS__
+#define	SCCM_ADDICON_MAKEXY(x,y)		(IPTR)(x), (IPTR)(y)
+#else
 #define	SCCM_ADDICON_MAKEXY(x,y)		((((UWORD) (x)) << 16) | ((UWORD) (y)))
+#endif
 
 // ---------------------------------------------------------------------------
 
