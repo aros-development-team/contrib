@@ -1871,7 +1871,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		SetAttrs(app->Obj[GROUP_TTTEXTWINDOWFONT], 
 			MUIA_Disabled, FALSE,
 			TAG_END);
-		SetAttrs(app->Obj[GROUP_TEXTWINDOW_TTTEXTWINDOWFONT],
+		SetAttrs(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE],
 			MUIA_Disabled, FALSE,
 			TAG_END);
 		}
@@ -7310,7 +7310,18 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
                                                 Child, (IPTR)(HGroup,
                                                         Child, (IPTR)HVSpace,
                                                         Child, (IPTR)Label1(GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE)),
-                                                        Child, (IPTR)(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP)),
+                                                        Child, (IPTR)(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = ImageObject,
+                                                                ImageButtonFrame,
+                                                                MUIA_Disabled, TRUE,
+                                                                MUIA_InputMode, MUIV_InputMode_Toggle,
+                                                                MUIA_Image_Spec, MUII_CheckMark,
+                                                                MUIA_Image_FreeVert, TRUE,
+                                                                MUIA_Selected, FALSE,
+                                                                MUIA_Background, MUII_ButtonBack,
+                                                                MUIA_ShowSelState, FALSE,
+                                                                MUIA_CycleChain, TRUE,
+                                                                MUIA_ShortHelp, (IPTR)GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
+                                                        End),
                                                         MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
                                                 End), //HGroup
 
