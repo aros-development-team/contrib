@@ -1585,7 +1585,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 	{ STRPTR xxx = strdup("TestTestTest"); if (xxx) free(xxx); }
 
-#if defined(__MORPHOS__)
+#if defined(__MORPHOS__) || defined (__AROS__)
 	set(app->Obj[GROUP2_DEFAULTSTACKSIZE], MUIA_ShowMe, FALSE);
 	set(app->Obj[GROUP_DEFAULTSTACKSIZE], MUIA_Disabled, FALSE);
 #else /* __MORPHOS__ */
