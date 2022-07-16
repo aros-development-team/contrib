@@ -437,6 +437,7 @@ BOOL TempName(STRPTR Buffer, size_t MaxLen)
 {
 	T_TIMEVAL tv;
 	char TimeBuffer[80];
+	static UBYTE cnt;
 
 	GetSysTime(&tv);
 
@@ -445,7 +446,8 @@ BOOL TempName(STRPTR Buffer, size_t MaxLen)
 
 	stccpy(Buffer, CurrentPrefs.pref_ImageCacheDir, MaxLen);
 
-	snprintf(TimeBuffer, sizeof(TimeBuffer), "Scalos%08lx%08lx", (unsigned long) tv.tv_secs, (unsigned long) tv.tv_micro);
+	cnt++;
+	snprintf(TimeBuffer, sizeof(TimeBuffer), "Scalos%08x%08x%02x", (unsigned int) tv.tv_secs, (unsigned int) tv.tv_micro, (unsigned int) cnt);
 
 	return AddPart(Buffer, TimeBuffer, MaxLen);
 }
