@@ -1442,7 +1442,6 @@ BOOL ReadScalosPrefs(void)
 
 		if (ps)
 			{
-			ps->ps_Size = SCA_BE2WORD(ps->ps_Size);
 			SetTextAttr(&NewPrefs->pref_TextModeTextAttr, ps);
 			d1(KPrintF("%s/%s/%ld: textfont=<%s>  YSize=%ld\n", __FILE__, __FUNC__, __LINE__, \
 				NewPrefs->pref_TextModeTextAttr.sta_TextAttr.ta_Name, NewPrefs->pref_TextModeTextAttr.sta_TextAttr.ta_YSize));
