@@ -716,6 +716,8 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 					pck = (const struct PrefsChunk *) (((UBYTE *) pck) + len);
 					}
 				}
+			MyFreeVecPooled(PreferencesBase, PrefsChunk);
+			PrefsChunk = NULL;
 			} while (1);
 		}
 
