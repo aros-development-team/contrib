@@ -96,6 +96,22 @@ struct WBCFChunk
 
 #define	WBCF_FLAGF_Backdrop	0x00010000
 
+struct FileFontPrefs
+	{
+	LONG	fp_Reserved[3];
+	UWORD	fp_Reserved2;
+	UWORD	fp_Type;
+	UBYTE	fp_FrontPen;
+	UBYTE	fp_BackPen;
+	UBYTE	fp_DrawMode;
+	UBYTE	fp_pad;
+	UBYTE	fp_TextAttr_ta_Name[4];
+	UWORD	fp_TextAttr_ta_YSize;
+	UBYTE	fp_TextAttr_ta_Style;
+	UBYTE	fp_TextAttr_ta_Flags;
+	BYTE	fp_Name[FONTNAMESIZE];
+	};
+
 //----------------------------------------------------------------------------
 
 // local data items
@@ -615,7 +631,7 @@ void FreePalettePrefs(void)
 void ReadFontPrefs(void)
 {
 	struct IFFHandle *iff;
-	struct FontPrefs *FontChunk = NULL;
+	struct FileFontPrefs *FontChunk = NULL;
 	BOOL IffOpened = FALSE;
 
 	FreeFontPrefs();
@@ -680,7 +696,7 @@ void ReadFontPrefs(void)
 			d1(KPrintF("%s/%s/%ld: ReadChunkBytes OK\n", __FILE__, __FUNC__, __LINE__));
 
 			FontChunk->fp_Type = SCA_BE2WORD(FontChunk->fp_Type);
-			FontChunk->fp_TextAttr.ta_YSize = SCA_BE2WORD(FontChunk->fp_TextAttr.ta_YSize);
+			FontChunk->fp_TextAttr_ta_YSize = SCA_BE2WORD(FontChunk->fp_TextAttr_ta_YSize);
 
 			if (FP_WBFONT == FontChunk->fp_Type)
 				{
@@ -694,7 +710,9 @@ void ReadFontPrefs(void)
 				if (FontPrefs.fprf_AllocName)
 					ScalosFree(FontPrefs.fprf_AllocName);
 
-				FontPrefs.fprf_TextAttr = FontChunk->fp_TextAttr;
+				FontPrefs.fprf_TextAttr.ta_YSize = FontChunk->fp_TextAttr_ta_YSize;
+				FontPrefs.fprf_TextAttr.ta_Style = FontChunk->fp_TextAttr_ta_Style;
+				FontPrefs.fprf_TextAttr.ta_Flags = FontChunk->fp_TextAttr_ta_Flags;
 				FontPrefs.fprf_AllocName = ScalosAlloc(1 + strlen(FontChunk->fp_Name));
 				if (FontPrefs.fprf_AllocName)
 					{
