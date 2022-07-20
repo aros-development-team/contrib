@@ -5643,155 +5643,155 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 						Child, (IPTR)HVSpace,
 					End), //VGroup
-				End), //VGroup
 
-				Child, (IPTR)HVSpace,
-
-				Child, (IPTR)(VGroup,
 					Child, (IPTR)HVSpace,
 
 					Child, (IPTR)(VGroup,
-						MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_GROUP),
+						Child, (IPTR)HVSpace,
+
+						Child, (IPTR)(VGroup,
+							MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_GROUP),
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+
+							Child, (IPTR)HVSpace,
+
+							Child, (IPTR)(HGroup,
+								Child, (IPTR)HVSpace,
+								Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT)),
+								Child, (IPTR)(app->Obj[CHECK_SEL_ICONTEXT_RECTANGLE] = CheckMarkHelp(FALSE, MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP)),
+								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP),
+								Child, (IPTR)HVSpace,
+
+							End), //HGroup
+
+							Child, (IPTR)HVSpace,
+
+							Child, (IPTR)(ColGroup(2),
+								Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_XBORDER)),
+								Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERX] = SliderObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Numeric_Min, 0,
+									MUIA_Numeric_Max, 20,
+									MUIA_Slider_Horiz, TRUE,
+									MUIA_Numeric_Value, 4,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_XBORDER_SHORTHELP),
+								End), //Cycle
+
+								Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_YBORDER)),
+								Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERY] = SliderObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Numeric_Min, 0,
+									MUIA_Numeric_Max, 20,
+									MUIA_Slider_Horiz, TRUE,
+									MUIA_Numeric_Value, 2,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_YBORDER_SHORTHELP),
+								End), //Cycle
+
+								Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS)),
+								Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_RADIUS] = SliderObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Numeric_Min, 1,
+									MUIA_Numeric_Max, 20,
+									MUIA_Slider_Horiz, TRUE,
+									MUIA_Numeric_Value, 5,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS_SHORTHELP),
+								End), //Cycle
+							End), //ColGroup
+
+							Child, (IPTR)HVSpace,
+						End), //VGroup
+
+					End), //VGroup
+
+					Child, (IPTR)HVSpace,
+
+					Child, (IPTR)(VGroup,
+						MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT),
 						GroupFrame,
 						MUIA_Background, MUII_GroupBack,
 
 						Child, (IPTR)HVSpace,
 
 						Child, (IPTR)(HGroup,
-							Child, (IPTR)HVSpace,
-							Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT)),
-							Child, (IPTR)(app->Obj[CHECK_SEL_ICONTEXT_RECTANGLE] = CheckMarkHelp(FALSE, MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP)),
-							MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP),
-							Child, (IPTR)HVSpace,
-
+						Child, (IPTR)HVSpace,
+							Child, (IPTR)Label1(GetLocString(MSGID_TTFONTSPAGE_ICONFONT_ENABLE)),
+							Child, (IPTR)(app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP)),
+							MUIA_ShortHelp, (IPTR) GetLocString(MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 						End), //HGroup
 
 						Child, (IPTR)HVSpace,
 
-						Child, (IPTR)(ColGroup(2),
-							Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_XBORDER)),
-							Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERX] = SliderObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Numeric_Min, 0,
-								MUIA_Numeric_Max, 20,
-								MUIA_Slider_Horiz, TRUE,
-								MUIA_Numeric_Value, 4,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_XBORDER_SHORTHELP),
-							End), //Cycle
+						Child, (IPTR)(app->Obj[GROUP_ICONSPAGE_ICONFONT] = VGroup,
+							MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_GROUP_ICONFONT),
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+							Child, (IPTR)(app->Obj[GROUP_ICONFONT_NOTICE] = HGroup,
+								Child, (IPTR)(FloattextObject,
+									TextFrame,
+									MUIA_Floattext_Justify, FALSE,
+									MUIA_Floattext_Text, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_NOTICE),
+								End), //Floattext
+								Child, (IPTR)(app->Obj[POP_FONTPREFS] = ImageObject,
+									MUIA_InputMode, MUIV_InputMode_RelVerify,
+									MUIA_Image_Spec, (IPTR)"6:18", //MUII_PopUp,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_SHORTHELP),
+								End), //Image
+							End), //HGroup
 
-							Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_YBORDER)),
-							Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERY] = SliderObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Numeric_Min, 0,
-								MUIA_Numeric_Max, 20,
-								MUIA_Slider_Horiz, TRUE,
-								MUIA_Numeric_Value, 2,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_YBORDER_SHORTHELP),
-							End), //Cycle
+							Child, (IPTR)(app->Obj[GROUP_ICONFONT_SELECT] = HGroup,
+								Child, (IPTR)(app->Obj[POP_ICONFONT] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopUp),
+									MUIA_Popstring_String, (IPTR)(BetterStringObject,
+										StringFrame,
+										MUIA_String_Contents, (IPTR)"Xen/8",
+									End), //BetterString
+									ASLFR_TitleText, (IPTR) GetLocString(MSGID_ICONSPAGE_ICONFONT_ASLTITLE),
+									MUIA_Popasl_Type , ASL_FontRequest,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_ICONFONT_SHORTHELP),
+								End), //Pop
+							End), //HGroup
 
-							Child, (IPTR)Label1(GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS)),
-							Child, (IPTR)(app->Obj[SLIDER_SEL_ICONTEXT_RECT_RADIUS] = SliderObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Numeric_Min, 1,
-								MUIA_Numeric_Max, 20,
-								MUIA_Slider_Horiz, TRUE,
-								MUIA_Numeric_Value, 5,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS_SHORTHELP),
-							End), //Cycle
-						End), //ColGroup
-
-						Child, (IPTR)HVSpace,
-					End), //VGroup
-
-				End), //VGroup
-
-				Child, (IPTR)HVSpace,
-
-				Child, (IPTR)(VGroup,
-					MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT),
-					GroupFrame,
-					MUIA_Background, MUII_GroupBack,
-
-					Child, (IPTR)HVSpace,
-
-					Child, (IPTR)(HGroup,
-						Child, (IPTR)HVSpace,
-						Child, (IPTR)Label1(GetLocString(MSGID_TTFONTSPAGE_ICONFONT_ENABLE)),
-						Child, (IPTR)(app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP)),
-						MUIA_ShortHelp, (IPTR) GetLocString(MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
-					End), //HGroup
-
-					Child, (IPTR)HVSpace,
-
-					Child, (IPTR)(app->Obj[GROUP_ICONSPAGE_ICONFONT] = VGroup,
-						MUIA_FrameTitle, (IPTR) GetLocString(MSGID_ICONSPAGE_GROUP_ICONFONT),
-						GroupFrame,
-						MUIA_Background, MUII_GroupBack,
-						Child, (IPTR)(app->Obj[GROUP_ICONFONT_NOTICE] = HGroup,
-							Child, (IPTR)(FloattextObject,
-								TextFrame,
-								MUIA_Floattext_Justify, FALSE,
-								MUIA_Floattext_Text, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_NOTICE),
-							End), //Floattext
-							Child, (IPTR)(app->Obj[POP_FONTPREFS] = ImageObject,
-								MUIA_InputMode, MUIV_InputMode_RelVerify,
-								MUIA_Image_Spec, (IPTR)"6:18", //MUII_PopUp,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_SHORTHELP),
-							End), //Image
-						End), //HGroup
-
-						Child, (IPTR)(app->Obj[GROUP_ICONFONT_SELECT] = HGroup,
-							Child, (IPTR)(app->Obj[POP_ICONFONT] = PopaslObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopUp),
-								MUIA_Popstring_String, (IPTR)(BetterStringObject,
-									StringFrame,
-									MUIA_String_Contents, (IPTR)"Xen/8",
-								End), //BetterString
-								ASLFR_TitleText, (IPTR) GetLocString(MSGID_ICONSPAGE_ICONFONT_ASLTITLE),
-								MUIA_Popasl_Type , ASL_FontRequest,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_ICONFONT_SHORTHELP),
-							End), //Pop
-						End), //HGroup
-
-						Child, (IPTR)(app->Obj[MCC_ICONFONT_SAMPLE] = FontSampleObject,
-							TextFrame,
-							MUIA_Background, MUII_TextBack,
-							MUIA_FontSample_DemoString, (IPTR) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
-							MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_SAMPLETEXT_SHORTHELP),
-						End), //FontSampleMCCObject
-					End), //VGroup
-
-					Child, (IPTR)(app->Obj[GROUP_ICONSPAGE_TTICONFONT] = HGroup,
-						MUIA_FrameTitle, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT),
-						GroupFrame,
-						MUIA_Background, MUII_GroupBack,
-						MUIA_Disabled, TRUE,
-
-						Child, (IPTR)(VGroup,
-							Child, (IPTR)(app->Obj[POPSTRING_ICONSPAGE_TTICONFONT] = PopstringObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopUp),
-								MUIA_Popstring_String, (IPTR)(BetterStringObject,
-									StringFrame,
-									MUIA_String_Contents, (IPTR)" ",
-								End), //BetterString
-								MUIA_Popstring_OpenHook, (IPTR)&IconTtfPopOpenHook,
-								MUIA_Popstring_CloseHook, (IPTR)&IconTtfPopCloseHook,
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SHORTHELP),
-							End), //PopstringObject
-
-							Child, (IPTR)(app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE] = FontSampleObject,
+							Child, (IPTR)(app->Obj[MCC_ICONFONT_SAMPLE] = FontSampleObject,
 								TextFrame,
 								MUIA_Background, MUII_TextBack,
 								MUIA_FontSample_DemoString, (IPTR) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
-								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SAMPLETEXT_SHORTHELP),
+								MUIA_ShortHelp, (IPTR) GetLocString(MSGID_ICONSPAGE_LABELS_FONT_SAMPLETEXT_SHORTHELP),
 							End), //FontSampleMCCObject
 						End), //VGroup
-					End), //HGroup
-					Child, (IPTR)HVSpace,
-				End), //VGroup
- 
+
+						Child, (IPTR)(app->Obj[GROUP_ICONSPAGE_TTICONFONT] = HGroup,
+							MUIA_FrameTitle, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT),
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+							MUIA_Disabled, TRUE,
+
+							Child, (IPTR)(VGroup,
+								Child, (IPTR)(app->Obj[POPSTRING_ICONSPAGE_TTICONFONT] = PopstringObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopUp),
+									MUIA_Popstring_String, (IPTR)(BetterStringObject,
+										StringFrame,
+										MUIA_String_Contents, (IPTR)" ",
+									End), //BetterString
+									MUIA_Popstring_OpenHook, (IPTR)&IconTtfPopOpenHook,
+									MUIA_Popstring_CloseHook, (IPTR)&IconTtfPopCloseHook,
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SHORTHELP),
+								End), //PopstringObject
+
+								Child, (IPTR)(app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE] = FontSampleObject,
+									TextFrame,
+									MUIA_Background, MUII_TextBack,
+									MUIA_FontSample_DemoString, (IPTR) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
+									MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SAMPLETEXT_SHORTHELP),
+								End), //FontSampleMCCObject
+							End), //VGroup
+						End), //HGroup
+						Child, (IPTR)HVSpace,
+					End), //VGroup
+ 				End), //VGroup
+
 				// --- Icons-Borders
 				Child, (IPTR)(VGroup,
 					Child, (IPTR)(VGroup,
