@@ -88,12 +88,16 @@
 #endif //!defined(MUIA_Text_HiCharIdx)
 
 #define CheckMarkHelp(selected, HelpTextID)\
+		CheckMarkHelp2(selected, FALSE, HelpTextID)
+
+#define CheckMarkHelp2(selected, disabled, HelpTextID)\
 	ImageObject,\
 		ImageButtonFrame,\
 		MUIA_InputMode        , MUIV_InputMode_Toggle,\
 		MUIA_Image_Spec       , MUII_CheckMark,\
 		MUIA_Image_FreeVert   , TRUE,\
 		MUIA_Selected         , selected,\
+		MUIA_Disabled         , disabled, \
 		MUIA_Background       , MUII_ButtonBack,\
 		MUIA_ShowSelState     , FALSE,\
 		MUIA_CycleChain       , TRUE,\
@@ -1872,6 +1876,9 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 			MUIA_Disabled, FALSE,
 			TAG_END);
 		SetAttrs(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE],
+			MUIA_Disabled, FALSE,
+			TAG_END);
+		SetAttrs(app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE],
 			MUIA_Disabled, FALSE,
 			TAG_END);
 		}
@@ -5716,7 +5723,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, (IPTR)(HGroup,
 						Child, (IPTR)HVSpace,
 							Child, (IPTR)Label1(GetLocString(MSGID_TTFONTSPAGE_ICONFONT_ENABLE)),
-							Child, (IPTR)(app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP)),
+							Child, (IPTR)(app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMarkHelp2(FALSE, TRUE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP)),
 							MUIA_ShortHelp, (IPTR) GetLocString(MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 						End), //HGroup
 
@@ -7310,18 +7317,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 						Child, (IPTR)(HGroup,
 							Child, (IPTR)HVSpace,
 							Child, (IPTR)Label1(GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE)),
-							Child, (IPTR)(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = ImageObject,
-								ImageButtonFrame,
-								MUIA_Disabled, TRUE,
-								MUIA_InputMode, MUIV_InputMode_Toggle,
-								MUIA_Image_Spec, MUII_CheckMark,
-								MUIA_Image_FreeVert, TRUE,
-								MUIA_Selected, FALSE,
-								MUIA_Background, MUII_ButtonBack,
-								MUIA_ShowSelState, FALSE,
-								MUIA_CycleChain, TRUE,
-								MUIA_ShortHelp, (IPTR)GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
-							End),
+							Child, (IPTR)(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = CheckMarkHelp2(FALSE, TRUE, MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP)),
 							MUIA_ShortHelp, (IPTR) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 						End), //HGroup
 
