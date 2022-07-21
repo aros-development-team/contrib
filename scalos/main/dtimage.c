@@ -13,6 +13,9 @@
 #if defined(__amigaos4__)
 #include <graphics/blitattr.h>
 #endif //defined(__amigaos4__)
+#if defined(__AROS__)
+#include <proto/cybergraphics.h>
+#endif //defined(__AROS__)
 #include <intuition/intuition.h>
 #include <utility/tagitem.h>
 #include <datatypes/pictureclass.h>
@@ -56,9 +59,9 @@ static struct DatatypesImage *FindDatatypesImage(CONST_STRPTR ImageName, ULONG F
 static LONG CreateTempFile(CONST_STRPTR TempFileName, CONST_STRPTR DtFileName);
 static void DtImageNotify(struct internalScaWindowTask *iwt, struct NotifyMessage *msg);
 static void CleanupTempFiles(void);
-#if defined(__amigaos4__)
+#if defined(__amigaos4__) || defined(__AROS__)
 static BOOL DtImageCreateAlpha(struct DatatypesImage *dti);
-#endif //defined(__amigaos4__)
+#endif //defined(__amigaos4__) || defined(__AROS__)
 
 //----------------------------------------------------------------------------
 
@@ -378,9 +381,9 @@ static struct DatatypesImage *NewDatatypesImage(CONST_STRPTR ImageName, ULONG Fl
 		switch (dti->dti_BitMapHeader->bmh_Masking)
 			{
 		case mskHasAlpha:
-#if defined(__amigaos4__)
+#if defined(__amigaos4__) || defined (__AROS__)
 			DtImageCreateAlpha(dti);
-#endif //defined(__amigaos4__)
+#endif //defined(__amigaos4__) || defined(__AROS__)
 		case mskHasMask:
 		case mskHasTransparentColor:
 			GetDTAttrs(dti->dti_ImageObj,
@@ -691,7 +694,7 @@ static void CleanupTempFiles(void)
 }
 
 
-#if defined(__amigaos4__)
+#if defined(__amigaos4__) || defined(__AROS__)
 static BOOL DtImageCreateAlpha(struct DatatypesImage *dti)
 {
 	BOOL success = FALSE;
@@ -722,7 +725,7 @@ static BOOL DtImageCreateAlpha(struct DatatypesImage *dti)
 
 	return success;
 }
-#endif //defined(__amigaos4__)
+#endif //defined(__amigaos4__) || defined(__AROS__)
 
 
 void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
@@ -755,6 +758,23 @@ void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
 		}
 	else
 #endif //defined(__amigaos4__)
+#if defined(__AROS__)
+	if (dti->dti_ARGB)
+		{
+		WritePixelArrayAlpha(
+			dti->dti_ARGB,
+			0,
+			0,
+			Width * 4,
+			rp,
+			Left,
+			Top,
+			Width,
+			Height,
+			0xffffffff);
+		}
+	else
+#endif //defined(__AROS__)
 		{
 		ULONG rc;
 
