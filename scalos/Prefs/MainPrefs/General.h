@@ -11,7 +11,7 @@
 
 #define PROGRAM		"Scalos - Preferences"
 #define VERSION_MAJOR	40
-#define VERSION_MINOR	29
+#define VERSION_MINOR	30
 #define AUTHOR 		"ßudda <mike@scalos.noname.fr>"
 #define VERSION		STR(VERSION_MAJOR) "." STR(VERSION_MINOR)
 
