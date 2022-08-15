@@ -48,7 +48,7 @@ contrib-development-git-setup :
 	fi
 
 %fetch mmake=contrib-development-git-fetch archive=$(GIT_ARCHBASE) suffixes="tar.gz" \
-    location=$(PORTSSOURCEDIR) destination=$(GIT_PORTDIR) \
+    location=$(PORTSSOURCEDIR)/git destination=$(GIT_PORTDIR) \
     archive_origins=". https://github.com/git/git/archive" \
     patches_specs="$(GIT_ARCHBASE)-aros.diff:$(GIT_ARCHDIR):-f,-p1" patches_origins="$(SRCDIR)/$(CURDIR)"
 
