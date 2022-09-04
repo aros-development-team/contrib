@@ -132,17 +132,17 @@ LONG UseRequestArgs(struct Window *parentWin,
 {
 	LONG Result = 0;
 	va_list args;
-	ULONG *ArgList;
+	IPTR *ArgList;
 
 	va_start(args, NumArgs);
 
-	ArgList = ScalosAlloc(1 + NumArgs * sizeof(ULONG));
+	ArgList = ScalosAlloc(1 + NumArgs * sizeof(IPTR));
 	if (ArgList)
 		{
-		ULONG *pArg = ArgList;
+		IPTR *pArg = ArgList;
 
 		while (NumArgs--)
-			*pArg++ = va_arg(args, ULONG);
+			*pArg++ = va_arg(args, IPTR);
 
 		Result = UseRequest(parentWin, BodyTextNum, GadgetsTextNum, ArgList);
 		ScalosFree(ArgList);
