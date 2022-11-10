@@ -318,7 +318,7 @@ ULONG ASM SAVE_DS drawtruecolor(	register __a0 struct Hook *hook,
 		{
 			ULONG *p;
 			
-			if ((p = data->linebuffer))
+			if (p = data->linebuffer)
 			{
 				int i;
 				for (i = 0; i < data->width; ++i)
@@ -491,7 +491,7 @@ struct DrawData *CreateDrawData(DRAWHANDLE *dh, PIC *pic)
 {
 	struct DrawData *data;
 	
-	if ((data = AllocRenderVecClear(MemHandler, sizeof(struct DrawData))))
+	if (data = AllocRenderVecClear(MemHandler, sizeof(struct DrawData)))
 	{
 		data->ditheramount = DEFAULT_DITHERAMOUNT;
 
@@ -622,10 +622,10 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 
 			DB(kprintf("§§§creating scaling engine...\n"));
 			
-			if ((pic->scaleengine = CreateScaleEngine(data->sourcewidth, data->sourceheight,
+			if (pic->scaleengine = CreateScaleEngine(data->sourcewidth, data->sourceheight,
 				data->destwidth, data->destheight, RND_PixelFormat, pixelformat,
 				RND_DestCoordinates, (IPTR)data->coords,
-				RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+				RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 			{
 				pic->scalepixelformat = pixelformat;
 				pic->scalesourcewidth = data->sourcewidth;
@@ -661,7 +661,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 				{
 					if (scaleengine)
 					{
-						if ((linebuffer = AllocRenderVec(MemHandler, data->destwidth*5)))
+						if (linebuffer = AllocRenderVec(MemHandler, data->destwidth*5))
 						{
 							struct Hook drawhook;
 							struct drawdata_chunkytruecolor hookdata;
@@ -706,7 +706,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 					}
 					else
 					{
-						if ((linebuffer = AllocRenderVec(MemHandler, data->destwidth*4)))
+						if (linebuffer = AllocRenderVec(MemHandler, data->destwidth*4))
 						{
 							struct Hook drawhook;
 							struct drawdata_truecolor hookdata;
@@ -771,7 +771,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 						}
 						else
 						{
-							if ((linebuffer = AllocRenderVec(MemHandler, data->destwidth*4)))
+							if (linebuffer = AllocRenderVec(MemHandler, data->destwidth*4))
 							{
 								struct Hook drawhook;
 								struct drawdata_truecolor hookdata;
@@ -853,7 +853,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 							if (rh->drawmode == DRAWMODE_CYBERGFX)
 							{ 
 								UBYTE *buffer;
-								if ((buffer = AllocRenderVec(MemHandler, data->destwidth * data->destheight)))
+								if (buffer = AllocRenderVec(MemHandler, data->destwidth * data->destheight))
 								{
 									if (data->clearbg)
 									{
@@ -876,7 +876,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 							
 							if (!success)
 							{
-								if ((linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15)))
+								if (linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15))
 								{
 									switch (rh->drawmode)
 									{
@@ -886,7 +886,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 		
 											DB(kprintf("blitting chunky to chunky in directdraw mode\n"));
 											
-											if ((bm = AllocBitMap(data->destwidth, data->destheight, rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL/*rh->rp->BitMap*/)))
+											if (bm = AllocBitMap(data->destwidth, data->destheight, rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL/*rh->rp->BitMap*/))
 											{
 												struct Hook drawhook;
 												struct drawdata_chunkybitmap hookdata;
@@ -989,7 +989,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 		
 								DB(kprintf("blitting chunky to chunky in directdraw mode\n"));
 								
-								if ((bm = AllocBitMap(data->destwidth, data->destheight, rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL/*rh->rp->BitMap*/)))
+								if (bm = AllocBitMap(data->destwidth, data->destheight, rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL/*rh->rp->BitMap*/))
 								{
 									Chunky2BitMap((UBYTE *) p, 0, 0, data->destwidth,
 										data->destheight, bm, 0, 0, RND_SourceWidth, data->totalwidth);
@@ -1054,7 +1054,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 					}
 					else
 					{
-						if ((linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15)))
+						if (linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15))
 						{
 							struct Hook drawhook;
 							struct drawdata_chunkyclut hookdata;
@@ -1112,7 +1112,7 @@ BOOL DrawRastHandle(RASTHANDLE *rh, struct DrawData *data)
 
 				case PIXFMT_0RGB_32:
 				{
-					if ((linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15)))
+					if (linebuffer = AllocRenderVec(MemHandler, (data->destwidth + 15) & ~15))
 					{
 						struct Hook drawhook;
 						struct drawdata_chunkyclut hookdata;
@@ -1222,7 +1222,7 @@ BOOL SAVE_DS ASM MapPaletteA(
 	ULONG numcolors;
 	success = FALSE;
 	
-	if ((numcolors = GetTagData(GGFX_NumColors, 0, tags)))
+	if (numcolors = GetTagData(GGFX_NumColors, 0, tags))
 	{
 		switch (GetTagData(GGFX_PaletteFormat, PALFMT_RGB8, tags))
 		{
@@ -1336,12 +1336,12 @@ BOOL SAVE_DS ASM CreatePictureMaskA(REG(a0) PIC *pic, REG(a1) UBYTE *array, REG(
 					
 					DB(kprintf("*** scaling mask bitmap\n"));
 	
-					if ((temparray = AllocRenderVec(MemHandler, destwidth*destheight)))
+					if (temparray = AllocRenderVec(MemHandler, destwidth*destheight))
 					{
 						APTR scaleengine;
 	
-						if ((scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
-							destwidth, destheight, RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+						if (scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
+							destwidth, destheight, RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 						{
 							if (Scale(scaleengine, p, temparray,
 								RND_SourceWidth, pic->width, TAG_DONE) == CONV_SUCCESS)
@@ -1528,11 +1528,11 @@ struct BitMap SAVE_DS ASM *CreatePictureBitMapA(REG(a0) DRAWHANDLE *dh, REG(a1) 
 			InitRastPort(&rp);
 			rp.BitMap = bm;
 		
-			if ((rh = CreateRastHandle(&rp, dh->modeID)))
+			if (rh = CreateRastHandle(&rp, dh->modeID))
 			{
 				struct DrawData *data;
 			
-				if ((data = CreateDrawData(dh, pic)))
+				if (data = CreateDrawData(dh, pic))
 				{
 					data->sourcex = GetTagData(GGFX_SourceX, 0, tags);
 					data->sourcey = GetTagData(GGFX_SourceY, 0, tags);
@@ -1641,7 +1641,7 @@ BOOL SAVE_DS ASM DrawPictureA(
 			}
 		}
 
-		if ((data = CreateDrawData(dh, pic)))
+		if (data = CreateDrawData(dh, pic))
 		{
 			data->sourcex = GetTagData(GGFX_SourceX, 0, tags);
 			data->sourcey = GetTagData(GGFX_SourceY, 0, tags);
@@ -1739,7 +1739,7 @@ DIRECTDRAWHANDLE SAVE_DS ASM *CreateDirectDrawHandleA(
 
 			case PIXFMT_0RGB_32:
 
-				if ((ddh = AllocRenderVecClear(MemHandler, sizeof(DIRECTDRAWHANDLE))))
+				if (ddh = AllocRenderVecClear(MemHandler, sizeof(DIRECTDRAWHANDLE)))
 				{
 					BOOL scaling_is_involved = (sourcewidth != destwidth || sourceheight != destheight);
 					BOOL source_is_smaller = (sourcewidth*sourceheight < destwidth*destheight);
@@ -2101,8 +2101,8 @@ BOOL SAVE_DS ASM DirectDrawTrueColorA(
 				case DRAWMODE_BITMAP:
 				{
 					struct BitMap *bm;
-					if ((bm = AllocBitMap(ddh->destwidth, ddh->destheight,
-						rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL)))
+					if (bm = AllocBitMap(ddh->destwidth, ddh->destheight,
+						rh->rp->BitMap->Depth, BMF_STANDARD+BMF_INTERLEAVED, NULL))
 					{
 						Chunky2BitMap(drawbuffer, 0,0, ddh->destwidth, ddh->destheight,
 							bm, 0,0, NULL);

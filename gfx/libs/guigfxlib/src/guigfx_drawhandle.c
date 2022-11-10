@@ -165,7 +165,7 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 	DRAWHANDLE *dh;
 
 
-	if((dh = AllocRenderVecClear(MemHandler, sizeof(DRAWHANDLE))))
+	if(dh = AllocRenderVecClear(MemHandler, sizeof(DRAWHANDLE)))
 	{
 		BOOL success = FALSE;
 
@@ -190,7 +190,7 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 
 		DB(kprintf("Creating drawhandle with threshold %ld\n", dh->ditherthreshold));
 
-		if ((dh->rasthandle = CreateRastHandle(rp, dh->modeID)))
+		if (dh->rasthandle = CreateRastHandle(rp, dh->modeID))
 		{
 			success = TRUE;
 
@@ -203,7 +203,7 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 				{
 					success = FALSE;
 
-					if ((psm = CreatePenShareMapA(NULL)))
+					if (psm = CreatePenShareMapA(NULL))
 					{
 							struct TagItem tags[2] = {{GGFX_PixelFormat, PIXFMT_0RGB_32}, {TAG_DONE}};
 							success = !!AddPixelArrayA(psm, yuvtab, 6*6*6, 1, tags);
@@ -260,8 +260,8 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 					{
 						success = FALSE;
 			
-						if((psm->histogram = CreateHistogram(RND_RMHandler, (IPTR)MemHandler, 
-							RND_HSType, psm->hstype, TAG_DONE)))
+						if(psm->histogram = CreateHistogram(RND_RMHandler, (IPTR)MemHandler,
+							RND_HSType, psm->hstype, TAG_DONE))
 						{
 							if (!IsListEmpty(&psm->colorlist))
 							{
@@ -274,7 +274,7 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 				
 								/* Gewichtungsfaktor für Addhistogram berechnen */
 							
-								while ((nextnode = node->ln_Succ))
+								while (nextnode = node->ln_Succ)
 								{
 									ch = (COLORHANDLE *)node;
 									f = (DOUBLE) ch->weight / (DOUBLE) ch->numpixels;
@@ -367,7 +367,7 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 							{
 								DB(kprintf("ObtainDrawHandle: bitmap is not truecolor.\n"));
 		
-								if ((pe = cm->PalExtra))
+								if (pe = cm->PalExtra)
 								{
 									UWORD numsharable;
 									ObtainSemaphoreShared(&pe->pe_Semaphore);
@@ -380,8 +380,8 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 								}
 							}
 			
-							if((dh->mainpalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
-									RND_HSType, psm->hstype, TAG_DONE)))
+							if(dh->mainpalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
+									RND_HSType, psm->hstype, TAG_DONE))
 							{		
 								DB(kprintf("ObtainDrawHandle: extracting palette.\n"));
 			
@@ -463,8 +463,8 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 											DeletePalette(dh->realpalette);
 										}
 							
-										if((dh->realpalette = CreatePalette(RND_HSType, psm->hstype,
-												RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+										if(dh->realpalette = CreatePalette(RND_HSType, psm->hstype,
+												RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 										{
 											int i;
 	
@@ -505,10 +505,8 @@ DRAWHANDLE SAVE_DS ASM *ObtainDrawHandleA(
 											{
 												if ((!dh->rasthandle->truecolor) && (psm->hstype == HSTYPE_12BIT_TURBO))
 												{
-													/*dh->mapengine = CreateMapEngine(dh->realpalette,
-															RND_Histogram, psm->histogram,
-															RND_RMHandler, (IPTR)MemHandler, TAG_DONE)*/;
 													dh->mapengine = CreateMapEngine(dh->realpalette,
+													//		RND_Histogram, psm->histogram,
 															RND_RMHandler, (IPTR)MemHandler, TAG_DONE);
 												}
 											}

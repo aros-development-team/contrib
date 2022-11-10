@@ -36,7 +36,7 @@ PSM SAVE_DS ASM *CreatePenShareMapA(REG(a0) TAGLIST taglist)
 {
 	PSM *psm;
 	
-	if ((psm = (PSM *) AllocRenderVec(MemHandler, sizeof(struct PenShareMap))))
+	if (psm = (PSM *) AllocRenderVec(MemHandler, sizeof(struct PenShareMap)))
 	{
 		ULONG default_hstype = DEFAULT_HSTYPE;
 
@@ -84,7 +84,7 @@ void SAVE_DS ASM DeletePenShareMap(REG(a0) PSM *psm)
 		{
 			struct Node *nextnode;
 			node = (struct Node *) psm->colorlist.lh_Head;
-			while ((nextnode = node->ln_Succ))
+			while (nextnode = node->ln_Succ)
 			{
 				RemColorHandle((COLORHANDLE *)node);
 				node = nextnode;

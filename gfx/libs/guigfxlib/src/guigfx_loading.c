@@ -80,9 +80,9 @@ PIC *LoadPictureDT(STRPTR file_name, TAGLIST tags)
 		errptr = (LONG *) GetTagData(GGFX_ErrorCode, (IPTR) errptr, tags);
 
 	
-		if ((obj = NewDTObject(file_name, PDTA_DestMode, PMODE_V43,
+		if (obj = NewDTObject(file_name, PDTA_DestMode, PMODE_V43,
 				DTA_SourceType, DTST_FILE, DTA_GroupID, GID_PICTURE,
-				PDTA_Remap, FALSE, TAG_DONE)))
+				PDTA_Remap, FALSE, TAG_DONE))
 		{
 			struct BitMapHeader *bmhd;
 			ULONG displayID;
@@ -275,7 +275,7 @@ PIC *LoadPictureDT(STRPTR file_name, TAGLIST tags)
 					else
 					{
 						DB(kprintf("*** DTM_READPIXELARRAY\n"));
-						if ((pic.array = AllocRenderVec(MemHandler, 4 * pic.width * pic.height)))
+						if (pic.array = AllocRenderVec(MemHandler, 4 * pic.width * pic.height))
 						{
 							DoMethod(obj, PDTM_READPIXELARRAY, (IPTR)pic.array,
 									RECTFMT_ARGB, pic.width * 4,
@@ -597,9 +597,9 @@ BOOL SAVE_DS ASM IsPictureA(REG(a0) char *file_name, REG(a1) TAGLIST tags)
 
 	if (DataTypesBase)
 	{
-	   if ((lock = Lock(file_name, ACCESS_READ)))
+	   if (lock = Lock(file_name, ACCESS_READ))
 	   {
-	      if ((dtn = ObtainDataTypeA(DTST_FILE, (APTR)lock, NULL)))
+	      if (dtn = ObtainDataTypeA(DTST_FILE, (APTR)lock, NULL))
 	      {
 	         dth = dtn->dtn_Header;
 	         if (dth->dth_GroupID == GID_PICTURE)   /* is it a picture? */
@@ -649,7 +649,6 @@ BOOL SAVE_DS ASM IsPictureA(REG(a0) char *file_name, REG(a1) TAGLIST tags)
 PIC SAVE_DS ASM *LoadPictureA(REG(a0) STRPTR filename, REG(a1) TAGLIST tags)
 {
 	PIC *pic = NULL;
-
 
 	#if 0
 	if (GetTagData(GGFX_License, FALSE, tags))

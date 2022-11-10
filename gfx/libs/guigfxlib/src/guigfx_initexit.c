@@ -30,9 +30,9 @@ char *GetFileString(char *name)
 	BPTR fp;
 	char *linebuffer = NULL;
 
-	if ((fp = Open(name, MODE_OLDFILE)))
+	if (fp = Open(name, MODE_OLDFILE))
 	{
-		if ((linebuffer = AllocVec(30, MEMF_ANY)))
+		if (linebuffer = AllocVec(30, MEMF_ANY))
 		{
 			if (FGets(fp, linebuffer, 30) == NULL)
 			{
@@ -51,7 +51,7 @@ char *GetEnv(char *name)
 	char *fnamebuffer;
 	char *value = NULL;
 	
-	if ((fnamebuffer = AllocVec(strlen(name) + 30, MEMF_ANY)))
+	if (fnamebuffer = AllocVec(strlen(name) + 30, MEMF_ANY))
 	{
 		strcpy(fnamebuffer, "ENV:");
 		if (AddPart(fnamebuffer, name, strlen(name) + 20))

@@ -36,7 +36,7 @@ struct SharedHistogram *CreateSharedHistogram(APTR histo)
 {
 	struct SharedHistogram *sh;
 
-	if ((sh = AllocRenderVec(MemHandler, sizeof(struct SharedHistogram))))
+	if (sh = AllocRenderVec(MemHandler, sizeof(struct SharedHistogram)))
 	{
 		InitSemaphore(&sh->semaphore);
 		sh->count = 1;
@@ -101,7 +101,7 @@ COLORHANDLE *CreateColorHandle(PSM *psm, TAGLIST tags)
 {
 	COLORHANDLE *ch;
 
-	if ((ch = AllocRenderVecClear(MemHandler, sizeof(COLORHANDLE))))
+	if (ch = AllocRenderVecClear(MemHandler, sizeof(COLORHANDLE)))
 	{
 		ch->psm = psm;		
 		ch->weight = GetTagData(GGFX_Weight, 1, tags);
@@ -208,7 +208,7 @@ COLORHANDLE SAVE_DS ASM *AddPictureA(REG(a0) PSM *psm, REG(a1) PIC *pic, REG(a2)
 
 	ObtainSemaphore(&psm->semaphore);
 
-	if ((ch = CreateColorHandle(psm, tags)))
+	if (ch = CreateColorHandle(psm, tags))
 	{
 		BOOL success;
 
@@ -266,20 +266,20 @@ COLORHANDLE SAVE_DS ASM *AddPaletteA(
 {
 	COLORHANDLE *ch;
 
-	if ((ch = CreateColorHandle(psm, tags)))
+	if (ch = CreateColorHandle(psm, tags))
 	{
 		BOOL success = FALSE;
 
-		if ((ch->numpixels = GetTagData(GGFX_NumColors, 0, tags)))
+		if (ch->numpixels = GetTagData(GGFX_NumColors, 0, tags))
 		{
 			APTR histogram;
 			int i;
 			ULONG *p = (ULONG *) palette;
 			
-			if ((histogram = CreateHistogram(RND_HSType, psm->hstype,
-				RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+			if (histogram = CreateHistogram(RND_HSType, psm->hstype,
+				RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 			{
-				if ((ch->histogram = CreateSharedHistogram(histogram)))
+				if (ch->histogram = CreateSharedHistogram(histogram))
 				{
 					switch (GetTagData(GGFX_PaletteFormat, PALFMT_RGB8, tags))
 					{
@@ -352,29 +352,29 @@ COLORHANDLE SAVE_DS ASM *AddPixelArrayA(REG(a0) PSM *psm, REG(a1) APTR array,
 {
 	COLORHANDLE *ch;
 
-	if ((ch = CreateColorHandle(psm, tags)))
+	if (ch = CreateColorHandle(psm, tags))
 	{
 		APTR histogram;
 		BOOL success = FALSE;
 		ch->numpixels = width*height;
 
-		if ((histogram = CreateHistogram(RND_HSType, psm->hstype,
-			RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+		if (histogram = CreateHistogram(RND_HSType, psm->hstype,
+			RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 		{
-			if ((ch->histogram = CreateSharedHistogram(histogram)))
+			if (ch->histogram = CreateSharedHistogram(histogram))
 			{
 				switch (GetTagData(GGFX_PixelFormat, PIXFMT_CHUNKY_CLUT, tags))
 				{
 					case PIXFMT_CHUNKY_CLUT:
 					{
 						PALETTE palette;
-						if ((palette = (PALETTE) GetTagData(GGFX_Palette, 0, tags)))
+						if (palette = (PALETTE) GetTagData(GGFX_Palette, 0, tags))
 						{
 							ULONG numcolors;
-							if ((numcolors = GetTagData(GGFX_NumColors, 0, tags)))
+							if (numcolors = GetTagData(GGFX_NumColors, 0, tags))
 							{
 								PALETTE mypalette;
-								if ((mypalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+								if (mypalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 								{
 									ULONG palfmt = GetTagData(GGFX_PaletteFormat, PALFMT_RGB8, tags);
 									ImportPalette(mypalette, palette, numcolors,

@@ -76,7 +76,7 @@ RASTHANDLE *CreateRastHandle(struct RastPort *rp, ULONG modeID)
 
 	BOOL success = FALSE;
 
-	if ((rh = AllocRenderVecClear(MemHandler,sizeof(RASTHANDLE))))
+	if (rh = AllocRenderVecClear(MemHandler,sizeof(RASTHANDLE)))
 	{
 		rh->rp = rp;
 		rh->drawmode = DRAWMODE_WRITEPIXELARRAY;
@@ -115,11 +115,11 @@ RASTHANDLE *CreateRastHandle(struct RastPort *rp, ULONG modeID)
 		}
 
 
-		if ((rh->temprp = AllocRenderVec(MemHandler, sizeof(struct RastPort))))
+		if (rh->temprp = AllocRenderVec(MemHandler, sizeof(struct RastPort)))
 		{
 			TurboCopyMem(rp, rh->temprp, sizeof(struct RastPort));
 			rh->temprp->Layer = NULL;
-			if ((rh->temprp->BitMap = AllocBitMap(width, 1, depth, 0, rp->BitMap)))
+			if (rh->temprp->BitMap = AllocBitMap(width, 1, depth, 0, rp->BitMap))
 			{
 				success = TRUE;
 			}
