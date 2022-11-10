@@ -266,7 +266,7 @@ ULONG ASM SAVE_DS drawchunkytruecolor(	register __a0 struct Hook *hook,
 	
 			if (data->rastlock) ObtainSemaphore(data->rastlock);
 
-			WritePixelArray(data->rgbbuffer, 0, 0, data->width, data->rp,
+			WritePixelArray(data->rgbbuffer, 0, 0, data->width * 4, data->rp,
 				data->x, data->y, data->width, 1, RECTFMT_ARGB);
 
 			if (data->rastlock) ReleaseSemaphore(data->rastlock);
@@ -333,7 +333,7 @@ ULONG ASM SAVE_DS drawtruecolor(	register __a0 struct Hook *hook,
 		{
 			if (data->rastlock) ObtainSemaphore(data->rastlock);
 
-			WritePixelArray(buffer, 0, 0, data->width, data->rp, data->x, data->y,
+			WritePixelArray(buffer, 0, 0, data->width * 4, data->rp, data->x, data->y,
 				data->width, 1, RECTFMT_ARGB);
 
 			if (data->rastlock) ReleaseSemaphore(data->rastlock);
