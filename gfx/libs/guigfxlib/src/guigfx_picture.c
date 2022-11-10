@@ -39,6 +39,13 @@
 #include "guigfx_bitmap.h"
 
 
+#ifdef __AROS__
+#define MakePicture(arg1, arg2, arg3, ...) \
+({ \
+    const IPTR MakePictureA_args[] = { AROS_PP_VARIADIC_CAST2IPTR(__VA_ARGS__) };\
+    MakePictureA((arg1), (arg2), (arg3), (struct TagItem *)(MakePictureA_args)); \
+})
+#endif
 /*--------------------------------------------------------------------
 
 	success = PrepareDrawing(pic)
@@ -237,7 +244,7 @@ ULONG ASM SAVE_DS rgb24to32(	register __a0 struct Hook *hook,
 /*-------------------------------------------------------------------*/
 
 
-#ifndef __MORPHOS__
+#if !defined(__MORPHOS__) && !defined(__AROS__)
 PIC *MakePicture(APTR array, UWORD width, UWORD height, Tag tag1, ...)
 {
 	return MakePictureA(array, width, height, (TAGLIST) &tag1);

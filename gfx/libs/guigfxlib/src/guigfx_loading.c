@@ -46,6 +46,11 @@
      IPTR __args[] = { args }; \
      ReadBitMapArrayA((bm), (pic), (displayID), (TAGLIST)__args); \
 })
+#define MakePicture(arg1, arg2, arg3, ...) \
+({ \
+    const IPTR MakePictureA_args[] = { AROS_PP_VARIADIC_CAST2IPTR(__VA_ARGS__) };\
+    MakePictureA((arg1), (arg2), (arg3), (struct TagItem *)(MakePictureA_args)); \
+})
 #endif
 
 /*********************************************************************
