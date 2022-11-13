@@ -1211,7 +1211,7 @@ static Object *ReadDefIconObjectForNameFallback(ULONG IconType, CONST_STRPTR Typ
 		else
 			{
 			IconObj = GetDefIconObjectTags(IconType,
-				IDTA_Text, (IPTR) OriginalName,
+				/* IDTA_Text, (IPTR) OriginalName, */
 				TAG_MORE, (IPTR) TagList,
 				TAG_END);
 			}
