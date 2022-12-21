@@ -38,7 +38,7 @@ ICU_EXTRA_OPTS := \
         --disable-samples \
         --disable-extras \
         --with-data-packaging=static \
-        --with-cross-build=$(CROSSTOOLSDIR)/$(ICU_PKGNAME) \
+        --with-cross-build=$(TOOLDIR)/$(ICU_PKGNAME) \
         --libdir=$(AROS_LIB)
 
 ifneq ($(AROS_TARGET_CPU),i386)

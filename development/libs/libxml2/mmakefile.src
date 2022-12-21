@@ -35,8 +35,8 @@ endif
 
 #MM
 libxml2-post:
-	$(Q)$(IF) ! $(TEST) -f $(CROSSTOOLSDIR)/$(CPU)-aros-xml2-config; then \
-		$(CP) $(AROS_DEV_BINS)/xml2-config $(CROSSTOOLSDIR)/$(CPU)-aros-xml2-config \
+	$(Q)$(IF) ! $(TEST) -f $(TOOLDIR)/$(CPU)-aros-xml2-config; then \
+		$(CP) $(AROS_DEV_BINS)/xml2-config $(TOOLDIR)/$(CPU)-aros-xml2-config \
         && $(SED) -i -e "s|$(AROS_DEVELOPER)|\$${prefix}|g" $(AROS_DEV_BINS)/xml2-config ; \
 	fi
 
