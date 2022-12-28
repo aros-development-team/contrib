@@ -39,6 +39,13 @@
 #include "guigfx_bitmap.h"
 
 
+#ifdef __AROS__
+#define MakePicture(arg1, arg2, arg3, ...) \
+({ \
+    const IPTR MakePictureA_args[] = { AROS_PP_VARIADIC_CAST2IPTR(__VA_ARGS__) };\
+    MakePictureA((arg1), (arg2), (arg3), (struct TagItem *)(MakePictureA_args)); \
+})
+#endif
 /*--------------------------------------------------------------------
 
 	success = PrepareDrawing(pic)
@@ -237,7 +244,7 @@ ULONG ASM SAVE_DS rgb24to32(	register __a0 struct Hook *hook,
 /*-------------------------------------------------------------------*/
 
 
-#ifndef __MORPHOS__
+#if !defined(__MORPHOS__) && !defined(__AROS__)
 PIC *MakePicture(APTR array, UWORD width, UWORD height, Tag tag1, ...)
 {
 	return MakePictureA(array, width, height, (TAGLIST) &tag1);
@@ -253,7 +260,7 @@ PIC SAVE_DS ASM *MakePictureA(
 	PIC *pic = NULL;
 	BOOL success = FALSE;
 
-	if ((pic = AllocRenderVecClear(MemHandler, sizeof(PIC))))
+	if (pic = AllocRenderVecClear(MemHandler, sizeof(PIC)))
 	{
 
 		int sourcewidth, sourceheight;
@@ -454,13 +461,13 @@ PIC SAVE_DS ASM *MakePictureA(
 					{
 						// import palette
 					
-						if ((palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
+						if (palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
 							RND_HSType, hstype == HSTYPE_UNDEFINED ? DEFAULT_PALETTE_HSTYPE : hstype, 
-							TAG_DONE)))
+							TAG_DONE))
 						{
 							int numcolors;
 
-							if ((numcolors = GetTagData(GGFX_NumColors, 0, taglist)))
+							if (numcolors = GetTagData(GGFX_NumColors, 0, taglist))
 							{
 								ImportPalette(palette, userpalette, numcolors, 
 									RND_PaletteFormat, paletteformat, TAG_DONE);
@@ -474,9 +481,9 @@ PIC SAVE_DS ASM *MakePictureA(
 				{
 					// create default palette
 					
-					if ((palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
+					if (palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
 						RND_HSType, hstype == HSTYPE_UNDEFINED ? DEFAULT_PALETTE_HSTYPE : hstype, 
-						TAG_DONE)))
+						TAG_DONE))
 					{
 						ImportPalette(palette, defaultpalette, 256, NULL);
 		
@@ -501,11 +508,11 @@ PIC SAVE_DS ASM *MakePictureA(
 						displayID = HAM;
 				}
 				
-				if ((array = ReadBitMap(data, displayID, palette, &destformat, &destwidth, &destheight,
+				if (array = ReadBitMap(data, displayID, palette, &destformat, &destwidth, &destheight,
 					GGFX_SourceX, sourcex, GGFX_SourceY, sourcey,
 					GGFX_SourceWidth, sourcewidth, GGFX_SourceHeight, sourceheight,
 					GGFX_DestWidth, destwidth, GGFX_DestHeight, destheight,
-					TAG_DONE)))
+					TAG_DONE))
 				{
 					success = TRUE;
 				}
@@ -513,7 +520,7 @@ PIC SAVE_DS ASM *MakePictureA(
 			else if (allocbytes)
 			{
 				DB(kprintf("!makepicture alloc(allocbytes)\n"));
-				if ((array = AllocRenderVec(MemHandler, allocbytes)))
+				if (array = AllocRenderVec(MemHandler, allocbytes))
 				{
 					if (data)
 					{
@@ -523,9 +530,9 @@ PIC SAVE_DS ASM *MakePictureA(
 							{
 								APTR scalingengine;
 								
-								if ((scalingengine = CreateScaleEngine(sourcewidth, sourceheight,
+								if (scalingengine = CreateScaleEngine(sourcewidth, sourceheight,
 									destwidth, destheight, RND_RMHandler, (IPTR)MemHandler,
-									RND_PixelFormat, destformat, TAG_DONE)))
+									RND_PixelFormat, destformat, TAG_DONE))
 								{
 									Scale(scalingengine, data, array,
 										RND_SourceWidth, totalsourcewidth, TAG_DONE);
@@ -710,7 +717,7 @@ PIC SAVE_DS ASM *ReadPictureA(
 	PIC *pic;
 	BOOL success = FALSE;
 
-	if ((pic = AllocRenderVecClear(MemHandler, sizeof(PIC))))
+	if (pic = AllocRenderVecClear(MemHandler, sizeof(PIC)))
 	{
 		ULONG modeID;
 		int destwidth, destheight, destformat;
@@ -731,9 +738,9 @@ PIC SAVE_DS ASM *ReadPictureA(
 
 
 
-		if ((pic->palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, RND_HSType, 
+		if (pic->palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, RND_HSType,
 			pic->hstype == HSTYPE_UNDEFINED ? DEFAULT_PALETTE_HSTYPE : pic->hstype, 
-			TAG_DONE)))
+			TAG_DONE))
 		{
 			int i;
 			ULONG rgb[3];
@@ -750,12 +757,12 @@ PIC SAVE_DS ASM *ReadPictureA(
 
 		
 
-		if ((pic->array = ReadBitMap(rp->BitMap, modeID, pic->palette, 
+		if (pic->array = ReadBitMap(rp->BitMap, modeID, pic->palette,
 				&destformat, &destwidth, &destheight,
 				GGFX_SourceX, x, GGFX_SourceY, y,
 				GGFX_SourceWidth, sourcewidth, GGFX_SourceHeight, sourceheight,
 				GGFX_DestWidth, destwidth, GGFX_DestHeight, destheight,
-				TAG_DONE)))
+				TAG_DONE))
 		{
 			pic->width = destwidth;
 			pic->height = destheight;
@@ -815,10 +822,10 @@ BOOL SAVE_DS ASM UpdatePicture(REG(a0) PIC *pic)
 			pic->hstype = DEFAULT_PICTURE_HSTYPE;
 		}
 
-		if ((histo = CreateHistogram(RND_RMHandler, (IPTR)MemHandler,
-				RND_HSType, pic->hstype, TAG_DONE)))
+		if (histo = CreateHistogram(RND_RMHandler, (IPTR)MemHandler,
+				RND_HSType, pic->hstype, TAG_DONE))
 		{
-			if ((pic->histogram = CreateSharedHistogram(histo)))
+			if (pic->histogram = CreateSharedHistogram(histo))
 			{
 				success = TRUE;
 			}
@@ -835,7 +842,7 @@ BOOL SAVE_DS ASM UpdatePicture(REG(a0) PIC *pic)
 
 	if (success)
 	{
-		if ((success = PrepareDrawing(pic)))	/* eliminiert unbrauchbare Pixelformate */
+		if (success = PrepareDrawing(pic))	/* eliminiert unbrauchbare Pixelformate */
 		{
 			int interleave;
 			
@@ -1009,21 +1016,21 @@ PIC SAVE_DS ASM *ClonePictureA(REG(a0) PIC *pic, REG(a1) TAGLIST tags)
 				dw = GetTagData(GGFX_DestWidth, pic->width, tags);
 				dh = GetTagData(GGFX_DestHeight, pic->height, tags);
 
-				if ((array = AllocRenderVec(MemHandler, 
-					dw * dh * PIXELSIZE(pic->pixelformat))))
+				if (array = AllocRenderVec(MemHandler,
+					dw * dh * PIXELSIZE(pic->pixelformat)))
 				{
 					success = TRUE;
 			
 					if (pic->palette)
 					{
 						success = FALSE;
-						if ((newpalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, RND_HSType, 
+						if (newpalette = CreatePalette(RND_RMHandler, (IPTR)MemHandler, RND_HSType,
 								pic->hstype == HSTYPE_UNDEFINED ? DEFAULT_PALETTE_HSTYPE : pic->hstype, 
-								TAG_DONE)))
+								TAG_DONE))
 						{
 							ULONG numcolors;
 							
-							if ((numcolors = GetPaletteAttrs(pic->palette, 0)))
+							if (numcolors = GetPaletteAttrs(pic->palette, 0))
 							{
 								ImportPalette(newpalette, pic->palette, numcolors, 
 									RND_PaletteFormat, PALFMT_PALETTE, TAG_DONE);
@@ -1060,9 +1067,9 @@ PIC SAVE_DS ASM *ClonePictureA(REG(a0) PIC *pic, REG(a1) TAGLIST tags)
 						{
 							APTR scaleengine;
 							success = FALSE;
-							if ((scaleengine = CreateScaleEngine(sw, sh, dw, dh,
+							if (scaleengine = CreateScaleEngine(sw, sh, dw, dh,
 								RND_PixelFormat, pic->pixelformat,
-								RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+								RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 							{
 								success = (Scale(scaleengine, p, array,
 									RND_SourceWidth, pic->width, TAG_DONE) == CONV_SUCCESS);
@@ -1075,7 +1082,7 @@ PIC SAVE_DS ASM *ClonePictureA(REG(a0) PIC *pic, REG(a1) TAGLIST tags)
 						{
 							success = FALSE;
 	
-							if ((newpic = MakePicture(array, dw, dh,
+							if (newpic = MakePicture(array, dw, dh,
 								GGFX_PixelFormat, pic->pixelformat,
 								GGFX_Palette, (IPTR)newpalette,
 								GGFX_PaletteFormat, PALFMT_PALETTE,
@@ -1084,7 +1091,7 @@ PIC SAVE_DS ASM *ClonePictureA(REG(a0) PIC *pic, REG(a1) TAGLIST tags)
 								GGFX_AspectY, pic->aspecty,
 								GGFX_Owner, TRUE,
 								GGFX_AlphaPresent, pic->alphapresent,
-								TAG_DONE)))
+								TAG_DONE))
 							{
 								if (!newpic->palette && newpalette)
 								{

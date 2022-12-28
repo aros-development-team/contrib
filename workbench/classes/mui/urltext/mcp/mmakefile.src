@@ -2,7 +2,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM contrib-zune-classes-urltext-mcp : includes linklibs workbench-libs-openurl
+#MM contrib-zune-classes-urltext-mcp : includes linklibs external-openurl
 
 FILES := libinit-aros \
 	 init \

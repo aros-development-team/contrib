@@ -100,7 +100,7 @@ BOOL ExtractAlphaArray(PIC *pic)
 		if (pic->pixelformat == PIXFMT_0RGB_32)
 		{
 			success = FALSE;
-			if ((pic->alphaarray = AllocRenderVec(MemHandler, pic->width * pic->height)))
+			if (pic->alphaarray = AllocRenderVec(MemHandler, pic->width * pic->height))
 			{
 				ExtractAlphaChannel((APTR) pic->array,
 					pic->width, pic->height, pic->alphaarray, NULL);
@@ -375,11 +375,11 @@ ULONG PIC_SetAlpha(PIC *pic, UBYTE *array, ULONG sourcewidth, ULONG sourceheight
 				{
 					APTR scaleengine;
 		
-					if ((scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
-						destwidth, destheight, RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+					if (scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
+						destwidth, destheight, RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 					{
 						UBYTE *linebuffer;
-						if ((linebuffer = AllocRenderVec(MemHandler, destwidth)))
+						if (linebuffer = AllocRenderVec(MemHandler, destwidth))
 						{
 							struct Hook drawhook;
 							struct insertalphadata args;
@@ -462,7 +462,7 @@ ULONG PIC_Crop(PIC *pic, ULONG x, ULONG y, ULONG width, ULONG height,
 					
 					if (pic->owner)
 					{
-						if((t = AllocRenderVec(MemHandler,width*height*4)))
+						if(t = AllocRenderVec(MemHandler,width*height*4))
 						{			
 							for(i=0; i<height; ++i)
 							{
@@ -494,7 +494,7 @@ ULONG PIC_Crop(PIC *pic, ULONG x, ULONG y, ULONG width, ULONG height,
 					
 					if (pic->owner)
 					{
-						if((t = AllocRenderVec(MemHandler,width*height)))
+						if(t = AllocRenderVec(MemHandler,width*height))
 						{			
 							for(i=0; i<height; ++i)
 							{
@@ -585,8 +585,8 @@ ULONG PIC_Render(PIC *pic, ULONG pixelformat, TAGLIST tags)
 								success = FALSE;
 								if (UpdatePicture(pic))
 								{
-									if ((pic->palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
-										RND_HSType, pic->hstype, TAG_DONE)))
+									if (pic->palette = CreatePalette(RND_RMHandler, (IPTR)MemHandler,
+										RND_HSType, pic->hstype, TAG_DONE))
 									{
 										if (ExtractPalette(pic->histogram->histogram, 
 											pic->palette, 256, NULL) == EXTP_SUCCESS)
@@ -609,7 +609,7 @@ ULONG PIC_Render(PIC *pic, ULONG pixelformat, TAGLIST tags)
 								{
 									UBYTE *t;
 									
-									if ((t = AllocRenderVec(MemHandler, pic->width*pic->height)))
+									if (t = AllocRenderVec(MemHandler, pic->width*pic->height))
 									{
 										if (Render((APTR)pic->array, pic->width, pic->height, 
 											t, pic->palette, NULL) == REND_SUCCESS)
@@ -686,7 +686,7 @@ ULONG PIC_Render(PIC *pic, ULONG pixelformat, TAGLIST tags)
 							if (pic->owner)
 							{
 								ULONG *t;
-								if((t = AllocRenderVec(MemHandler, pic->width*pic->height*4)))
+								if(t = AllocRenderVec(MemHandler, pic->width*pic->height*4))
 								{
 									Chunky2RGB(pic->array,pic->width,pic->height,t,pic->palette,NULL);
 									
@@ -703,7 +703,7 @@ ULONG PIC_Render(PIC *pic, ULONG pixelformat, TAGLIST tags)
 								if(pic->width*pic->height*4 <= pic->maxbytes)
 								{
 									ULONG *t;
-									if((t = AllocRenderVec(MemHandler, pic->width*pic->height*4)))
+									if(t = AllocRenderVec(MemHandler, pic->width*pic->height*4))
 									{
 										Chunky2RGB(pic->array,pic->width,pic->height,t,pic->palette,NULL);
 										TurboCopyMem(t, pic->array, pic->width*pic->height*4);
@@ -772,7 +772,7 @@ ULONG PIC_Render(PIC *pic, ULONG pixelformat, TAGLIST tags)
 								success = FALSE;
 								if (pic->owner)
 								{
-									if ((p32 = AllocRenderVecClear(MemHandler, pic->width * pic->height * 4)))
+									if (p32 = AllocRenderVecClear(MemHandler, pic->width * pic->height * 4))
 									{
 										UBYTE *newarray = p32;
 										p24 = pic->array;
@@ -853,22 +853,22 @@ ULONG PIC_Scale(PIC *pic, ULONG width, ULONG height,
 
 	if ((pic->width != width) || (pic->height != height))
 	{
-		if ((success = PrepareDrawing(pic)))
+		if (success = PrepareDrawing(pic))
 		{
-			if ((success = InsertAlphaArray(pic)))
+			if (success = InsertAlphaArray(pic))
 			{
 				APTR scaleengine;
 				success = FALSE;
 			
-				if ((scaleengine = CreateScaleEngine(pic->width, pic->height, width, height,
+				if (scaleengine = CreateScaleEngine(pic->width, pic->height, width, height,
 					RND_PixelFormat, pic->pixelformat,
-					RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+					RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 				{
 					if (pic->owner)
 					{
 						APTR t;
-						if ((t = AllocRenderVec(MemHandler, 
-							width*height*PIXELSIZE(pic->pixelformat))))
+						if (t = AllocRenderVec(MemHandler,
+							width*height*PIXELSIZE(pic->pixelformat)))
 						{
 							Scale(scaleengine, pic->array, t, NULL);
 							FreeRenderVec(pic->array);
@@ -888,8 +888,8 @@ ULONG PIC_Scale(PIC *pic, ULONG width, ULONG height,
 							else
 							{
 								APTR t;
-								if ((t = AllocRenderVec(MemHandler,
-									width*height*PIXELSIZE(pic->pixelformat))))
+								if (t = AllocRenderVec(MemHandler,
+									width*height*PIXELSIZE(pic->pixelformat)))
 								{
 									Scale(scaleengine, pic->array, t, NULL);
 									TurboCopyMem(t, pic->array, width*height*PIXELSIZE(pic->pixelformat));
@@ -1065,9 +1065,9 @@ ULONG PIC_Mix(PIC *pic, PIC *mixpic, TAGLIST tags)
 			if ((sourcewidth != destwidth) || (sourceheight != destheight))
 			{
 				success = FALSE;
-				if ((scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
+				if (scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
 					destwidth, destheight, RND_PixelFormat, mixpic->pixelformat,
-					RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+					RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 				{
 					success = TRUE;
 				}		
@@ -1087,7 +1087,7 @@ ULONG PIC_Mix(PIC *pic, PIC *mixpic, TAGLIST tags)
 						{
 							APTR linebuffer;
 				
-							if ((linebuffer = AllocRenderVec(MemHandler, destwidth*4)))
+							if (linebuffer = AllocRenderVec(MemHandler, destwidth*4))
 							{
 								struct Hook drawhook;
 								struct mixrgbdata args;
@@ -1133,7 +1133,7 @@ ULONG PIC_Mix(PIC *pic, PIC *mixpic, TAGLIST tags)
 						{
 							UBYTE *buffer;
 				
-							if ((buffer = AllocRenderVec(MemHandler, destwidth*5)))
+							if (buffer = AllocRenderVec(MemHandler, destwidth*5))
 							{
 								struct Hook drawhook;
 								struct mixchunkyrgbdata args;
@@ -1166,7 +1166,7 @@ ULONG PIC_Mix(PIC *pic, PIC *mixpic, TAGLIST tags)
 						else
 						{
 							APTR buffer;
-							if ((buffer = AllocRenderVec(MemHandler, destwidth*4)))
+							if (buffer = AllocRenderVec(MemHandler, destwidth*4))
 							{
 								struct Hook drawhook;
 								struct mixrgbdata args;
@@ -1254,7 +1254,7 @@ ULONG PIC_TintAlpha(PIC *pic, ULONG rgb, TAGLIST tags)
 				rgb = AROS_LONG2BE(rgb);
 			#endif
 				
-				if ((mixline = AllocRenderVec(MemHandler, destwidth*4)))
+				if (mixline = AllocRenderVec(MemHandler, destwidth*4))
 				{
 					int i;
 					for (i = 0; i < destwidth; ++i)
@@ -1450,10 +1450,10 @@ ULONG PIC_MixAlpha(PIC *pic, PIC *mixpic, TAGLIST tags)
 						if ((destwidth != sourcewidth) || (destheight != sourceheight))
 						{
 							success = FALSE;
-							if ((scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
+							if (scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
 								destwidth, destheight,
 								RND_PixelFormat, PIXFMT_0RGB_32,
-								RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+								RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 							{
 								success = TRUE;
 							}		
@@ -1469,7 +1469,7 @@ ULONG PIC_MixAlpha(PIC *pic, PIC *mixpic, TAGLIST tags)
 							{
 								APTR linebuffer;
 							
-								if ((linebuffer = AllocRenderVec(MemHandler, destwidth*4)))
+								if (linebuffer = AllocRenderVec(MemHandler, destwidth*4))
 								{
 									struct Hook drawhook;
 									struct mixalphadata args;
@@ -1623,16 +1623,16 @@ ULONG PIC_RenderPaletteA(PIC *pic, APTR palette, TAGLIST tags)
 	palfmt = GetTagData(GGFX_PaletteFormat, PALFMT_RGB8, tags);
 
 
-	if ((newpalette = CreatePalette(RND_HSType, 
+	if (newpalette = CreatePalette(RND_HSType,
 		pic->hstype == HSTYPE_UNDEFINED ? DEFAULT_PALETTE_HSTYPE : pic->hstype,
-		RND_RMHandler, (IPTR)MemHandler, TAG_DONE)))
+		RND_RMHandler, (IPTR)MemHandler, TAG_DONE))
 	{
 		ULONG numcolors;
 		int i;
 
 		if (palfmt == PALFMT_PALETTE)
 		{
-			if ((numcolors = GetPaletteAttrs(palette, 0)))
+			if (numcolors = GetPaletteAttrs(palette, 0))
 			{
 				ULONG rgb;
 				for (i = 0; i < numcolors; ++i)
@@ -1647,7 +1647,7 @@ ULONG PIC_RenderPaletteA(PIC *pic, APTR palette, TAGLIST tags)
 		}
 		else
 		{
-			if ((numcolors = GetTagData(GGFX_NumColors, 0, tags)))
+			if (numcolors = GetTagData(GGFX_NumColors, 0, tags))
 			{
 				ULONG *palptr;
 				for (i = 0; i < numcolors; ++i)
@@ -1834,9 +1834,9 @@ ULONG PIC_Texture(PIC *pic, PIC *texpic, WORD *coords, TAGLIST tags)
 
 		success = FALSE;
 
-		if ((texengine = CreateScaleEngine(sourcewidth, sourceheight, 
+		if (texengine = CreateScaleEngine(sourcewidth, sourceheight,
 			destwidth, destheight, RND_RMHandler, (IPTR)MemHandler,
-			RND_DestCoordinates, (IPTR)coords, RND_PixelFormat, pic->pixelformat, TAG_DONE)))
+			RND_DestCoordinates, (IPTR)coords, RND_PixelFormat, pic->pixelformat, TAG_DONE))
 		{
 			Scale(texengine, (APTR) source, (APTR) dest, 
 				RND_SourceWidth, texpic->width,
@@ -2014,9 +2014,9 @@ ULONG PIC_Insert(PIC *pic, PIC *sourcepic, TAGLIST tags)
 		{
 			APTR scaleengine;
 
-			if ((scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
+			if (scaleengine = CreateScaleEngine(sourcewidth, sourceheight,
 						destwidth, destheight, RND_RMHandler, (IPTR)MemHandler, 
-						RND_PixelFormat, pic->pixelformat, TAG_DONE)))
+						RND_PixelFormat, pic->pixelformat, TAG_DONE))
 			{
 				success = (Scale(scaleengine, source, dest,
 								RND_SourceWidth, sourcepic->width,

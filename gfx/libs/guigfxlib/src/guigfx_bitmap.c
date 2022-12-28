@@ -536,7 +536,7 @@ APTR ReadBitMapA(struct BitMap *bm, UWORD displayID, PALETTE palette,
 
 						DB(kprintf("~reading/scaling RGB bitmap\n"));
 						
-						if ((linebuffer = AllocRenderVec(MemHandler, sourcewidth * 4)))
+						if (linebuffer = AllocRenderVec(MemHandler, sourcewidth * 4))
 						{
 							struct Hook readhook;
 							struct readrgbdata hookdata;
@@ -573,7 +573,7 @@ APTR ReadBitMapA(struct BitMap *bm, UWORD displayID, PALETTE palette,
 
 						DB(kprintf("~reading/scaling CLUT bitmap\n"));
 
-						if ((linebuffer = AllocRenderVec(MemHandler, ((sourcewidth+15) & ~15))))
+						if (linebuffer = AllocRenderVec(MemHandler, ((sourcewidth+15) & ~15)))
 						{
 							struct Hook readhook;
 							struct readclutdata hookdata;
@@ -614,9 +614,9 @@ APTR ReadBitMapA(struct BitMap *bm, UWORD displayID, PALETTE palette,
 
 						DB(kprintf("~reading/scaling HAM bitmap\n"));
 
-						if ((linebuffer = AllocRenderVec(MemHandler, ((sourcewidth + sourcex + 15) & ~15))))
+						if (linebuffer = AllocRenderVec(MemHandler, ((sourcewidth + sourcex + 15) & ~15)))
 						{
-							if ((rgbbuffer = AllocRenderVec(MemHandler, sourcewidth * 4)))
+							if (rgbbuffer = AllocRenderVec(MemHandler, sourcewidth * 4))
 							{
 								struct Hook readhook;
 								struct readhamdata hookdata;
@@ -695,7 +695,7 @@ APTR ReadBitMapA(struct BitMap *bm, UWORD displayID, PALETTE palette,
 
 						DB(kprintf("~reading HAM bitmap\n"));
 
-						if ((linebuffer = AllocRenderVec(MemHandler, ((destwidth+15) & ~15) )))
+						if (linebuffer = AllocRenderVec(MemHandler, ((destwidth+15) & ~15) ))
 						{
 							int i;
 							ULONG *p = array;

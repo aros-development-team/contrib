@@ -109,7 +109,7 @@ ULONG PIC_Convolve(PIC *pic, KERNEL *kernel, TAGLIST tags)
 				ULONG *dest;
 				ULONG *source = ((ULONG *) pic->array) + destx + desty * pic->width;
 				
-				if ((dest = AllocRenderVec(MemHandler, destwidth * destheight * 4)))
+				if (dest = AllocRenderVec(MemHandler, destwidth * destheight * 4))
 				{
 					int x,y,c,d;
 					ULONG *sbufptr = source;

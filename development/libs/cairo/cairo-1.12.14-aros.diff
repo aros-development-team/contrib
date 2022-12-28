@@ -92,6 +92,31 @@ diff -ruN cairo-1.12.14/configure cairo-1.12.14.aros/configure
  MAYBE_WARN="$MAYBE_WARN -fno-strict-aliasing -fno-common"
  
  MAYBE_WARN="$MAYBE_WARN -Wp,-D_FORTIFY_SOURCE=2"
+@@ -31800,11 +31800,6 @@
+ 
+ 
+ 
+-if pkg-config --exists 'pixman-1 >= 0.27.1'; then
+-
+-$as_echo "#define HAS_PIXMAN_GLYPHS 1" >>confdefs.h
+-
+-fi
+ 
+ 
+ 
+diff -ruN cairo-1.12.14/configure.ac cairo-1.12.14.aros/configure.ac
+--- cairo-1.12.14/configure.ac	2013-01-29 13:54:51.000000000 +0000
++++ cairo-1.12.14.aros/configure.ac	2022-12-21 10:58:55.751160236 +0000
+@@ -662,9 +662,6 @@
+   image_LIBS=$pixman_LIBS
+ ])
+ 
+-if pkg-config --exists 'pixman-1 >= 0.27.1'; then
+-    AC_DEFINE([HAS_PIXMAN_GLYPHS], 1, [Enable pixman glyph cache])
+-fi
+ 
+ 
+ dnl ===========================================================================
 diff -ruN cairo-1.12.14/Makefile.am cairo-1.12.14.aros/Makefile.am
 --- cairo-1.12.14/Makefile.am	2012-04-19 13:17:34.000000000 +0100
 +++ cairo-1.12.14.aros/Makefile.am	2016-04-05 23:44:19.447970276 +0100
