@@ -78,13 +78,13 @@ static void SetPopupMenuAfterIconSupportFlags(struct internalScaWindowTask *iwt,
 	struct PopupMenu *pm, struct ScaIconNode *in);
 static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalScaWindowTask *iwt);
 static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
-	const struct SCALOS_MENUTREE *mTree, struct PopupMenu *pm,
+	const struct ScalosMenuTree *mTree, struct PopupMenu *pm,
 	struct ScaIconNode *in, const struct IconMenuSupports *CmdTable, ULONG Flags);
 static SAVEDS(CONST_STRPTR) PMGetStringFunc(struct Hook *theHook, ULONG dummy, ULONG *args);
 static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *mpm);
 static void ShowWindowPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *mpm);
 static ULONG CheckPopupMenu(struct internalScaWindowTask *iwt, struct ScaIconNode *in,
-	const struct SCALOS_MENUTREE *mTree, ULONG *Checkit, ULONG *Checked);
+	const struct ScalosMenuTree *mTree, ULONG *Checkit, ULONG *Checked);
 static void CreateSelectedIconList(struct List *SelectedIconList, 
 	struct List *LockedWindowList, struct ScaIconNode *IconUnderPointer);
 static void CleanupSelectedIconList(struct List *SelectedIconList, struct List *LockedWindowList);
@@ -311,7 +311,7 @@ static void SetPopupMenuAfterIconSupportFlags(struct internalScaWindowTask *iwt,
 	while (pm)
 		{
 		struct PopupMenu *pmSub = NULL;
-		struct SCALOS_MENUTREE *mTree = NULL;
+		struct ScalosMenuTree *mTree = NULL;
 
 		PM_GetItemAttrs(pm,
 			PM_UserData, (IPTR) &mTree,
@@ -343,7 +343,7 @@ static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalSc
 	while (pm)
 		{
 		struct PopupMenu *pmSub = NULL;
-		struct SCALOS_MENUTREE *mTree = NULL;
+		struct ScalosMenuTree *mTree = NULL;
 
 		PM_GetItemAttrs(pm,
 			PM_UserData, (IPTR) &mTree,
@@ -369,7 +369,7 @@ static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalSc
 
 
 static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
-	const struct SCALOS_MENUTREE *mTree, struct PopupMenu *pm, struct ScaIconNode *in,
+	const struct ScalosMenuTree *mTree, struct PopupMenu *pm, struct ScaIconNode *in,
 	const struct IconMenuSupports *CmdTable, ULONG Flags)
 {
 	if (SCAMENUTYPE_Command == mTree->mtre_type)
@@ -459,7 +459,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 	Object *IconObj = mpm->mpm_IconNode->in_Icon;
 	struct ExtGadget *gg = (struct ExtGadget *) mpm->mpm_IconNode->in_Icon;
 	struct PopupMenu *pmTitle;
-	struct SCALOS_MENUTREE *mtr;
+	struct ScalosMenuTree *mtr;
 	struct SelectedIcon *sli;
 	ULONG wasSelected;
 	ULONG SelectedIconCount = 0;
@@ -536,7 +536,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 	ScalosObtainSemaphore(&LayersSema);
 
 	// PM_OpenPopupMenuA()
-	mtr = (struct SCALOS_MENUTREE *) PM_OpenPopupMenu(iwt->iwt_WindowTask.wt_Window,
+	mtr = (struct ScalosMenuTree *) PM_OpenPopupMenu(iwt->iwt_WindowTask.wt_Window,
 		PM_Menu, (IPTR) mpm->mpm_PopupMenu,
 		PM_LocaleHook, (IPTR) &PMGetStringHook,
 		TAG_END);
@@ -638,7 +638,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 static void ShowWindowPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *mpm)
 {
 	struct PopupMenu *pmTitle2 = NULL;
-	struct SCALOS_MENUTREE *mtr;
+	struct ScalosMenuTree *mtr;
 	struct PopupMenu *pmTitle;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
@@ -667,7 +667,7 @@ static void ShowWindowPopupMenu(struct internalScaWindowTask *iwt, struct msg_Sh
 	ScalosObtainSemaphore(&LayersSema);
 
 	// PM_OpenPopupMenuA()
-	mtr = (struct SCALOS_MENUTREE *) PM_OpenPopupMenu(iwt->iwt_WindowTask.wt_Window,
+	mtr = (struct ScalosMenuTree *) PM_OpenPopupMenu(iwt->iwt_WindowTask.wt_Window,
 		PM_Menu, (IPTR) mpm->mpm_PopupMenu,
 		PM_LocaleHook, (IPTR) &PMGetStringHook,
 		TAG_END);
@@ -695,7 +695,7 @@ static void ShowWindowPopupMenu(struct internalScaWindowTask *iwt, struct msg_Sh
 
 
 static ULONG CheckPopupMenu(struct internalScaWindowTask *iwt, struct ScaIconNode *in,
-	 const struct SCALOS_MENUTREE *mTree, ULONG *Checkit, ULONG *Checked)
+	 const struct ScalosMenuTree *mTree, ULONG *Checkit, ULONG *Checked)
 {
 	ULONG Disabled = FALSE;
 	struct ScalosMenuCommand *mpi;

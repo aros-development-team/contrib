@@ -583,7 +583,7 @@ void ScalosTagListCleanup(struct ScalosTagList *tagList)
 }
 
 
-LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, ULONG data)
+LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, IPTR data)
 {
 	if (NULL == tagList)
 		return RETURN_ERROR;
@@ -644,14 +644,14 @@ struct TagItem *ScalosVTagList(ULONG FirstTag, va_list args)
 			switch (ti->ti_Tag)
 				{
 			case TAG_MORE:
-				ti->ti_Data = va_arg(args, ULONG);
+				ti->ti_Data = va_arg(args, IPTR);
 				Finished = TRUE;
 				break;
 			case TAG_END:
 				Finished = TRUE;
 				break;
 			default:
-				ti->ti_Data = va_arg(args, ULONG);
+				ti->ti_Data = va_arg(args, IPTR);
 				break;
 				}
 
@@ -690,7 +690,7 @@ struct TagItem *ScalosVTagList(ULONG FirstTag, va_list args)
 					ti++;
 					}
 
-				ti->ti_Tag = va_arg(args, ULONG);
+				ti->ti_Tag = va_arg(args, IPTR);
 				}
 			}
 

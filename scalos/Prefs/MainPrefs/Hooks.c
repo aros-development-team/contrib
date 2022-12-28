@@ -141,11 +141,11 @@ SAVEDS(void) INTERRUPT ControlBarGadgetListBrowserActiveHookFunc(struct Hook *ho
 		}
 
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
+		(cgy && cgy->cgy_NormalImage) ? cgy->cgy_NormalImage : (STRPTR) "");
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
+		(cgy && cgy->cgy_SelectedImage) ? cgy->cgy_SelectedImage : (STRPTR) "");
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
+		(cgy && cgy->cgy_DisabledImage) ? cgy->cgy_DisabledImage : (STRPTR) "");
 }
 
 //-----------------------------------------------------------------
@@ -194,11 +194,11 @@ SAVEDS(void) INTERRUPT ControlBarGadgetListNormalActiveHookFunc(struct Hook *hoo
 		}
 
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
+		(cgy && cgy->cgy_NormalImage) ? cgy->cgy_NormalImage : (STRPTR) "");
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
+		(cgy && cgy->cgy_SelectedImage) ? cgy->cgy_SelectedImage : (STRPTR) "");
 	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
-		cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
+		(cgy && cgy->cgy_DisabledImage) ? cgy->cgy_DisabledImage : (STRPTR) "");
 }
 
 //-----------------------------------------------------------------

@@ -81,7 +81,7 @@ struct IconListNode
 
 // local functions
 
-static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg);
+static SAVEDS(IPTR) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_ReadIconList(Class *cl, Object *o, Msg msg);
 static IPTR IconWindowClass_ReadIcon(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Message(Class *cl, Object *o, Msg msg);
@@ -214,9 +214,9 @@ struct ScalosClass *initIconWindowClass(const struct PluginClass *plug)
 }
 
 
-static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
+static SAVEDS(IPTR) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 {
-	ULONG Result;
+	IPTR Result;
 
 	d1(KPrintF("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 

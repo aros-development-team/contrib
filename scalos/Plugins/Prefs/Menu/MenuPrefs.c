@@ -159,7 +159,7 @@ struct MenuListEntry
 
 struct MenuInsertEntry
 	{
-	struct SCALOS_MENUTREE *mie_TreeEntry;
+	struct ScalosMenuTree *mie_TreeEntry;
 	ULONG mie_MenuFlags;
 	};
 
@@ -190,8 +190,8 @@ struct ScalosMenuChunk
 	{
 	UWORD smch_MenuID;		// enum ScalosMenuChunkId
 	UWORD smch_Entries;		// number of entries
-	struct ScalosMenuTree smch_Menu[1];	// (variable) the menu entries
-	};
+	struct ScalosMenuTreeDisk smch_Menu[1];	// (variable) the menu entries
+	} __attribute__((packed));
 
 struct CommandTableEntry
 	{
@@ -299,12 +299,12 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 	const struct MUI_NListtree_TreeNode *TreeNode,
 	struct ScalosMenuTree **MenuSpace, STRPTR *StringSpace,
 	struct ScalosMenuTree **Parent);
-static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *baseAddr);
+static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *dstBase, IPTR *nextFree);
 static LONG SaveIcon(struct MenuPrefsInst *inst, CONST_STRPTR IconName);
 static void ClearMenuList(struct MenuPrefsInst *inst);
 static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace);
-static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE *MenuTree, const UBYTE *BaseAddr);
-static void GenerateMenuList(struct MenuPrefsInst *inst, struct SCALOS_MENUTREE *mTree,
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *srcBase, const UBYTE *treeBase, IPTR *end);
+static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *mTree,
 	Object *ListTree, struct MUI_NListtree_TreeNode *MenuNode);
 static BOOL RequestTdFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
 static BOOL RequestParmFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
@@ -486,8 +486,8 @@ struct CommandTableEntry CommandsTable[] =
 	{ "makedir",			MSGID_COM7NAME },
 	{ "moveto",			MSGID_COM50NAME },
 	{ "open",			MSGID_COM19NAME },
-	{ "openinbrowserwindow",        MSGID_COM_OPENBROWSERWINDOW },
-	{ "openinnewwindow",    	MSGID_COM_OPENNEWWINDOW },
+	{ "openinbrowserwindow",	MSGID_COM_OPENBROWSERWINDOW },
+	{ "openinnewwindow",		MSGID_COM_OPENNEWWINDOW },
 	{ "parent",			MSGID_COM8NAME },
 	{ "paste",			MSGID_COM41NAME },
 	{ "putaway",			MSGID_COM26NAME },
@@ -635,11 +635,11 @@ BOOL closePlugin(struct PluginBase *PluginBase)
 }
 
 
-LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
+LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5);
 {
-	ULONG result;
+	IPTR result;
 
 	d1(kprintf("%s/%s/%ld: which=%ld\n", __FILE__, __FUNC__, __LINE__, which));
 
@@ -971,10 +971,10 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_NListtree_DragDropSort, TRUE,
 							MUIA_NList_ShowDropMarks, TRUE,
 							MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
-                                                End),
+						End),
 						MUIA_ObjectID, MAKE_ID('M','T','R','E'),
 						MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-                                        End),
+					End),
 
 					Child, (IPTR)(NListviewObject,
 						MUIA_ShowMe, FALSE,
@@ -987,9 +987,9 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_NListtree_DisplayHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeDisplay],
 							MUIA_NListtree_ConstructHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeConstruct],
 							MUIA_NListtree_DestructHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeDestruct],
-                                                End),
+						End),
 						MUIA_Listview_DragType, MUIV_Listview_DragType_None,
-                                        End),
+					End),
 
 					Child, (IPTR)(NListviewObject,
 						MUIA_ShowMe, FALSE,
@@ -1002,14 +1002,14 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_NListtree_DisplayHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeDisplay],
 							MUIA_NListtree_ConstructHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeConstruct],
 							MUIA_NListtree_DestructHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_TreeDestruct],
-                                                End),
+						End),
 						MUIA_Listview_DragType, MUIV_Listview_DragType_None,
-                                        End),
+					End),
 
-                                End), //VGroup
+				End), //VGroup
 
 				Child, (IPTR)(BalanceObject,
-                                End), //Balance
+				End), //Balance
 
 				Child, (IPTR)(VGroup,
 
@@ -1020,8 +1020,8 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_CycleChain, TRUE,
 								MUIA_Frame, MUIV_Frame_String,
 								MUIA_String_MaxLen, MAX_NAMESIZE,
-                                                        End),
-                                                End), //VGroup
+							End),
+						End), //VGroup
 						Child, (IPTR)(HGroup,
 							MUIA_Weight, 0,
 							Child, (IPTR)Label(GetLocString(MSGID_HOTKEYNAME)),
@@ -1030,10 +1030,10 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_String_MaxLen, 2,
 								MUIA_Weight, 10,
 								MUIA_Frame, MUIV_Frame_String,
-                                                        End),
-                                                End),
+							End),
+						End),
 						Child, (IPTR)HVSpace,
-                                        End), //VGroup
+					End), //VGroup
 
 					Child, (IPTR)HVSpace,
 
@@ -1049,13 +1049,13 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_Popasl_StartHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
 							MUIA_Popstring_String, (IPTR)MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
 							MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopFile),
-                                                End), //PopaslObject
+						End), //PopaslObject
 
 						Child, (IPTR)(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage] = DataTypesImageObject,
 							MUIA_ShortHelp, (IPTR)GetLocString(MSGID_SAMPLE_UNSELECTEDIMAGE_SHORTHELP),
 							MUIA_ScaDtpic_Name,  (IPTR) "",
-                                                End), //DataTypesMCCObject
-                                        End), //ColGroup
+						End), //DataTypesMCCObject
+					End), //ColGroup
 
 					Child, (IPTR)(ColGroup(2),
 						MUIA_FrameTitle, (IPTR)GetLocString(MSGID_ENTRY_GROUP_SELECTEDIMAGE),
@@ -1069,14 +1069,14 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_Popasl_StartHook, (IPTR)&inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
 							MUIA_Popstring_String, (IPTR)MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
 							MUIA_Popstring_Button, (IPTR)PopButton(MUII_PopFile),
-                                                End), //PopaslObject
+						End), //PopaslObject
 
 						Child, (IPTR)(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage] = DataTypesImageObject,
 							MUIA_ShortHelp, (IPTR)GetLocString(MSGID_SAMPLE_SELECTEDIMAGE_SHORTHELP),
 							MUIA_ScaDtpic_Name,  (IPTR) "",
-                                                End), //DataTypesMCCObject
+						End), //DataTypesMCCObject
 
-                                        End), //ColGroup
+					End), //ColGroup
 
 					Child, (IPTR)HVSpace,
 
@@ -1090,7 +1090,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_Cycle_Entries, (IPTR)CmdModeStrings,
 								MUIA_Weight, 5,
 								MUIA_CycleChain, TRUE,
-                                                        End),
+							End),
 
 							Child, (IPTR)(HGroup,
 								Child, (IPTR)(inst->mpb_Objects[OBJNDX_PopObject] = PopobjectObject,
@@ -1121,9 +1121,9 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 									MUIA_CycleChain, TRUE,
 									MUIA_String_MaxLen, MAX_LINESIZE,
 									MUIA_Frame, MUIV_Frame_String,
-                                                                End),
-                                                        End), //HGroup
-                                                End), //VGroup
+								End),
+							End), //HGroup
+						End), //VGroup
 
 						Child, (IPTR)HVSpace,
 
@@ -1134,7 +1134,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							Child, (IPTR)(inst->mpb_Objects[OBJNDX_CheckArgs] = CheckMark(FALSE)),
 
 							Child, (IPTR)HVSpace,
-                                                End), //ColGroup
+						End), //ColGroup
 
 						Child, (IPTR)(ColGroup(2),
 							Child, (IPTR)Label(GetLocString(MSGID_STACKNAME)),
@@ -1145,7 +1145,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_String_Accept, (IPTR)"0123456789",
 								MUIA_String_MaxLen, 10,
 								MUIA_String_Integer, DEFAULT_STACKSIZE,
-                                                        End),
+							End),
 
 							Child, (IPTR)Label(GetLocString(MSGID_PRIORITY_SLIDER_NAME)),
 							Child, (IPTR)(inst->mpb_Objects[OBJNDX_SliderPriority] = SliderObject,
@@ -1155,33 +1155,33 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_Numeric_Max, 127,
 								MUIA_Numeric_Value, 0,
 								MUIA_ShortHelp, (IPTR)GetLocString(MSGID_PRIORITY_SLIDER_BUBBLE),
-                                                        End),
-                                                End), //ColGroup
-                                        End), //VGroup
-                                        Child, (IPTR)HVSpace,
-                                End), //VGroup
-                        End), //HGroup
+							End),
+						End), //ColGroup
+					End), //VGroup
+					Child, (IPTR)HVSpace,
+				End), //VGroup
+			End), //HGroup
 
-                        Child, (IPTR)(HGroup,
-                                Child, (IPTR)(inst->mpb_Objects[OBJNDX_Lamp_Changed] = LampObject,
-                                        MUIA_Lamp_Type, MUIV_Lamp_Type_Huge,
-                                        MUIA_Lamp_Color, MUIV_Lamp_Color_Off,
-                                        MUIA_ShortHelp, (IPTR)GetLocString(MSGID_SHORTHELP_LAMP_CHANGED),
-                                End), //LampObject
+			Child, (IPTR)(HGroup,
+				Child, (IPTR)(inst->mpb_Objects[OBJNDX_Lamp_Changed] = LampObject,
+					MUIA_Lamp_Type, MUIV_Lamp_Type_Huge,
+					MUIA_Lamp_Color, MUIV_Lamp_Color_Off,
+					MUIA_ShortHelp, (IPTR)GetLocString(MSGID_SHORTHELP_LAMP_CHANGED),
+				End), //LampObject
 
-                                Child, (IPTR)(inst->mpb_Objects[OBJNDX_Group_Buttons1] = HGroup,
-                                        MUIA_Group_SameWidth, TRUE,
-                                        Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewMenuButton] = KeyButtonHelp(GetLocString(MSGID_NEWNAME),
-                                                        'm', GetLocString(MSGID_SHORTHELP_NEWMENUBUTTON))),
-                                        Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewItemButton] = KeyButtonHelp(GetLocString(MSGID_NEWINAME),
-                                                        'i', GetLocString(MSGID_SHORTHELP_NEWITEMBUTTON))),
-                                        Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewCommandButton] = KeyButtonHelp(GetLocString(MSGID_NEW2NAME),
-                                                        'c', GetLocString(MSGID_SHORTHELP_NEWCOMMANDBUTTON))),
-                                        Child, (IPTR)(inst->mpb_Objects[OBJNDX_DelButton] = KeyButtonHelp(GetLocString(MSGID_DELNAME),
-                                                        'd', GetLocString(MSGID_SHORTHELP_DELBUTTON))),
-                                End), //HGroup
-                        End), //HGroup
-                End), //VGroup
+				Child, (IPTR)(inst->mpb_Objects[OBJNDX_Group_Buttons1] = HGroup,
+					MUIA_Group_SameWidth, TRUE,
+						Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewMenuButton] = KeyButtonHelp(GetLocString(MSGID_NEWNAME),
+								'm', GetLocString(MSGID_SHORTHELP_NEWMENUBUTTON))),
+						Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewItemButton] = KeyButtonHelp(GetLocString(MSGID_NEWINAME),
+								'i', GetLocString(MSGID_SHORTHELP_NEWITEMBUTTON))),
+						Child, (IPTR)(inst->mpb_Objects[OBJNDX_NewCommandButton] = KeyButtonHelp(GetLocString(MSGID_NEW2NAME),
+								'c', GetLocString(MSGID_SHORTHELP_NEWCOMMANDBUTTON))),
+						Child, (IPTR)(inst->mpb_Objects[OBJNDX_DelButton] = KeyButtonHelp(GetLocString(MSGID_DELNAME),
+								'd', GetLocString(MSGID_SHORTHELP_DELBUTTON))),
+				End), //HGroup
+			End), //HGroup
+		End), //VGroup
 
 		MUIA_ContextMenu, (IPTR)inst->mpb_Objects[OBJNDX_ContextMenu],
 	End;
@@ -1644,7 +1644,7 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 		d1(KPrintF("%s/%s/%ld: llist_name=<%s>  mtre_type=%ld\n", __FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->mtre_type));
 
 		d1(KPrintF("%s/%s/%ld: mtre_iconnames=%08lx\n", __FILE__, __FUNC__, __LINE__, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames));
-		if ((mie->mie_TreeEntry->mtre_flags & MTREFLGF_IconNames) &&
+		if ((mie) && (mie->mie_TreeEntry->mtre_flags & MTREFLGF_IconNames) &&
 			mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames)
 			{
 			stccpy(mle->llist_UnselectedIconName, (const char *)mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames,
@@ -1674,30 +1674,34 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 
 		ltcm->UserData = mle;
 		ltcm->Name = mle->llist_name;
-		mle->llist_EntryType = mie->mie_TreeEntry->mtre_type;
-		mle->llist_Flags = mie->mie_MenuFlags;
 
-		d1(kprintf("%s/%s/%ld: EntryName=<%s> mie_MenuFlags=%02lx  EntryType=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, ltcm->Name, mie->mie_MenuFlags, mie->mie_TreeEntry->mtre_type));
-
-		d1(kprintf("%s/%s/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey));
-
-		stccpy(mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
-
-		if (SCAMENUTYPE_Command == mle->llist_EntryType)
+		if (mie)
 			{
-			d1(kprintf("%s/%s/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
-				__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
+			mle->llist_EntryType = mie->mie_TreeEntry->mtre_type;
+			mle->llist_Flags = mie->mie_MenuFlags;
 
-			stccpy(mle->llist_name,
-				mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name ? mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name : (STRPTR) "",
-				sizeof(mle->llist_name));
+			d1(kprintf("%s/%s/%ld: EntryName=<%s> mie_MenuFlags=%02lx  EntryType=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, ltcm->Name, mie->mie_MenuFlags, mie->mie_TreeEntry->mtre_type));
 
-			mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
-			mle->llist_CommandType = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_type;
-			mle->llist_CommandFlags = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_flags;
-			mle->llist_Stack = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_stack;
+			d1(kprintf("%s/%s/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey));
+
+			stccpy(mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
+
+			if (SCAMENUTYPE_Command == mle->llist_EntryType)
+				{
+				d1(kprintf("%s/%s/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
+
+				stccpy(mle->llist_name,
+					mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name ? mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name : (STRPTR) "",
+					sizeof(mle->llist_name));
+
+				mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
+				mle->llist_CommandType = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_type;
+				mle->llist_CommandFlags = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_flags;
+				mle->llist_Stack = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_stack;
+				}
 			}
 		}
 
@@ -2624,7 +2628,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 	struct MUI_NListtree_TreeNode *ParentNode;
 	struct MUI_NListtree_TreeNode *PrevNode;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mTree.mtre_type = SCAMENUTYPE_Menu;
@@ -2663,7 +2667,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 		{
 		struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mTree.mtre_type = SCAMENUTYPE_Command;
@@ -2727,7 +2731,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 		{
 		struct MUI_NListtree_TreeNode *newNode;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mTree.mtre_type = SCAMENUTYPE_MenuItem;
@@ -2773,20 +2777,15 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 	LONG Result;
 	struct IFFHandle *iff;
 	BOOL iffOpened = FALSE;
-	struct ScalosMenuChunk *menuChunk;
-#if defined(__AROS__) && __WORDSIZE==64
-        struct SCALOS_MENUTREE *adjustedMenu;
-#endif
+	struct ScalosMenuChunk *menuChunk = NULL;
+	struct ScalosMenuTree *adjustedMenu = NULL;
+	IPTR end;
 
 	set(inst->mpb_Objects[OBJNDX_MainListView], MUIA_NListtree_Quiet, TRUE);
 
 	d1(kprintf("%s/%s//%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __FILE__, __FUNC__, __LINE__, LocaleBase, IFFParseBase));
 
 	do	{
-                menuChunk = NULL;
-#if defined(__AROS__) && __WORDSIZE==64
-                adjustedMenu = NULL;
-#endif
 		iff = AllocIFF();
 		if (NULL == iff)
 			{
@@ -2833,16 +2832,14 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 				LONG Actual;
 
 				menuChunk = malloc(cn->cn_Size);
-#if defined(__AROS__) && __WORDSIZE==64
-                                adjustedMenu = malloc((cn->cn_Size << 1));
-                                if (NULL == adjustedMenu)
-                                {
-                                        free(menuChunk);
-                                        break;
-                                }
-#else
-#define                     adjustedMenu  (menuChunk->smch_Menu)
-#endif
+				adjustedMenu = malloc((cn->cn_Size << 2));
+				if (NULL == adjustedMenu)
+					{
+					free(menuChunk);
+					break;
+					}
+				end = (IPTR)adjustedMenu;
+
 				d1(kprintf("%s/%s//%ld:  menuChunk=%08lx\n", __FILE__, __FUNC__, __LINE__, menuChunk));
 				if (NULL == menuChunk)
 					break;
@@ -2857,7 +2854,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 				d1(kprintf("%s/%s/%ld: MenuID=%ld  Entries=%ld\n", \
 					__FILE__, __FUNC__, __LINE__, menuChunk->smch_MenuID, menuChunk->smch_Entries));
 
-				AddAddresses(menuChunk->smch_Menu, adjustedMenu, (UBYTE *) menuChunk);
+				AddAddresses(menuChunk->smch_Menu, adjustedMenu, (UBYTE *) menuChunk, (UBYTE *) adjustedMenu, &end);
 
 				switch (menuChunk->smch_MenuID)
 					{
@@ -2903,9 +2900,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 					break;
 					}
 
-#if defined(__AROS__) && __WORDSIZE==64
-                                free(adjustedMenu);
-#endif
+				free(adjustedMenu);
 				free(menuChunk);
 				menuChunk = NULL;
 				}
@@ -3127,6 +3122,7 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 {
 	LONG Result;
 	struct ScalosMenuChunk *mChunk = NULL;
+	struct ScalosMenuTree *MenuTreeSpace = NULL;
 
 	do	{
 		const struct MUI_NListtree_TreeNode *SubNode;
@@ -3134,11 +3130,12 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 		STRPTR StringSpace;
 		UWORD nodeCount;
 		size_t Length;
-		struct ScalosMenuTree *MenuTreeSpace;
+		struct ScalosMenuTree *MenuSpace;
+		IPTR nextFree;
 
 		SubNode = (const struct MUI_NListtree_TreeNode *) DoMethod(TreeNode->mpn_Listtree,
 			MUIM_NListtree_GetEntry, TreeNode->mpn_ListNode,
-                        MUIV_NListtree_GetEntry_Position_Head,
+			MUIV_NListtree_GetEntry_Position_Head,
 			0);
 		if(NULL == SubNode)
 			{
@@ -3148,10 +3145,17 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 
 		nodeCount = CountMenuEntries(inst, TreeNode->mpn_Listtree, SubNode, &StringSpaceSize);
 
-		Length = sizeof(struct ScalosMenuChunk) + (nodeCount * sizeof(struct ScalosMenuChunk)) + StringSpaceSize;
+		Length = sizeof(struct ScalosMenuChunk) + (nodeCount * sizeof(struct ScalosMenuTreeDisk)) + StringSpaceSize;
 
 		mChunk = calloc(1, Length);
 		if (NULL == mChunk)
+			{
+			Result = ERROR_NO_FREE_STORE;
+			break;
+			}
+
+		MenuTreeSpace = calloc(1, nodeCount * sizeof(struct ScalosMenuTree));
+		if (NULL == MenuTreeSpace)
 			{
 			Result = ERROR_NO_FREE_STORE;
 			break;
@@ -3167,13 +3171,14 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 		d1(kprintf("%s/%s/%ld: ChunkID=%ld  Count=%ld  StringSpaceSize=%lu\n", \
 			__FILE__, __FUNC__, __LINE__, mChunk->smch_MenuID, mChunk->smch_Entries, StringSpaceSize));
 
-		MenuTreeSpace = mChunk->smch_Menu;
+		MenuSpace = MenuTreeSpace;
 
-		Result = BuildMenuTree(inst, TreeNode->mpn_Listtree, SubNode, &MenuTreeSpace, &StringSpace, NULL);
+		Result = BuildMenuTree(inst, TreeNode->mpn_Listtree, SubNode, &MenuSpace, &StringSpace, NULL);
 		if (RETURN_OK != Result)
 			break;
 
-		RemoveAddresses(mChunk->smch_Menu, (UBYTE *) mChunk);
+		nextFree = (IPTR)mChunk->smch_Menu;
+		RemoveAddresses(MenuTreeSpace, (UBYTE *) mChunk, &nextFree);
 
 		Result = PushChunk(iff, 0, ID_MENU, IFFSIZE_UNKNOWN);
 		if (RETURN_OK != Result)
@@ -3192,6 +3197,9 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 
 	if (mChunk)
 		free(mChunk);
+
+	if (MenuTreeSpace)
+		free(MenuTreeSpace);
 
 	return Result;
 }
@@ -3249,11 +3257,7 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 		struct ScalosMenuTree *mTree = *(struct ScalosMenuTree **) MenuSpace;
 		const struct MUI_NListtree_TreeNode *SubNode;
 		const struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
-#if !defined(__AROS__) || __WORDSIZE != 64
 		STRPTR MenuName;
-#else
-		STRPTR MenuName __unused;
-#endif
 
 		d1(KPrintF("%s/%s/%ld: TreeNode=%08lx  <%s>  mTree=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, TreeNode, TreeNode->tn_Name ? TreeNode->tn_Name : (STRPTR) "===BAR===", mTree));
@@ -3261,8 +3265,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 		if (Parent)
 			*Parent = mTree;
 
-		mTree->mtre_Next = 0;
-		mTree->mtre_tree = 0;
+		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->mtre_type = mle->llist_EntryType;
 		mTree->mtre_flags = mle->llist_Flags;
@@ -3284,31 +3288,24 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 			mTree->MenuCombo.MenuCommand.mcom_type = mle->llist_CommandType;
 			mTree->MenuCombo.MenuCommand.mcom_stack = mle->llist_Stack;
 			mTree->MenuCombo.MenuCommand.mcom_pri = mle->llist_Priority;
-#if !defined(__AROS__) || __WORDSIZE != 64
 			mTree->MenuCombo.MenuCommand.mcom_name = MenuName;
-#else
-                        //FIXME!!
-#endif
 			}
 		else
 			{
 			if (strlen(mle->llist_UnselectedIconName) > 0
 				|| strlen(mle->llist_SelectedIconName) > 0)
 				{
-				STRPTR IconName __unused;
+				STRPTR IconName;
 
 				IconName = AddMenuString(mle->llist_UnselectedIconName, StringSpace);
 				AddMenuString(mle->llist_SelectedIconName, StringSpace);
-#if !defined(__AROS__) || __WORDSIZE != 64
 				mTree->MenuCombo.MenuTree.mtre_iconnames = IconName;
-#else
-                                //FIXME!!
-#endif
+
 				mTree->mtre_flags |= MTREFLGF_IconNames;
 				}
 			else
 				{
-				mTree->MenuCombo.MenuTree.mtre_iconnames = 0;
+				mTree->MenuCombo.MenuTree.mtre_iconnames = NULL;
 				mTree->mtre_flags &= ~MTREFLGF_IconNames;
 				}
 
@@ -3318,11 +3315,7 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 
 			stccpy(mTree->MenuCombo.MenuTree.mtre_hotkey, mle->llist_HotKey, 
 				sizeof(mTree->MenuCombo.MenuTree.mtre_hotkey));
-#if !defined(__AROS__) || __WORDSIZE != 64
 			mTree->MenuCombo.MenuTree.mtre_name = MenuName;
-#else
-                        //FIXME!!
-#endif
 			}
 
 		SubNode = (const struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
@@ -3331,12 +3324,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 
 		if (SubNode)
 			{
-#if !defined(__AROS__) || __WORDSIZE != 64
-			Result = BuildMenuTree(inst, ListTree, SubNode, MenuSpace, StringSpace, (struct ScalosMenuTree **)&mTree->mtre_tree);
+			Result = BuildMenuTree(inst, ListTree, SubNode, MenuSpace, StringSpace, &mTree->mtre_tree);
 			if (RETURN_OK != Result)
-#else
-                        //FIXME!!
-#endif
 				break;
 			}
 
@@ -3344,12 +3333,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 			MUIM_NListtree_GetEntry, TreeNode, MUIV_NListtree_GetEntry_Position_Next,
 			MUIV_NListtree_GetEntry_Flag_SameLevel);
 
-#if !defined(__AROS__) || __WORDSIZE != 64
 		if (TreeNode)
-			Parent = (struct ScalosMenuTree **)&mTree->mtre_Next;
-#else
-                //FIXME!!
-#endif
+			Parent = &mTree->mtre_Next;
 		}
 
 	return Result;
@@ -3367,48 +3352,59 @@ static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace)
 }
 
 
-static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
+static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *dstBase, IPTR *nextFree)
 {
 	while (MenuTree)
 		{
-		struct ScalosMenuTree *MenuTreeNext = (APTR)((IPTR)BaseAddr + (IPTR)MenuTree->mtre_Next);
+		struct ScalosMenuTree *MenuTreeNext = MenuTree->mtre_Next;
+		struct ScalosMenuTreeDisk *dstTree = (struct ScalosMenuTreeDisk *)(*nextFree);
+		*nextFree = (*nextFree) + sizeof(struct ScalosMenuTreeDisk);
+		dstTree->mtre_type = MenuTree->mtre_type;
+		dstTree->mtre_flags = MenuTree->mtre_flags;
+		dstTree->mtre_Next = 0;
+		dstTree->mtre_tree = 0;
 
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
+			dstTree->MenuCombo.MenuCommand.mcom_flags = MenuTree->MenuCombo.MenuCommand.mcom_flags;
+			dstTree->MenuCombo.MenuCommand.mcom_type = MenuTree->MenuCombo.MenuCommand.mcom_type;
+
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				{
-				MenuTree->MenuCombo.MenuCommand.mcom_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuCommand.mcom_name - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuCommand.mcom_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuCommand.mcom_name - (IPTR)dstBase);
 				}
-			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
+			dstTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
+			dstTree->MenuCombo.MenuTree.mtre_hotkey[0] = MenuTree->MenuCombo.MenuTree.mtre_hotkey[0];
+			dstTree->MenuCombo.MenuTree.mtre_hotkey[1] = MenuTree->MenuCombo.MenuTree.mtre_hotkey[1];
+
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_name - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuTree.mtre_name = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_name - (IPTR)dstBase);
 				}
 
 			if ((MenuTree->mtre_flags & MTREFLGF_IconNames) && MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_iconnames = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_iconnames - (IPTR)BaseAddr);
+				dstTree->MenuCombo.MenuTree.mtre_iconnames = (PTR32)SCA_LONG2BE((IPTR)MenuTree->MenuCombo.MenuTree.mtre_iconnames - (IPTR)dstBase);
 				}
 
 			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
 				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
-                                MenuTree->mtre_flags, MenuTree->MenuCombo.MenuTree.mtre_iconnames));
+				MenuTree->mtre_flags, MenuTree->MenuCombo.MenuTree.mtre_iconnames));
 			}
 		if (MenuTree->mtre_tree)
 			{
-			RemoveAddresses((struct ScalosMenuTree *)((IPTR)BaseAddr + (IPTR)MenuTree->mtre_tree), BaseAddr);
-			MenuTree->mtre_tree = (SMTPTR32) (((IPTR) MenuTree->mtre_tree) - (IPTR) BaseAddr);
-			MenuTree->mtre_tree = (SMTPTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_tree);
+			dstTree->mtre_tree = (PTR32) ((*nextFree) - (IPTR) dstBase);
+			dstTree->mtre_tree = (PTR32) SCA_LONG2BE((IPTR)dstTree->mtre_tree);
+			RemoveAddresses(MenuTree->mtre_tree, dstBase, nextFree);
 			}
 		if (MenuTree->mtre_Next)
 			{
-			MenuTree->mtre_Next = (SMTPTR32) (((IPTR) MenuTree->mtre_Next) - (IPTR) BaseAddr);
-			MenuTree->mtre_Next = (SMTPTR32) SCA_LONG2BE((IPTR)MenuTree->mtre_Next);
+			dstTree->mtre_Next = (PTR32) ((*nextFree) - (IPTR) dstBase);
+			dstTree->mtre_Next = (PTR32) SCA_LONG2BE((IPTR)dstTree->mtre_Next);
 			}
-
 		MenuTree = MenuTreeNext;
 		}
 }
@@ -3531,29 +3527,41 @@ static void ClearMenuList(struct MenuPrefsInst *inst)
 }
 
 
-static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE *MenuTree, const UBYTE *BaseAddr)
+static void AddAddresses(struct ScalosMenuTreeDisk *srcTree, struct ScalosMenuTree *MenuTree, const UBYTE *srcBase, const UBYTE *treeBase, IPTR *end)
 {
 	while (MenuTree)
 		{
+		*end = (IPTR)*end + sizeof(struct ScalosMenuTree);
+		MenuTree->mtre_type = srcTree->mtre_type;
+		MenuTree->mtre_flags = srcTree->mtre_flags;
+		MenuTree->mtre_Next = NULL;
+		MenuTree->mtre_tree = NULL;
+
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
+			MenuTree->MenuCombo.MenuCommand.mcom_flags = srcTree->MenuCombo.MenuCommand.mcom_flags;
+			MenuTree->MenuCombo.MenuCommand.mcom_type = srcTree->MenuCombo.MenuCommand.mcom_type;
+
 			MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_BE_ADDR(srcTree->MenuCombo.MenuCommand.mcom_name);
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
-				MenuTree->MenuCombo.MenuCommand.mcom_name += (IPTR) BaseAddr;
+				MenuTree->MenuCombo.MenuCommand.mcom_name += (IPTR) srcBase;
 			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_BE2LONG(srcTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
+			MenuTree->MenuCombo.MenuTree.mtre_hotkey[0] = srcTree->MenuCombo.MenuTree.mtre_hotkey[0];
+			MenuTree->MenuCombo.MenuTree.mtre_hotkey[1] = srcTree->MenuCombo.MenuTree.mtre_hotkey[1];
+
 			MenuTree->MenuCombo.MenuTree.mtre_name = SCA_BE_ADDR(srcTree->MenuCombo.MenuTree.mtre_name);
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
-				MenuTree->MenuCombo.MenuTree.mtre_name += (IPTR) BaseAddr;
+				MenuTree->MenuCombo.MenuTree.mtre_name += (IPTR) srcBase;
 
 			if (MenuTree->mtre_flags & MTREFLGF_IconNames)
 				{
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames = SCA_BE_ADDR(srcTree->MenuCombo.MenuTree.mtre_iconnames);
 				if (MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 					{
-					MenuTree->MenuCombo.MenuTree.mtre_iconnames += (IPTR) BaseAddr;
+					MenuTree->MenuCombo.MenuTree.mtre_iconnames += (IPTR) srcBase;
 					}
 					else
 					{
@@ -3572,23 +3580,26 @@ static void AddAddresses(struct ScalosMenuTree *srcTree, struct SCALOS_MENUTREE 
 				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_iconnames \
 				? MenuTree->MenuCombo.MenuTree.mtre_iconnames : (STRPTR) ""));
 			}
-		MenuTree->mtre_tree = SCA_BE_ADDR(srcTree->mtre_tree);
-		if (MenuTree->mtre_tree)
+		srcTree->mtre_tree = (PTR32)SCA_BE2LONG((IPTR)srcTree->mtre_tree);
+		if (srcTree->mtre_tree)
 			{
-			MenuTree->mtre_tree = (struct SCALOS_MENUTREE *) (((UBYTE *) MenuTree->mtre_tree) + (IPTR) BaseAddr);
-			AddAddresses((struct ScalosMenuTree *)((IPTR)BaseAddr + (IPTR)srcTree->mtre_tree), MenuTree->mtre_tree, BaseAddr);
+			struct ScalosMenuTreeDisk *src;
+			MenuTree->mtre_tree = (struct ScalosMenuTree *) (*end);
+			src = (struct ScalosMenuTreeDisk *)((IPTR)srcBase + (IPTR)srcTree->mtre_tree);
+			AddAddresses(src, MenuTree->mtre_tree, srcBase, treeBase, end);
 			}
-		MenuTree->mtre_Next = SCA_BE_ADDR(srcTree->mtre_Next);
-		if (MenuTree->mtre_Next)
+		srcTree->mtre_Next = (PTR32)SCA_BE2LONG((IPTR)srcTree->mtre_Next);
+		if (srcTree->mtre_Next)
 			{
-			MenuTree->mtre_Next = (struct SCALOS_MENUTREE *) (((UBYTE *) MenuTree->mtre_Next) + (IPTR) BaseAddr);
+			MenuTree->mtre_Next = (struct ScalosMenuTree *) (*end);
 			}
-		MenuTree = MenuTree->mtre_Next;
+		srcTree = (struct ScalosMenuTreeDisk *)((IPTR)srcBase + (IPTR)srcTree->mtre_Next);
+		MenuTree = (struct ScalosMenuTree *)MenuTree->mtre_Next;
 		}
 }
 
 
-static void GenerateMenuList(struct MenuPrefsInst *inst, struct SCALOS_MENUTREE *mTree,
+static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *mTree,
 	Object *ListTree, struct MUI_NListtree_TreeNode *MenuNode)
 {
 	while (mTree)
@@ -3693,7 +3704,7 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 		struct MUI_NListtree_TreeNode *SubNode = NULL;
 		struct MUI_NListtree_TreeNode *CmdNode = NULL;
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mie.mie_TreeEntry = &mTree;
@@ -4044,7 +4055,7 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 		struct MUI_NListtree_TreeNode *CmdNode;
 		char Line[512];
 		struct MenuInsertEntry mie;
-		struct SCALOS_MENUTREE mTree;
+		struct ScalosMenuTree mTree;
 
 		memset(&mTree, 0, sizeof(mTree));
 		mie.mie_TreeEntry = &mTree;
@@ -4456,7 +4467,7 @@ static SAVEDS(APTR) INTERRUPT AppMessageHookFunc(struct Hook *hook, Object *o, M
 				else
 					{
 					struct MenuInsertEntry mie;
-					struct SCALOS_MENUTREE mTree;
+					struct ScalosMenuTree mTree;
 
 					memset(&mTree, 0, sizeof(mTree));
 					mie.mie_TreeEntry = &mTree;
@@ -4513,7 +4524,7 @@ static struct MUI_NListtree_TreeNode *AppMessage_Menu(struct MenuPrefsInst *inst
 	struct MUI_NListtree_TreeNode *NewTreeNode;
 	struct MenuListEntry *mle;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mie.mie_TreeEntry = &mTree;
@@ -4803,7 +4814,7 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *i
 	struct MUI_NListtree_TreeNode *tnNew;
 	struct MUI_NListtree_TreeNode *tnChild;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 	STRPTR IconNames = NULL;
 
 	memset(&mTree, 0, sizeof(mTree));
@@ -4931,7 +4942,7 @@ static struct MUI_NListtree_TreeNode *CopyMenuEntry(struct MenuPrefsInst *inst,
 		MUIM_NListtree_Insert, Src->tn_Name,
 		0,
 		DestParent,
-                MUIV_NListtree_Insert_PrevNode_Tail,
+		MUIV_NListtree_Insert_PrevNode_Tail,
 		Src->tn_Flags);
 	if (NewNode)
 		{
@@ -4941,17 +4952,28 @@ static struct MUI_NListtree_TreeNode *CopyMenuEntry(struct MenuPrefsInst *inst,
 		// Clone entry
 		*mleDest = *mleSrc;
 
+		if (mleDest->llist_UnSelImageObj)
+			{
+			mleDest->llist_UnSelImageObj = DataTypesImageObject,
+				MUIA_ScaDtpic_Name,  (IPTR) mleDest->llist_UnselectedIconName,
+				End;
+
+			d1(KPrintF("%s/%s/%ld: llist_UnSelImageObj=%08lx\n", __FILE__, __FUNC__, __LINE__, mleDest->llist_UnSelImageObj));
+
+			DoMethod(ListTreeDest, MUIM_NList_UseImage, mleDest->llist_UnSelImageObj, mleDest->llist_UnSelImageIndex, 0);
+			}
+
 		SubNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTreeSrc,
 				MUIM_NListtree_GetEntry,
 				Src,
-                                MUIV_NListtree_GetEntry_Position_Head,
+				MUIV_NListtree_GetEntry_Position_Head,
 				0);
 
 		d1(KPrintF("%s/%s/%ld: SubNode=%08lx\n", __FILE__, __FUNC__, __LINE__, SubNode));
 		if (SubNode)
 			{
 			CopyMenuTree(inst,
-                                ListTreeDest,
+				ListTreeDest,
 				ListTreeSrc,
 				SubNode,
 				NewNode);
@@ -5170,7 +5192,7 @@ static void SwitchPopButton(struct MenuPrefsInst *inst, UBYTE CommandType)
 DISPATCHER(myNListTree)
 {
 	struct MenuPrefsInst *inst = NULL;
-	ULONG Result;
+	IPTR Result;
 
 	d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 
@@ -5351,7 +5373,7 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 	struct MUI_NListtree_TreeNode *LastNode[4];
 	Object *Listtree = NULL;
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	mie.mie_TreeEntry = &mTree;
 
@@ -5619,7 +5641,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 {
 	struct MenuInsertEntry mie;
-	struct SCALOS_MENUTREE mTree;
+	struct ScalosMenuTree mTree;
 
 	memset(&mTree, 0, sizeof(mTree));
 	mie.mie_TreeEntry = &mTree;

@@ -1651,11 +1651,11 @@ BOOL closePlugin(struct PluginBase *PluginBase)
 }
 
 
-LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
+LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5)
 {
-	ULONG result;
+	IPTR result;
 
 	(void) PluginBase;
 
@@ -1692,7 +1692,7 @@ DISPATCHER(FileTypesPrefs)
 {
 	struct FileTypesPrefsInst *inst;
 	ULONG n;
-	ULONG result = 0;
+	IPTR result = 0;
 
 	d1(kprintf("%s/%ld:  START obj=%08lx\n", __FUNC__, __LINE__, obj));
 
@@ -5957,30 +5957,27 @@ STRPTR GetAttributeValueString(const struct FtAttribute *fta, char *Buffer, size
 			break;
 
 		case ATTRTYPE_GroupOrientation:
-                        {
-                            enum TTLayoutMode *goEnum = (enum TTLayoutMode *)fta->fta_Data;
-                            switch (*goEnum)
-                                    {
-                            case TTL_Horizontal:
-                                    stccpy(Buffer, "horizontal", BuffLen);
-                                    break;
-                            case TTL_Vertical:
-                                    stccpy(Buffer, "vertical", BuffLen);
-                                    break;
-                            default:
-                                    sprintf(Buffer, "??unknown_Orientation??:%d", *goEnum);
-                                    break;
-                                    }
-                        }
+			{
+			enum TTLayoutMode *goEnum = (enum TTLayoutMode *)fta->fta_Data;
+			switch (*goEnum)
+				{
+				case TTL_Horizontal:
+					stccpy(Buffer, "horizontal", BuffLen);
+					break;
+				case TTL_Vertical:
+					stccpy(Buffer, "vertical", BuffLen);
+					break;
+				default:
+					sprintf(Buffer, "??unknown_Orientation??:%d", *goEnum);
+					break;
+				}
+			}
 			break;
 
 		case ATTRTYPE_CommandStacksize:
 		case ATTRTYPE_CommandPriority:
 		case ATTRTYPE_SpaceSize:
-                        {
-                            IPTR *sizePtr = (IPTR *)fta->fta_Data;
-                            sprintf(Buffer, "%ld", *sizePtr);
-                        }
+			sprintf(Buffer, "%ld", *((ULONG *) fta->fta_Data));
 			break;
 
 		case ATTRTYPE_CommandWbArgs:

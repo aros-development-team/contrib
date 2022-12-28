@@ -380,7 +380,7 @@ LIBFUNC_P2(IPTR, LIBSCAGetPrefsInfo,
 	D0, ULONG, which,
 	A6, struct PluginBase *, PluginBase, 5);
 {
-	ULONG result;
+	IPTR result;
 
 	d1(kprintf("%s/%s/%ld: which=%ld\n", __FILE__, __FUNC__, __LINE__, which));
 
@@ -1890,8 +1890,6 @@ static SAVEDS(void) INTERRUPT FrameTypeSelectHookFunc(struct Hook *hook, Object 
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
 
-	set(o, MUIA_Selected, TRUE);
-
 	// turn off selected state for all frame type buttons except <o>
 	if (o != inst->mpb_Objects[OBJNDX_Button_FrameThin])
 		set(inst->mpb_Objects[OBJNDX_Button_FrameThin], MUIA_Selected, FALSE);
@@ -1912,8 +1910,6 @@ static SAVEDS(void) INTERRUPT FrameTypeSelectHookFunc(struct Hook *hook, Object 
 static SAVEDS(void) INTERRUPT SelFrameTypeSelectHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
-
-	set(o, MUIA_Selected, TRUE);
 
 	// turn off selected state for all selected frame type buttons except <o>
 	if (o != inst->mpb_Objects[OBJNDX_Button_Raised])

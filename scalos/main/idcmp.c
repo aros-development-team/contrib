@@ -521,12 +521,12 @@ static ULONG IDCMPMenuPick(struct internalScaWindowTask *iwt, struct IntuiMessag
 	while ((WORD) MENUNULL != code)
 		{
 		struct MenuItem *mItem = ItemAddress(MainMenu, code);
-		struct SCALOS_MENUTREE *mTree;
+		struct ScalosMenuTree *mTree;
 
 		if (NULL == mItem)
 			break;
 
-		mTree = (struct SCALOS_MENUTREE *) GTMENUITEM_USERDATA(mItem);
+		mTree = (struct ScalosMenuTree *) GTMENUITEM_USERDATA(mItem);
 		if (mTree)
 			{
 			struct AppObject *appo = (struct AppObject *) mTree;

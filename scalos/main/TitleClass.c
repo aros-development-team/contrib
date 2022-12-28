@@ -253,7 +253,7 @@ struct ScalosClass *initTitleClass(const struct PluginClass *plug)
 
 static SAVEDS(IPTR) TitleClass_Dispatcher(Class *cl, Object *o, Msg msg)
 {
-	ULONG Result;
+	IPTR Result;
 
 	d1(KPrintF("%s/%s/%ld: cl=%08lx  o=%08lx  msg=%08lx  MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, cl, o, msg, msg->MethodID));
 

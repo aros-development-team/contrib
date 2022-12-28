@@ -108,7 +108,8 @@ static void ReloadDefIcons(struct FileTypesPrefsInst *inst, CONST_STRPTR DefIcon
 			{
 			const UBYTE *inittable;
 
-			inittable = ((UBYTE *)BADDR(inst->fpb_DefIconsSegList))+4;
+			inittable = ((UBYTE *)BADDR(inst->fpb_DefIconsSegList))+sizeof(BPTR);
+
 			InitTypeTree(inst, NO_TYPE_NODE, &inittable);
 
 			d1(KPrintF(__FILE__ "/%s/%ld: RootType=%08lx\n", __FUNC__, __LINE__, inst->fpb_RootType));

@@ -87,7 +87,7 @@
 
 #define SCALOSNAME "scalos.library"
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack(2)
 #endif /* __GNUC__ */
 
@@ -437,9 +437,9 @@ typedef ULONG (*RUNPROCFUNC)(APTR, struct SM_RunProcess *);
 
 struct ScalosMessage
 	{
-	STACKED struct Message		sm_Message;
-	STACKED ULONG			sm_Signature;		// ID_IMSG
-	STACKED ULONG			sm_MessageType;		// SCA_AllocMessage() type
+	struct Message		sm_Message;
+	ULONG			sm_Signature;		// ID_IMSG
+	ULONG			sm_MessageType;		// SCA_AllocMessage() type
 	};
 
 struct UpdateIconData
@@ -610,7 +610,7 @@ struct SM_MenuCmd
 struct SM_RunMenuCmd
 	{
 	struct ScalosMessage    ScalosMessage;
-	struct SCALOS_MENUTREE	*smrm_MenuItem;
+	struct ScalosMenuTree	*smrm_MenuItem;
 	struct ScaIconNode	*smrm_IconNode;
 	ULONG			smrm_Flags;
 	};
@@ -748,11 +748,11 @@ struct SM_StartChildProcess
 struct SM_RootEvent
 	{
 	struct ScalosMessage    ScalosMessage;
-	STACKED ULONG 		smre_MethodID;		// the MethodID of the event
-	STACKED APTR 		smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
-	STACKED Class 		*smre_Class;		// Class variable of the method call
-	STACKED Object 		*smre_Object;		// Object variable of the method call
-	STACKED Msg 		smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
+	ULONG 		smre_MethodID;		// the MethodID of the event
+	APTR 		smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
+	Class 		*smre_Class;		// Class variable of the method call
+	Object 		*smre_Object;		// Object variable of the method call
+	Msg 		smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
 	};
 
 // ------------------------------------------------------------------
@@ -1238,7 +1238,11 @@ struct ScalosNodeList
 
 // auxiliary macro to combine the WORD x/y values into one longword
 // for useage with DoMethod(...)
+#if defined __AROS__
+#define	SCCM_ADDICON_MAKEXY(x,y)		(IPTR)(x), (IPTR)(y)
+#else
 #define	SCCM_ADDICON_MAKEXY(x,y)		((((UWORD) (x)) << 16) | ((UWORD) (y)))
+#endif
 
 // ---------------------------------------------------------------------------
 
@@ -2809,7 +2813,7 @@ struct ScalosBase
 
 /****************************************************************************/
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack()
 #endif /* __GNUC__ */
 

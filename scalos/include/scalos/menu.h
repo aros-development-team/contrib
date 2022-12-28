@@ -24,77 +24,67 @@
 
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack(2)
 #endif /* __GNUC__ */
 
-#if defined(__AROS__) && __WORDSIZE==64
 #define PTR32           ULONG
-#define SMTPTR32        PTR32
-#else
-#define PTR32           APTR
-#define SMTPTR32        struct ScalosMenuTree *
-#endif
+
 #define SCA_BE_ADDR(addr) ((APTR)((IPTR)0 + SCA_BE2LONG((IPTR)addr)))
 
 // This is the disk structure that stores menu information in menu preferences files
 // Do not use pointers since the values _must_ remain 32bit even on 64bit platforms.
 // !!! BE VERY CAREFUL TO KEEP PREFS COMPATIBLE IF YOU EVER CHANGE THIS STRUCTURE !!!
-struct ScalosMenuTree
+// sizeof(ScalosMenuTreeDisk) == 21
+struct ScalosMenuTreeDisk
 	{
-	SMTPTR32                        mtre_Next;
-	SMTPTR32                        mtre_tree;
-	UBYTE                           mtre_type;
-	UBYTE                           mtre_flags;
+	PTR32	mtre_Next;
+	PTR32	mtre_tree;
+	UBYTE	mtre_type;
+	UBYTE	mtre_flags;
 	union	{
 		struct	{
-			char	        mtre_hotkey[2];
-			PTR32	        mtre_name;
-			PTR32	        mtre_iconnames;	// only valid if MTREFLGF_IconNames
-                                                        // points to 2 strings with menu icon path names
-                                                        // for empty path names, it points to two '\0'
-			} MenuTree;
+			char	mtre_hotkey[2];
+			PTR32	mtre_name;
+			PTR32	mtre_iconnames;	// only valid if MTREFLGF_IconNames
+						// points to 2 strings with menu icon path names
+						// for empty path names, it points to two '\0'
+			} __attribute__((packed)) MenuTree;
 		struct	{
-			UBYTE	        mcom_flags;
-			UBYTE	        mcom_type;	// enum ScalosMenuCommandType
-			ULONG	        mcom_stack;
-			PTR32	        mcom_name;
-			BYTE	        mcom_pri;	// priority for command process
-                                                        // only valid if MCOMFLGF_Priority set
-			} MenuCommand;
+			UBYTE	mcom_flags;
+			UBYTE	mcom_type;	// enum ScalosMenuCommandType
+			ULONG	mcom_stack;
+			PTR32	mcom_name;
+			BYTE	mcom_pri;	// priority for command process
+						// only valid if MCOMFLGF_Priority set
+			} __attribute__((packed)) MenuCommand;
 		} MenuCombo;
 	} __attribute__((packed)) ;
 
-// SCALOS_MENUTREE represents the memory structure that stores menu information
-#if defined(__AROS__) && __WORDSIZE==64
-struct ScalosMenuTreeFull
+struct ScalosMenuTree
 	{
-	struct	ScalosMenuTreeFull      *mtre_Next;
-	struct	ScalosMenuTreeFull      *mtre_tree;
-	UBYTE	                        mtre_type;
-	UBYTE	                        mtre_flags;
+	struct	ScalosMenuTree *mtre_Next;
+	struct	ScalosMenuTree *mtre_tree;
+	UBYTE	mtre_type;
+	UBYTE	mtre_flags;
 	union	{
 		struct	{
-			char	        mtre_hotkey[2];
-			STRPTR	        mtre_name;
-			STRPTR	        mtre_iconnames;	// only valid if MTREFLGF_IconNames
-                                                        // points to 2 strings with menu icon path names
-                                                        // for empty path names, it points to two '\0'
+			char	mtre_hotkey[2];
+			STRPTR	mtre_name;
+			STRPTR	mtre_iconnames;	// only valid if MTREFLGF_IconNames
+						// points to 2 strings with menu icon path names
+						// for empty path names, it points to two '\0'
 			} MenuTree;
 		struct	{
-			UBYTE	                mcom_flags;
-			UBYTE	                mcom_type;	// enum ScalosMenuCommandType
-			ULONG	                mcom_stack;
-			STRPTR	                mcom_name;
-			BYTE	                mcom_pri;	// priority for command process
-                                                                // only valid if MCOMFLGF_Priority set
+			UBYTE	mcom_flags;
+			UBYTE	mcom_type;	// enum ScalosMenuCommandType
+			ULONG	mcom_stack;
+			STRPTR	mcom_name;
+			BYTE	mcom_pri;	// priority for command process
+						// only valid if MCOMFLGF_Priority set
 			} MenuCommand;
 		} MenuCombo;
 	};
-#define SCALOS_MENUTREE ScalosMenuTreeFull
-#else
-#define SCALOS_MENUTREE ScalosMenuTree    
-#endif
 
 enum ScalosMenuType
 	{
@@ -128,7 +118,7 @@ enum ScalosMenuCommandType
 
 // ---------------------------------------------------------------------------
 
-#if defined(__GNUC__) && !defined(mc68000)
+#if !defined(__AROS__) && defined(__GNUC__) && !defined(mc68000)
 #pragma pack()
 #endif /* __GNUC__ */
 

@@ -642,7 +642,7 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 
 		do	{
 			struct ContextNode *cn;
-			const struct PrefsChunk *pck;
+			struct PrefsChunk *pck;
 			ULONG Entry;
 
 			Result = ParseIFF(iff, IFFPARSE_STEP);
@@ -672,19 +672,24 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 				break;
 
 			pck = (struct PrefsChunk *) PrefsChunk;
+			pck->pck_Tag = SCA_BE2LONG(pck->pck_Tag);
+
 			while (pck->pck_Tag)
 				{
+				pck->pck_DataSize = SCA_BE2WORD(pck->pck_DataSize);
+
 				d1(KPrintF("%s/%s/%ld:   pck=%08lx  Tag=%08lx  DataSize=%lu\n", \
 					__FILE__, __FUNC__, __LINE__, pck, pck->pck_Tag, pck->pck_DataSize));
 
 				if (MAGIC_PREFS_LIST_ENTRY_LIST == pck->pck_DataSize)
 					{
-					const struct PrefsListChunk *plc;
+					struct PrefsListChunk *plc;
 
 					d1(KPrintF("%s/%s/%ld:   MAGIC_PREFS_LIST_ENTRY_LIST\n",
 						__FILE__, __FUNC__, __LINE__));
 
-					plc = (const struct PrefsListChunk *) pck->pck_Data;
+					plc = (struct PrefsListChunk *) pck->pck_Data;
+					plc->plc_DataSize = SCA_BE2WORD(plc->plc_DataSize);
 					Entry = 0;
 
 					while (plc->plc_DataSize)
@@ -697,11 +702,12 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 						SetEntry(ple, cn->cn_ID, pck->pck_Tag, (APTR) plc->plc_Data, plc->plc_DataSize, Entry);
 
 						len = EVEN(sizeof(struct PrefsListChunk) + plc->plc_DataSize);
-						plc = (const struct PrefsListChunk *) (((UBYTE *) plc) + len);
+						plc = (struct PrefsListChunk *) (((UBYTE *) plc) + len);
+						plc->plc_DataSize = SCA_BE2WORD(plc->plc_DataSize);
 						Entry++;
 						}
 
-					pck = (const struct PrefsChunk *) (((UBYTE *) plc) + sizeof(UWORD));
+					pck = (struct PrefsChunk *) (((UBYTE *) plc) + sizeof(UWORD));
 					}
 				else
 					{
@@ -713,9 +719,13 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 					len = EVEN(sizeof(struct PrefsChunk) + pck->pck_DataSize);
 					d1(KPrintF("%s/%s/%ld:   len=%lu\n", __FILE__, __FUNC__, __LINE__, len));
 
-					pck = (const struct PrefsChunk *) (((UBYTE *) pck) + len);
+					pck = (struct PrefsChunk *) (((UBYTE *) pck) + len);
 					}
+
+				pck->pck_Tag = SCA_BE2LONG(pck->pck_Tag);
 				}
+			MyFreeVecPooled(PreferencesBase, PrefsChunk);
+			PrefsChunk = NULL;
 			} while (1);
 		}
 
@@ -816,7 +826,8 @@ LIBFUNC_P3(void, LIBWritePrefsHandle,
 				ptg != (struct PrefsTag *) &pid->pid_PrefsTagList.lh_Tail;
 				ptg = (struct PrefsTag *) ptg->ptg_Node.ln_Succ)
 				{
-				UWORD PtgSize = (UWORD) ptg->ptg_DataSize;
+				UWORD PtgSize = SCA_WORD2BE(ptg->ptg_DataSize);
+				ULONG PtgTag = SCA_LONG2BE(ptg->ptg_Tag);
 
 				d1(KPrintF("%s/%s/%ld: ptg=%08lx  ptg_DataSize=%lu\n", __FILE__, __FUNC__, __LINE__, ptg, ptg->ptg_DataSize));
 
@@ -831,16 +842,17 @@ LIBFUNC_P3(void, LIBWritePrefsHandle,
 						struct PrefsEntry *pre;
 						UWORD DataSize = 0;
 
-						WriteChunkBytes(iff, &ptg->ptg_Tag, sizeof(ptg->ptg_Tag));
+						WriteChunkBytes(iff, &PtgTag, sizeof(PtgTag));
 						WriteChunkBytes(iff, &PtgSize, sizeof(PtgSize));
 					
 						for (pre = (struct PrefsEntry *) PrefsList->lh_Head;
 							pre != (struct PrefsEntry *) &PrefsList->lh_Tail;
 							pre = (struct PrefsEntry *) pre->pre_Node.ln_Succ)
 							{
+							UWORD PreSize = SCA_WORD2BE(pre->pre_DataSize);
 							d1(KPrintF("%s/%s/%ld: pre=%08lx  pre_DataSize=%lu\n", __FILE__, __FUNC__, __LINE__, pre, pre->pre_DataSize));
 
-							WriteChunkBytes(iff, &pre->pre_DataSize, sizeof(pre->pre_DataSize));
+							WriteChunkBytes(iff, &PreSize, sizeof(PreSize));
 							WriteChunkBytes(iff, &pre->pre_Data, pre->pre_DataSize);
 							if (IS_NOT_EVEN(pre->pre_DataSize))
 								WriteChunkBytes(iff, &NullDummy, 1);
@@ -852,7 +864,7 @@ LIBFUNC_P3(void, LIBWritePrefsHandle,
 				else
 					{
 					// .stdnode
-					WriteChunkBytes(iff, &ptg->ptg_Tag, sizeof(ptg->ptg_Tag));
+					WriteChunkBytes(iff, &PtgTag, sizeof(PtgTag));
 					WriteChunkBytes(iff, &PtgSize, sizeof(PtgSize));
 					WriteChunkBytes(iff, ptg->ptg_Data, ptg->ptg_DataSize);
 					if (IS_NOT_EVEN(ptg->ptg_DataSize))

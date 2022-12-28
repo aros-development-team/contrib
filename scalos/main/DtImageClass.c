@@ -100,7 +100,7 @@ Class *initDtImageClass(void)
 
 static SAVEDS(IPTR) INTERRUPT DtImageClassDispatcher(Class *cl, Object *o, Msg msg)
 {
-	ULONG Result;
+	IPTR Result;
 
 	switch (msg->MethodID)
 		{

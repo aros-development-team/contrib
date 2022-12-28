@@ -130,7 +130,7 @@ struct ttDef
 
 #define	TT_CreateTooltip	TT_CreateItem
 
-#define TTSpace(s)	TT_Item, (IPTR) TT_CreateItem(TT_Space, (s))
+#define TTSpace(s)	TT_Item, (IPTR) TT_CreateItem(TT_Space, (s), TAG_DONE)
 #define TTItem(t)	TT_Item, (IPTR) TT_CreateItem(TT_Title, (t)
 #define TTTitleHook(t)	TT_Item, (IPTR) TT_CreateItem(TT_TitleHook, (t)
 #define TTItemID(t)	TT_Item, (IPTR) TT_CreateItem(TT_TitleID, (t)

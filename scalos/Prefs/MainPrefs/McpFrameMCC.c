@@ -265,7 +265,7 @@ static ULONG mDragDrop(Class *cl, Object *o, struct MUIP_DragDrop *msg)
 
 DISPATCHER(McpFrameMCC)
 {
-	ULONG Result;
+	IPTR Result;
 
 	switch (msg->MethodID)
 		{
