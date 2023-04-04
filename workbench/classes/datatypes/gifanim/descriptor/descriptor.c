@@ -226,6 +226,9 @@ BOOL DTHook( REGA0 struct DTHookContext *dthc )
     return( EnougthFramesToBeAGIFAnimation );
 }
 
+#include <aros/system.h>
 
-
-
+__startup BOOL entry(APTR dthc)
+{
+    return DTHook(dthc);
+}
