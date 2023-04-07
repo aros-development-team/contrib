@@ -1,0 +1,25 @@
+# Copyright © 2023 The AROS Development Team. All rights reserved.
+# Makefile to make amigahunkparser.
+
+include $(SRCDIR)/config/aros.cfg
+
+EXE    := AmigaHunkParser
+EXEDIR := $(AROS_CONTRIB)/$(AROS_DIR_DEVELOPER)/AmigaHunkParser
+FILES  := \
+        amiga_hunk_parser \
+        test 
+
+NOWARN_FLAGS  :=
+USER_CFLAGS   := $(NOWARN_FLAGS)
+USER_INCLUDES :=
+USER_LDFLAGS  :=
+USER_CPPFLAGS :=
+
+#MM- contrib-development : contrib-development-amigahunkparser
+#MM  contrib-development-amigahunkparser : includes linklibs
+
+%build_prog mmake=contrib-development-amigahunkparser \
+    progname=$(EXE) targetdir=$(EXEDIR) \
+    files=$(FILES) uselibs=""
+
+%common
