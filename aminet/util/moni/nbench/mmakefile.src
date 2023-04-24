@@ -8,7 +8,7 @@ FILES :=emfloat misc nbench0 nbench1 sysspec
 
 EXEDIR := $(AROS_CONTRIB)/Misc/aminet
 
-USER_CFLAGS := -s -static -Wall -O3 -fomit-frame-pointer -funroll-loops -DLINUX
+USER_CFLAGS := -s -Wall -O3 -fomit-frame-pointer -funroll-loops -DLINUX
 
 #MM aminet-util-moni-nbench : includes linklibs
 
