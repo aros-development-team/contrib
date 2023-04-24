@@ -1,0 +1,33 @@
+name: C-ray CI
+
+on: [push, pull_request]
+
+jobs:
+  macos:
+    name: macOS Build
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: cmake
+      run: cmake .
+    - name: build
+      run: make
+  linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: cmake
+      run: cmake .
+    - name: build
+      run: make
+  winbuild:
+      name: Windows Build
+      runs-on: windows-latest
+      steps:
+      - uses: actions/checkout@v1
+      - uses: microsoft/setup-msbuild@v1.0.2
+      - name: cmake
+        run: cmake -G "Visual Studio 17 2022" -A x64 .
+      - name: build
+        run: msbuild c-ray.sln /p:Configuration=Release /p:WarningLevel=0

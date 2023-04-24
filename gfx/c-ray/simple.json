@@ -1,0 +1,81 @@
+{
+	"version": 1.0,
+	"renderer": {
+		"threads": 0,
+		"samples": 100,
+		"bounces": 25,
+		"tileWidth": 64,
+		"tileHeight": 64,
+		"tileOrder": "fromMiddle",
+		"outputFilePath": "output/",
+		"outputFileName": "rendered",
+		"fileType": "png",
+		"count": 0,
+		"width": 400,
+		"height": 400
+	},
+	"display": {
+		"isFullscreen": false,
+		"isBorderless": false,
+		"windowScale": 1.0
+	},
+	"camera": {
+		"FOV": 12.0,
+		"fstops": 0.0,
+		"transforms": [
+			{
+				"type": "translate",
+				"x": 0,
+				"y": 0,
+				"z": -500
+			},
+			{
+				"type": "rotateX",
+				"degrees": 0
+			},
+			{
+				"type": "rotateY",
+				"degrees": 0
+			}
+		]
+	},
+	"scene": {
+		"ambientColor": {
+			"down": {
+				"r": 1.0,
+				"g": 1.0,
+				"b": 1.0
+			},
+			"up": {
+				"r": 0.5,
+				"g": 0.7,
+				"b": 1.0
+			}
+		},
+		"primitives": [
+			{
+				"type": "sphere",
+				"instances": [
+					{
+						"transforms": [
+							{
+								"type": "translate",
+								"x": 0,
+								"y": 0,
+								"z": 0
+							}
+						]
+					}
+				],
+				"color": {
+					"r": 1.0,
+					"g": 0.0,
+					"b": 0.0
+				},
+				"bsdf": "lambertian",
+				"reflectivity": 1.0,
+				"radius": 50
+			}
+		]
+	}
+}
