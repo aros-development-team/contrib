@@ -113,7 +113,7 @@ FILES  := \
 
 ## 93210e5
 $(GENDIR)/$(CURDIR)/gitsha1.c: $(SRCDIR)/$(CURDIR)/src/utils/gitsha1.c.in | $(GENDIR)/$(CURDIR)
-	@$(SED) -e 's|@@GIT_SHA1@|93210e5b5a1634c812a52fb43908e0e0a34f19b0|' \
+	@$(SED) -e 's|@GIT_SHA1@|93210e5b5a1634c812a52fb43908e0e0a34f19b0|' \
 	       $< >$@
 
 #MM
