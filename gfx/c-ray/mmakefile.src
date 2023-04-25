@@ -14,103 +14,110 @@ EXE    := c-ray
 EXEDIR := $(AROS_CONTRIB)/MultiMedia/Gfx/C-Ray
 
 FILES  := \
-src/c-ray \
-src/main \
-src/datatypes/sphere \
-src/datatypes/color \
-src/datatypes/quaternion \
-src/datatypes/image/imagefile \
-src/datatypes/image/texture \
-src/datatypes/material \
-src/datatypes/spline \
-src/datatypes/poly \
-src/datatypes/tile \
-src/datatypes/scene \
-src/datatypes/transforms \
-src/datatypes/mesh \
-src/datatypes/camera \
-src/accelerators/bvh \
-src/vendored/pcg_basic \
-src/vendored/cJSON \
-src/vendored/lodepng \
-src/utils/testrunner \
-src/utils/fileio \
-src/utils/string \
-src/utils/assert \
-src/utils/mempool \
-src/utils/networking \
-src/utils/base64 \
-src/utils/logging \
-src/utils/loaders/textureloader \
-src/utils/loaders/formats/wavefront/wavefront \
-src/utils/loaders/formats/wavefront/mtlloader \
-src/utils/loaders/formats/gltf/gltf \
-src/utils/loaders/sceneloader \
-src/utils/loaders/meshloader \
-src/utils/platform/thread \
-src/utils/platform/capabilities \
-src/utils/platform/terminal \
-src/utils/platform/mutex \
-src/utils/platform/signal \
-src/utils/args \
-src/utils/protocol/worker \
-src/utils/protocol/protocol \
-src/utils/protocol/server \
-src/utils/timer \
-src/utils/ui \
-src/utils/hashtable \
-src/utils/filecache \
-src/utils/encoders/formats/bmp \
-src/utils/encoders/formats/png \
-src/utils/encoders/formats/qoi \
-src/utils/encoders/encoder \
-src/utils/textbuffer \
-src/nodes/bsdfnode \
-src/nodes/colornode \
-src/nodes/valuenode \
-src/nodes/nodebase \
-src/nodes/shaders/background \
-src/nodes/shaders/translucent \
-src/nodes/shaders/transparent \
-src/nodes/shaders/metal \
-src/nodes/shaders/isotropic \
-src/nodes/shaders/add \
-src/nodes/shaders/diffuse \
-src/nodes/shaders/plastic \
-src/nodes/shaders/glass \
-src/nodes/shaders/emission \
-src/nodes/shaders/mix \
-src/nodes/vectornode \
-src/nodes/input/uv \
-src/nodes/input/normal \
-src/nodes/input/raylength \
-src/nodes/input/fresnel \
-src/nodes/converter/combinergb \
-src/nodes/converter/split \
-src/nodes/converter/math \
-src/nodes/converter/grayscale \
-src/nodes/converter/vecmath \
-src/nodes/converter/vectovalue \
-src/nodes/converter/map_range \
-src/nodes/converter/vecmix \
-src/nodes/converter/vectocolor \
-src/nodes/converter/blackbody \
-src/nodes/converter/combinehsl \
-src/nodes/textures/constant \
-src/nodes/textures/gradient \
-src/nodes/textures/checker \
-src/nodes/textures/alpha \
-src/nodes/textures/image \
-src/renderer/instance \
-src/renderer/renderer \
-src/renderer/pathtrace \
-src/renderer/samplers/hammersley \
-src/renderer/samplers/sampler \
-src/renderer/samplers/random \
-src/renderer/samplers/halton \
-src/renderer/sky \
-generated/gitsha1
+        src/c-ray \
+        src/main \
+        src/datatypes/sphere \
+        src/datatypes/color \
+        src/datatypes/quaternion \
+        src/datatypes/image/imagefile \
+        src/datatypes/image/texture \
+        src/datatypes/material \
+        src/datatypes/spline \
+        src/datatypes/poly \
+        src/datatypes/tile \
+        src/datatypes/scene \
+        src/datatypes/transforms \
+        src/datatypes/mesh \
+        src/datatypes/camera \
+        src/accelerators/bvh \
+        src/vendored/pcg_basic \
+        src/vendored/cJSON \
+        src/vendored/lodepng \
+        src/utils/testrunner \
+        src/utils/fileio \
+        src/utils/string \
+        src/utils/assert \
+        src/utils/mempool \
+        src/utils/networking \
+        src/utils/base64 \
+        src/utils/logging \
+        src/utils/loaders/textureloader \
+        src/utils/loaders/formats/wavefront/wavefront \
+        src/utils/loaders/formats/wavefront/mtlloader \
+        src/utils/loaders/formats/gltf/gltf \
+        src/utils/loaders/sceneloader \
+        src/utils/loaders/meshloader \
+        src/utils/platform/thread \
+        src/utils/platform/capabilities \
+        src/utils/platform/terminal \
+        src/utils/platform/mutex \
+        src/utils/platform/signal \
+        src/utils/args \
+        src/utils/protocol/worker \
+        src/utils/protocol/protocol \
+        src/utils/protocol/server \
+        src/utils/timer \
+        src/utils/ui \
+        src/utils/hashtable \
+        src/utils/filecache \
+        src/utils/encoders/formats/bmp \
+        src/utils/encoders/formats/png \
+        src/utils/encoders/formats/qoi \
+        src/utils/encoders/encoder \
+        src/utils/textbuffer \
+        src/nodes/bsdfnode \
+        src/nodes/colornode \
+        src/nodes/valuenode \
+        src/nodes/nodebase \
+        src/nodes/shaders/background \
+        src/nodes/shaders/translucent \
+        src/nodes/shaders/transparent \
+        src/nodes/shaders/metal \
+        src/nodes/shaders/isotropic \
+        src/nodes/shaders/add \
+        src/nodes/shaders/diffuse \
+        src/nodes/shaders/plastic \
+        src/nodes/shaders/glass \
+        src/nodes/shaders/emission \
+        src/nodes/shaders/mix \
+        src/nodes/vectornode \
+        src/nodes/input/uv \
+        src/nodes/input/normal \
+        src/nodes/input/raylength \
+        src/nodes/input/fresnel \
+        src/nodes/converter/combinergb \
+        src/nodes/converter/split \
+        src/nodes/converter/math \
+        src/nodes/converter/grayscale \
+        src/nodes/converter/vecmath \
+        src/nodes/converter/vectovalue \
+        src/nodes/converter/map_range \
+        src/nodes/converter/vecmix \
+        src/nodes/converter/vectocolor \
+        src/nodes/converter/blackbody \
+        src/nodes/converter/combinehsl \
+        src/nodes/textures/constant \
+        src/nodes/textures/gradient \
+        src/nodes/textures/checker \
+        src/nodes/textures/alpha \
+        src/nodes/textures/image \
+        src/renderer/instance \
+        src/renderer/renderer \
+        src/renderer/pathtrace \
+        src/renderer/samplers/hammersley \
+        src/renderer/samplers/sampler \
+        src/renderer/samplers/random \
+        src/renderer/samplers/halton \
+        src/renderer/sky \
+        $(GENDIR)/$(CURDIR)/gitsha1
 
+## 93210e5
+$(GENDIR)/$(CURDIR)/gitsha1.c: $(SRCDIR)/$(CURDIR)/src/utils/gitsha1.c.in | $(GENDIR)/$(CURDIR)
+	@$(SED) -e 's|@exec_prefix@|93210e5b5a1634c812a52fb43908e0e0a34f19b0|' \
+	       $< >$@
+
+#MM
+contrib-gfx-c-ray-generated : $(GENDIR)/$(CURDIR)/gitsha1.c
 
 NOWARN_FLAGS  :=
 USER_CFLAGS   := $(NOWARN_FLAGS) -Wno-missing-field-initializers -std=c99 -O2 -ftree-vectorize
@@ -123,10 +130,10 @@ USER_CPPFLAGS := -DCRAY_TESTING -D_GNU_SOURCE
     progname=$(EXE) targetdir=$(EXEDIR) \
     files=$(FILES) uselibs="pthread"
 
+#MM contrib-gfx-c-ray-bin : contrib-gfx-c-ray-generated
 
 %copy_dir_recursive mmake=contrib-gfx-c-ray-input src=input \
     dst=$(EXEDIR)/input
-
 
 CPYFILES := LICENSE README.md simple.json
 
