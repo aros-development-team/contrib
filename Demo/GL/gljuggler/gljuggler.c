@@ -972,7 +972,10 @@ char exitflag=0;
 int t;
 int nexttime;
 int nframes=0;
+#ifdef __AROS__
+#else
 struct itimerval itval;
+#endif
 SDL_Event event;
 int code;
 int isdown = 0;

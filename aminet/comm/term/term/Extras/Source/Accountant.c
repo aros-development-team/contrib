@@ -150,7 +150,8 @@ AccountantEntry(VOID)
 										/* Start waiting again */
 
 									TimeRequest->tr_node.io_Command	= TR_ADDREQUEST;
-									TimeRequest->tr_time			= TimeVal;
+									TimeRequest->tr_time.tv_secs	= TimeVal.tv_secs;
+									TimeRequest->tr_time.tv_micro	= TimeVal.tv_micro;
 
 									SendIO((struct IORequest *)TimeRequest);
 
@@ -193,7 +194,8 @@ AccountantEntry(VOID)
 											/* Start waiting */
 
 										TimeRequest->tr_node.io_Command	= TR_ADDREQUEST;
-										TimeRequest->tr_time			= Message->Time;
+										TimeRequest->tr_time.tv_secs	= Message->Time.tv_secs;
+										TimeRequest->tr_time.tv_micro	= Message->Time.tv_micro;
 
 										SendIO((struct IORequest *)TimeRequest);
 
