@@ -91,7 +91,7 @@ IPTR PreferencesManager__OM_NEW(struct IClass *cl, Object *self, struct opSet *m
     STRPTR *fontFamilies;
     struct TagItem *tag, *tags;
     
-    STRPTR titles[] = { (STRPTR) _(MSG_PreferencesManager_Main), (STRPTR) _(MSG_PreferencesManager_Content), NULL };
+    static STRPTR titles[] = { (STRPTR) _(MSG_PreferencesManager_Main), (STRPTR) _(MSG_PreferencesManager_Content), NULL };
     
     for (tags = msg->ops_AttrList; (tag = NextTagItem(&tags)); )
     {
