@@ -225,8 +225,7 @@ static void StartCommand(void)
   
    info->child = FindTask(NULL);
    info->csigbit = AllocSignal(-1);
-   cmd = AllocVec(strlen(info->childcmd)+1, MEMF_PUBLIC|MEMF_CLEAR);
-   strcpy(cmd, info->childcmd);
+   cmd = StrDup(info->childcmd);
    D(bug("[Startcommand]: cmd='%s'\n", cmd));
    
    D(bug("[Startcommand]: Signaling parent\n"));
