@@ -153,6 +153,7 @@ typedef struct _amiga_tsd_t {
    UBYTE *value; /* Here a temporary argstring will be stored for RXGETVAR */
    void *ai;
    void *ptrs[PTRS_SIZE];
+   struct Library *reginabase;
 } amiga_tsd_t;
 
 
@@ -220,6 +221,9 @@ streng *createstreng( tsd_t *TSD, char *value, int length )
    return retval;
 }
 
+struct Library *__aros_getbase_ReginaBase(void);
+void __aros_setoffsettable(void *base);
+
 /* ReginaHandleMessages will be executed in a subtask and will be
  * able to handle messages send to it asynchronously
  */
@@ -232,6 +236,9 @@ void ReginaHandleMessages(void)
    struct RexxMsg *msg;
    struct MsgPort *listenport;
    
+   /* Share parents regina base with this task, so that rellib C library functions get required base */
+   __aros_setoffsettable(atsd->reginabase);
+
    listenport = CreateMsgPort();
    atsd->listenport = listenport;
    if ( listenport == NULL )
@@ -400,6 +407,7 @@ int init_amigaf ( tsd_t *TSD )
    atsd->replyport = CreatePort( NULL, 0 );
    atsd->maintasksignal = AllocSignal( -1 );
    atsd->parent = FindTask( NULL );
+   atsd->reginabase = __aros_getbase_ReginaBase();
 
    atsd->value = NULL;
 
