@@ -235,9 +235,11 @@ void ReginaHandleMessages(void)
    ULONG mask, signals;
    struct RexxMsg *msg;
    struct MsgPort *listenport;
-   
+
+#ifdef RXLIB
    /* Share parents regina base with this task, so that rellib C library functions get required base */
    __aros_setoffsettable(atsd->reginabase);
+#endif
 
    listenport = CreateMsgPort();
    atsd->listenport = listenport;
@@ -407,7 +409,9 @@ int init_amigaf ( tsd_t *TSD )
    atsd->replyport = CreatePort( NULL, 0 );
    atsd->maintasksignal = AllocSignal( -1 );
    atsd->parent = FindTask( NULL );
+#ifdef RXLIB
    atsd->reginabase = __aros_getbase_ReginaBase();
+#endif
 
    atsd->value = NULL;
 
