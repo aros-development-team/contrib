@@ -22,8 +22,12 @@
 
 int32 request(const char* title, const char* message, const char* gadgets, const IPTR params)
 {
-   // 20! really 20 -- OS4 has some extra fields, and i am preserving space.
-   const IPTR es[] = { 20, 0, (IPTR)title, (IPTR)message, (IPTR)gadgets};
+   struct EasyStruct es;
+   es.es_StructSize = sizeof(es);
+   es.es_Flags = 0;
+   es.es_Title = title;
+   es.es_TextFormat = message;
+   es.es_GadgetFormat = gadgets;
 #ifndef __amigaos4__
    register struct Library *IntuitionBase = __InternalIntuitionBase;
    if (__InternalIntuitionBase)
