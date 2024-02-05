@@ -86,6 +86,7 @@ struct Data
 	int rotation;
 	struct MinList **annotationLists; // annotations are loaded on demand
 	struct MUI_EventHandlerNode eh;
+	STRPTR tabPageNames[3];
 
 };
 
@@ -140,10 +141,6 @@ DEFNEW
 	Object *sldPage, *grpOutlines, *grpOutlinesTitles, *grpToolbar;
 	Object *grpDisplay, *grpOutlineTree, *grpNavigation, *balBalance, *grpSearch, *grpOutlineThumbs;
 	Object *grpOutlineItems;
-	STRPTR tabPageNames[3];
-	tabPageNames[0]="Outline";
-	tabPageNames[1]="Thumbnail";
-	tabPageNames[2]=NULL;
 
 	obj = (Object *) DoSuperNew(cl, obj,
 				MUIA_Group_Horiz, FALSE,
@@ -191,6 +188,10 @@ DEFNEW
 		data->sldPage = sldPage;
 		data->grpDisplay = grpDisplay;
 		data->grpToolbar = grpToolbar;
+
+		data->tabPageNames[0]="Outline";
+		data->tabPageNames[1]="Thumbnail";
+		data->tabPageNames[2]=NULL;
 
 		if (data->doc == NULL)
 		{
@@ -242,16 +243,16 @@ DEFNEW
 		if (outlinenum != 1)
 		{
 		 	set(data->grpOutline, MUIA_Group_ActivePage, xget(data->grpOutline, MUIA_Group_ChildCount) - 1);
-			RegObj = (RegisterGroup(tabPageNames),
+			RegObj = (RegisterGroup(data->tabPageNames),
 			Child, (IPTR)outline,
 			Child, (IPTR)thumbnails,
 			End);
 			}
 		else
 		{
-			tabPageNames[0]="Thumbnails";
-			tabPageNames[1]=NULL;
-			RegObj = (RegisterGroup(tabPageNames),
+			data->tabPageNames[0]="Thumbnails";
+			data->tabPageNames[1]=NULL;
+			RegObj = (RegisterGroup(data->tabPageNames),
 			Child, (IPTR)thumbnails,
 			End);
 			}

@@ -84,8 +84,8 @@ namespace GenNS
           */
          HookAttrT()
          {
-            ASSERT(sizeof(T1) == sizeof(uint));
-            ASSERT(sizeof(T2) == sizeof(uint));
+            ASSERT(sizeof(T1) == sizeof(uintptr_t));
+            ASSERT(sizeof(T2) == sizeof(uintptr_t));
             FHook = 0;
          }
 
@@ -95,8 +95,8 @@ namespace GenNS
           */
          HookAttrT(const Hook* h)
          {
-            ASSERT(sizeof(T1) == sizeof(uint));
-            ASSERT(sizeof(T2) == sizeof(uint));
+            ASSERT(sizeof(T1) == sizeof(uintptr_t));
+            ASSERT(sizeof(T2) == sizeof(uintptr_t));
             FHook = h;
          }
 
