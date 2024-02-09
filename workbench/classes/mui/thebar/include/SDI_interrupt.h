@@ -7,17 +7,14 @@
         Versionstring:  $VER: SDI_interrupt.h 1.1 (25.04.2006)
         Author:         Guido Mersmann
         Distribution:   PD
-        Project page:   http://sf.net/p/adtools/code/HEAD/tree/trunk/sdi/
+        Project page:   https://github.com/adtools/SDI
         Description:    defines to hide compiler specific interrupt and
                         handler stuff
-        Id:             $Id$
-        URL:            $URL: https://svn.code.sf.net/p/adtools/code/trunk/sdi/SDI_interrupt.h $
 
  1.0   17.05.05 : inspired by the SDI_#?.h files made by Jens Langner
                   and Dirk Stöcker I created files to handle interrupt
                   and handler functions in an API compatible way.
  1.1   25.04.06 : fixed MakeInterrupt() and MakeHandler() macro. (geit)
- WIP   23.08.13 : ported to AROS. WARNING: FOR ABIv1 ONLY!
 
 */
 
@@ -31,7 +28,7 @@
 ** (e.g. add your name or nick name).
 **
 ** Find the latest version of this file at:
-** http://sf.net/p/adtools/code/HEAD/tree/trunk/sdi/
+** https://github.com/adtools/SDI
 **
 ** Guido Mersmann <geit@gmx.de>
 **
@@ -114,24 +111,6 @@
     SAVEDS ASM ret name( obj, data)
 
   #define ENTRY(func) (APTR)&Gate_##func
-
-#elif defined(__AROS__)
-
-  /* This is the same prototype for both Cause() and
-   * AddIntServer() functions
-   */
-  #define INTERRUPTPROTO(name, ret, obj, data) \
-      ret name(obj, data, struct ExecBase *SysBase); \
-      AROS_UFH5(int, name##_wrapper, \
-          AROS_UFHA(APTR, is_Data, A1), \
-          AROS_UFHA(APTR, is_Code, A5), \
-          AROS_UFHA(struct ExecBase *, sysBase, A6), \
-          AROS_UFHA(APTR, mask, D1), \
-          AROS_UFHA(APTR, custom, A0)) \
-      { AROS_USERFUNC_INIT \
-        name(custom, is_Data, sysBase ); return 0; \
-        AROS_USERFUNC_EXIT }  \
-      ret name(obj, data, struct ExecBase *SysBase)
 
 #else
 

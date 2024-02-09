@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,7 @@
 
 /* utils.c */
 #if !defined(__MORPHOS__)
-#if defined(__AROS__)
-IPTR VARARGS68K DoSuperNew(struct IClass *cl, Object *obj, ...);
-#else
 Object * VARARGS68K DoSuperNew(struct IClass *cl, Object *obj, ...);
-#endif
 #endif
 
 #if !defined(__MORPHOS__) && !defined(__AROS__)
@@ -42,12 +38,12 @@ Object *opoppen(const void *key, const void *title, const void *help);
 Object *opopfri(const void *key, const void *title, const void *help);
 Object *opopback(ULONG gradient, const void *key, const void *title, const void *help);
 Object *opopframe(const void *key, const void *title, const void *help);
-#if !defined(__amigaos4__) && !defined(__MORPHOS__) && !defined(__AROS__)
+#if defined(__amigaos3__)
 void drawGradient(Object *obj, struct MUIS_TheBar_Gradient *grad);
 #endif
 ULONG getKeyChar(const char *string);
 
-#if !defined(__amigaos4__) && !defined(__MORPHOS__) && !defined(__AROS__)
+#if defined(__amigaos3__)
 /* coloradjust.c */
 void freeColoradjust ( void );
 ULONG initColoradjust ( void );

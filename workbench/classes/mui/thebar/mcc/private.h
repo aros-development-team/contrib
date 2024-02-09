@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -122,16 +122,14 @@ struct InstData
     char                           frameSpec[256];
     ULONG                          userFrame;
 
-    #if defined(__amigaos3__)
-    BOOL                           allowAlphaChannel;
-    #endif
-
     ULONG                          flags;
     ULONG                          userFlags;
     ULONG                          flags2;
     ULONG                          userFlags2;
 
     struct MUI_EventHandlerNode    eh;
+
+    LONG                           hoverID;
 };
 
 /* flags */

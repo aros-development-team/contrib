@@ -53,21 +53,18 @@ struct Library *MUIMasterBase;
 
 /***********************************************************************/
 
-#if defined(__AROS__)
-Object * DoSuperNew(struct IClass *cl, Object *obj, IPTR tag1, ...)
-{
-  AROS_SLOWSTACKTAGS_PRE_AS(tag1, Object *)
-  retval = (Object *)DoSuperMethod(cl, obj, OM_NEW, AROS_SLOWSTACKTAGS_ARG(tag1));
-  AROS_SLOWSTACKTAGS_POST
-}
-#elif defined(__MORPHOS__)
+#if !defined(__MORPHOS__)
 Object * VARARGS68K DoSuperNew(struct IClass *cl, Object *obj, ...)
 {
   Object *rc;
   VA_LIST args;
+  struct opSet msg;
 
   VA_START(args, obj);
-  rc = (Object *)DoSuperMethod(cl, obj, OM_NEW, VA_ARG(args, ULONG), NULL);
+  msg.MethodID = OM_NEW;
+  msg.ops_AttrList = VA_ARG(args, struct TagItem *);
+  msg.ops_GInfo = NULL;
+  rc = (Object *)DoSuperMethodA(cl, obj, (Msg)&msg);
   VA_END(args);
 
   return rc;
@@ -406,7 +403,7 @@ DISPATCHER(_dispatcher)
 }
 
 const char *usedClasses[] = {"TheBar.mcc",NULL};
-    
+
 int
 main(UNUSED int argc,char **argv)
 {

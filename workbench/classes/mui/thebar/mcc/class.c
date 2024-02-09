@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -1211,13 +1211,7 @@ static BOOL loadDTBrush(struct MUIS_TheBar_Brush *brush,STRPTR file)
                 {
                   res = DoMethod(dto,PDTM_READPIXELARRAY,(IPTR)chunky,PBPAFMT_ARGB,width<<2,0,0,width,height);
 
-                  #if !defined(__amigaos4__) && !defined(__AROS__)
-                  // ignore the return code for mos broken pdt
-                  if (isFlagSet(lib_flags,BASEFLG_BROKENMOSPDT))
-                    res = TRUE;
-                  #endif
-
-                  #ifdef __AROS__
+                  #if defined(__AROS__)
                   // ignore the return code for AROS
                   res = TRUE;
                   #endif
@@ -1225,7 +1219,7 @@ static BOOL loadDTBrush(struct MUIS_TheBar_Brush *brush,STRPTR file)
                 else
                 {
                   // NOPE AROSMAN. YOU CAN'T IGNORE THIS ONE; JUST SKIP to ReadLine8()!
-                  #ifndef __AROS__
+                  #if !defined(__AROS__)
                   res = DoMethod(dto,PDTM_READPIXELARRAY,(IPTR)chunky,PBPAFMT_LUT8,width,0,0,width,height);
                   #endif
                 }
@@ -1403,7 +1397,7 @@ static void removeButton(struct IClass *cl, Object *obj, struct Button *button)
   }
 
   // cleanup the notifyListClone
-  if(IsListEmpty(&button->notifyListClone) == FALSE)
+  if(IsListEmpty((struct List *)&button->notifyListClone) == FALSE)
   {
     struct MinNode *notifyNode;
 
@@ -1550,22 +1544,22 @@ static const ULONG ptable[] =
     PACK_STARTTABLE(TBTAGBASE),
 
     /* Fields */
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Images,pack,brushes,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelImages,pack,sbrushes,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisImages,pack,dbrushes,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Buttons,pack,buttons,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_PicsDrawer,pack,idrawer,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Images,pack,brushes,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelImages,pack,sbrushes,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisImages,pack,dbrushes,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Buttons,pack,buttons,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_PicsDrawer,pack,idrawer,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SpacerIndex,pack,spacer,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBTAGBASE,MUIA_TheBar_ViewMode,pack,viewMode,PKCTRL_LONG|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Pics,pack,pics,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelPics,pack,spics,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisPics,pack,dpics,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Strip,pack,strip,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelStrip,pack,sstrip,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisStrip,pack,dstrip,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_StripBrush,pack,stripBrush,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelStripBrush,pack,sstripBrush,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisStripBrush,pack,dstripBrush,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Pics,pack,pics,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelPics,pack,spics,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisPics,pack,dpics,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Strip,pack,strip,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelStrip,pack,sstrip,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisStrip,pack,dstrip,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_StripBrush,pack,stripBrush,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_SelStripBrush,pack,sstripBrush,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBTAGBASE,MUIA_TheBar_DisStripBrush,pack,dstripBrush,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBTAGBASE,MUIA_TheBar_LabelPos,pack,labelPos,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBTAGBASE,MUIA_TheBar_BarPos,pack,barPos,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBTAGBASE,MUIA_TheBar_Columns,pack,cols,PKCTRL_LONG|PKCTRL_PACKONLY),
@@ -1652,7 +1646,7 @@ static const ULONG ptable[] =
 
     PACK_NEWOFFSET(MUIA_Frame),
     PACK_LONGBIT(MUIA_Frame,MUIA_Frame,pack,userFlags2,PKCTRL_BIT|PKCTRL_PACKONLY|PSTF_EXISTS,UFLG2_UserFrame),
-    PACK_ENTRY(MUIA_Frame,MUIA_Frame,pack,userFrame,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(MUIA_Frame,MUIA_Frame,pack,userFrame,PKCTRL_LONG|PKCTRL_PACKONLY),
 
     /* Alien: group */
     PACK_NEWOFFSET(MUIA_Group_Horiz),
@@ -2088,7 +2082,7 @@ static IPTR mNew(struct IClass *cl,Object *obj,struct opSet *msg)
     pt.spacer   = pt.stripCols = pt.stripRows = pt.stripHSpace = pt.stripVSpace = -1;
     pt.flags    = FLG_EnableKeys;
 
-    PackStructureTags(&pt, (ULONG *)ptable,attrs);
+    PackStructureTags(&pt,ptable,attrs);
 
     if (pt.viewMode>=MUIV_TheBar_ViewMode_Last)
         pt.viewMode = MUIV_TheBar_ViewMode_Text;
@@ -2125,9 +2119,8 @@ static IPTR mNew(struct IClass *cl,Object *obj,struct opSet *msg)
         data->remove    = pt.remove;
         data->cols      = pt.cols;
         data->rows      = pt.rows;
-        #if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
         data->userFrame = pt.userFrame;
-        #endif
+        data->hoverID   = -1;
 
         if (isFlagSet(data->flags, FLG_FreeStrip))
         {
@@ -2328,13 +2321,6 @@ static IPTR mNew(struct IClass *cl,Object *obj,struct opSet *msg)
             if (isFlagSet(data->flags, FLG_DragBar))
                 set(data->db,MUIA_Group_Horiz,data->cols);
         }
-
-        #if defined(__amigaos3__)
-        // cgx/WritePixelArrayAlpha is available in AfA only
-        if(CyberGfxBase != NULL && CyberGfxBase->lib_Version >= 45 &&
-           PictureDTBase != NULL && PictureDTBase->lib_Version >= 46)
-          data->allowAlphaChannel = TRUE;
-        #endif
     }
 
     RETURN((IPTR)obj);
@@ -2408,6 +2394,7 @@ static IPTR mGet(struct IClass *cl,Object *obj,struct opGet *msg)
     case MUIA_TheBar_IgnoreAppearance: *msg->opg_Storage = isFlagSet(data->flags2, FLG2_IgnoreAppearance) ? TRUE : FALSE; result=TRUE; break;
     case MUIA_TheBar_DisMode:          *msg->opg_Storage = data->disMode; result=TRUE; break;
     case MUIA_TheBar_NtRaiseActive:    *msg->opg_Storage = isFlagSet(data->userFlags2, UFLG2_NtRaiseActive) ? TRUE : FALSE; result=TRUE; break;
+    case MUIA_TheBar_HoveredButton:    *msg->opg_Storage = data->hoverID; result=TRUE; break;
 
     case MUIA_Group_Horiz:             *msg->opg_Storage = isFlagSet(data->flags, FLG_Horiz) ? TRUE : FALSE; result=TRUE; break;
 
@@ -2482,6 +2469,7 @@ static IPTR mSets(struct IClass *cl,Object *obj,struct opSet *msg)
     struct TagItem *tag;
     struct TagItem *tstate;
     ULONG flags = 0, res;
+    BOOL noNotify = FALSE;
 
     ENTER();
 
@@ -2491,6 +2479,11 @@ static IPTR mSets(struct IClass *cl,Object *obj,struct opSet *msg)
 
         switch (tag->ti_Tag)
         {
+		    case MUIA_NoNotify:
+		        // remember whether notifications are forbidden
+		        noNotify = tag->ti_Data;
+		        break;
+
             case MUIA_TheBar_Active:
                 if (tidata==data->active) tag->ti_Tag = TAG_IGNORE;
                 else
@@ -2515,14 +2508,14 @@ static IPTR mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                             if isFlagSet(button->flags, BFLG_Sleep)
                                 clearFlag(b->flags, MUIV_TheBar_ButtonFlag_Selected);
                             else
-                                set(button->obj,MUIA_Selected,FALSE);
+                                SetAttrs(button->obj, MUIA_NoNotify, noNotify, MUIA_Selected, FALSE, TAG_DONE);
                         }
                     }
 
                     if isFlagSet(b->flags, BFLG_Sleep)
                         setFlag(b->flags, MUIV_TheBar_ButtonFlag_Selected);
                     else
-                        set(b->obj,MUIA_Selected,TRUE);
+                        SetAttrs(b->obj, MUIA_NoNotify, noNotify, MUIA_Selected, TRUE, TAG_DONE);
                 }
                 break;
 
@@ -3209,14 +3202,13 @@ static IPTR mSetup(struct IClass *cl,Object *obj,Msg msg)
                 DoMethod(button->obj,MUIM_TheButton_Build);
     }
 
-    if (isFlagClear(lib_flags,BASEFLG_MUI20))
-    {
-        memset(&data->eh,0,sizeof(data->eh));
-        data->eh.ehn_Class  = cl;
-        data->eh.ehn_Object = obj;
-        data->eh.ehn_Events = IDCMP_ACTIVEWINDOW|IDCMP_INACTIVEWINDOW;
-        DoMethod(_win(obj),MUIM_Window_AddEventHandler,(IPTR)&data->eh);
-    }
+    // catch MOUSEMOVE events for all MUI versions
+    // catch (IN)ACTIVEWINDOW events for MUI 3.8 only
+    memset(&data->eh, 0, sizeof(data->eh));
+    data->eh.ehn_Class  = cl;
+    data->eh.ehn_Object = obj;
+    data->eh.ehn_Events = IDCMP_MOUSEMOVE | (isFlagClear(lib_flags,BASEFLG_MUI20) ? IDCMP_ACTIVEWINDOW|IDCMP_INACTIVEWINDOW : 0);
+    DoMethod(_win(obj), MUIM_Window_AddEventHandler, (IPTR)&data->eh);
 
     #if defined(VIRTUAL)
     setFlag(data->flags, FLG_IsInVirtgroup);
@@ -3243,18 +3235,17 @@ static IPTR mSetup(struct IClass *cl,Object *obj,Msg msg)
 /***********************************************************************/
 
 static IPTR
-mCleanup(struct IClass *cl,Object *obj,Msg msg)
+mCleanup(struct IClass *cl, Object *obj, Msg msg)
 {
   struct InstData *data = INST_DATA(cl, obj);
   IPTR result = 0;
 
   ENTER();
 
-  if(isFlagClear(lib_flags,BASEFLG_MUI4) && isFlagSet(data->flags, FLG_Framed))
-    freeFramePens(obj,data);
+  if(isFlagClear(lib_flags, BASEFLG_MUI4) && isFlagSet(data->flags, FLG_Framed))
+    freeFramePens(obj, data);
 
-  if (isFlagClear(lib_flags,BASEFLG_MUI20))
-    DoMethod(_win(obj),MUIM_Window_RemEventHandler,(IPTR)&data->eh);
+  DoMethod(_win(obj), MUIM_Window_RemEventHandler, (IPTR)&data->eh);
 
   if (isFlagSet(data->flags, FLG_FreeStrip))
     freeBitMaps(data);
@@ -3262,7 +3253,7 @@ mCleanup(struct IClass *cl,Object *obj,Msg msg)
   clearFlag(data->flags, FLG_Setup|FLG_CyberMap|FLG_CyberDeep|FLG_IsInVirtgroup);
   clearFlag(data->flags2, FLG2_Gradient);
 
-  result = DoSuperMethodA(cl,obj,msg);
+  result = DoSuperMethodA(cl, obj, msg);
 
   RETURN(result);
   return result;
@@ -4591,34 +4582,81 @@ static IPTR mGetDragImage(struct IClass *cl,Object *obj,struct MUIP_TheBar_GetDr
 
 /***********************************************************************/
 
+#define BETWEEN(a, v, b) ((v) >= (a) && (v) <= (b))
 
-static IPTR mHandleEvent(struct IClass *cl, Object *obj, UNUSED struct MUIP_HandleEvent *msg)
+static BOOL IsPointInObject(Object *obj, LONG x, LONG y)
 {
-    if (isFlagClear(lib_flags,BASEFLG_MUI20))
-    {
-        struct InstData *data = INST_DATA(cl, obj);
-        struct Button *button, *succ;
+    BOOL inObj;
 
-        ENTER();
+    ENTER();
 
-        for(button = (struct Button *)(data->buttons.mlh_Head); (succ = (struct Button *)(button->node.mln_Succ)); button = succ)
-        {
-            if (isFlagSet(button->flags, BFLG_Sleep))
-                continue;
-
-            set(button->obj,MUIA_TheButton_MouseOver,FALSE);
-        }
-
-        RETURN(0);
-        return 0;
-    }
+    if(BETWEEN(_left(obj), x, _right(obj)) && BETWEEN(_top(obj), y, _bottom(obj)))
+        inObj = TRUE;
     else
-    {
-        ULONG res = DoSuperMethodA(cl,obj,(Msg)msg);
+        inObj = FALSE;
 
-        RETURN(res);
-        return res;
+    RETURN(inObj);
+    return inObj;
+}
+
+static IPTR mHandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
+{
+    struct InstData *data = INST_DATA(cl, obj);
+    ULONG res;
+
+    ENTER();
+
+    if(msg->imsg != NULL)
+    {
+	    switch(msg->imsg->Class)
+	    {
+		    case IDCMP_ACTIVEWINDOW:
+		    case IDCMP_INACTIVEWINDOW:
+		    {
+                struct Button *button, *succ;
+
+                for(button = (struct Button *)(data->buttons.mlh_Head); (succ = (struct Button *)(button->node.mln_Succ)); button = succ)
+                {
+                    if(isFlagSet(button->flags, BFLG_Sleep))
+                        continue;
+
+                    set(button->obj, MUIA_TheButton_MouseOver, FALSE);
+                }
+            }
+            break;
+
+            case IDCMP_MOUSEMOVE:
+            {
+			    LONG hoverID = -1;
+
+                if(IsPointInObject(obj, msg->imsg->MouseX, msg->imsg->MouseY) == TRUE)
+                {
+                    struct Button *button, *succ;
+
+                    for(button = (struct Button *)(data->buttons.mlh_Head); (succ = (struct Button *)(button->node.mln_Succ)); button = succ)
+                    {
+                        if(IsPointInObject(button->obj, msg->imsg->MouseX, msg->imsg->MouseY) == TRUE)
+                        {
+                            hoverID = button->ID;
+                            break;
+    					}
+                    }
+                }
+
+                if(hoverID != data->hoverID)
+                {
+					data->hoverID = hoverID;
+                    set(obj, MUIA_TheBar_HoveredButton, hoverID);
+				}
+			}
+			break;
+        }
     }
+
+    res = 0;
+
+    RETURN(res);
+    return res;
 }
 
 

@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -107,20 +107,16 @@ struct InstData
     ULONG                       flags2;                 // As it says
     ULONG                       userFlags;              // As it says
 
-    UBYTE                         *nchunky;               // Normal chunky
-    UBYTE                         *gchunky;               // Sunny chunky
-    UBYTE                         *snchunky;              // Selected chunky
-    UBYTE                         *sgchunky;              // Selected sunny chunky
-    UBYTE                         *dnchunky;              // Disabled chunky
-    UBYTE                         *dgchunky;              // Disabled sunny chunky
+    UBYTE                       *nchunky;               // Normal chunky
+    UBYTE                       *gchunky;               // Sunny chunky
+    UBYTE                       *snchunky;              // Selected chunky
+    UBYTE                       *sgchunky;              // Selected sunny chunky
+    UBYTE                       *dnchunky;              // Disabled chunky
+    UBYTE                       *dgchunky;              // Disabled sunny chunky
 
     struct MinList              notifyList;             // list of set notifies on the button
 
-    ULONG                       qualifier;              // cureently active RAWKEY-Qualifiers
-
-    #if defined(__amigaos3__)
-    BOOL                        allowAlphaChannel;
-    #endif
+    ULONG                       qualifier;              // currently active RAWKEY-Qualifiers
 };
 
 /* flags */

@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@
 
 #define INSTDATA      InstData
 
-#define USERLIBID     CLASS " " LIB_REV_STRING " [" SYSTEMSHORT "/" CPU "] (" LIB_DATE ") " LIB_COPYRIGHT
+#define USERLIBID     CLASS " " LIB_REV_STRING " (" LIB_DATE ") " LIB_COPYRIGHT " [" SYSTEMSHORT "/" CPU "]"
 #define MASTERVERSION 19
 
 #define CLASSINIT
@@ -58,7 +58,6 @@ static const char *used_mcps[] = { "TheBar.mcp", NULL };
 struct Library *DataTypesBase = NULL;
 struct Library *CyberGfxBase = NULL;
 struct Library *DiskfontBase = NULL;
-struct Library *PictureDTBase = NULL;
 
 #if defined(__amigaos4__)
 struct DataTypesIFace *IDataTypes = NULL;
@@ -98,8 +97,6 @@ static BOOL ClassInit(UNUSED struct Library *base)
                    GETINTERFACE(ICyberGfx, struct CyberGfxIFace *, CyberGfxBase))
                 { }
 
-                PictureDTBase = OpenLibrary("picture.datatype",0);
-
                 // check the version of MUI)
                 if (MUIMasterBase->lib_Version>=20)
                 {
@@ -132,12 +129,6 @@ static BOOL ClassExpunge(UNUSED struct Library *base)
     ENTER();
 
     DeleteSharedPool();
-
-    if (PictureDTBase)
-    {
-        CloseLibrary(PictureDTBase);
-        PictureDTBase = NULL;
-    }
 
     if (CyberGfxBase)
     {

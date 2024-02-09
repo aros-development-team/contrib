@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@
 
 #define INSTDATAP     InstData
 
-#define USERLIBID     CLASS " " LIB_REV_STRING " [" SYSTEMSHORT "/" CPU "] (" LIB_DATE ") " LIB_COPYRIGHT
+#define USERLIBID     CLASS " " LIB_REV_STRING " (" LIB_DATE ") " LIB_COPYRIGHT " [" SYSTEMSHORT "/" CPU "]"
 #define MASTERVERSION 19
 
 #define CLASSINIT
@@ -261,7 +261,7 @@ static BOOL ClassInit(UNUSED struct Library *base)
 
     // on MUI 3.1 system's we do have to
     // initialize our subclasses as well
-    #if !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
+    #if defined(__amigaos3__)
     if(!(lib_flags & BASEFLG_MUI20))
     {
       if(!initColoradjust() ||
@@ -287,10 +287,6 @@ static BOOL ClassInit(UNUSED struct Library *base)
       LocalizeArray(spacersSizes,spacersSizeIDs);
       LocalizeArray(viewModes,viewModeIDs);
       LocalizeArray(labelPoss,labelPosIDs);
-
-      #if defined(__amigaos3__)
-      dismodes[4] = NULL;
-      #endif
 
       // we open the cybgraphics.library but without failing if
       // it doesn't exist
@@ -347,7 +343,7 @@ ClassExpunge(UNUSED struct Library *base)
 {
   ENTER();
 
-  #if !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
+  #if defined(__amigaos3__)
   if(!(lib_flags & BASEFLG_MUI20))
   {
     freePopbackground();

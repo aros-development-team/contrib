@@ -25,6 +25,7 @@ TheBar.mcc/MUIA_TheBar_FreeHoriz
 TheBar.mcc/MUIA_TheBar_FreeVert
 TheBar.mcc/MUIA_TheBar_HorizSpacing
 TheBar.mcc/MUIA_TheBar_HorizTextGfxSpacing
+TheBar.mcc/MUIA_TheBar_HoveredButton
 TheBar.mcc/MUIA_TheBar_IgnoreAppearance
 TheBar.mcc/MUIA_TheBar_IgnoreDisImages
 TheBar.mcc/MUIA_TheBar_IgnoreSelImages
@@ -85,7 +86,7 @@ TheBar.mcc/TheBar.mcc
     $URL: https://thebar.svn.sourceforge.net/svnroot/thebar/trunk/doc/MCC_TheBar.doc $
 
     Copyright (C) 2003-2005 Alfonso Ranieri
-    Copyright (C) 2005-2009 TheBar Open Source Team
+    Copyright (C) 2005-2022 TheBar Open Source Team
 
     TheBar.mcc is a MUI custom class which provides facilities to
     generate a dynamic graphical toolbar for MUI applications. Beside
@@ -841,6 +842,19 @@ TheBar.mcc/MUIA_TheBar_HorizTextGfxSpacing
      MUIA_TheBar_HorizSpacing
      MUIA_TheBar_HorizInnerSpacing
 
+TheBar.mcc/MUIA_TheBar_HoveredButton
+
+    NAME
+     MUIA_TheBar_HoveredButton -- LONG, [..GN], v26
+
+    FUNCTION
+     Return the ID of the button currenly hovered by the mouse
+     or -1 if no button is hovered. All buttons will be respected,
+     even disabled ones.
+
+    NOTE
+     This attribute is available since TheBar V26.17.
+
 TheBar.mcc/MUIA_TheBar_IgnoreAppearance
 
     NAME
@@ -1149,6 +1163,10 @@ TheBar.mcc/MUIA_TheBar_MouseOver
      If MUIA_TheBar_Raised or MUIA_TheBar_Sunny is TRUE,
      this attribute contains the id of the last button
      where the mouse was over.
+
+     Starting with TheBar 26.17 this attribute will be
+     triggered for all kinds of button styles, no just
+     raised or sunny.
 
 TheBar.mcc/MUIA_TheBar_NtRaiseActive
 

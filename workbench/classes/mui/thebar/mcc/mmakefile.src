@@ -1,6 +1,6 @@
 #   $Id$
 
-include $(SRCDIR)/config/aros-contrib.cfg
+include $(TOP)/config/make.cfg
 
 #MM contrib-zune-classes-thebar-mcc : includes linklibs
 
@@ -18,7 +18,7 @@ FILES := \
 	 utils
 
 USER_INCLUDES := -idirafter $(SRCDIR)/$(CURDIR)/../include
-USER_CPPFLAGS := -DNO_INLINE_STDARG -DAROS_ABI_V1
+USER_CPPFLAGS := -DNO_INLINE_STDARG
 USER_CFLAGS := $(PARANOIA_CFLAGS)
 USER_LDFLAGS := -static
 
@@ -26,7 +26,7 @@ USER_LDFLAGS := -static
   modname=TheBar modtype=mcc moduledir=$(AROS_CONTRIB)/Zune/MCC_TheBar/Classes/Zune \
   objdir=$(GENDIR)/$(CURDIR)/mcc files=$(FILES)
 
-USER_CPPFLAGS := -DVIRTUAL -DNO_INLINE_STDARG -DAROS_ABI_V1
+USER_CPPFLAGS := -DVIRTUAL -DNO_INLINE_STDARG
 USER_CFLAGS := $(PARANOIA_CFLAGS)
 
 %build_module_simple mmake=contrib-zune-classes-thebar-mccv \

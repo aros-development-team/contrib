@@ -20,7 +20,7 @@
 ** TheBar class Support Site: http://www.sf.net/projects/thebar
 **
 ** $Id$
-** $URL: svn://svn.code.sf.net/p/thebar/code/releases/26.15/include/mui/TheBar_mcc.h $
+** $URL$
 **
 **/
 
@@ -198,6 +198,7 @@ struct MUIP_TheBar_NoNotifySetAttr { STACKED IPTR MethodID; STACKED IPTR ID; STA
 #define MUIA_TheBar_SpacersSize           (TBTAGBASE+74)  /* v18 BOOL,                          [ISGN]   */
 #define MUIA_TheBar_Appearance            (TBTAGBASE+75)  /* v19 struct MUIS_TheBar_Appearance, [..G.]   */
 #define MUIA_TheBar_IgnoreAppearance      (TBTAGBASE+76)  /* v19 BOOL                           [ISGN]   */
+#define MUIA_TheBar_HoveredButton         (TBTAGBASE+77)  /* v26 LONG                           [..GN]   */
 
 /***********************************************************************/
 /*

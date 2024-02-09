@@ -1,5 +1,5 @@
 # Translation catalog description file (pot-style)
-# $Id: TheBar_mcp.pot 479 2014-04-05 18:25:12Z damato $
+# $Id$
 #
 # version 26
 msgid ""

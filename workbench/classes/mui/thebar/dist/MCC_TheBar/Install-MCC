@@ -1,7 +1,7 @@
 ;
-; $VER: Install-MCC 1.5 (21.5.2012)
+; $VER: Install-MCC 1.9 (03.01.2021)
 ;
-; $Id: Install-MCC 436 2012-12-20 16:21:45Z damato $
+; $Id$
 ;
 ; History:
 ;
@@ -17,7 +17,10 @@
 ;   1.4   11.06.2010: extended the final message that a reboot might be
 ;                     necessary to be able to use the just installed version.
 ;   1.5   21.05.2012: fixed the wrong selection of the builtin language.
-;   1.6   20.12.2013: changed MorphOS desription to include 3.x
+;   1.6   20.12.2013: changed MorphOS description to include 3.x
+;   1.7   03.02.2017: added support for slovak language
+;   1.8   23.12.2020: added swedish translation for the installer.
+;   1.9   03.01.2021: added italian translation for the installer.
 
 ;----------------------------------------------------------------------------
 ; /// language bit definition, do not change these!!
@@ -37,14 +40,15 @@
 (set #lang_turkish             13)
 (set #lang_russian             14)
 (set #lang_czech               15)
-(set #lang_english_british     16)
-(set #lang_maximum             17)
+(set #lang_slovak              16)
+(set #lang_english_british     17)
+(set #lang_maximum             18)
 ; ///
 
 ;----------------------------------------------------------------------------
 ; /// default language detection
 (set #i 0)
-(while (<> @language (select #i "deutsch" @language))
+(while (<> @language (select #i "deutsch" "english" "svenska" @language))
     (set #i (+ #i 1))
 )
 (if (= #i 1) ; LANGUAGE
@@ -53,8 +57,8 @@
 )
 
 (set #i 0)
-(set #defaultLanguages %1000000000000000)
-(while (<> #language (select #i "czech" "russian" "türkçe" "greek" "magyar" "suomi" "polski" "svenska" "norsk" "nederlands" "italiano" "dansk" "español" "français" "deutsch" #language))
+(set #defaultLanguages %10000000000000000)
+(while (<> #language (select #i "slovak" "czech" "russian" "türkçe" "greek" "magyar" "suomi" "polski" "svenska" "norsk" "nederlands" "italiano" "dansk" "español" "français" "deutsch" #language))
     (
         (set #i (+ #i 1))
         (set #defaultLanguages (shiftright #defaultLanguages 1))
@@ -64,10 +68,10 @@
 (set #defaultLanguages (bitor #defaultLanguages (shiftleft 1 #lang_english)))
 
 ; scan the Locale/Catalogs directory for supported languages
-(set #supportedLanguages %0000000000000000)
+(set #supportedLanguages %00000000000000000)
 (foreach "Locale/Catalogs" "#?"
     (set #i 0)
-    (while (<> @each-name (select #i "english" "german" "french" "spanish" "danish" "italian" "dutch" "norwegian" "swedish" "polish" "finnish" "hungarian" "greek" "turkish" "russian" "czech" @each-name))
+    (while (<> @each-name (select #i "english" "german" "french" "spanish" "danish" "italian" "dutch" "norwegian" "swedish" "polish" "finnish" "hungarian" "greek" "turkish" "russian" "czech" "slovak" @each-name))
         (set #i (+ #i 1))
     )
     (if (<> #lang_maximum #i)
@@ -108,6 +112,39 @@
                                  "nötig, um die Installation abzuschließen!"))
     )
 )
+
+; ///
+; /// ***** Svenska
+(if (= #language "svenska")
+    (
+        (set #acknowledgeOS (cat "Var god verifiera den automatiska\n"
+                                 "detekteringen av ditt operativsystem:"))
+        (set #lang_catalog  (cat "Vilken katalogfil vill du installera?\n"
+                                 "(Engelska är inbyggt)"))
+        (set #done          (cat "\n"
+                                 @app-name " har framgångsrikt installerats.\n"
+                                 "\n"
+                                 "En omstart kan vara nödvändig\n"
+                                 "för att slutföra installationen!"))
+    )
+)
+
+; ///
+; /// ***** Italiano
+(if (= #language "italiano")
+(
+    (set #acknowledgeOS (cat "Per favore conferma il rilevamento\n"
+                             "automatico del sistema operativo in uso:"))
+    (set #lang_catalog  (cat "Quale catalogo di lingua si desidera installare?\n"
+                             "(La lingua inglese è incorporata)"))
+    (set #done          (cat "\n"
+                             @app-name " è stata installata correttamente.\n"
+                             "\n"
+                             "Potrebbe essere necessario un riavvio\n"
+                             "per completare questa installazione!"))
+    )
+)
+
 ; ///
 
 ;----------------------------------------------------------------------------
@@ -173,6 +210,7 @@
         (set #cat_name_turkish               "turkish")
         (set #cat_name_russian               "russian")
         (set #cat_name_czech                 "czech")
+        (set #cat_name_slovak                "slovak")
         (set #cat_name_english_british       "english-british")
     )
     ; all other systems use localized locale names
@@ -193,6 +231,7 @@
         (set #cat_name_turkish               "türkçe")
         (set #cat_name_russian               "russian")
         (set #cat_name_czech                 "czech")
+        (set #cat_name_slovak                "slovak")
         (set #cat_name_english_british       "english-british")
     )
 )
@@ -306,6 +345,10 @@
             )
             (if (in #supportedLanguages #lang_czech)
                 (cat #prop "Czech")
+                ("")
+            )
+            (if (in #supportedLanguages #lang_slovak)
+                (cat #prop "Slovak")
                 ("")
             )
             (if (and (in #supportedLanguages #lang_english_british) (= #detectedSystem "os4"))
@@ -565,6 +608,21 @@
                     (copyfiles
                         (source (tackon "Locale/Catalogs/czech" @each-name))
                         (dest (tackon "LOCALE:Catalogs" #cat_name_czech))
+                        (help @copyfiles-help)
+                    )
+                )
+            )
+        )
+
+        ; slovak catalog file
+        (if (in catalog_lang #lang_slovak)
+            (
+                (makedir (tackon "LOCALE:Catalogs" #cat_name_slovak))
+
+                (foreach "Locale/Catalogs/slovak" "#?_mcp.catalog"
+                    (copyfiles
+                        (source (tackon "Locale/Catalogs/slovak" @each-name))
+                        (dest (tackon "LOCALE:Catalogs" #cat_name_slovak))
                         (help @copyfiles-help)
                     )
                 )

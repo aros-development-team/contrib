@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -158,16 +158,16 @@ extern STRPTR regs[], frames[], precisions[], dismodes[],
 
 struct MUIP_Popbackground_Close
 {
-    STACKED ULONG MethodID;
-    STACKED ULONG success;
+    ULONG MethodID;
+    ULONG success;
 };
 
 struct MUIP_Popbackground_SetSpec
 {
-    STACKED ULONG                       MethodID;
-    STACKED STRPTR                      spec;
-    STACKED struct MUIS_TheBar_Gradient *grad;
-    STACKED ULONG                       flags;
+    ULONG                       MethodID;
+    STRPTR                      spec;
+    struct MUIS_TheBar_Gradient *grad;
+    ULONG                       flags;
 };
 
 enum
@@ -184,10 +184,10 @@ enum
 
 struct MUIP_Popbackground_GetSpec
 {
-    STACKED ULONG                       MethodID;
-    STACKED STRPTR                      spec;
-    STACKED struct MUIS_TheBar_Gradient *grad;
-    STACKED ULONG                       flags;
+    ULONG                       MethodID;
+    STRPTR                      spec;
+    struct MUIS_TheBar_Gradient *grad;
+    ULONG                       flags;
 };
 
 enum
@@ -205,26 +205,26 @@ enum
 
 struct MUIP_Popbackground_SelectPattern
 {
-    STACKED ULONG MethodID;
-    STACKED ULONG id;
+    ULONG MethodID;
+    ULONG id;
 };
 
 struct MUIP_Popbackground_GradientCol
 {
-    STACKED ULONG MethodID;
-    STACKED ULONG from;
+    ULONG MethodID;
+    ULONG from;
 };
 
 struct MUIP_Popbackground_SetStatus
 {
-    STACKED ULONG                            MethodID;
-    STACKED struct MUIS_Popbackground_Status *status;
+    ULONG                            MethodID;
+    struct MUIS_Popbackground_Status *status;
 };
 
 struct MUIP_Popbackground_GetStatus
 {
-    STACKED ULONG                            MethodID;
-    STACKED struct MUIS_Popbackground_Status *status;
+    ULONG                            MethodID;
+    struct MUIS_Popbackground_Status *status;
 };
 
 /* Attributes */
@@ -266,10 +266,7 @@ struct MUIS_Popbackground_Status
 #define popbackObject           NewObject(lib_popbackground->mcc_Class,NULL
 
 #define superget(cl,obj,tag,storage)    DoSuperMethod(cl,obj,OM_GET,tag,(IPTR)(storage))
-#if !defined(superset)
 #define superset(cl,obj,tag,val)        SetSuperAttrs(cl,obj,tag,(IPTR)(val),TAG_DONE)
-#endif
-#define addconfigitem(cfg,value,size,item) DoMethod(cfg,MUIM_Dataspace_Add,(IPTR)(value),size,item)
 
 #undef get
 #define get(obj,attr,store)            GetAttr((ULONG)(attr),(APTR)obj,(IPTR *)((IPTR)(store)))

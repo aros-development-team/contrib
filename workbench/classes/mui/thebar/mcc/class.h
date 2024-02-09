@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,8 @@
 #include <SDI_stdarg.h>
 
 #if defined(__amigaos4__)
-#include <hardware/blit.h>
+#define __USE_CLASSIC_MINTERM__
+#include <graphics/minterm.h>
 #endif
 
 #include "debug.h"
@@ -78,7 +79,6 @@ extern struct Library         *MUIMasterBase;
 
 extern struct Library         *DataTypesBase;
 extern struct Library         *CyberGfxBase;
-extern struct Library         *PictureDTBase;
 
 extern struct MUI_CustomClass *lib_thisClass;
 extern struct MUI_CustomClass *lib_spacerClass;
@@ -91,7 +91,6 @@ enum
   BASEFLG_Init         = 1<<0,
   BASEFLG_MUI20        = 1<<1,
   BASEFLG_MUI4         = 1<<2,
-  BASEFLG_BROKENMOSPDT = 1<<3,
 };
 
 /***************************************************************************/
@@ -99,20 +98,13 @@ enum
 ** Macros
 */
 
-/* these systems are able to handle alpha channel information */
-#if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
-    #define WITH_ALPHA 1
-#endif
-
 #define _riflags(obj) (muiRenderInfo(obj)->mri_Flags)
 
 #define RAWIDTH(w)                      ((((UWORD)(w))+15)>>3 & 0xFFFE)
 #define BOOLSAME(a,b)                   (((a) ? TRUE : FALSE)==((b) ? TRUE : FALSE))
 
 #define getconfigitem(cl,obj,item,ptr)  DoSuperMethod(cl,obj,MUIM_GetConfigItem,item,(IPTR)ptr)
-#if !defined(superset)
 #define superset(cl,obj,tag,val)        SetSuperAttrs(cl,obj,tag,(IPTR)(val),TAG_DONE)
-#endif
 #define superget(cl,obj,tag,storage)    DoSuperMethod(cl,obj,OM_GET,tag,(IPTR)(storage))
 #define nnsuperset(cl,obj,tag,val)      SetSuperAttrs(cl,obj,tag,(IPTR)(val),MUIA_NoNotify,TRUE,TAG_DONE)
 #undef set
@@ -164,6 +156,7 @@ struct scale
 
 /***********************************************************************/
 
+#if !defined(__amigaos4__)
 enum
 {
     MINTERM_ZERO        = 0,
@@ -174,6 +167,7 @@ enum
     MINTERM_NOT_B_AND_C = ANBC | NANBC,
     MINTERM_B_OR_C      = ABC | ABNC | NABC | NABNC | ANBC | NANBC,
 };
+#endif
 
 /****************************************************************************/
 /*
@@ -217,7 +211,7 @@ struct MUI_DragImage
 
 #ifndef MUIM_DeleteDragImage
 #define MUIM_DeleteDragImage 0x80423037UL
-struct MUIP_DeleteDragImage {STACKED ULONG MethodID; STACKED struct MUI_DragImage *di;};
+struct MUIP_DeleteDragImage {ULONG MethodID; struct MUI_DragImage *di;};
 #endif
 
 /****************************************************************************/

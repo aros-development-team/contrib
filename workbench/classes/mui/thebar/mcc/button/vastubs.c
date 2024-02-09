@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -46,8 +46,10 @@ ULONG SetDTAttrs( Object *o, struct Window *win, struct Requester *req, Tag tag1
 { return SetDTAttrsA(o, win, req, (struct TagItem *)&tag1); }
 ULONG GetDTAttrs( Object *o, Tag tag1, ... )
 { return GetDTAttrsA(o, (struct TagItem *)&tag1); }
+#ifndef DoDTMethod
 ULONG DoDTMethod( Object *o, struct Window *win, struct Requester *req, ULONG data, ... )
 { return DoDTMethodA(o, win, req, (Msg)&data); }
+#endif
 
 #else
   #error "VARGS stubs are only save on m68k systems!"

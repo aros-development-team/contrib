@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -114,15 +114,15 @@ ULONG packTable[] =
 {
     PACK_STARTTABLE(TBUTTAGBASE),
 
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Image,pack,image,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_SelImage,pack,simage,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_DisImage,pack,dimage,PKCTRL_IPTR|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Label,pack,label,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Image,pack,image,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_SelImage,pack,simage,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_DisImage,pack,dimage,PKCTRL_LONG|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Label,pack,label,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_ViewMode,pack,vMode,PKCTRL_LONG|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_TheBar,pack,tb,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_TheBar,pack,tb,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_ID,pack,id,PKCTRL_LONG|PKCTRL_PACKONLY),
     PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_LabelPos,pack,lPos,PKCTRL_LONG|PKCTRL_PACKONLY),
-    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Strip,pack,strip,PKCTRL_IPTR|PKCTRL_PACKONLY),
+    PACK_ENTRY(TBUTTAGBASE,MUIA_TheButton_Strip,pack,strip,PKCTRL_LONG|PKCTRL_PACKONLY),
 
     PACK_LONGBIT(TBUTTAGBASE,MUIA_TheButton_Borderless,pack,flags,PKCTRL_BIT|PKCTRL_PACKONLY,FLG_Borderless),
     PACK_LONGBIT(TBUTTAGBASE,MUIA_TheButton_NoClick,pack,flags,PKCTRL_BIT|PKCTRL_PACKONLY,FLG_NoClick),
@@ -184,7 +184,6 @@ ULONG packTable[] =
     PACK_ENDTABLE
 };
 
-
 /***********************************************************************/
 
 static IPTR
@@ -237,10 +236,10 @@ mNew(struct IClass *cl,Object *obj,struct opSet *msg)
             isFlagSet(pack.flags, FLG_NoClick) ? TAG_IGNORE : MUIA_CycleChain, TRUE,
             isFlagSet(pack.flags, FLG_NoClick) ? TAG_IGNORE : MUIA_InputMode,  imode,
             MUIA_Font, (pack.vMode==MUIV_TheButton_ViewMode_Text) ? MUIV_Font_Button : MUIV_Font_Tiny,
-            MUIA_Frame, isFlagClear(lib_flags, BASEFLG_MUI4) && isFlagSet(pack.flags, FLG_Borderless) ? MUIV_Frame_None : MUIV_Frame_Button,
+            MUIA_Frame, isFlagClear(lib_flags, BASEFLG_MUI20) && isFlagSet(pack.flags, FLG_Borderless) ? MUIV_Frame_None : MUIV_Frame_Button,
             isFlagSet(pack.flags, FLG_Borderless) ? TAG_IGNORE : MUIA_Background, MUII_ButtonBack,
-            isFlagSet(lib_flags, BASEFLG_MUI4) && isFlagSet(pack.flags, FLG_Borderless) ? MUIA_FrameDynamic : TAG_IGNORE, TRUE,
-            isFlagSet(lib_flags, BASEFLG_MUI4) && isFlagSet(pack.flags, FLG_Borderless) ? MUIA_FrameVisible : TAG_IGNORE, FALSE,
+            isFlagSet(lib_flags, BASEFLG_MUI20) && isFlagSet(pack.flags, FLG_Borderless) ? MUIA_FrameDynamic : TAG_IGNORE, TRUE,
+            isFlagSet(lib_flags, BASEFLG_MUI20) && isFlagSet(pack.flags, FLG_Borderless) ? MUIA_FrameVisible : TAG_IGNORE, FALSE,
             isFlagSet(lib_flags, BASEFLG_MUI20) ? TAG_IGNORE : MUIA_CustomBackfill, isFlagSet(pack.flags, FLG_Borderless),
             MUIA_KnowsDisabled, TRUE,
             TAG_MORE,(IPTR)attrs)))
@@ -360,13 +359,6 @@ mNew(struct IClass *cl,Object *obj,struct opSet *msg)
 
         // cleanup the notifyList
         NewList((struct List *)&data->notifyList);
-
-        #if defined(__amigaos3__)
-        // cgx/WritePixelArrayAlpha is available in AfA only
-        if(CyberGfxBase != NULL && CyberGfxBase->lib_Version >= 45 &&
-           PictureDTBase != NULL && PictureDTBase->lib_Version >= 46)
-          data->allowAlphaChannel = TRUE;
-        #endif
     }
 
     RETURN(obj);
@@ -450,10 +442,9 @@ addRemEventHandler(struct IClass *cl, Object *obj, struct InstData *data)
   {
     ULONG catchableEvents = 0;
 
-    if(isFlagClear(data->flags, FLG_Disabled) &&
-       (((isFlagSet(data->flags, FLG_Raised) || isFlagSet(data->flags, FLG_Sunny)) && isFlagClear(data->flags, FLG_Selected)) || isFlagSet(data->flags2, FLG2_Special)))
+    if(isFlagClear(data->flags, FLG_Disabled))
     {
-      // now we also catch mousemove events
+      // now we also catch mousemove events, regardless of the button style (i.e. raised, sunny, etc)
       catchableEvents |= (isFlagSet(lib_flags, BASEFLG_MUI20) ? IDCMP_MOUSEOBJECT : IDCMP_MOUSEMOVE);
     }
 
@@ -551,7 +542,7 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                         over = TRUE;
                     }
                     else
-                    	clearFlag(data->flags,FLG_MouseOver);
+                        clearFlag(data->flags,FLG_MouseOver);
 
                     back = TRUE;
                 }
@@ -559,9 +550,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
 
             case MUIA_Group_Horiz:
                 if (tidata)
-                	setFlag(data->flags, FLG_Horiz);
+                    setFlag(data->flags, FLG_Horiz);
                 else
-                	clearFlag(data->flags, FLG_Horiz);
+                    clearFlag(data->flags, FLG_Horiz);
                 break;
 
             case MUIA_TheButton_Sunny:
@@ -573,9 +564,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_Sunny);
+                        setFlag(data->flags,FLG_Sunny);
                     else
-                    	clearFlag(data->flags,FLG_Sunny);
+                        clearFlag(data->flags,FLG_Sunny);
                 }
                 break;
 
@@ -587,14 +578,14 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_Selected);
+                        setFlag(data->flags,FLG_Selected);
                     else
-                    	clearFlag(data->flags,FLG_Selected);
+                        clearFlag(data->flags,FLG_Selected);
 
                     sel = TRUE;
                     setidcmp = TRUE;
 
-                    if (isFlagSet(lib_flags,BASEFLG_MUI4) && isFlagSet(data->flags,FLG_Borderless))
+                    if (isFlagSet(lib_flags,BASEFLG_MUI20) && isFlagSet(data->flags,FLG_Borderless))
                     {
                         tag->ti_Tag = TAG_IGNORE;
 
@@ -616,9 +607,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_Disabled);
+                        setFlag(data->flags,FLG_Disabled);
                     else
-                    	clearFlag(data->flags,FLG_Disabled);
+                        clearFlag(data->flags,FLG_Disabled);
 
                     setidcmp = back = TRUE;
                 }
@@ -632,9 +623,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_ShowMe);
+                        setFlag(data->flags,FLG_ShowMe);
                     else
-                    	clearFlag(data->flags,FLG_ShowMe);
+                        clearFlag(data->flags,FLG_ShowMe);
                 }
                 break;
 
@@ -644,9 +635,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
 
             case MUIA_TheButton_Quiet:
                 if (tidata)
-                	setFlag(data->flags,FLG_NoNotify);
+                    setFlag(data->flags,FLG_NoNotify);
                 else
-                	clearFlag(data->flags,FLG_NoNotify);
+                    clearFlag(data->flags,FLG_NoNotify);
                 break;
 
             case MUIA_TheButton_Raised:
@@ -658,9 +649,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_Raised);
+                        setFlag(data->flags,FLG_Raised);
                     else
-                    	clearFlag(data->flags,FLG_Raised);
+                        clearFlag(data->flags,FLG_Raised);
                     setidcmp = TRUE;
                 }
                 break;
@@ -672,7 +663,7 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                     tag->ti_Tag = TAG_IGNORE;
                 }
                 else
-                	data->vMode = tidata;
+                    data->vMode = tidata;
                 break;
 
             case MUIA_TheButton_Scaled:
@@ -684,9 +675,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->flags,FLG_Scaled);
+                        setFlag(data->flags,FLG_Scaled);
                     else
-                    	clearFlag(data->flags,FLG_Scaled);
+                        clearFlag(data->flags,FLG_Scaled);
                 }
                 break;
 
@@ -697,7 +688,7 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                     tag->ti_Tag = TAG_IGNORE;
                 }
                 else
-                	data->lPos = tidata;
+                    data->lPos = tidata;
                 break;
 
             case MUIA_TheButton_EnableKey:
@@ -712,7 +703,7 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                     {
                         setFlag(data->flags, FLG_EnableKey);
                         if (data->cchar)
-                        	superset(cl,obj,MUIA_ControlChar,ToLower(data->cchar));
+                            superset(cl,obj,MUIA_ControlChar,ToLower(data->cchar));
                     }
                     else
                     {
@@ -729,7 +720,7 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                     addRemEventHandler(cl,obj,data);
                 }
                 else
-                	clearFlag(data->flags2,FLG2_Limbo);
+                    clearFlag(data->flags2,FLG2_Limbo);
                 break;
 
             case MUIA_TheButton_NtRaiseActive:
@@ -741,9 +732,9 @@ mSets(struct IClass *cl,Object *obj,struct opSet *msg)
                 else
                 {
                     if (tidata)
-                    	setFlag(data->userFlags,UFLG_NtRaiseActive);
+                        setFlag(data->userFlags,UFLG_NtRaiseActive);
                     else
-                    	clearFlag(data->userFlags,UFLG_NtRaiseActive);
+                        clearFlag(data->userFlags,UFLG_NtRaiseActive);
                     setidcmp = TRUE;
                 }
                 break;
@@ -1069,7 +1060,7 @@ mSetup(struct IClass *cl,Object *obj,Msg msg)
         data->eh.ehn_Flags  = MUI_EHF_GUIMODE;
 
         /* Compute frame size */
-        if(isFlagClear(lib_flags, BASEFLG_MUI4) || isFlagClear(data->flags, FLG_Borderless))
+        if(isFlagClear(lib_flags, BASEFLG_MUI20) || isFlagClear(data->flags, FLG_Borderless))
             data->fSize = isFlagSet(_riflags(obj), MUIMRI_THINFRAMES) ? 1 : 2;
         else
             data->fSize = 0;
@@ -1325,12 +1316,12 @@ drawText(struct InstData *data,struct RastPort *rp)
 
             ux = x-data->eInfo.te_Width;
             uy = y;
-			switch (rp->TxHeight - rp->TxBaseline)
-			{
-				case 1 : break;
-				case 2 : uy += 1; break;
-				default: uy += 2; break;
-			}
+            switch (rp->TxHeight - rp->TxBaseline)
+            {
+                case 1 : break;
+                case 2 : uy += 1; break;
+                default: uy += 2; break;
+            }
 
             Move(rp,ux,uy);
             Draw(rp,ux+data->ccInfo.te_Extent.MaxX,uy);
@@ -1340,6 +1331,90 @@ drawText(struct InstData *data,struct RastPort *rp)
 
     LEAVE();
 }
+
+/***********************************************************************/
+
+#if !defined(__amigaos4__)
+static LONG do_alpha(LONG a, LONG v)
+{
+    LONG tmp  = (a*v);
+    return ((tmp<<8) + tmp + 32768)>>16;
+}
+
+ULONG _WritePixelArrayAlpha(APTR src, ULONG srcx, ULONG srcy, ULONG srcmod, struct RastPort *rp, ULONG destx, ULONG desty, ULONG width, ULONG height, ULONG globalalpha)
+{
+    // WritePixelArrayAlpha is available with cybergraphics.library V45.0+
+    if(CyberGfxBase->lib_Version >= 45)
+    {
+        return WritePixelArrayAlpha(src, srcx, srcy, srcmod, rp, destx, desty, width, height, globalalpha);
+    }
+    else
+    {
+        ULONG pixels = 0;
+
+        if(width > 0 && height > 0)
+        {
+            ULONG *buf;
+
+            if((buf = AllocVec(width * height * 4, MEMF_ANY)) != NULL)
+            {
+                ULONG x, y;
+                ULONG *spix;
+                ULONG *dpix = buf;
+
+                ReadPixelArray(buf, 0, 0, width * 4, rp, destx, desty, width, height, RECTFMT_ARGB);
+
+                // Incorrect but cant bother with alpha channel math for now
+                globalalpha = 255 - (globalalpha >> 24);
+
+                for(y = 0; y < height; y++)
+                {
+                    spix = (ULONG *)((char *)src + (srcy + y) * srcmod + srcx * 4);
+
+                    for(x = 0; x < width; x++)
+                    {
+                        ULONG srcpix, r, g, b;
+                        LONG a;
+
+                        srcpix = *spix++;
+
+                        a = (srcpix >> 24) & 0xff;
+                        r = (srcpix >> 16) & 0xff;
+                        g = (srcpix >> 8) & 0xff;
+                        b = (srcpix >> 0) & 0xff;
+
+                        a = a - globalalpha;
+
+                        if(a > 0)
+                        {
+                            ULONG dstpix, dest_r, dest_g, dest_b;
+
+                            dstpix = *dpix;
+
+                            dest_r = (dstpix >> 16) & 0xff;
+                            dest_g = (dstpix >> 8) & 0xff;
+                            dest_b = (dstpix >> 0) & 0xff;
+
+                            dest_r += do_alpha(a, r - dest_r);
+                            dest_g += do_alpha(a, g - dest_g);
+                            dest_b += do_alpha(a, b - dest_b);
+
+                            *dpix = 0xff000000 | dest_r << 16 | dest_g << 8 | dest_b;
+                        }
+
+                        dpix++;
+                    }
+                }
+                WritePixelArray(buf, 0, 0, width * 4, rp, destx, desty, width, height, RECTFMT_ARGB);
+                FreeVec(buf);
+                pixels = width * height;
+            }
+        }
+
+        return pixels;
+    }
+}
+#endif // !__amigaos4__
 
 /***********************************************************************/
 
@@ -1495,11 +1570,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                 APTR          mask = NULL;
                 UWORD         x = 0, y = 0;
                 UBYTE           *chunky = NULL;
-                #if defined(WITH_ALPHA)
                 BOOL            useChunky = isFlagSet(data->image->flags, BRFLG_AlphaMask);
-                #else
-                BOOL            useChunky = (data->allowAlphaChannel && isFlagSet(data->image->flags, BRFLG_AlphaMask));
-                #endif
 
                 if ((disMode==MUIV_TheButton_DisMode_Blend) || (disMode==MUIV_TheButton_DisMode_BlendGrey))
                 {
@@ -1680,7 +1751,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                       if(isFlagSet(data->image->flags, BRFLG_EmptyAlpha))
                         WritePixelArray(chunky,x,y, isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,RECTFMT_ARGB);
                       else
-                        WritePixelArrayAlpha(chunky,x,y, isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,
+                        _WritePixelArrayAlpha(chunky,x,y, isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,
                             ((disMode==MUIV_TheButton_DisMode_Blend) || (disMode==MUIV_TheButton_DisMode_BlendGrey)) ? 0x4fffffff : 0xffffffff);
 
                       #endif
@@ -1701,7 +1772,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                                           BLITA_DestY,          iyp,
                                           BLITA_Width,          iw,
                                           BLITA_Height,         ih,
-                                          BLITA_Minterm,        (ABC|ABNC|ANBC),
+                                          BLITA_Minterm,        MINTERM_SRCMASK,
                                           BLITA_MaskPlane,      mask,
                                           TAG_DONE);
                           else
@@ -1798,11 +1869,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                 APTR          mask;
                 UWORD         x = 0, y = 0;
                 UBYTE         *chunky = NULL;
-                #if defined(WITH_ALPHA)
                 ULONG         useChunky = isFlagSet(data->image->flags, BRFLG_AlphaMask);
-                #else
-                ULONG         useChunky = (data->allowAlphaChannel && isFlagSet(data->image->flags, BRFLG_AlphaMask));
-                #endif
 
                 if (strip)
                 {
@@ -2001,7 +2068,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                                               BLITA_DestY,          iyp,
                                               BLITA_Width,          iw,
                                               BLITA_Height,         ih,
-                                              BLITA_Minterm,        (ABC|ABNC|ANBC),
+                                              BLITA_Minterm,        MINTERM_SRCMASK,
                                               BLITA_MaskPlane,      tmask,
                                               TAG_DONE);
                                 #else
@@ -2060,7 +2127,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                             if (isFlagSet(data->image->flags, BRFLG_EmptyAlpha))
                                 WritePixelArray(chunky,x,y,isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,RECTFMT_ARGB);
                             else
-                                WritePixelArrayAlpha(chunky,x,y,isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,0xffffffff);
+                                _WritePixelArrayAlpha(chunky,x,y,isFlagSet(data->flags, FLG_Scaled) ? iw*4 : data->image->dataWidth*4,rp,ixp,iyp,iw,ih,0xffffffff);
                             #endif
                         }
                         else
@@ -2080,7 +2147,7 @@ mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
                                               BLITA_DestY,          iyp,
                                               BLITA_Width,          iw,
                                               BLITA_Height,         ih,
-                                              BLITA_Minterm,        (ABC|ABNC|ANBC),
+                                              BLITA_Minterm,        MINTERM_SRCMASK,
                                               BLITA_MaskPlane,      mask,
                                               TAG_DONE);
                               else
@@ -2241,7 +2308,8 @@ mHandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
     }
   }
 
-  result = 0; /* DoSuperMethodA(cl, obj, (Msg)msg); */
+  // don't eat any events
+  result = 0;
 
   RETURN(result);
   return result;
@@ -2256,6 +2324,7 @@ mNotify(struct IClass *cl, Object *obj, struct MUIP_Notify *msg)
   IPTR result = 0;
 
   ENTER();
+
   // we catch the MUIM_Notify and send our super class a different
   // modified notify method so that it informs us first and we will later
   // on (in CheckNotify) inform the original Notify destination
@@ -2264,18 +2333,18 @@ mNotify(struct IClass *cl, Object *obj, struct MUIP_Notify *msg)
   if(msg->FollowParams > 0)
   {
     struct ButtonNotify *notify;
-    IPTR size;
+    ULONG size;
 
     // calculate the size of the notify structure with some additional
     // space at the end to put in the parameters as well...
-    size = sizeof(struct ButtonNotify)+(sizeof(IPTR)*msg->FollowParams);
+    size = sizeof(struct ButtonNotify)+(sizeof(ULONG)*msg->FollowParams);
 
     // now we allocate a new ButtonNotify and add
     // it to the notify list of the button
     if((notify = SharedAlloc(size)))
     {
       // now we fill the notify structure
-      memcpy(&notify->msg, msg, sizeof(struct MUIP_Notify)+(sizeof(IPTR)*msg->FollowParams));
+      memcpy(&notify->msg, msg, sizeof(struct MUIP_Notify)+(sizeof(ULONG)*msg->FollowParams));
 
       // add the new notify to the notifies list of the button
       AddTail((struct List *)&data->notifyList, (struct Node *)notify);
@@ -2409,19 +2478,19 @@ mSendNotify(struct IClass *cl, Object *obj, struct MUIP_TheButton_SendNotify *ms
 
       if(notify == msg->notify)
       {
-        IPTR *destMessage; // Msg is defined in intuition/classusr.h
+        ULONG *destMessage; // Msg is defined in intuition/classusr.h
 
         // now we create a full temporary clone of the notify
         // message which we can modify before we send it to
         // the destination
         if((destMessage = SharedAlloc(sizeof(ULONG)*(notify->msg.FollowParams))))
         {
-          IPTR i;
+          ULONG i;
           Object *destObj = NULL;
-          IPTR *para = (IPTR *)(((IPTR)&notify->msg.FollowParams)+sizeof(IPTR));
+          ULONG *para = (ULONG *)(((IPTR)&notify->msg.FollowParams)+sizeof(ULONG));
 
           // now we fill the notify structure
-          memcpy(destMessage, para, sizeof(IPTR)*(notify->msg.FollowParams));
+          memcpy(destMessage, para, sizeof(ULONG)*(notify->msg.FollowParams));
 
           // parse through the destMessage and replace certain
           // variable with their correct values.

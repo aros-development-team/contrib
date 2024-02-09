@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -33,32 +33,19 @@
 // DoSuperNew()
 // Calls parent NEW method within a subclass
 #if !defined(__MORPHOS__)
-#if defined(__AROS__)
-IPTR VARARGS68K DoSuperNew(struct IClass *cl, Object *obj, ...)
-{
-  IPTR rc;
-#else
 Object * VARARGS68K DoSuperNew(struct IClass *cl, Object *obj, ...)
 {
   Object *rc;
-#endif
   VA_LIST args;
-
-  ENTER();
+  struct opSet msg;
 
   VA_START(args, obj);
-#if defined(__AROS__)
-    #if defined(__ARM_ARCH__)
-        #warning "TODO: fix va_arg usage for ARM"
-    #else
-        rc = (IPTR)DoSuperNewTagList(cl, obj, NULL, (struct TagItem *)VA_ARG(args, IPTR));
-    #endif
-#else
-    rc = (Object *)DoSuperMethod(cl, obj, OM_NEW, VA_ARG(args, ULONG), NULL);
-#endif
+  msg.MethodID = OM_NEW;
+  msg.ops_AttrList = VA_ARG(args, struct TagItem *);
+  msg.ops_GInfo = NULL;
+  rc = (Object *)DoSuperMethodA(cl, obj, (Msg)&msg);
   VA_END(args);
 
-  RETURN(rc);
   return rc;
 }
 #endif
@@ -276,7 +263,7 @@ opopframe(const void *key, const void *title, const void *help)
 
 /***********************************************************************/
 
-#if !defined(__amigaos4__) && !defined(__MORPHOS__) && !defined(__AROS__)
+#if defined(__amigaos3__)
 void drawGradient(Object *obj, struct MUIS_TheBar_Gradient *grad)
 {
     struct RastPort *rp;
