@@ -193,6 +193,7 @@
 
 #ifdef __AROS__
 #include <aros/libcall.h>
+#include <utility/utility.h>
 #endif
 
 #include "SDI_compiler.h"
