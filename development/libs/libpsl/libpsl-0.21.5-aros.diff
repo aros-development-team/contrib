@@ -1,0 +1,24 @@
+diff -ruN libpsl-0.21.5/Makefile.in libpsl-0.21.5.aros/Makefile.in
+--- libpsl-0.21.5/Makefile.in	2024-01-13 21:45:00.000000000 +0000
++++ libpsl-0.21.5.aros/Makefile.in	2024-08-30 08:23:57.430308015 +0000
+@@ -441,7 +441,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-SUBDIRS = po include src tools $(am__append_1) $(am__append_2) fuzz \
++SUBDIRS = po include src $(am__append_1) $(am__append_2) fuzz \
+ 	tests msvc
+ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+ 
+diff -ruN libpsl-0.21.5/src/psl.c libpsl-0.21.5.aros/src/psl.c
+--- libpsl-0.21.5/src/psl.c	2024-01-13 19:08:10.000000000 +0000
++++ libpsl-0.21.5.aros/src/psl.c	2024-08-28 16:35:32.773856831 +0000
+@@ -1606,6 +1606,8 @@
+ 
+ 	return (WSAStringToAddressW(wName, AF_INET,  NULL, (struct sockaddr *)&addr,  &size) != SOCKET_ERROR) |
+ 	       (WSAStringToAddressW(wName, AF_INET6, NULL, (struct sockaddr *)&addr6, &size6) != SOCKET_ERROR);
++#elif defined(__AROS__)
++    return 0;
+ #else
+ 	struct in_addr addr;
+ 	struct in6_addr addr6;
