@@ -1,0 +1,28 @@
+diff -ruN ffmpeg-4.4.5/configure ffmpeg-4.4.5.aros/configure
+--- ffmpeg-4.4.5/configure	2024-07-28 22:54:52.000000000 +0000
++++ ffmpeg-4.4.5.aros/configure	2024-09-10 18:53:23.140541286 +0000
+@@ -5344,6 +5344,8 @@
+         SLIB_INSTALL_LINKS=
+         SHFLAGS='-shared -Wl,-soname,$(SLIBNAME)'
+         ;;
++    aros)
++        ;;
+     haiku)
+         prefix_default="/boot/common"
+         network_extralibs="-lnetwork"
+diff -ruN ffmpeg-4.4.5/libavformat/os_support.h ffmpeg-4.4.5.aros/libavformat/os_support.h
+--- ffmpeg-4.4.5/libavformat/os_support.h	2024-06-15 20:59:55.000000000 +0000
++++ ffmpeg-4.4.5.aros/libavformat/os_support.h	2024-09-11 18:33:58.459999105 +0000
+@@ -108,6 +108,12 @@
+ #define closesocket close
+ #endif
+ 
++#if defined(__AROS__)
++#undef closesocket
++#define closesocket CloseSocket
++#include <proto/socket.h>
++#endif
++
+ #if !HAVE_POLL_H
+ typedef unsigned long nfds_t;
+ 
