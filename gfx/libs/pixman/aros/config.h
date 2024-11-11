@@ -123,13 +123,13 @@
 #undef USE_GCC_INLINE_ASM
 
 /* use MMX compiler intrinsics */
-#undef USE_MMX
+/* #undef USE_X86_MMX */
 
 /* use OpenMP in the test suite */
 #undef USE_OPENMP
 
 /* use SSE2 compiler intrinsics */
-#undef USE_SSE2
+/* #undef USE_SSE2 */
 
 /* use VMX compiler intrinsics */
 #undef USE_VMX
