@@ -7,7 +7,6 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 ICONS := BlackHole \
          DawaFire \
-         EGL \
          Firework \
          Flamme \
          FTunnel \
