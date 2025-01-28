@@ -492,9 +492,9 @@ diff -ruN SDL-1.2.15/aros/sdl.pc SDL-1.2.15.aros/aros/sdl.pc
 +Cflags: -I${includedir}/SDL -D_GNU_SOURCE=1
 diff -ruN SDL-1.2.15/aros_init.c SDL-1.2.15.aros/aros_init.c
 --- SDL-1.2.15/aros_init.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL-1.2.15.aros/aros_init.c	2019-12-18 21:05:38.127224100 +0000
-@@ -0,0 +1,148 @@
-+/* Copyright 2013 The AROS Development Team. All rights reserved. */
++++ SDL-1.2.15.aros/aros_init.c	2025-01-28 19:21:54.522302739 +0000
+@@ -0,0 +1,151 @@
++/* Copyright 2013-2024 The AROS Development Team. All rights reserved. */
 +
 +#include <aros/debug.h>
 +
@@ -507,6 +507,9 @@ diff -ruN SDL-1.2.15/aros_init.c SDL-1.2.15.aros/aros_init.c
 +#include "SDL_intern.h"
 +#include "video/SDL_sysvideo.h"
 +#include "video/cgx/SDL_cgxgl_c.h"
++
++const ULONG __aros_rellib_base_GLBase = 0;
++SETRELLIBOFFSET(GLBase, struct SDLBase, GLBase)
 +
 +static int GM_UNIQUENAME(LibInit)(LIBBASETYPEPTR LIBBASE)
 +{
