@@ -262,7 +262,7 @@ char **argv;
     	    {
 	    	struct Message *m;
 		
-	    	TimerIO->tr_time.tv_sec = tp.tv_sec;
+	    	TimerIO->tr_time.tv_secs = tp.tv_sec;
 		TimerIO->tr_time.tv_micro = tp.tv_usec;
 
 		SetSignal(0, TimerMask);

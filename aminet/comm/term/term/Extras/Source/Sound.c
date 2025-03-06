@@ -697,7 +697,8 @@ PlaySound(struct SoundInfo *SoundInfo)
 				if(!OpenDevice(TIMERNAME,UNIT_VBLANK,(struct IORequest *)SoundTimeRequest,0))
 				{
 					SoundTimeRequest->tr_node.io_Command	= TR_ADDREQUEST;
-					SoundTimeRequest->tr_time				= SoundInfo->SoundTime;
+					SoundTimeRequest->tr_time.tv_secs		= SoundInfo->SoundTime.tv_secs;
+					SoundTimeRequest->tr_time.tv_micro		= SoundInfo->SoundTime.tv_micro;
 
 					SetSignal(0,PORTMASK(SoundTimePort));
 
