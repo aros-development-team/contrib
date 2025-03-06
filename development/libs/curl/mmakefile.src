@@ -16,7 +16,7 @@ CURL_VERSION=7.60.0
 USER_CPPFLAGS= \
         -D_XOPEN_SOURCE=500 \
         -D__BSD_VISIBLE=1
-CURL_OPTIONS=--disable-shared --without-random --disable-threaded-resolver --disable-ntlm-wb --with-ssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB)
+CURL_OPTIONS=--disable-shared --without-random --without-libpsl --disable-threaded-resolver --disable-ntlm-wb --with-ssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB)
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
     patch=yes package_repo="$(REPOSITORIES)" \

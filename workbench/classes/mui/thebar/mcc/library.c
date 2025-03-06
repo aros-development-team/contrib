@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -44,7 +44,7 @@
 
 #define INSTDATA      InstData
 
-#define USERLIBID     CLASS " " LIB_REV_STRING " [" SYSTEMSHORT "/" CPU "] (" LIB_DATE ") " LIB_COPYRIGHT
+#define USERLIBID     CLASS " " LIB_REV_STRING " (" LIB_DATE ") " LIB_COPYRIGHT " [" SYSTEMSHORT "/" CPU "]"
 #define MASTERVERSION 19
 
 #define USEDCLASSES used_mccs
@@ -63,7 +63,6 @@ static BOOL ClassExpunge(UNUSED struct Library *base);
 
 struct Library *DataTypesBase = NULL;
 struct Library *CyberGfxBase = NULL;
-struct Library *PictureDTBase = NULL;
 
 #if defined(__amigaos4__)
 struct DataTypesIFace *IDataTypes = NULL;
@@ -105,21 +104,6 @@ static BOOL ClassInit(UNUSED struct Library *base)
         {
             CloseLibrary(CyberGfxBase);
             CyberGfxBase = NULL;
-        }
-        #endif
-
-        PictureDTBase = OpenLibrary("picture.datatype",0);
-        #if !defined(__amigaos4__) && !defined(__AROS__)
-        if (PictureDTBase)
-        {
-            if (FindResident("MorphOS"))
-            {
-                if ((PictureDTBase->lib_Version<50) ||
-                    (PictureDTBase->lib_Version==50 && PictureDTBase->lib_Revision<17))
-                {
-                    setFlag(lib_flags,BASEFLG_BROKENMOSPDT);
-                }
-            }
         }
         #endif
 
@@ -168,12 +152,6 @@ static BOOL ClassExpunge(UNUSED struct Library *base)
         lib_dragBarClass = NULL;
     }
 
-    if (PictureDTBase)
-    {
-        CloseLibrary(PictureDTBase);
-        PictureDTBase = NULL;
-    }
-
     if (CyberGfxBase)
     {
         DROPINTERFACE(ICyberGfx);
@@ -188,7 +166,7 @@ static BOOL ClassExpunge(UNUSED struct Library *base)
         DataTypesBase = NULL;
     }
 
-    clearFlag(lib_flags,BASEFLG_Init|BASEFLG_MUI20|BASEFLG_MUI4|BASEFLG_BROKENMOSPDT);
+    clearFlag(lib_flags,BASEFLG_Init|BASEFLG_MUI20|BASEFLG_MUI4);
 
     LEAVE();
 

@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -269,7 +269,6 @@ struct MUIS_Popbackground_Status
 #if !defined(superset)
 #define superset(cl,obj,tag,val)        SetSuperAttrs(cl,obj,tag,(IPTR)(val),TAG_DONE)
 #endif
-#define addconfigitem(cfg,value,size,item) DoMethod(cfg,MUIM_Dataspace_Add,(IPTR)(value),size,item)
 
 #undef get
 #define get(obj,attr,store)            GetAttr((ULONG)(attr),(APTR)obj,(IPTR *)((IPTR)(store)))

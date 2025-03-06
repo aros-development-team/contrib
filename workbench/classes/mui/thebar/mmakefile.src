@@ -10,7 +10,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM  contrib-zune-classes-thebar-demos contrib-zune-classes-thebar-doc \
 #MM  contrib-zune-classes-thebar-copy
 
-CPYFILES  := COPYING README README.aros
+CPYFILES  := COPYING README.md README.aros
 TARGETDIR := $(AROS_CONTRIB)/Zune/MCC_TheBar
 
 %copy_dir_recursive mmake=contrib-zune-classes-thebar-doc src=doc dst=$(TARGETDIR)/Doc

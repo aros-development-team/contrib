@@ -4,7 +4,7 @@
 #
 # TheBar.mcc - Next Generation Toolbar MUI Custom Class
 # Copyright (C) 2003-2005 Alfonso Ranieri
-# Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+# Copyright (C) 2005-2022 TheBar Open Source Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -49,6 +49,7 @@ make -C mcc release
 make -C mcc/button release
 make -C mcp release
 make -C demo release
+make -C toolbar_mcc release
 
 for os in os3 os4 mos aros-i386 aros-ppc aros-x86_64; do
 	case $os in
@@ -74,6 +75,7 @@ for os in os3 os4 mos aros-i386 aros-ppc aros-x86_64; do
 	cp -a mcc/bin_$os/TheBarVirt.mcc "release/MCC_TheBar/Libs/MUI/$fullsys/"
 	cp -a mcc/button/bin_$os/TheButton.mcc "release/MCC_TheBar/Libs/MUI/$fullsys/"
 	cp -a mcp/bin_$os/TheBar.mcp -a "release/MCC_TheBar/Libs/MUI/$fullsys/"
+	cp -a toolbar_mcc/bin_$os/Toolbar.mcc "release/MCC_TheBar/Libs/MUI/$fullsys/"
 done
 
 make -C mcp catalogs
@@ -85,7 +87,7 @@ for language in `ls mcp/locale/*.catalog`; do
 done
 
 cp -a -R dist/* "release/"
-cp -a AUTHORS ChangeLog COPYING "release/MCC_TheBar/"
+cp -a ChangeLog COPYING "release/MCC_TheBar/"
 cp -a doc/MCC_TheBar.readme "release/MCC_TheBar/ReadMe"
 cp -a demo/pics/* "release/MCC_TheBar/Demos/pics/"
 cp -a doc/MCC_TheBar.readme "release/MCC_TheBar/Docs/"
@@ -103,7 +105,7 @@ releasever=`grep "#define LIB_VERSION" mcc/version.h | awk '{ print $3 }'`
 releaserev=`grep "#define LIB_REVISION" mcc/version.h | awk '{ print $3 }'`
 
 echo "  MK MCC_TheBar-$releasever.$releaserev.lha"
-find release -nowarn -name ".svn" -exec rm -rf {} \; 2>/dev/null
+find release -nowarn -name ".git" -exec rm -rf {} \; 2>/dev/null
 cd release
 rm -f ../MCC_TheBar-$releasever.$releaserev.lha
 lha -ao5q ../MCC_TheBar-$releasever.$releaserev.lha *

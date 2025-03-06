@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,8 @@
 #include <SDI_hook.h>
 
 #if defined(__amigaos4__)
-#include <hardware/blit.h>
+#define __USE_CLASSIC_MINTERM__
+#include <graphics/minterm.h>
 #endif
 
 #include "debug.h"
@@ -86,7 +87,6 @@ extern struct Library          *MUIMasterBase;
 extern struct Library          *DataTypesBase;
 extern struct Library          *CyberGfxBase;
 extern struct Library          *DiskfontBase;
-extern struct Library          *PictureDTBase;
 
 extern struct SignalSemaphore  lib_poolSem;
 extern APTR                    lib_pool;
@@ -104,11 +104,6 @@ enum
 /*
 ** Macros
 */
-
-/* these systems are able to handle alpha channel information */
-#if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
-    #define WITH_ALPHA          1
-#endif
 
 #define _riflags(obj) (muiRenderInfo(obj)->mri_Flags)
 
@@ -153,6 +148,7 @@ IPTR xget(Object *obj, const IPTR attr);
 
 /***********************************************************************/
 
+#if !defined(__amigaos4__)
 enum
 {
     MINTERM_ZERO        = 0,
@@ -163,6 +159,7 @@ enum
     MINTERM_NOT_B_AND_C = ANBC | NANBC,
     MINTERM_B_OR_C      = ABC | ABNC | NABC | NABNC | ANBC | NANBC,
 };
+#endif
 
 /****************************************************************************/
 /*

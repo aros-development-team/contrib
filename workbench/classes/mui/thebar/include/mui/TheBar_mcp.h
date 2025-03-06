@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -137,8 +137,8 @@ enum
 #define MUIDEF_TheBar_FrameShadowPen        ((APTR)"r00000000,00000000,00000000")
 #define MUIDEF_TheBar_FrameStyle            MUIV_TheButton_FrameStyle_Normal
 
-#define MUIDEF_TheBar_TextFont              NULL
-#define MUIDEF_TheBar_TextGfxFont           NULL
+#define MUIDEF_TheBar_TextFont              ((APTR)"")
+#define MUIDEF_TheBar_TextGfxFont           ((APTR)"")
 
 #define MUIDEF_TheBar_HorizSpacing          1
 #define MUIDEF_TheBar_VertSpacing           1

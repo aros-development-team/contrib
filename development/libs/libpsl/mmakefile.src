@@ -1,0 +1,15 @@
+# Copyright © 2024, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-libpsl : development-libpsl
+#MM- development-libpsl : contrib-icu4c
+
+REPOSITORIES := https://github.com/rockdaboot/libpsl/releases/download/0.21.5/
+
+%fetch_and_build_gnu_development package=libpsl version=0.21.5 \
+    suffixes="tar.gz" \
+    package_repo="$(REPOSITORIES)" \
+    patch="yes"
+

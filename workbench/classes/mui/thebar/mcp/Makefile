@@ -2,7 +2,7 @@
 #
 # TheBar.mcc - Next Generation Toolbar MUI Custom Class
 # Copyright (C) 2003-2005 Alfonso Ranieri
-# Copyright (C) 2005-2009 by TheBar.mcc Open Source Team
+# Copyright (C) 2005-2022 TheBar Open Source Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@
 # # to explicitly compile for AmigaOS3
 # > make OS=os3
 #
-# # to compile for AmigaOS4 but with debugging
+# # to compile for AmigaOS4 but without debugging
 # > make OS=os4 DEBUG=
 #
 
@@ -224,8 +224,8 @@ ifeq ($(OS), os3)
 
   # Compiler/Linker flags
   CPU     = -m68020-60 -msoft-float
-  CFLAGS  += -noixemul -DNO_INLINE_STDARG -D__amigaos3__
-  LDFLAGS += -noixemul
+  CFLAGS  += -mcrt=clib2 -DNO_INLINE_STDARG -D__amigaos3__
+  LDFLAGS += -mcrt=clib2
   LDLIBS  += -ldebug -lmui
 
   # additional object files required
@@ -383,10 +383,6 @@ $(OBJDIR)/mccclass_68k.o: ../include/mccclass_68k.c
 	@echo "  CC $<"
 	@$(CC) $(CFLAGS) $< -o $@
 
-$(LOCALE)/%.catalog: $(LOCALE)/%.ct $(LOCALE)/TheBar_mcp.cd
-	@echo "  MK $@"
-	@$(FC) $(LOCALE)/TheBar_mcp.cd $< CATALOG $@
-
 # for linking the target
 $(TARGET): $(M68KSTUBS) $(OBJS)
 	@echo "  LD $@.debug"
@@ -407,13 +403,13 @@ $(OBJDIR)/library.o: library.c ../include/mccinit.c \
 locale.h: locale.c
 locale.c: $(LOCALE)/TheBar_mcp.pot C_h.sd C_c.sd
 	@echo "  FC $@"
-	@$(FC) $(LOCALE)/TheBar_mcp.pot locale.h=C_h.sd locale.c=C_c.sd
+	@$(FC) $(LOCALE)/TheBar_mcp.pot locale.h=C_h.sd locale.c=C_c.sd CODESET ISO-8859-1
 
 ## CATALOG GENERATION #################
 
 $(LOCALE)/%.catalog: $(LOCALE)/%.po
 	@echo "  FC $@"
-	@$(FC) POFILE $< CATALOG $@
+	@$(FC) REVISION $(shell git rev-list --all --count $<) POFILE $< CATALOG $@
 
 .IGNORE: $(CATALOGS)
 

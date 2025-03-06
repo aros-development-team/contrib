@@ -2,7 +2,7 @@
 #
 # TheBar.mcc - Next Generation Toolbar MUI Custom Class
 # Copyright (C) 2003-2005 Alfonso Ranieri
-# Copyright (C) 2005-2009 by TheBar.mcc Open Source Team
+# Copyright (C) 2005-2022 TheBar Open Source Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@
 # # to explicitly compile for AmigaOS3
 # > make OS=os3
 #
-# # to compile for AmigaOS4 but with debugging
+# # to compile for AmigaOS4 but without debugging
 # > make OS=os4 DEBUG=
 #
 
@@ -230,8 +230,8 @@ ifeq ($(OS), os3)
 
   # Compiler/Linker flags
   CPU     = -m68020-60 -msoft-float
-  CFLAGS  += -noixemul -DNO_INLINE_STDARG -D__amigaos3__
-  LDFLAGS += -noixemul
+  CFLAGS  += -mcrt=clib2 -DNO_INLINE_STDARG -D__amigaos3__
+  LDFLAGS += -mcrt=clib2
   LDLIBS  += -ldebug -lmui
 
   # additional object files required

@@ -2,7 +2,7 @@
 
  TheBar.mcc - Next Generation Toolbar MUI Custom Class
  Copyright (C) 2003-2005 Alfonso Ranieri
- Copyright (C) 2005-2013 by TheBar.mcc Open Source Team
+ Copyright (C) 2005-2022 TheBar Open Source Team
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -93,8 +93,14 @@ enum
 
 /***********************************************************************/
 
-static UBYTE *
-LUT8ToLUT8(struct MUIS_TheBar_Brush *image,struct copy *copy)
+#define IMPOSE            0xaa
+#define IMPOSE_ALPHA    0xaa
+#define ALPHA(x)        ((x)+1)
+#define ALPHA_INV(x)    (257 - ALPHA(x))
+
+/***********************************************************************/
+
+static UBYTE *LUT8ToLUT8(struct MUIS_TheBar_Brush *image, struct copy *copy)
 {
     UBYTE *chunky;
     ULONG flags = copy->flags, size, maskDone = FALSE;
@@ -270,8 +276,7 @@ LUT8ToLUT8(struct MUIS_TheBar_Brush *image,struct copy *copy)
 
 /***********************************************************************/
 
-static UBYTE *
-LUT8ToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy)
+static UBYTE *LUT8ToRGB(struct MUIS_TheBar_Brush *image, struct copy *copy)
 {
     UBYTE *from, *chunky;
     ULONG flags = copy->flags, size;
@@ -372,12 +377,11 @@ LUT8ToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy)
                     {
                         bitmask = 0x80;
                         aflag = 0;
-            }
+                    }
                 }
 
                 if (gdest)
                 {
-                    ULONG gcol;
                     UBYTE r, g, b;
 
                     if (RGB8)
@@ -397,11 +401,10 @@ LUT8ToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy)
                         b = *cp   >>24;
                     }
 
-                    gcol =(((r<<5)+(r<<2)+(r<<1))+((g<<6)+(g<<3)+(g<<2))+((b<<4)-(b<<1)))>>7;
                     gdest++;
-                    *gdest++ = gcol;
-                    *gdest++ = gcol;
-                    *gdest++ = gcol;
+                    *gdest++ = (r * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                    *gdest++ = (g * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                    *gdest++ = (b * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
                 }
 
                 dest++;
@@ -437,13 +440,7 @@ LUT8ToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy)
 
 /***********************************************************************/
 
-#if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
-static UBYTE *
-RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy)
-#else
-static UBYTE *
-RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChannel)
-#endif
+static UBYTE *RGBToRGB(struct MUIS_TheBar_Brush *image, struct copy *copy)
 {
     UBYTE *chunky;
     ULONG flags = copy->flags, size, maskDone = FALSE;
@@ -542,13 +539,8 @@ RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChann
                                 aflag = 1;
                             }
 
-                            #if defined(WITH_ALPHA)
                             if (useAlpha)
-                            	hi = *src<0xFF;
-                            #else
-                            if (useAlpha)
-                            	hi = (allowAlphaChannel ? *src<0xFF : !(c & 0xFF000000));
-                            #endif
+                                hi = *src<0xFF;
                             else
                                 hi = (c & 0x00FFFFFF)==trColor;
 
@@ -567,18 +559,16 @@ RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChann
 
                         if (gdest)
                         {
-                            ULONG v;
                             UBYTE r, g, b;
 
                             r = (c & 0x00FF0000)>>16;
                             g = (c & 0x0000FF00)>>8;
                             b = (c & 0x000000FF);
 
-                            v = (((r<<5)+(r<<2)+(r<<1))+((g<<6)+(g<<3)+(g<<2))+((b<<4)-(b<<1)))>>7;
                             gdest++;
-                            *gdest++ = v;
-                            *gdest++ = v;
-                            *gdest++ = v;
+                            *gdest++ = (r * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                            *gdest++ = (g * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                            *gdest++ = (b * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
                         }
 
                         *dest++ = *src++;
@@ -633,11 +623,8 @@ RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChann
                             aflag = 1;
                         }
 
-                        #if defined(WITH_ALPHA)
-                        if (useAlpha) hi = *src<0xFF;
-                        #else
-                        if (useAlpha) hi = (allowAlphaChannel ? *src<0xFF : !(c & 0xFF000000));
-                        #endif
+                        if (useAlpha)
+                            hi = *src<0xFF;
                         else
                             hi = (c & 0x00FFFFFF)==trColor;
 
@@ -656,18 +643,16 @@ RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChann
 
                     if (gdest)
                     {
-                        ULONG v;
                         UBYTE r, g, b;
 
                         r = (c & 0x00FF0000)>>16;
                         g = (c & 0x0000FF00)>>8;
                         b = (c & 0x000000FF);
 
-                        v = (((r<<5)+(r<<2)+(r<<1))+((g<<6)+(g<<3)+(g<<2))+((b<<4)-(b<<1)))>>7;
                         *gdest++ = *src;
-                        *gdest++ = v;
-                        *gdest++ = v;
-                        *gdest++ = v;
+                        *gdest++ = (r * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                        *gdest++ = (g * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
+                        *gdest++ = (b * ALPHA_INV(IMPOSE_ALPHA) + IMPOSE * ALPHA(IMPOSE_ALPHA)) >> 8;
                     }
 
                     src += 4;
@@ -690,8 +675,7 @@ RGBToRGB(struct MUIS_TheBar_Brush *image,struct copy *copy, BOOL allowAlphaChann
 
 /***********************************************************************/
 
-static LONG
-calcPen(struct palette *pal,ULONG rgb)
+static LONG calcPen(struct palette *pal, ULONG rgb)
 {
     ULONG i, d, bestd = 196000;
     UWORD besti = 0, r, g, b, dr, dg, db;
@@ -722,8 +706,7 @@ calcPen(struct palette *pal,ULONG rgb)
     return besti;
 }
 
-static LONG
-addColor(struct palette *pal,ULONG rgb)
+static LONG addColor(struct palette *pal, ULONG rgb)
 {
     LONG p;
     ULONG i;
@@ -751,8 +734,7 @@ addColor(struct palette *pal,ULONG rgb)
     return p;
 }
 
-static LONG
-bestColor(struct palette *pal,ULONG rgb)
+static LONG bestColor(struct palette *pal, ULONG rgb)
 {
     LONG p = addColor(pal,rgb);
     LONG best;
@@ -767,8 +749,7 @@ bestColor(struct palette *pal,ULONG rgb)
 
 /***********************************************************************/
 
-static UBYTE *
-RGBToLUT8(struct MUIS_TheBar_Brush *image,struct copy *copy)
+static UBYTE *RGBToLUT8(struct MUIS_TheBar_Brush *image, struct copy *copy)
 {
     UBYTE *from, *chunky;
     ULONG flags = copy->flags, size;
@@ -921,8 +902,7 @@ RGBToLUT8(struct MUIS_TheBar_Brush *image,struct copy *copy)
 
 /***********************************************************************/
 
-static APTR
-getSource(struct MUIS_TheBar_Brush *image)
+static APTR getSource(struct MUIS_TheBar_Brush *image)
 {
     APTR src;
 
@@ -944,10 +924,10 @@ getSource(struct MUIS_TheBar_Brush *image)
             }
         }
     }
-	else
-	{
+    else
+    {
         src = image->data;
-	}
+    }
 
     RETURN(src);
     return src;
@@ -955,8 +935,7 @@ getSource(struct MUIS_TheBar_Brush *image)
 
 /***********************************************************************/
 
-static void
-freeSource(struct MUIS_TheBar_Brush *image,UBYTE *back)
+static void freeSource(struct MUIS_TheBar_Brush *image,UBYTE *back)
 {
     ENTER();
 
@@ -971,8 +950,7 @@ freeSource(struct MUIS_TheBar_Brush *image,UBYTE *back)
 
 /***********************************************************************/
 
-static BOOL
-makeSources(struct InstData *data,struct make *make)
+static BOOL makeSources(struct InstData *data,struct make *make)
 {
     ENTER();
 
@@ -1070,8 +1048,7 @@ makeSources(struct InstData *data,struct make *make)
 
 /***********************************************************************/
 
-static BOOL
-makeSourcesRGB(struct InstData *data,struct make *make)
+static BOOL makeSourcesRGB(struct InstData *data,struct make *make)
 {
     ENTER();
 
@@ -1093,11 +1070,7 @@ makeSourcesRGB(struct InstData *data,struct make *make)
         copy.flags = make->flags;
 
         if (isFlagSet(data->image->flags, BRFLG_ARGB))
-        #if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
             make->chunky = RGBToRGB(data->image,&copy);
-        #else
-            make->chunky = RGBToRGB(data->image,&copy,data->allowAlphaChannel);
-        #endif
         else
             make->chunky = LUT8ToRGB(data->image,&copy);
 
@@ -1118,11 +1091,7 @@ makeSourcesRGB(struct InstData *data,struct make *make)
             if((data->simage->data = getSource(data->simage)))
             {
                 if (isFlagSet(data->simage->flags, BRFLG_ARGB))
-                #if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
                     make->schunky = RGBToRGB(data->simage,&copy);
-                #else
-                    make->schunky = RGBToRGB(data->simage,&copy,data->allowAlphaChannel);
-                #endif
                 else
                     make->schunky = LUT8ToRGB(data->simage,&copy);
 
@@ -1141,11 +1110,7 @@ makeSourcesRGB(struct InstData *data,struct make *make)
             if((data->dimage->data = getSource(data->dimage)))
             {
                 if (isFlagSet(data->dimage->flags, BRFLG_ARGB))
-                #if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
                     make->dchunky = RGBToRGB(data->dimage,&copy);
-                #else
-                    make->dchunky = RGBToRGB(data->dimage,&copy,data->allowAlphaChannel);
-                #endif
                 else
                     make->dchunky = LUT8ToRGB(data->dimage,&copy);
 
@@ -1288,11 +1253,7 @@ buildBitMapsCyber(struct InstData *data)
     }
 
     D(DBF_STARTUP, "%lx", isFlagSet(data->image->flags, BRFLG_AlphaMask));
-    #if defined(WITH_ALPHA)
     if (isFlagSet(data->image->flags, BRFLG_AlphaMask))
-    #else
-    if (data->allowAlphaChannel && isFlagSet(data->image->flags, BRFLG_AlphaMask))
-    #endif
     {
         data->nchunky  = make->chunky;
         data->gchunky  = make->gchunky;
@@ -1781,14 +1742,8 @@ freeBitMaps(struct InstData *data)
 {
   ENTER();
 
-  #if defined(WITH_ALPHA)
   if(data->image != NULL &&
      isFlagSet(data->image->flags, BRFLG_AlphaMask))
-  #else
-  if(data->allowAlphaChannel &&
-     data->image != NULL &&
-     isFlagSet(data->image->flags, BRFLG_AlphaMask))
-  #endif
   {
     if(data->nchunky)
       SharedFree(data->nchunky);
@@ -1952,11 +1907,7 @@ build(struct InstData *data)
     {
         if (isFlagSet(data->flags, FLG_Strip))
         {
-            #if defined(WITH_ALPHA)
             if (isFlagSet(data->flags, FLG_CyberDeep))
-            #else
-            if (data->allowAlphaChannel && isFlagSet(data->flags, FLG_CyberDeep))
-            #endif
             {
                 buildBitMapsCyber(data);
                 LEAVE();
