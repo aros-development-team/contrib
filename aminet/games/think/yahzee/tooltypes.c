@@ -106,7 +106,7 @@ save_tooltypes (void)
       if ((disk_obj = GetDiskObject (prg_name)))
       {
          old_toolarray = (APTR)disk_obj->do_ToolTypes;
-         while (old_toolarray[n] != NULL)
+         while (old_toolarray && old_toolarray[n] != NULL)
             ++n;
          
          old_toolval[0] = FindToolType ((APTR)old_toolarray, "PUBSCREEN");
@@ -147,7 +147,7 @@ sprintf(num_str,"%d",chosen_num_players);
                strncat (tooltypes[3], "Maxi", 128);
             
             i = 0;
-            while (old_toolarray[i] != NULL)
+            while (old_toolarray && old_toolarray[i] != NULL)
             {
                if (strstr (old_toolarray[i], "PUBSCREEN=") ==
                    old_toolarray[i] ||
