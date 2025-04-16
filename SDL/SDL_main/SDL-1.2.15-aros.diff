@@ -1,6 +1,6 @@
 diff -ruN SDL-1.2.15/SDL.conf SDL-1.2.15.aros/SDL.conf
 --- SDL-1.2.15/SDL.conf	1970-01-01 00:00:00.000000000 +0000
-+++ SDL-1.2.15.aros/SDL.conf	2025-01-30 13:58:11.365021669 +0000
++++ SDL-1.2.15.aros/SDL.conf	2025-04-16 16:18:20.788409732 +0000
 @@ -0,0 +1,242 @@
 +##begin config
 +basename SDL
@@ -8,7 +8,7 @@ diff -ruN SDL-1.2.15/SDL.conf SDL-1.2.15.aros/SDL.conf
 +libbasetype struct SDLBase
 +rootbase_field rootSDLBase
 +version 1.215
-+date 30.01.2025
++date 16.04.2025
 +copyright Copyright (C) 2013-2025 The AROS Development Team, 1997-2012 Sam Lantinga
 +options peropenerbase
 +rellib posixc
@@ -3422,8 +3422,8 @@ diff -ruN SDL-1.2.15/src/audio/SDL_wave.c SDL-1.2.15.aros/src/audio/SDL_wave.c
  	chunk->length	= SDL_ReadLE32(src);
 diff -ruN SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.c
 --- SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.c	2019-12-18 21:05:38.137224100 +0000
-@@ -0,0 +1,528 @@
++++ SDL-1.2.15.aros/src/audio/ahi/SDL_ahiaudio.c	2025-04-16 16:23:20.161439495 +0000
+@@ -0,0 +1,535 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997, 1998  Sam Lantinga
@@ -3717,6 +3717,13 @@ diff -ruN SDL-1.2.15/src/audio/ahi/SDL_ahiaudio.c SDL-1.2.15.aros/src/audio/ahi/
 +
 +	if (hidden->have_ahi)
 +	{
++		if (hidden->playing)
++		{
++			AbortIO((struct IORequest *)&hidden->audio_req[0]);
++			WaitIO((struct IORequest *)&hidden->audio_req[0]);
++			AbortIO((struct IORequest *)&hidden->audio_req[1]);
++			WaitIO((struct IORequest *)&hidden->audio_req[1]);
++		}
 +		CloseDevice((struct IORequest *)&hidden->ctrl_req);
 +	}
 +
