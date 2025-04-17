@@ -68,7 +68,7 @@ BOOL SetNumber(struct DigitsData * data, int newNumber);
 /*
     function :    OM_NEW method handler for Digits class
 */
-static ULONG mNew(struct IClass *cl, Object *obj, struct opSet *msg)
+static IPTR mNew(struct IClass *cl, Object *obj, struct opSet *msg)
 {
     int i;
     struct DigitsData *data;
