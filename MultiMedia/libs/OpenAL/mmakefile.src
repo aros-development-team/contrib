@@ -14,11 +14,11 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM contrib-openal-library : contrib-openal-common
 
 OPENAL_VERSION := 1.19.1
-OPENALREPOSITORIES = http://openal-soft.org/openal-releases
+OPENALREPOSITORIES = https://github.com/kcat/openal-soft/archive/refs/tags
 OPENALARCHBASE     := openal-soft-$(OPENAL_VERSION)
-OPENALARCHSUFFIX := "tar.bz2"
-OPENALPATCHSPEC := $(OPENALARCHBASE)-aros.diff:$(OPENALARCHBASE):-f,-p1
-OPENALARCHSRCDIR := $(PORTSDIR)/openal-soft/$(OPENALARCHBASE)
+OPENALARCHSUFFIX := "tar.gz"
+OPENALPATCHSPEC := $(OPENALARCHBASE)-aros.diff:openal-soft-$(OPENALARCHBASE):-f,-p1
+OPENALARCHSRCDIR := $(PORTSDIR)/openal-soft/openal-soft-$(OPENALARCHBASE)
 
 %fetch mmake=contrib-openal-fetch archive=$(OPENALARCHBASE) destination=$(PORTSDIR)/openal-soft \
     location=$(PORTSSOURCEDIR) archive_origins=$(OPENALREPOSITORIES) suffixes=$(OPENALARCHSUFFIX) \
@@ -26,7 +26,7 @@ OPENALARCHSRCDIR := $(PORTSDIR)/openal-soft/$(OPENALARCHBASE)
 
 %create_patch mmake=contrib-openal-create-patch \
     archive=$(OPENALARCHBASE) suffixes=$(OPENALARCHSUFFIX) \
-    srcdir="openal-soft-$(OPENAL_VERSION)" destination=$(PORTSDIR)/openal-soft
+    srcdir="openal-soft-openal-soft-$(OPENAL_VERSION)" destination=$(PORTSDIR)/openal-soft
 
 OPENAL_VERSION_MAJOR = $(shell echo "$(OPENAL_VERSION)" | cut -d"." -f1)
 OPENAL_VERSION_MINOR = $(shell echo "$(OPENAL_VERSION)" | cut -d"." -f2)
