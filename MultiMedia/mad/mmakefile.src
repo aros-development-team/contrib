@@ -1,4 +1,4 @@
-# Copyright © 2003-2022, The AROS Development Team. All rights reserved.
+# Copyright Â© 2003-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 # Have a look at doc/PATENTS
@@ -64,5 +64,31 @@ FILES  := madahi \
 %build_prog mmake=contrib-multimedia-madahi \
     progname=madahi targetdir=$(EXEDIR) \
     files="$(FILES)"
+
+###################################################################################
+# Static link library version of libmad, used by e.g. the mp3.datatype.
+
+MAD_LIBFILES := \
+    bit \
+    decoder \
+    fixed \
+    frame \
+    huffman \
+    layer12 \
+    layer3 \
+    stream \
+    synth \
+    timer \
+    version
+
+#MM- linklibs : linklibs-mad
+#MM linklibs-mad : includes
+
+%build_linklib mmake=linklibs-mad libname=mad \
+    files="$(MAD_LIBFILES)" \
+    objdir=$(OBJDIR)/linklib
+
+INCLUDE_FILES := mad.h
+%copy_includes mmake=includes-copy
 
 %common

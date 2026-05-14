@@ -1,0 +1,29 @@
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+USER_LDFLAGS := -static
+
+ifeq (i386,$(AROS_TARGET_CPU))
+LIBMAD_CPUFLAGS := -DFPM_INTEL
+else
+ifeq (x86_64,$(AROS_TARGET_CPU))
+LIBMAD_CPUFLAGS := -DFPM_INTEL -DFPM_64BIT
+else
+ifneq (,$(findstring $(AROS_TARGET_CPU),arm))
+LIBMAD_CPUFLAGS := -DFPM_ARM
+else
+LIBMAD_CPUFLAGS := -DFPM_DEFAULT
+endif
+endif
+endif
+
+USER_CPPFLAGS := $(LIBMAD_CPUFLAGS)
+
+FILES := mp3class
+
+#MM- contrib-datatypes-complete : contrib-datatype-mp3
+#MM contrib-datatype-mp3 : includes linklibs linklibs-mad
+
+%build_module mmake=contrib-datatype-mp3 \
+    modname=mp3 modtype=datatype \
+    files=$(FILES) uselibs="mad stdc stdcio"
