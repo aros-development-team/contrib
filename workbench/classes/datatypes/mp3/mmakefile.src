@@ -1,7 +1,11 @@
+#   $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-USER_LDFLAGS := -static
+FILES := mp3class
+
+#MM- contrib-datatypes-complete : contrib-datatype-mp3
+#MM contrib-datatype-mp3 : includes linklibs linklibs-mad
 
 ifeq (i386,$(AROS_TARGET_CPU))
 LIBMAD_CPUFLAGS := -DFPM_INTEL
@@ -18,12 +22,11 @@ endif
 endif
 
 USER_CPPFLAGS := $(LIBMAD_CPUFLAGS)
-
-FILES := mp3class
-
-#MM- contrib-datatypes-complete : contrib-datatype-mp3
-#MM contrib-datatype-mp3 : includes linklibs linklibs-mad
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
+USER_LDFLAGS  := -static
 
 %build_module mmake=contrib-datatype-mp3 \
     modname=mp3 modtype=datatype \
-    files=$(FILES) uselibs="mad stdc stdcio"
+    files="$(FILES)" uselibs="mad stdc stdcio"
+
+%common
