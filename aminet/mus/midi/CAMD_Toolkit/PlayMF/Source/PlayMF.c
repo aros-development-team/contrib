@@ -59,7 +59,6 @@ BOOL WBMode = FALSE;
 /**********    debug macros     ***********/
 #define MYDEBUG  1
 void kprintf(UBYTE *fmt,...);
-void dprintf(UBYTE *fmt,...);
 #define DEBTIME 0
 #define bug Printf
 #if MYDEBUG
