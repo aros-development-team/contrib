@@ -1,0 +1,444 @@
+# Copyright � 2025, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-sdl3 : SDL3-aros
+#MM- SDL3-aros-lib : SDL3-aros-sharedlib-linklib
+#MM- SDL3-aros : SDL3-aros-sharedlib SDL3-aros-genfiles SDL3-aros-tests
+#MM- SDL3-aros-tests : SDL3-aros-tests-main SDL3-aros-tests-utils SDL3-aros-tests-aut SDL3-aros-tests-copyfiles
+#MM SDL3-aros-tests-main : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib
+#MM SDL3-aros-tests-utils : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib SDL3-aros-test-utillib
+#MM SDL3-aros-tests-aut : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib
+
+# Special target
+#MM- development-sdl3 : SDL3-aros-copy-includes SDL3-aros-genfiles SDL3-aros-sharedlib-includes SDL3-aros-sharedlib-linklib
+
+#MM SDL3-aros-sharedlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI workbench-libs-mesa-linklib \
+#MM  development-libiconv
+
+#MM SDL3-aros-staticlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI
+
+REPOSITORIES := http://www.libsdl.org/release/
+ARCHVER      := 3.4.10
+ARCHBASE     := SDL3-$(ARCHVER)
+
+ARCHSRCDIR := $(PORTSDIR)/SDL3/$(ARCHBASE)
+TESTEXEDIR := $(AROS_TESTS)/SDL3
+
+%fetch mmake=contrib-sdl3-fetch archive=$(ARCHBASE) suffixes="tar.gz" \
+    location=$(PORTSSOURCEDIR) destination=$(PORTSDIR)/SDL3 \
+    archive_origins=". $(REPOSITORIES)" \
+    patches_specs=$(ARCHBASE)-aros.diff:$(ARCHBASE):-p1
+
+%create_patch mmake=contrib-sdl3-create-patch archive=$(ARCHBASE) \
+    suffixes="tar.gz" destination=$(PORTSDIR)/SDL3
+
+FILES := \
+    $(ARCHSRCDIR)/src/atomic/SDL_atomic \
+    $(ARCHSRCDIR)/src/atomic/SDL_spinlock \
+    $(ARCHSRCDIR)/src/audio/dummy/SDL_dummyaudio \
+    $(ARCHSRCDIR)/src/audio/ahi/SDL_ahi_audio \
+    $(ARCHSRCDIR)/src/audio/SDL_audio \
+    $(ARCHSRCDIR)/src/audio/SDL_audiocvt \
+    $(ARCHSRCDIR)/src/audio/SDL_audiodev \
+    $(ARCHSRCDIR)/src/audio/SDL_audioqueue \
+    $(ARCHSRCDIR)/src/audio/SDL_audioresample \
+    $(ARCHSRCDIR)/src/audio/SDL_audiotypecvt \
+    $(ARCHSRCDIR)/src/audio/SDL_mixer \
+    $(ARCHSRCDIR)/src/audio/SDL_wave \
+    $(ARCHSRCDIR)/src/camera/dummy/SDL_camera_dummy \
+    $(ARCHSRCDIR)/src/camera/SDL_camera \
+    $(ARCHSRCDIR)/src/core/SDL_core_unsupported \
+    $(ARCHSRCDIR)/src/cpuinfo/SDL_cpuinfo \
+    $(ARCHSRCDIR)/src/dialog/dummy/SDL_dummydialog \
+    $(ARCHSRCDIR)/src/dialog/SDL_dialog \
+    $(ARCHSRCDIR)/src/dialog/SDL_dialog_utils \
+    $(ARCHSRCDIR)/src/dynapi/SDL_dynapi \
+    $(ARCHSRCDIR)/src/events/imKStoUCS \
+    $(ARCHSRCDIR)/src/events/SDL_categories \
+    $(ARCHSRCDIR)/src/events/SDL_clipboardevents \
+    $(ARCHSRCDIR)/src/events/SDL_displayevents \
+    $(ARCHSRCDIR)/src/events/SDL_dropevents \
+    $(ARCHSRCDIR)/src/events/SDL_events \
+    $(ARCHSRCDIR)/src/events/SDL_eventwatch \
+    $(ARCHSRCDIR)/src/events/SDL_keyboard \
+    $(ARCHSRCDIR)/src/events/SDL_keymap \
+    $(ARCHSRCDIR)/src/events/SDL_keysym_to_keycode \
+    $(ARCHSRCDIR)/src/events/SDL_keysym_to_scancode \
+    $(ARCHSRCDIR)/src/events/SDL_mouse \
+    $(ARCHSRCDIR)/src/events/SDL_pen \
+    $(ARCHSRCDIR)/src/events/SDL_quit \
+    $(ARCHSRCDIR)/src/events/SDL_scancode_tables \
+    $(ARCHSRCDIR)/src/events/SDL_touch \
+    $(ARCHSRCDIR)/src/events/SDL_windowevents \
+    $(ARCHSRCDIR)/src/filesystem/aros/SDL_sysfilesystem \
+    $(ARCHSRCDIR)/src/filesystem/aros/SDL_sysfsops \
+    $(ARCHSRCDIR)/src/filesystem/SDL_filesystem \
+    $(ARCHSRCDIR)/src/gpu/SDL_gpu \
+    $(ARCHSRCDIR)/src/haptic/dummy/SDL_syshaptic \
+    $(ARCHSRCDIR)/src/haptic/SDL_haptic \
+    $(ARCHSRCDIR)/src/hidapi/SDL_hidapi \
+    $(ARCHSRCDIR)/src/io/generic/SDL_asyncio_generic \
+    $(ARCHSRCDIR)/src/io/SDL_asyncio \
+    $(ARCHSRCDIR)/src/io/SDL_iostream \
+    $(ARCHSRCDIR)/src/joystick/controller_type \
+    $(ARCHSRCDIR)/src/joystick/aros/SDL_sysjoystick \
+    $(ARCHSRCDIR)/src/joystick/virtual/SDL_virtualjoystick \
+    $(ARCHSRCDIR)/src/joystick/SDL_gamepad \
+    $(ARCHSRCDIR)/src/joystick/SDL_joystick \
+    $(ARCHSRCDIR)/src/joystick/SDL_steam_virtual_gamepad \
+    $(ARCHSRCDIR)/src/loadso/dummy/SDL_sysloadso \
+    $(ARCHSRCDIR)/src/locale/aros/SDL_syslocale \
+    $(ARCHSRCDIR)/src/locale/SDL_locale \
+    $(ARCHSRCDIR)/src/main/SDL_main_callbacks \
+    $(ARCHSRCDIR)/src/main/generic/SDL_sysmain_callbacks \
+    $(ARCHSRCDIR)/src/main/SDL_runapp \
+    $(ARCHSRCDIR)/src/misc/aros/SDL_sysurl \
+    $(ARCHSRCDIR)/src/misc/SDL_libusb \
+    $(ARCHSRCDIR)/src/misc/SDL_url \
+    $(ARCHSRCDIR)/src/power/SDL_power \
+    $(ARCHSRCDIR)/src/power/aros/SDL_syspower \
+    $(ARCHSRCDIR)/src/process/dummy/SDL_dummyprocess \
+    $(ARCHSRCDIR)/src/process/SDL_process \
+    $(ARCHSRCDIR)/src/render/opengl/SDL_render_gl \
+    $(ARCHSRCDIR)/src/render/opengl/SDL_shaders_gl \
+    $(ARCHSRCDIR)/src/render/SDL_render \
+    $(ARCHSRCDIR)/src/render/SDL_render_unsupported \
+    $(ARCHSRCDIR)/src/render/SDL_yuv_sw \
+    $(ARCHSRCDIR)/src/render/software/SDL_blendfillrect \
+    $(ARCHSRCDIR)/src/render/software/SDL_blendline \
+    $(ARCHSRCDIR)/src/render/software/SDL_blendpoint \
+    $(ARCHSRCDIR)/src/render/software/SDL_drawline \
+    $(ARCHSRCDIR)/src/render/software/SDL_drawpoint \
+    $(ARCHSRCDIR)/src/render/software/SDL_render_sw \
+    $(ARCHSRCDIR)/src/render/software/SDL_triangle \
+    $(ARCHSRCDIR)/src/./SDL \
+    $(ARCHSRCDIR)/src/./SDL_assert \
+    $(ARCHSRCDIR)/src/./SDL_error \
+    $(ARCHSRCDIR)/src/./SDL_guid \
+    $(ARCHSRCDIR)/src/./SDL_hashtable \
+    $(ARCHSRCDIR)/src/./SDL_hints \
+    $(ARCHSRCDIR)/src/./SDL_list \
+    $(ARCHSRCDIR)/src/./SDL_log \
+    $(ARCHSRCDIR)/src/./SDL_properties \
+    $(ARCHSRCDIR)/src/./SDL_utils \
+    $(ARCHSRCDIR)/src/sensor/dummy/SDL_dummysensor \
+    $(ARCHSRCDIR)/src/sensor/SDL_sensor \
+    $(ARCHSRCDIR)/src/stdlib/SDL_crc16 \
+    $(ARCHSRCDIR)/src/stdlib/SDL_crc32 \
+    $(ARCHSRCDIR)/src/stdlib/SDL_getenv \
+    $(ARCHSRCDIR)/src/stdlib/SDL_iconv \
+    $(ARCHSRCDIR)/src/stdlib/SDL_malloc \
+    $(ARCHSRCDIR)/src/stdlib/SDL_memcpy \
+    $(ARCHSRCDIR)/src/stdlib/SDL_memmove \
+    $(ARCHSRCDIR)/src/stdlib/SDL_memset \
+    $(ARCHSRCDIR)/src/stdlib/SDL_mslibc \
+    $(ARCHSRCDIR)/src/stdlib/SDL_murmur3 \
+    $(ARCHSRCDIR)/src/stdlib/SDL_qsort \
+    $(ARCHSRCDIR)/src/stdlib/SDL_random \
+    $(ARCHSRCDIR)/src/stdlib/SDL_stdlib \
+    $(ARCHSRCDIR)/src/stdlib/SDL_string \
+    $(ARCHSRCDIR)/src/stdlib/SDL_strtokr \
+    $(ARCHSRCDIR)/src/storage/generic/SDL_genericstorage \
+    $(ARCHSRCDIR)/src/storage/SDL_storage \
+    $(ARCHSRCDIR)/src/thread/aros/SDL_syssem \
+    $(ARCHSRCDIR)/src/thread/aros/SDL_systhread \
+    $(ARCHSRCDIR)/src/thread/generic/SDL_syscond \
+    $(ARCHSRCDIR)/src/thread/aros/SDL_sysmutex \
+    $(ARCHSRCDIR)/src/thread/generic/SDL_sysrwlock \
+    $(ARCHSRCDIR)/src/thread/generic/SDL_systls \
+    $(ARCHSRCDIR)/src/thread/SDL_thread \
+    $(ARCHSRCDIR)/src/timer/aros/SDL_systimer \
+    $(ARCHSRCDIR)/src/timer/SDL_timer \
+    $(ARCHSRCDIR)/src/time/SDL_time \
+    $(ARCHSRCDIR)/src/time/unix/SDL_systime \
+    $(ARCHSRCDIR)/src/tray/dummy/SDL_tray \
+    $(ARCHSRCDIR)/src/tray/SDL_tray_utils \
+    $(ARCHSRCDIR)/src/video/dummy/SDL_nullevents \
+    $(ARCHSRCDIR)/src/video/dummy/SDL_nullframebuffer \
+    $(ARCHSRCDIR)/src/video/dummy/SDL_nullvideo \
+    $(ARCHSRCDIR)/src/video/SDL_blit \
+    $(ARCHSRCDIR)/src/video/SDL_blit_0 \
+    $(ARCHSRCDIR)/src/video/SDL_blit_1 \
+    $(ARCHSRCDIR)/src/video/SDL_blit_A \
+    $(ARCHSRCDIR)/src/video/SDL_blit_auto \
+    $(ARCHSRCDIR)/src/video/SDL_blit_copy \
+    $(ARCHSRCDIR)/src/video/SDL_blit_N \
+    $(ARCHSRCDIR)/src/video/SDL_blit_slow \
+    $(ARCHSRCDIR)/src/video/SDL_bmp \
+    $(ARCHSRCDIR)/src/video/SDL_clipboard \
+    $(ARCHSRCDIR)/src/video/SDL_egl \
+    $(ARCHSRCDIR)/src/video/SDL_fillrect \
+    $(ARCHSRCDIR)/src/video/SDL_pixels \
+    $(ARCHSRCDIR)/src/video/SDL_rect \
+    $(ARCHSRCDIR)/src/video/SDL_RLEaccel \
+    $(ARCHSRCDIR)/src/video/SDL_rotate \
+    $(ARCHSRCDIR)/src/video/SDL_stb \
+    $(ARCHSRCDIR)/src/video/SDL_stretch \
+    $(ARCHSRCDIR)/src/video/SDL_surface \
+    $(ARCHSRCDIR)/src/video/SDL_video \
+    $(ARCHSRCDIR)/src/video/SDL_video_unsupported \
+    $(ARCHSRCDIR)/src/video/SDL_vulkan_utils \
+    $(ARCHSRCDIR)/src/video/SDL_yuv \
+    $(ARCHSRCDIR)/src/video/yuv2rgb/yuv_rgb_lsx \
+    $(ARCHSRCDIR)/src/video/yuv2rgb/yuv_rgb_sse \
+    $(ARCHSRCDIR)/src/video/yuv2rgb/yuv_rgb_std
+
+# SDL built-in libm (provides SDL_uclibc_* math used when libc lacks a function)
+FILES += \
+    $(ARCHSRCDIR)/src/libm/e_atan2 \
+    $(ARCHSRCDIR)/src/libm/e_exp \
+    $(ARCHSRCDIR)/src/libm/e_fmod \
+    $(ARCHSRCDIR)/src/libm/e_log \
+    $(ARCHSRCDIR)/src/libm/e_log10 \
+    $(ARCHSRCDIR)/src/libm/e_pow \
+    $(ARCHSRCDIR)/src/libm/e_rem_pio2 \
+    $(ARCHSRCDIR)/src/libm/e_sqrt \
+    $(ARCHSRCDIR)/src/libm/k_cos \
+    $(ARCHSRCDIR)/src/libm/k_rem_pio2 \
+    $(ARCHSRCDIR)/src/libm/k_sin \
+    $(ARCHSRCDIR)/src/libm/k_tan \
+    $(ARCHSRCDIR)/src/libm/s_atan \
+    $(ARCHSRCDIR)/src/libm/s_copysign \
+    $(ARCHSRCDIR)/src/libm/s_cos \
+    $(ARCHSRCDIR)/src/libm/s_fabs \
+    $(ARCHSRCDIR)/src/libm/s_floor \
+    $(ARCHSRCDIR)/src/libm/s_isinf \
+    $(ARCHSRCDIR)/src/libm/s_isinff \
+    $(ARCHSRCDIR)/src/libm/s_isnan \
+    $(ARCHSRCDIR)/src/libm/s_isnanf \
+    $(ARCHSRCDIR)/src/libm/s_modf \
+    $(ARCHSRCDIR)/src/libm/s_scalbn \
+    $(ARCHSRCDIR)/src/libm/s_sin \
+    $(ARCHSRCDIR)/src/libm/s_tan
+
+# AROS native video backend (Intuition windows + CyberGraphics framebuffer + AGL OpenGL)
+FILES += \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosclipboard \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosevents \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosframebuffer \
+    $(ARCHSRCDIR)/src/video/aros/SDL_aroskeyboard \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosmessagebox \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosmisc \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosmodes \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosmouse \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosopengl \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosshape \
+    $(ARCHSRCDIR)/src/video/aros/SDL_arosvideo \
+    $(ARCHSRCDIR)/src/video/aros/SDL_aroswindow
+
+SDL3INCDIR := $(AROS_INCLUDES)/SDL3
+
+NOWARN_FLAGS := $(NOWARN_STRINGOP_TRUNCATION)
+USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
+
+USER_INCLUDES := -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR) -I$(ARCHSRCDIR)/src -I$(AROS_CONTRIB_INCLUDES)
+USER_LDFLAGS := -L$(AROS_CONTRIB_LIB)
+USER_CPPFLAGS := \
+        -DADATE="\"$(shell date '+%d.%m.%Y')\""
+
+# The following objects are compiled directly into the SDL3 link library so
+# that they run inside the application rather than behind the library jump
+# table. This is required for every function that produces or consumes a
+# va_list (SDL_Log*, SDL_*printf, SDL_SetError* and their "V" variants): a
+# va_list cannot be marshalled across an AROS LVO stub, so these must be
+# called directly. SDL_log.c additionally needs the local stdio context for
+# its console output. SDL_error.c needs SDL_GetErrBuf(), supplied locally by
+# SDL3_errbuf.c (SDL3 keeps it in SDL_thread.c, which would drag in the whole
+# thread backend). SDL3_varargs.c supplies the few remaining variadic entry
+# points that those objects do not.
+SDL3_LOGSTUB=$(GENDIR)/$(CURDIR)/SDL3/linklib/SDL_liblog.o
+$(SDL3_LOGSTUB): $(ARCHSRCDIR)/src/SDL_log.c
+	%compile_q cmd="$(strip $(TARGET_CC) $(TARGET_SYSROOT))" opt="$(strip $(CFLAGS) $(CPPFLAGS) -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR)/src)" iquote="$(CFLAGS_IQUOTE)" iquote_end="$(CFLAGS_IQUOTE_END)"
+
+SDL3_STRINGSTUB=$(GENDIR)/$(CURDIR)/SDL3/linklib/SDL_libstring.o
+$(SDL3_STRINGSTUB): $(ARCHSRCDIR)/src/stdlib/SDL_string.c
+	%compile_q cmd="$(strip $(TARGET_CC) $(TARGET_SYSROOT))" opt="$(strip $(CFLAGS) $(CPPFLAGS) -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR)/src)" iquote="$(CFLAGS_IQUOTE)" iquote_end="$(CFLAGS_IQUOTE_END)"
+
+SDL3_ERRORSTUB=$(GENDIR)/$(CURDIR)/SDL3/linklib/SDL_liberror.o
+$(SDL3_ERRORSTUB): $(ARCHSRCDIR)/src/SDL_error.c
+	%compile_q cmd="$(strip $(TARGET_CC) $(TARGET_SYSROOT))" opt="$(strip $(CFLAGS) $(CPPFLAGS) -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR)/src)" iquote="$(CFLAGS_IQUOTE)" iquote_end="$(CFLAGS_IQUOTE_END)"
+
+SDL3_ERRBUFSTUB=$(GENDIR)/$(CURDIR)/SDL3/linklib/SDL3_errbuf.o
+$(SDL3_ERRBUFSTUB): $(SRCDIR)/$(CURDIR)/SDL3_errbuf.c
+	%compile_q cmd="$(strip $(TARGET_CC) $(TARGET_SYSROOT))" opt="$(strip $(CFLAGS) $(CPPFLAGS) -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR)/src)" iquote="$(CFLAGS_IQUOTE)" iquote_end="$(CFLAGS_IQUOTE_END)"
+
+SDL3_VARARGSSTUB=$(GENDIR)/$(CURDIR)/SDL3/linklib/SDL3_varargs.o
+$(SDL3_VARARGSSTUB): $(SRCDIR)/$(CURDIR)/SDL3_varargs.c
+	%compile_q cmd="$(strip $(TARGET_CC) $(TARGET_SYSROOT))" opt="$(strip $(CFLAGS) $(CPPFLAGS) -I$(ARCHSRCDIR)/include -I$(ARCHSRCDIR)/include/build_config -I$(ARCHSRCDIR)/src)" iquote="$(CFLAGS_IQUOTE)" iquote_end="$(CFLAGS_IQUOTE_END)"
+
+SDL3LINKLIBOBJS := \
+    $(SDL3_LOGSTUB) \
+    $(SDL3_STRINGSTUB) \
+    $(SDL3_ERRORSTUB) \
+    $(SDL3_ERRBUFSTUB) \
+    $(SDL3_VARARGSSTUB)
+
+USER_CPPFLAGS := \
+        -DSDL3_AROS_SHARED \
+        -DADATE="\"$(shell date '+%d.%m.%Y')\""
+
+%build_module mmake=SDL3-aros-sharedlib \
+    modname=SDL3 modtype=library \
+    files="SDL3_library $(FILES)" \
+    linklibobjs="$(SDL3LINKLIBOBJS)" \
+    conffile=SDL3.conf \
+    uselibs="iconv GL"
+
+USER_CPPFLAGS := \
+        -DSDL3_AROS_STATIC \
+        -DADATE="\"$(shell date '+%d.%m.%Y')\""
+
+%build_linklib mmake=SDL3-aros-staticlib libname=SDL3_static \
+    files="SDL3_static $(FILES)"
+
+%copy_dir_recursive mmake=SDL3-aros-copy-includes \
+    src=$(ARCHSRCDIR)/include/. dst="$(SDL3INCDIR)"
+
+$(AROS_DEVELOPER)/bin:
+	%mkdir_q dir=$@
+
+$(AROS_DEVELOPER)/bin/sdl3-config: $(SRCDIR)/$(CURDIR)/sdl3-config | $(AROS_DEVELOPER)/bin
+	$(Q)$(ECHO) Generating sdl3-config ...
+	$(Q)$(CP) $< $@
+	$(Q)$(CHMOD) a+x $@
+
+$(AROS_LIB)/pkgconfig:
+	%mkdir_q dir=$@
+
+$(AROS_LIB)/pkgconfig/sdl3.pc: $(ARCHSRCDIR)/cmake/sdl3.pc.in | $(AROS_LIB)/pkgconfig
+	$(Q)$(ECHO) Generating pkgconfig/sdl3.pc ...
+	$(Q)$(SED) \
+		-e 's#@prefix@#/PROGDIR#g' \
+		-e 's#@exec_prefix@#$${prefix}#g' \
+		-e 's#@libdir@#$${exec_prefix}/lib#g' \
+		-e 's#@includedir@#$${prefix}/include#g' \
+		-e 's#@SDL_VERSION@#$(ARCHVER)#g' \
+		-e 's#@PKGCONFIG_DEPENDS@##g' \
+		-e 's#@SDL_RLD_FLAGS@##g' \
+		-e 's#@SDL_LIBS@##g' \
+		-e 's#@PKGCONFIG_LIBS_PRIV@##g' \
+		-e 's#@SDL_STATIC_LIBS@#-lSDL3 -lGL#g' \
+		-e 's#@SDL_CFLAGS@#-D_GNU_SOURCE=1#g' \
+		$< > $@
+	$(Q)$(CHMOD) a+x $@
+
+#MM
+SDL3-aros-genfiles : $(AROS_DEVELOPER)/bin/sdl3-config $(AROS_LIB)/pkgconfig/sdl3.pc
+	$(Q)$(NOP)
+
+#MM SDL3-aros-copy-includes : contrib-sdl3-fetch
+
+USER_INCLUDES := -I$(SDL3INCDIR)  -I$(AROS_CONTRIB_INCLUDES) -I$(ARCHSRCDIR)/test
+
+SDL3TESTSFILES := \
+    $(ARCHSRCDIR)/test/testver \
+    $(ARCHSRCDIR)/test/testplatform \
+    $(ARCHSRCDIR)/test/testqsort \
+    $(ARCHSRCDIR)/test/testatomic \
+    $(ARCHSRCDIR)/test/testthread \
+    $(ARCHSRCDIR)/test/testlock \
+    $(ARCHSRCDIR)/test/testsem \
+    $(ARCHSRCDIR)/test/testrwlock \
+    $(ARCHSRCDIR)/test/testtimer \
+    $(ARCHSRCDIR)/test/testtime \
+    $(ARCHSRCDIR)/test/testerror \
+    $(ARCHSRCDIR)/test/testbounds \
+    $(ARCHSRCDIR)/test/testdisplayinfo \
+    $(ARCHSRCDIR)/test/testdraw \
+    $(ARCHSRCDIR)/test/testdrawchessboard \
+    $(ARCHSRCDIR)/test/testspriteminimal \
+    $(ARCHSRCDIR)/test/testshape \
+    $(ARCHSRCDIR)/test/testwm \
+    $(ARCHSRCDIR)/test/testmouse \
+    $(ARCHSRCDIR)/test/testkeys \
+    $(ARCHSRCDIR)/test/testhittesting \
+    $(ARCHSRCDIR)/test/testintersections \
+    $(ARCHSRCDIR)/test/testmessage \
+    $(ARCHSRCDIR)/test/testaudioinfo \
+    $(ARCHSRCDIR)/test/torturethread
+
+SDL3TESTSUTILSFILES := \
+    $(ARCHSRCDIR)/test/testsprite \
+    $(ARCHSRCDIR)/test/testgeometry
+
+SDL3AUTTESTSFILES := \
+    $(ARCHSRCDIR)/test/testautomation \
+    $(ARCHSRCDIR)/test/testautomation_audio \
+    $(ARCHSRCDIR)/test/testautomation_blit \
+    $(ARCHSRCDIR)/test/testautomation_clipboard \
+    $(ARCHSRCDIR)/test/testautomation_events \
+    $(ARCHSRCDIR)/test/testautomation_guid \
+    $(ARCHSRCDIR)/test/testautomation_hints \
+    $(ARCHSRCDIR)/test/testautomation_images \
+    $(ARCHSRCDIR)/test/testautomation_intrinsics \
+    $(ARCHSRCDIR)/test/testautomation_iostream \
+    $(ARCHSRCDIR)/test/testautomation_joystick \
+    $(ARCHSRCDIR)/test/testautomation_keyboard \
+    $(ARCHSRCDIR)/test/testautomation_log \
+    $(ARCHSRCDIR)/test/testautomation_main \
+    $(ARCHSRCDIR)/test/testautomation_math \
+    $(ARCHSRCDIR)/test/testautomation_mouse \
+    $(ARCHSRCDIR)/test/testautomation_pixels \
+    $(ARCHSRCDIR)/test/testautomation_platform \
+    $(ARCHSRCDIR)/test/testautomation_properties \
+    $(ARCHSRCDIR)/test/testautomation_rect \
+    $(ARCHSRCDIR)/test/testautomation_render \
+    $(ARCHSRCDIR)/test/testautomation_sdltest \
+    $(ARCHSRCDIR)/test/testautomation_stdlib \
+    $(ARCHSRCDIR)/test/testautomation_subsystems \
+    $(ARCHSRCDIR)/test/testautomation_surface \
+    $(ARCHSRCDIR)/test/testautomation_time \
+    $(ARCHSRCDIR)/test/testautomation_timer \
+    $(ARCHSRCDIR)/test/testautomation_video
+
+SDL3TESTCOMMONLIBFILES := \
+    $(ARCHSRCDIR)/src/test/SDL_test_assert \
+    $(ARCHSRCDIR)/src/test/SDL_test_common \
+    $(ARCHSRCDIR)/src/test/SDL_test_compare \
+    $(ARCHSRCDIR)/src/test/SDL_test_crc32 \
+    $(ARCHSRCDIR)/src/test/SDL_test_font \
+    $(ARCHSRCDIR)/src/test/SDL_test_fuzzer \
+    $(ARCHSRCDIR)/src/test/SDL_test_harness \
+    $(ARCHSRCDIR)/src/test/SDL_test_log \
+    $(ARCHSRCDIR)/src/test/SDL_test_md5 \
+    $(ARCHSRCDIR)/src/test/SDL_test_memory
+
+SDL3TESTUTILSLIBFILES := \
+    $(ARCHSRCDIR)/test/testutils \
+    $(ARCHSRCDIR)/test/testyuv_cvt
+
+SDL3TESTLIBDIR := $(GENDIR)/$(CURDIR)/lib
+
+%build_linklib mmake=SDL3-aros-test-commonlib libname=testcommon \
+    files="$(SDL3TESTCOMMONLIBFILES)" libdir="$(SDL3TESTLIBDIR)"
+
+%build_linklib mmake=SDL3-aros-test-utillib libname=testutils \
+    files="$(SDL3TESTUTILSLIBFILES)" libdir="$(SDL3TESTLIBDIR)"
+
+USER_CPPFLAGS :=
+USER_LDFLAGS := -L$(SDL3TESTLIBDIR)
+
+%build_progs mmake=SDL3-aros-tests-main \
+    files=$(SDL3TESTSFILES) targetdir=$(TESTEXEDIR) \
+    uselibs="testcommon SDL3" usetree=yes srcdir=$(ARCHSRCDIR)/test
+
+%build_progs mmake=SDL3-aros-tests-utils \
+    files=$(SDL3TESTSUTILSFILES) targetdir=$(TESTEXEDIR) \
+    uselibs="testutils testcommon SDL3" usetree=yes srcdir=$(ARCHSRCDIR)/test
+
+%build_prog mmake=SDL3-aros-tests-aut progname=testautomation \
+    files="$(SDL3AUTTESTSFILES)" targetdir=$(TESTEXEDIR) \
+    uselibs="testcommon SDL3"
+
+SDL3TESTDATAFILES := \
+    moose.dat \
+    sample.wav \
+    sword.wav \
+    unifont-15.1.05.hex \
+    utf8.txt
+
+%copy_files_q mmake=SDL3-aros-tests-copyfiles files="$(SDL3TESTDATAFILES)" src=$(ARCHSRCDIR)/test dst=$(TESTEXEDIR)
+
+%common
