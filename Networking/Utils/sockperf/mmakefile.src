@@ -2,7 +2,10 @@
 include $(SRCDIR)/config/aros.cfg
 
 NOWARN_FLAGS := $(NOWARN_UNINITIALIZED) $(NOWARN_PARENTHESES) $(NOWARN_DEPRECATED_DECLARATIONS)
-USER_CXXFLAGS := $(NOWARN_FLAGS) $(CXXFLAGS_CXX14)
+# sockperf uses C++ exceptions (throw/try/catch). Most targets enable exceptions
+# by default, but the ARM port adds -fno-exceptions to the config C++ flags
+# (see configure.in), so request them explicitly here for all targets.
+USER_CXXFLAGS := $(NOWARN_FLAGS) $(CFLAGS_EXCEPTIONS) $(CXXFLAGS_CXX14)
 USER_CPPFLAGS := \
     -D_GNU_SOURCE=1 \
     -D__BSD_VISIBLE=1 \
