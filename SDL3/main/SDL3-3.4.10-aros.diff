@@ -5044,7 +5044,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.h SDL3-3.4.10.aros/src/video/a
 +#endif /* SDL_arosmisc_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmodes.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c	2026-06-26 14:35:17.512807508 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c	2026-06-26 19:28:13.256655208 +0000
 @@ -0,0 +1,508 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5287,7 +5287,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +			mode.internal = SDL_malloc(4);
 +
 +			display.desktop_mode = mode;
-+			display.internal = modedata;
++			display.internal = (SDL_DisplayData *)modedata;
 +			GetAttr(MA_MonitorName, mon, (IPTR *)&monitorname);
 +			display.name = monitorname;
 +
@@ -5331,7 +5331,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +					modedata->monitor = m;
 +
 +					display.desktop_mode = mode;
-+					display.internal = modedata;
++					display.internal = (SDL_DisplayData *)modedata;
 +					GetAttr(MA_MonitorName, m, (IPTR *)&monitorname);
 +					display.name = monitorname;
 +					
@@ -5603,7 +5603,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.h SDL3-3.4.10.aros/src/video/
 +#endif /* _SDL_arosmodes_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c	2026-06-26 14:35:17.515527208 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c	2026-06-26 19:28:19.060655187 +0000
 @@ -0,0 +1,375 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5666,7 +5666,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +		struct BitMap *bmp;
 +
 +		cursor->Cursor.next = NULL;
-+		cursor->Cursor.internal = &cursor->Pointer;
++		cursor->Cursor.internal = (SDL_CursorData *)&cursor->Pointer;
 +		cursor->Pointer.offx = hot_x;
 +		cursor->Pointer.offy = hot_y;
 +
@@ -6297,7 +6297,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +#endif /* SDL_VIDEO_OPENGL_AGL */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosopengl.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h	2026-06-26 02:13:23.873593886 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h	2026-06-26 19:28:25.212655184 +0000
 @@ -0,0 +1,60 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6332,7 +6332,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video
 +struct SDL_GLDriverData
 +{
 +  struct Library    *gldd_GLBase;
-+  GLAContext        *gldd_GLACtx;
++  GLAContext        gldd_GLACtx;
 +  int               gldd_Interval;
 +#if (0)
 +    struct Library          **GLABasePtr;
@@ -8128,7 +8128,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.h SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h
 --- SDL3-3.4.10/src/video/aros/SDL_aroswindow.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h	2026-06-26 02:15:59.717594036 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h	2026-06-26 19:28:30.292655189 +0000
 @@ -0,0 +1,133 @@
 +/*
 +  Simple DirectMedia Layer
@@ -8204,7 +8204,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.h SDL3-3.4.10.aros/src/video
 +
 +	struct SDL_VideoData *videodata;
 +
-+	GLAContext *__AGLCtx;
++	GLAContext __AGLCtx;
 +	
 +	// Currently known window position and dimensions
 +	LONG curr_x, curr_y, curr_w, curr_h;
