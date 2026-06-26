@@ -3069,7 +3069,7 @@ diff -ruN SDL3-3.4.10/src/timer/aros/SDL_systimer.c SDL3-3.4.10.aros/src/timer/a
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL3-3.4.10/src/video/aros/scancodes_amigaos.h SDL3-3.4.10.aros/src/video/aros/scancodes_amigaos.h
 --- SDL3-3.4.10/src/video/aros/scancodes_amigaos.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/scancodes_amigaos.h	2026-06-26 02:08:54.382622091 +0000
++++ SDL3-3.4.10.aros/src/video/aros/scancodes_amigaos.h	2026-06-26 22:20:50.978718031 +0000
 @@ -0,0 +1,144 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3217,7 +3217,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/scancodes_amigaos.h SDL3-3.4.10.aros/src/vi
 +/* *INDENT-ON* */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.c	2026-06-26 02:23:17.373594668 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.c	2026-06-26 22:20:50.965221831 +0000
 @@ -0,0 +1,277 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3498,7 +3498,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c SDL3-3.4.10.aros/src/vi
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.h	2026-06-26 02:12:43.877594146 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.h	2026-06-26 22:20:50.979693131 +0000
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3532,7 +3532,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h SDL3-3.4.10.aros/src/vi
 +#endif /* _SDL_arosclipboard_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.c	2026-06-26 02:42:48.833790602 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.c	2026-06-26 22:29:09.379328911 +0000
 @@ -0,0 +1,850 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3581,7 +3581,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +
 +#include <libraries/gadtools.h>
 +
-+#if !defined(SDL2_AROS_STATIC)
++#if !defined(SDL3_AROS_STATIC)
 +#include <hidd/hidd.h>
 +
 +#include <proto/oop.h>
@@ -3603,7 +3603,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +extern struct Library *DOSBase;
 +extern struct Library *IntuitionBase;
 +extern struct Library *CxBase;
-+#if !defined(SDL2_AROS_STATIC)
++#if !defined(SDL3_AROS_STATIC)
 +extern struct Library *OOPBase;
 +OOP_AttrBase HiddAttrBase;
 +OOP_AttrBase HWAttrBase;
@@ -3721,7 +3721,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +{
 +    struct Screen *s = data->win->WScreen;
 +
-+    //D(bug("[SDL2:arosevt] %s: X:%d Y:%d, ScreenX: %d ScreenY: %d\n", __func__, m->MouseX, m->MouseY, s->MouseX, s->MouseY);
++    //D(bug("[SDL3:arosevt] %s: X:%d Y:%d, ScreenX: %d ScreenY: %d\n", __func__, m->MouseX, m->MouseY, s->MouseX, s->MouseY);
 +    globalMouseState.x = s->MouseX;
 +    globalMouseState.y = s->MouseY;
 +
@@ -3742,7 +3742,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +static void
 +AROS_HandleActivation(SDL_VideoDevice *_this, struct IntuiMessage *m, bool activated)
 +{
-+	D(bug("[SDL2:arosevt] %s()\n", __func__));
++	D(bug("[SDL3:arosevt] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *)m->IDCMPWindow->UserData;
 +    if (data) {
@@ -3771,7 +3771,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +{
 +	struct Window *w = data->win;
 +
-+	D(bug("[SDL2:arosevt] %s()\n", __func__));
++	D(bug("[SDL3:arosevt] %s()\n", __func__));
 +
 +	if (data->curr_x != w->LeftEdge || data->curr_h != w->TopEdge) {
 +		data->curr_x = w->LeftEdge;
@@ -3794,22 +3794,22 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +
 +static void AROS_GadgetEvent(SDL_VideoDevice *_this, const struct IntuiMessage *m)
 +{
-+	D(bug("[SDL2:arosevt] %s()\n", __func__));
++	D(bug("[SDL3:arosevt] %s()\n", __func__));
 +
 +	switch (((struct Gadget *)m->IAddress)->GadgetID) {
 +		case ETI_Iconify:
 +			AROS_HideApp(_this, TRUE);
 +			break;
 +		case ETI_Jump:
-+			D(bug("[SDL2:arosevt] %s: ETI_JUMP\n", __func__));
++			D(bug("[SDL3:arosevt] %s: ETI_JUMP\n", __func__));
 +			//SDL_WindowData *data = (SDL_WindowData *)m->IDCMPWindow->UserData;
 +			//SDL_SetWindowFullscreen(data->window, data->winflags);
 +			break;
 +	}
 +}
 +
-+static const char porters[] = "Kalamatee (kalamatee@gmail.com), based on the morphos port\n";
-+static const char bases[] = "SDL 2.32.10 sources by Ilkka Lehtoranta";
++static const char porters[] = "Kalamatee (kalamatee@gmail.com), based on the AROS SDL2 port\n";
++static const char bases[] = "SDL 3.4.10 sources by Ilkka Lehtoranta";
 +
 +static void
 +AROS_AboutSDL(struct Window *window)
@@ -3817,9 +3817,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +	struct EasyStruct es;
 +	es.es_StructSize   = sizeof(struct EasyStruct);
 +	es.es_Flags        = 0;
-+	es.es_Title        = "SDL2";
++	es.es_Title        = "SDL3";
 +
-+	es.es_TextFormat   = "SDL %ld.%ld.%ld -AROS-\nCompiled on " ADATE "\n\nSimple DirectMedia Layer is cross-platform development library designed to\nprovide low level access audio, keyboard, mouse, joysticks, and graphics hardware.\n\nSDL 2.0 is distributed under zlib license.\nThis license allows you to use SDL freely in any software.\n\nPorters:\n%s\nBased on %s\n\nwww.libsdl.org";
++	es.es_TextFormat   = "SDL %ld.%ld.%ld -AROS-\nCompiled on " ADATE "\n\nSimple DirectMedia Layer is cross-platform development library designed to\nprovide low level access audio, keyboard, mouse, joysticks, and graphics hardware.\n\nSDL 3.0 is distributed under zlib license.\nThis license allows you to use SDL freely in any software.\n\nPorters:\n%s\nBased on %s\n\nwww.libsdl.org";
 +	es.es_GadgetFormat = "Ok";
 +
 +	EasyRequest(window, &es, NULL, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION, (IPTR)porters, (IPTR)bases);
@@ -3839,7 +3839,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +	char Vendor[256];
 +
 +    const char *hwname = NULL;
-+#if !defined(SDL2_AROS_STATIC)
++#if !defined(SDL3_AROS_STATIC)
 +    if (OOP_ObtainAttrBases(abd))
 +    {
 +        OOP_Object *hwRoot = OOP_NewObject(NULL, CLID_HW_Root, NULL);
@@ -3905,7 +3905,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +	struct EasyStruct es;
 +	es.es_StructSize   = sizeof(struct EasyStruct);
 +	es.es_Flags        = 0;
-+	es.es_Title        = "SDL2 Joystick/GameController";
++	es.es_Title        = "SDL3 Joystick/GameController";
 +	es.es_TextFormat   = "SDL %ld.%ld.%ld -AROS-\n\n%s\n%s";
 +	es.es_GadgetFormat = "Ok";
 +
@@ -4134,7 +4134,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +static void
 +AROS_DispatchEvent(SDL_VideoDevice *_this, struct IntuiMessage *m)
 +{
-+    //D(bug("[SDL2:arosevt] %s: \n", __func__));
++    //D(bug("[SDL3:arosevt] %s: \n", __func__));
 +    SDL_WindowData *data = (SDL_WindowData *)m->IDCMPWindow->UserData;
 +
 +    switch (m->Class) {
@@ -4195,7 +4195,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +		size_t id = CxMsgID(msg);
 +		size_t tp = CxMsgType(msg);
 +
-+		D(bug("[SDL2:arosevt] %s: check CxMsg\n", __func__));
++		D(bug("[SDL3:arosevt] %s: check CxMsg\n", __func__));
 +
 +		ReplyMsg((APTR)msg);
 +
@@ -4227,7 +4227,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +		struct ScreenNotifyMessage *snm;
 +
 +		while ((snm = (struct ScreenNotifyMessage *)GetMsg(&data->ScreenNotifyPort)) != NULL) {
-+			D(bug("[SDL2:arosevt] %s: check ScreenNotifyMessage\n", __func__));
++			D(bug("[SDL3:arosevt] %s: check ScreenNotifyMessage\n", __func__));
 +
 +			switch ((size_t)snm->snm_Value) {
 +				case FALSE:
@@ -4255,7 +4255,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +	struct AppMessage *msg;
 +	
 +	while ((msg = (struct AppMessage *)GetMsg(&data->WBPort)) != NULL) {
-+		D(bug("[SDL2:arosevt] %s: check AppMessage\n", __func__));
++		D(bug("[SDL3:arosevt] %s: check AppMessage\n", __func__));
 +
 +		switch (msg->am_Type) {
 +			case AMTYPE_APPWINDOW: 
@@ -4268,7 +4268,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +							NameFromLock(argptr->wa_Lock, filename, 1024);
 +							AddPart(filename, argptr->wa_Name, 1024);
 +
-+							D(bug("[SDL2:arosevt] %s: SDL_SendDropfile : '%s'\n", __func__, filename));
++							D(bug("[SDL3:arosevt] %s: SDL_SendDropfile : '%s'\n", __func__, filename));
 +							SDL_SendDropFile(window, NULL, filename);
 +							argptr++;
 +						}
@@ -4281,7 +4281,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +				AROS_ShowApp(_this);
 +				break;
 +			default:
-+				//D(bug("[SDL2:arosevt] %s: Unknown AppMsg %d %p\n", __func__, msg->am_Type, (APTR)msg->am_UserData));
++				//D(bug("[SDL3:arosevt] %s: Unknown AppMsg %d %p\n", __func__, msg->am_Type, (APTR)msg->am_UserData));
 +				break;
 +		}
 +
@@ -4306,10 +4306,10 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +    }
 +    
 +    sigs = SetSignal(0, signals);
-+    D(bug("[SDL2:arosevt] %s: signals = %08x\n", __func__, sigs));
++    D(bug("[SDL3:arosevt] %s: signals = %08x\n", __func__, sigs));
 +    if (sigs & SIGBREAKF_CTRL_C)
 +    {
-+        D(bug("[SDL2:arosevt] %s: got SIGBREAKF_CTRL_C\n", __func__));
++        D(bug("[SDL3:arosevt] %s: got SIGBREAKF_CTRL_C\n", __func__));
 +        SDL_SendAppEvent(SDL_EVENT_QUIT);
 +    }
 +    else if (_this) {
@@ -4355,13 +4355,13 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +                                    winPtrTags[1].ti_Data = TRUE;
 +                                } else {
 +                                    if (((IPTR)data->CurrentPointer->internal) != SDL_SYSTEM_CURSOR_DEFAULT) {
-+                                        D(bug("[SDL2:arosevt] %s: (currently) unhandled cursor type %u\n", __func__, ((IPTR)data->CurrentPointer->internal)));
++                                        D(bug("[SDL3:arosevt] %s: (currently) unhandled cursor type %u\n", __func__, ((IPTR)data->CurrentPointer->internal)));
 +                                    }
 +                                }
 +                            }
 +                        } else {
 +                            if (data->BlankPtrObj) {
-+                                D(bug("[SDL2:arosevt] %s: setting blank cursor\n", __func__));
++                                D(bug("[SDL3:arosevt] %s: setting blank cursor\n", __func__));
 +                                winPtrTags[0].ti_Data = (IPTR)data->BlankPtrObj;
 +                            }
 +                        }
@@ -4387,7 +4387,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 \ No newline at end of file
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.h SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosevents.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.h	2026-06-26 02:08:54.385948791 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.h	2026-06-26 22:20:50.980742131 +0000
 @@ -0,0 +1,29 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4420,7 +4420,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.h SDL3-3.4.10.aros/src/video
 +#endif /* _SDL_arosevents_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.c	2026-06-26 02:21:53.261594710 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.c	2026-06-26 22:20:50.968015831 +0000
 @@ -0,0 +1,156 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4468,7 +4468,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +void
 +AROS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window)
 +{
-+	D(bug("[SDL2:arosfb] %s()\n", __func__));
++	D(bug("[SDL3:arosfb] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	if (data->bitmap) {
@@ -4485,7 +4485,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +AROS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, SDL_PixelFormat * format,
 +                            void ** pixels, int *pitch)
 +{
-+	D(bug("[SDL2:arosfb] %s()\n", __func__));
++	D(bug("[SDL3:arosfb] %s()\n", __func__));
 +
 +	APTR lock;
 +    APTR base_address;
@@ -4493,7 +4493,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +    if (data->bitmap) {
-+		D(bug("[SDL2:arosfb] %s: freeing existing bitmap @ 0x%p\n", __func__, data->bitmap));
++		D(bug("[SDL3:arosfb] %s: freeing existing bitmap @ 0x%p\n", __func__, data->bitmap));
 +        FreeBitMap(data->bitmap);
 +    }
 +    if (data->memfb) {
@@ -4502,7 +4502,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +    }
 +
 +	if (!data->win) {
-+		D(bug("[SDL2:arosfb] %s: ERROR: no window ptr\n", __func__));
++		D(bug("[SDL3:arosfb] %s: ERROR: no window ptr\n", __func__));
 +        return SDL_SetError("No system window");
 +    }
 +	
@@ -4515,11 +4515,11 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +	Uint32 depth =  GetBitMapAttr(friend_bitmap, BMA_DEPTH);
 +	data->bitmap = AllocBitMap(window->w, window->h, depth, BMF_MINPLANES|BMF_CLEAR, friend_bitmap);
 +	if (!data->bitmap) {
-+		D(bug("[SDL2:arosfb] %s: ERROR: failed to allocate a bitmap\n", __func__));
++		D(bug("[SDL3:arosfb] %s: ERROR: failed to allocate a bitmap\n", __func__));
 +		return SDL_SetError("Failed to allocate bitmap for framebuffer");
 +	} 
 +		
-+	D("[SDL2:arosfb] %s: Allocate bitmap %d x %d x %d for framebuffer\n", __func__, window->w, window->h, depth);
++	D("[SDL3:arosfb] %s: Allocate bitmap %d x %d x %d for framebuffer\n", __func__, window->w, window->h, depth);
 +	lock = LockBitMapTags(
 +        data->bitmap,
 +        LBMI_BASEADDRESS, &base_address,
@@ -4532,7 +4532,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +
 +        UnLockBitMap(lock);
 +    } else {
-+		D(bug("[SDL2:arosfb] %s: ERROR: failed to lock the bitmap\n", __func__));
++		D(bug("[SDL3:arosfb] %s: ERROR: failed to lock the bitmap\n", __func__));
 +
 +        FreeBitMap(data->bitmap);
 +        data->bitmap = NULL;
@@ -4544,7 +4544,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +        return true;
 +    }
 +
-+	D(bug("[SDL2:arosfb] %s: done\n", __func__));
++	D(bug("[SDL3:arosfb] %s: done\n", __func__));
 +
 +	return true;
 +}
@@ -4552,7 +4552,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +bool
 +AROS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, const SDL_Rect * rects, int numrects)
 +{
-+	D(bug("[SDL2:arosfb] %s()\n", __func__));
++	D(bug("[SDL3:arosfb] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	if (!data->__AGLCtx)
@@ -4580,7 +4580,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.h	2026-06-26 02:12:21.197594217 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.h	2026-06-26 22:20:50.981741531 +0000
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4614,7 +4614,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.10.aros/src/
 +#endif /* _SDL_arosframebuffer_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.c
 --- SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.c	2026-06-26 14:35:17.514228608 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.c	2026-06-26 22:20:50.968972031 +0000
 @@ -0,0 +1,91 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4670,7 +4670,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.10.aros/src/vid
 +        return buffer[0];
 +    }
 +
-+	D(bug("[SDL2:aroskb] %s: %u->%d\n", __func__, code, res));
++	D(bug("[SDL3:aroskb] %s: %u->%d\n", __func__, code, res));
 +
 +    return 0;
 +}
@@ -4709,7 +4709,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.10.aros/src/vid
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.h
 --- SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.h	2026-06-26 02:08:54.389354291 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.h	2026-06-26 22:20:50.982705031 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4741,7 +4741,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.10.aros/src/vid
 +#endif /* _SDL_aroskeyboard_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.c	2026-06-26 02:23:28.309594734 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.c	2026-06-26 22:20:50.970013931 +0000
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4783,7 +4783,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/v
 +	struct Library *MUIMasterBase = OpenLibrary("muimaster.library", 0);
 +	int rc = -1;
 +
-+	D(bug("[SDL2:arosmb] %s()\n", __func__));
++	D(bug("[SDL3:arosmb] %s()\n", __func__));
 +
 +	if (MUIMasterBase) {
 +		const char *title = NULL;
@@ -4817,7 +4817,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/v
 +
 +                    *buf = '\0';
 +
-+                    rc = MUI_RequestA(NULL, NULL, 0, title == NULL ? "SDL2" : title, btxt, message, NULL);
++                    rc = MUI_RequestA(NULL, NULL, 0, title == NULL ? "SDL3" : title, btxt, message, NULL);
 +
 +                    if (rc == 0)
 +                        rc = mbd->numbuttons - 1;
@@ -4841,7 +4841,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/v
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.h	2026-06-26 02:12:54.293594068 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.h	2026-06-26 22:20:50.983607631 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4873,7 +4873,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.10.aros/src/v
 +#endif /* _SDL_arosmessagebox_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmisc.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.c	2026-06-26 02:37:45.665468193 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.c	2026-06-26 22:20:50.971075031 +0000
 @@ -0,0 +1,130 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5007,7 +5007,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.c SDL3-3.4.10.aros/src/video/a
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosmisc.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.h	2026-06-26 02:08:54.392109991 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.h	2026-06-26 22:20:50.984592631 +0000
 @@ -0,0 +1,33 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5044,7 +5044,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.h SDL3-3.4.10.aros/src/video/a
 +#endif /* SDL_arosmisc_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmodes.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c	2026-06-26 19:28:13.256655208 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c	2026-06-26 22:20:50.972095331 +0000
 @@ -0,0 +1,508 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5094,7 +5094,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +static int
 +AROS_GetRefreshRate(struct Screen *s)
 +{
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL3:arosmodes] %s()\n", __func__));
 +
 +    ULONG freq = 60;
 +
@@ -5110,7 +5110,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +                    freq = (ULONG)(1000000000L / ((FLOAT)mi.TotalColorClocks * 280.0 * (FLOAT)mi.TotalRows / 1000.0) + 5.0);
 +        }
 +    }
-+	D(bug("[SDL2:arosmodes] %s: returning %u\n", __func__, freq));
++	D(bug("[SDL3:arosmodes] %s: returning %u\n", __func__, freq));
 +	return freq;
 +}
 +
@@ -5236,7 +5236,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +int
 +AROS_InitModes(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL3:arosmodes] %s()\n", __func__));
 +
 +	Uint32 pixfmt = SDL_PIXELFORMAT_BGRA8888;
 +	int width = 1920, height = 1080, dispcount = 0;
@@ -5297,7 +5297,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +			mode.internal = NULL;
 +
 +			
-+			D(bug("[SDL2:arosmodes] %s:  Added Workbench screen - monitor @ 0x%p - name='%s'\n", __func__, mon, display.name));
++			D(bug("[SDL3:arosmodes] %s:  Added Workbench screen - monitor @ 0x%p - name='%s'\n", __func__, mon, display.name));
 +		}
 +		UnlockPubScreen(NULL, s);
 +	}
@@ -5310,7 +5310,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +		for (i = 0; (m = monitors[i]); i++) {
 +			
 +			if (m != mon) {
-+				D(bug("[SDL2:arosmodes] %s: Adding additional monitor @ 0x%p\n", __func__, monitors[i]));
++				D(bug("[SDL3:arosmodes] %s: Adding additional monitor @ 0x%p\n", __func__, monitors[i]));
 +
 +				SDL_DisplayModeData *modedata = SDL_malloc(sizeof(*modedata));
 +
@@ -5323,7 +5323,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +						if (fmt[pixfmt]) {
 +							mode.format = pixelformats[j].NewPixFmt;
 +							
-+							D(bug("[SDL2:arosmodes] %s: Add %ld/%ld pixfmt %ld\n", __func__, mode.w, mode.h, mode.format));
++							D(bug("[SDL3:arosmodes] %s: Add %ld/%ld pixfmt %ld\n", __func__, mode.w, mode.h, mode.format));
 +							break;
 +						}
 +					}
@@ -5335,7 +5335,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +					GetAttr(MA_MonitorName, m, (IPTR *)&monitorname);
 +					display.name = monitorname;
 +					
-+					D(bug("[SDL2:arosmodes] %s: Add video display '%s'\n", __func__, display.name));
++					D(bug("[SDL3:arosmodes] %s: Add video display '%s'\n", __func__, display.name));
 +
 +					SDL_AddVideoDisplay(&display, false);
 +					dispcount++;
@@ -5352,7 +5352,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +bool
 +AROS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay * sdl_display)
 +{
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL3:arosmodes] %s()\n", __func__));
 +
 +#if defined(__AROS__)
 +	ULONG id = INVALID_ID;
@@ -5433,14 +5433,14 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +	int use_wb_screen = 0;
 +	ULONG openError = 0;
 +
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL3:arosmodes] %s()\n", __func__));
 +
 +	if (!fullscreen && data->ScrMonName == NULL) {
 +		data->CustomScreen = NULL;
 +		screen = LockPubScreen(NULL);
 +		use_wb_screen = 1;
 +
-+		D(bug("[SDL2:arosmodes] %s: Use WB Screen\n", __func__));
++		D(bug("[SDL3:arosmodes] %s: Use WB Screen\n", __func__));
 +
 +	} else {
 +
@@ -5452,7 +5452,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +				data->ScrMonName ? SA_MonitorName : TAG_IGNORE , data->ScrMonName,
 +				SA_Quiet, TRUE,
 +				SA_ShowTitle, FALSE,
-+				SA_Title, (IPTR)"SDL2",
++				SA_Title, (IPTR)"SDL3",
 +#if !defined(__AROS__)
 +				SA_AdaptSize, TRUE,
 +#endif
@@ -5521,7 +5521,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +{
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 +
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL3:arosmodes] %s()\n", __func__));
 +
 +	AROS_CloseWindows(_this);
 +	AROS_CloseDisplay(_this);
@@ -5537,7 +5537,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +	if (mode->internal == NULL) {
 +		data->ScrMonName = display->name;
 +
-+		D(bug("[SDL2:arosmodes] %s: Use monitor %s\n", __func__, data->ScrMonName));
++		D(bug("[SDL3:arosmodes] %s: Use monitor %s\n", __func__, data->ScrMonName));
 +	}
 +
 +    return true;
@@ -5556,7 +5556,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosmodes.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.h	2026-06-26 02:16:03.389594024 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.h	2026-06-26 22:20:50.985534831 +0000
 @@ -0,0 +1,43 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5603,7 +5603,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.h SDL3-3.4.10.aros/src/video/
 +#endif /* _SDL_arosmodes_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c	2026-06-26 19:28:19.060655187 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c	2026-06-26 22:20:50.973105131 +0000
 @@ -0,0 +1,375 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5659,7 +5659,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +{
 +	SDL_AROSCursor *cursor;
 +
-+	D(bug("[SDL2:arosmouse] %s(0x%p, %d, %d)\n", __func__, surface, hot_x, hot_y));
++	D(bug("[SDL3:arosmouse] %s(0x%p, %d, %d)\n", __func__, surface, hot_x, hot_y));
 +
 +	cursor = SDL_calloc(1, sizeof(*cursor));
 +	if (cursor) {
@@ -5686,20 +5686,20 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +								TAG_DONE);
 +
 +				cursor->Pointer.ptrclassobj = ptrclassobj;
-+				D(bug("[SDL2:arosmouse] %s: allocated pointerobject @ 0x%p\n", __func__, cursor->Pointer.ptrclassobj));
++				D(bug("[SDL3:arosmouse] %s: allocated pointerobject @ 0x%p\n", __func__, cursor->Pointer.ptrclassobj));
 +				SDL_UnlockSurface(surface);
 +			} else {
-+				bug("[SDL2:arosmouse] %s: failed to lock surface\n", __func__);
++				bug("[SDL3:arosmouse] %s: failed to lock surface\n", __func__);
 +			}
 +			FreeBitMap(bmp);
 +		} else {
-+			bug("[SDL2:arosmouse] %s: failed to allocate bitmap\n", __func__);
++			bug("[SDL3:arosmouse] %s: failed to allocate bitmap\n", __func__);
 +			SDL_free(cursor);
 +			cursor = NULL;
 +			return NULL;
 +		}
 +	} else {
-+		bug("[SDL2:arosmouse] %s: failed to allocate storage\n", __func__);
++		bug("[SDL3:arosmouse] %s: failed to allocate storage\n", __func__);
 +	}
 +
 +	return (cursor) ? &cursor->Cursor : NULL;
@@ -5710,7 +5710,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +{
 +	SDL_Cursor *cursor;
 +
-+	D(bug("[SDL2:arosmouse] %s(%u)\n", __func__, id));
++	D(bug("[SDL3:arosmouse] %s(%u)\n", __func__, id));
 +
 +	cursor = SDL_calloc(1, sizeof(*cursor));
 +	if (cursor) {
@@ -5747,12 +5747,12 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +static void
 +AROS_FreeCursor(SDL_Cursor *cursor)
 +{
-+	D(bug("[SDL2:arosmouse] %s(0x%p)\n", __func__, cursor));
++	D(bug("[SDL3:arosmouse] %s(0x%p)\n", __func__, cursor));
 +
 +	if (!IS_SYSTEM_CURSOR(cursor))
 +	{
 +		SDL_AROSCursor *ac = (SDL_AROSCursor *)cursor;
-+		bug("[SDL2:arosmouse] %s: custom cursor (ptr object @ 0x%p)\n", __func__, ac->Pointer.ptrclassobj);
++		bug("[SDL3:arosmouse] %s: custom cursor (ptr object @ 0x%p)\n", __func__, ac->Pointer.ptrclassobj);
 +		if (ac->Pointer.ptrclassobj)
 +		{
 +			DisposeObject(ac->Pointer.ptrclassobj);
@@ -5769,16 +5769,16 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +	SDL_VideoDevice *video = SDL_GetVideoDevice();
 +	SDL_VideoData *data = (SDL_VideoData *)video->internal;
 +
-+	D(bug("[SDL2:arosmouse] %s(0x%p)\n", __func__, cursor));
++	D(bug("[SDL3:arosmouse] %s(0x%p)\n", __func__, cursor));
 +
 +	if (IS_SYSTEM_CURSOR(cursor)) {
-+		D(bug("[SDL2:arosmouse] %s: system cursor %u\n", __func__, (cursor) ? (IPTR)cursor->internal : 0));
++		D(bug("[SDL3:arosmouse] %s: system cursor %u\n", __func__, (cursor) ? (IPTR)cursor->internal : 0));
 +		if (data->CurrentPointer != cursor) {
 +			SDL_WindowData *wd;
 +			ForeachNode(&data->windowlist, wd) {
 +				if (wd->win) {
 +					if (cursor == NULL) {
-+						D(bug("[SDL2:arosmouse] %s: blanking cursor for win 0x%p (blank ptrobj @ 0x%p)\n", __func__, wd->win, data->BlankPtrObj));
++						D(bug("[SDL3:arosmouse] %s: blanking cursor for win 0x%p (blank ptrobj @ 0x%p)\n", __func__, wd->win, data->BlankPtrObj));
 +						if (data->BlankPtrObj)
 +							SetWindowPointer(wd->win, WA_Pointer, (IPTR)data->BlankPtrObj, TAG_DONE);
 +					} else {
@@ -5787,7 +5787,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +							SetWindowPointer(wd->win, WA_Pointer, 0, WA_BusyPointer, TRUE, TAG_DONE);
 +						} else {
 +							if ((IPTR)cursor->internal != SDL_SYSTEM_CURSOR_DEFAULT) {
-+								D(bug("[SDL2:arosmouse] %s: (currently) unhandled cursor type %u\n", __func__, ((IPTR)cursor->internal)));
++								D(bug("[SDL3:arosmouse] %s: (currently) unhandled cursor type %u\n", __func__, ((IPTR)cursor->internal)));
 +							}
 +							SetWindowPointer(wd->win, WA_Pointer, 0, TAG_DONE);
 +						}
@@ -5799,19 +5799,19 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +		SDL_AROSCursor *ac = (SDL_AROSCursor *)cursor;
 +		SDL_WindowData *wd;
 +
-+		D(bug("[SDL2:arosmouse] %s: custom cursor @ 0x%p\n", __func__, ac));
++		D(bug("[SDL3:arosmouse] %s: custom cursor @ 0x%p\n", __func__, ac));
 +
 +		ForeachNode(&data->windowlist, wd) {
 +            if (wd->win) {
 +                if (ac->Pointer.ptrclassobj) {
-+					D(bug("[SDL2:arosmouse] %s: calling SetWindowPointer 0x%p\n", __func__, ac->Pointer.ptrclassobj));
++					D(bug("[SDL3:arosmouse] %s: calling SetWindowPointer 0x%p\n", __func__, ac->Pointer.ptrclassobj));
 +                    SetWindowPointer(wd->win, WA_Pointer, (IPTR)ac->Pointer.ptrclassobj, TAG_DONE);
 +				}
 +            }
 +        }
 +	}
 +
-+	D(bug("[SDL2:arosmouse] %s: setting current cursor to 0x%p\n", __func__, cursor));
++	D(bug("[SDL3:arosmouse] %s: setting current cursor to 0x%p\n", __func__, cursor));
 +	data->CurrentPointer = cursor;
 +
 +	return true;
@@ -5873,7 +5873,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +static bool
 +AROS_SetRelativeMouseMode(bool enabled)
 +{
-+	D(bug("[SDL2:arosmouse] %s()\n", __func__));
++	D(bug("[SDL3:arosmouse] %s()\n", __func__));
 +
 +	SDL_VideoDevice *video = SDL_GetVideoDevice();
 +	SDL_VideoData *data = (SDL_VideoData *)video->internal;
@@ -5972,7 +5972,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +{
 +	SDL_Mouse *mouse = SDL_GetMouse();
 +
-+	D(bug("[SDL2:arosmouse] %s()\n", __func__));
++	D(bug("[SDL3:arosmouse] %s()\n", __func__));
 +
 +	if ( mouse->def_cursor ) {
 +		SDL_free(mouse->def_cursor);
@@ -5982,7 +5982,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosmouse.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.h	2026-06-26 02:08:54.394894091 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.h	2026-06-26 22:20:50.986528231 +0000
 @@ -0,0 +1,54 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6040,7 +6040,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.h SDL3-3.4.10.aros/src/video/
 +#endif /* _SDL_arosmouse_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.c	2026-06-26 02:25:12.865594696 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.c	2026-06-26 22:20:50.974255831 +0000
 @@ -0,0 +1,253 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6090,19 +6090,19 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +AROS_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 +{
 +	D(
-+		bug("[SDL2:arosgl] %s()\n", __func__);
++		bug("[SDL3:arosgl] %s()\n", __func__);
 +		if (path)
-+			bug("[SDL2:arosgl] %s: path = '%s'\n", __func__, path);
++			bug("[SDL3:arosgl] %s: path = '%s'\n", __func__, path);
 +	)
 +
 +	if (!GLBase)
 +		GLBase = OpenLibrary("gl.library", 20); 
 +
 +	if (GLBase) {
-+		D(bug("[SDL2:arosgl] %s: glABase @ 0x%p\n", __func__, GLBase));
++		D(bug("[SDL3:arosgl] %s: glABase @ 0x%p\n", __func__, GLBase));
 +#if (0)
-+			if (SDL2Base->appGLABase)				
-+				*SDL2Base->appGLABase = GLBase;	
++			if (SDL3Base->appGLABase)				
++				*SDL3Base->appGLABase = GLBase;	
 +#endif
 +            _this->gl_config.driver_loaded = 1;
 +
@@ -6118,7 +6118,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +{
 +	void *func = NULL;
 +
-+	D(bug("[SDL2:arosgl] %s('%s')\n", __func__, proc));
++	D(bug("[SDL3:arosgl] %s('%s')\n", __func__, proc));
 +
 +	if (GLBase) 
 +	{
@@ -6127,24 +6127,24 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +			SDL_SetError("Couldn't find OpenGL symbol");
 +		}
 +	}
-+	D(bug("[SDL2:arosgl] %s: returning 0x%p\n", __func__, func));
++	D(bug("[SDL3:arosgl] %s: returning 0x%p\n", __func__, func));
 +	return (SDL_FunctionPointer)func;
 +}
 +
 +void
 +AROS_GL_UnloadLibrary(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:arosgl] %s()\n", __func__));
++	D(bug("[SDL3:arosgl] %s()\n", __func__));
 +
 +#if (0)
-+	if (SDL2Base->appGLABase && *SDL2Base->appGLABase)
++	if (SDL3Base->appGLABase && *SDL3Base->appGLABase)
 +#endif
 +	if (GLBase) {
-+		D(bug("[SDL2:arosgl] %s: closing glABase @ 0x%p\n", __func__, GLBase));
++		D(bug("[SDL3:arosgl] %s: closing glABase @ 0x%p\n", __func__, GLBase));
 +		CloseLibrary(GLBase);
 +		GLBase = NULL;
 +#if (0)
-+		*SDL2Base->appGLABase = GLBase;
++		*SDL3Base->appGLABase = GLBase;
 +#endif
 +		_this->gl_config.driver_loaded = 0;
 +	}
@@ -6153,7 +6153,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +bool
 +AROS_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context)
 +{
-+    D(bug("[SDL2:arosgl] %s(0x%p)\n", __func__, context));
++    D(bug("[SDL3:arosgl] %s(0x%p)\n", __func__, context));
 +
 +    if (window)
 +	{
@@ -6161,7 +6161,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +		{
 +			struct TagItem tags[2];
 +			SDL_WindowData *data = (SDL_WindowData *) window->internal;
-+			D(bug("[SDL2:arosgl] %s: attaching ctx to window @ 0x%p\n", __func__, data->win));
++			D(bug("[SDL3:arosgl] %s: attaching ctx to window @ 0x%p\n", __func__, data->win));
 +			if ((_this->gl_data->gldd_GLACtx = context) != NULL)
 +			{
 +				tags[0].ti_Tag = GLA_Window;
@@ -6180,7 +6180,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +SDL_GLContext
 +AROS_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
 +{
-+    D(bug("[SDL2:arosgl] %s()\n", __func__));
++    D(bug("[SDL3:arosgl] %s()\n", __func__));
 +
 +    struct TagItem ctxAttribs [10];
 +	LONG i = 0;
@@ -6226,7 +6226,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +			if ((newCtx) && (_this->gl_data->gldd_GLACtx == NULL))
 +				AROS_GL_MakeCurrent(_this, window, newCtx);
 +
-+			D(bug("[SDL2:arosgl] %s: new glAContext @ 0x%p\n", __func__, newCtx));
++			D(bug("[SDL3:arosgl] %s: new glAContext @ 0x%p\n", __func__, newCtx));
 +			return newCtx;
 +		}
 +		else {
@@ -6242,7 +6242,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +bool
 +AROS_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 +{
-+    D(bug("[SDL2:arosgl] %s(%d)\n", __func__, interval));
++    D(bug("[SDL3:arosgl] %s(%d)\n", __func__, interval));
 +
 +	switch (interval) {
 +		case 0:
@@ -6257,7 +6257,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +bool
 +AROS_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 +{
-+    D(bug("[SDL2:arosgl] %s()\n", __func__));
++    D(bug("[SDL3:arosgl] %s()\n", __func__));
 +
 +	if (interval)
 +		*interval = _this->gl_data->gldd_Interval ? 1 : 0;
@@ -6270,7 +6270,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+    D(bug("[SDL2:arosgl] %s(0x%p)\n", __func__, window));
++    D(bug("[SDL3:arosgl] %s(0x%p)\n", __func__, window));
 +
 +	if (!data->win || !_this->gl_data->gldd_GLACtx)
 +		return true;
@@ -6283,7 +6283,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +bool
 +AROS_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 +{
-+    D(bug("[SDL2:arosgl] %s(0x%p)\n", __func__, context));
++    D(bug("[SDL3:arosgl] %s(0x%p)\n", __func__, context));
 +
 +	if ((GLBase) && (context)) {
 +		if (_this->gl_data->gldd_GLACtx == context)
@@ -6297,7 +6297,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +#endif /* SDL_VIDEO_OPENGL_AGL */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosopengl.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h	2026-06-26 19:28:25.212655184 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h	2026-06-26 22:20:50.987694131 +0000
 @@ -0,0 +1,60 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6361,7 +6361,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video
 +#endif /* _SDL_arosopengl_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.c SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosshape.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.c	2026-06-26 02:14:34.289593906 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.c	2026-06-26 22:20:50.975451231 +0000
 @@ -0,0 +1,163 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6528,7 +6528,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.c SDL3-3.4.10.aros/src/video/
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.h SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosshape.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.h	2026-06-26 02:14:05.429593901 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.h	2026-06-26 22:20:50.988703231 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6560,7 +6560,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.h SDL3-3.4.10.aros/src/video/
 +#endif /* _SDL_arosshape_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.c
 --- SDL3-3.4.10/src/video/aros/SDL_arosvideo.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.c	2026-06-26 14:35:17.510636608 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.c	2026-06-26 22:20:50.976488831 +0000
 @@ -0,0 +1,466 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6657,7 +6657,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +AROS_CloseDisplay(SDL_VideoDevice *_this)
 +{
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
-+	D(bug("[SDL2:arosvideo] %s: CustomScreen=0x%08lx  WScreen=0x%08lx \n", __func__, data->CustomScreen, data->WScreen));
++	D(bug("[SDL3:arosvideo] %s: CustomScreen=0x%08lx  WScreen=0x%08lx \n", __func__, data->CustomScreen, data->WScreen));
 +
 +	if (data->CustomScreen) {
 +		CloseScreen(data->CustomScreen);
@@ -6697,7 +6697,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +AROS_HideApp(SDL_VideoDevice *_this, size_t with_app_icon)
 +{
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
-+	D(bug("[SDL2:arosvideo] %s: %siconify\n", __func__, with_app_icon ? "" : "no "));
++	D(bug("[SDL3:arosvideo] %s: %siconify\n", __func__, with_app_icon ? "" : "no "));
 +
 +    SDL_WindowData *wd;
 +    ForeachNode(&data->windowlist, wd)
@@ -6714,7 +6714,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +void
 +AROS_ShowApp(SDL_VideoDevice *_this)
 +{
-+    D(bug("[SDL2:arosvideo] %s()\n", __func__));
++    D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 +
@@ -6743,11 +6743,11 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +static bool
 +AROS_VideoInit(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++	D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +
 +	if (AROS_InitModes(_this) < 0)
 +	{
-+		D(bug("[SDL2:arosvideo] %s: failed to initialize video modes\n", __func__));
++		D(bug("[SDL3:arosvideo] %s: failed to initialize video modes\n", __func__));
 +		return SDL_SetError("Failed to initialize modes");
 +	}
 +
@@ -6764,7 +6764,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +static void
 +AROS_VideoQuit(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++	D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +
 +	AROS_CloseWindows(_this);
 +	AROS_CloseDisplay(_this);
@@ -6774,7 +6774,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +static void
 +AROS_DeleteDevice(SDL_VideoDevice * device)
 +{
-+	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++	D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +	SDL_VideoData *data = (SDL_VideoData *) device->internal;
 +
 +	if (data->BlankPtrObj) {
@@ -6802,7 +6802,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 +	LONG suspend = _this->suspend_screensaver;
 +
-+	D(bug("[SDL2:arosvideo] %s: screen 0x%08lx, suspend %ld\n", __func__, data->WScreen, suspend));
++	D(bug("[SDL3:arosvideo] %s: screen 0x%08lx, suspend %ld\n", __func__, data->WScreen, suspend));
 +
 +	if (suspend == 0 && data->ScreenSaverSuspendCount == 0)
 +		return true;
@@ -6851,12 +6851,12 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +				name = tmpname;
 +				strcpy(name, "PROGDIR:");
 +				strcpy((APTR)((IPTR)name + 8), task->pr_Task.tc_Node.ln_Name);
-+				D(bug("[SDL2:arosvideo] %s: using task name '%s'\n", __func__, name));
++				D(bug("[SDL3:arosvideo] %s: using task name '%s'\n", __func__, name));
 +			}
 +		}
 +	}
 +
-+	D(bug("[SDL2:arosvideo] %s: '%s'\n", __func__, name));
++	D(bug("[SDL3:arosvideo] %s: '%s'\n", __func__, name));
 +
 +	return name;
 +}
@@ -6874,7 +6874,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +static void
 +AROS_InitBroker(SDL_VideoData *data)
 +{
-+	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++	D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +	
 +	STRPTR name = FilePart(data->FullAppName);
 +	data->AppBroker.nb_Version = NB_VERSION;
@@ -6905,7 +6905,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +    };
 +
 +    ptrObj = NewObjectA(NULL, POINTERCLASS, pointertags);
-+	D(bug("[SDL2:arosvideo] %s: returning 0x%p\n", __func__, ptrObj));
++	D(bug("[SDL3:arosvideo] %s: returning 0x%p\n", __func__, ptrObj));
 +	return ptrObj;
 +}
 +
@@ -6914,7 +6914,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +{
 +	/* Initialize all variables that we clean on shutdown */
 +	SDL_VideoDevice *device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice) + sizeof(struct SDL_GLDriverData));
-+	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++	D(bug("[SDL3:arosvideo] %s()\n", __func__));
 +
 +	if (device) {
 +		SDL_VideoData *data = (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
@@ -7008,7 +7008,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +			//device->SetWindowHitTest = AROS_SetWindowHitTest;
 +			device->free = AROS_DeleteDevice;
 +
-+			D(bug("[SDL2:arosvideo] %s: instance @ 0x%p\n", __func__, device));
++			D(bug("[SDL3:arosvideo] %s: instance @ 0x%p\n", __func__, device));
 +			return device;
 +		}
 +
@@ -7017,7 +7017,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +
 +	SDL_OutOfMemory();
 +
-+	D(bug("[SDL2:arosvideo] %s: returning NULL\n", __func__));
++	D(bug("[SDL3:arosvideo] %s: returning NULL\n", __func__));
 +
 +	return NULL;
 +}
@@ -7030,7 +7030,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +};
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.h SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.h
 --- SDL3-3.4.10/src/video/aros/SDL_arosvideo.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.h	2026-06-26 02:11:26.437593821 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.h	2026-06-26 22:20:50.989640931 +0000
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7130,7 +7130,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.h SDL3-3.4.10.aros/src/video/
 +#endif /* _SDL_arosvideo_h */
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.c
 --- SDL3-3.4.10/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.c	2026-06-26 02:42:48.834600402 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.c	2026-06-26 22:20:50.977552931 +0000
 @@ -0,0 +1,994 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7242,7 +7242,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +static void 
 +AROS_CloseWindowSafely(SDL_Window *sdlwin, struct Window *win)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	if (SDL_GetKeyboardFocus() == sdlwin)
 +		SDL_SetKeyboardFocus(NULL);
@@ -7285,7 +7285,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void 
 +AROS_CloseWindows(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 +    SDL_WindowData *wd;
@@ -7304,7 +7304,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void 
 +AROS_OpenWindows(SDL_VideoDevice *_this)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 +    SDL_WindowData *wd;
@@ -7330,7 +7330,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +static bool
 +AROS_SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, struct Window *win)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +	
 +	SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 +	SDL_WindowData *wd = SDL_calloc(1, sizeof(*wd));
@@ -7382,7 +7382,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +		APTR title = NULL;
 +		APTR old = data->window_title;
 +		title = AROS_ConvertUTF8Text(window->title);
-+		D(bug("[SDL2:aroswindow] %s to %s (0x%08lx)\n", __func__, window->title, title, data->win));
++		D(bug("[SDL3:aroswindow] %s to %s (0x%08lx)\n", __func__, window->title, title, data->win));
 +		SetWindowTitles(data->win, title, title);
 +		data->window_title = title;
 +		SDL_free(old);
@@ -7393,7 +7393,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +AROS_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window * window, SDL_Surface * icon)
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx - TODO convert this icon to appicon \n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx - TODO convert this icon to appicon \n", __func__, data->win));
 +	return true;
 +}
 +
@@ -7402,7 +7402,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s: 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: 0x%08lx\n", __func__, data->win));
 +
 +	if (data->win) {
 +		SDL_VideoData *vd = data->videodata;
@@ -7421,7 +7421,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s:  0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s:  0x%08lx\n", __func__, data->win));
 +
 +	if (data->win) {
 +		SDL_VideoData *vd = data->videodata;
@@ -7443,7 +7443,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s: 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: 0x%08lx\n", __func__, data->win));
 +
 +	if (data->win) {
 +		SDL_VideoData *vd = data->videodata;
@@ -7463,7 +7463,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
@@ -7485,7 +7485,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_WindowToFront(struct Window *win)
 +{
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx\n", __func__, win));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx\n", __func__, win));
 +
 +	ActivateWindow(win);
 +	WindowToFront(win);
@@ -7497,7 +7497,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	SDL_VideoData *vd = data->videodata;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx, scr 0x%08lx\n", __func__, data->win, vd->WScreen));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx, scr 0x%08lx\n", __func__, data->win, vd->WScreen));
 +
 +	if (data->win == NULL && (data->sdlflags & SDL_WINDOW_MINIMIZED) == 0) {
 +		struct Screen *scr;
@@ -7522,8 +7522,8 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +		size_t max_w = window->max_w ? window->max_w : (win_resizable ? scr->Width : w);
 +		size_t max_h = window->max_h ? window->max_h : (win_resizable ? scr->Height : h);
 +	
-+		D(bug("[SDL2:aroswindow] %s: initial sizes %ld/%ld and max: %ld/%ld\n", __func__, w, h, max_w, max_h));
-+		D(bug("[SDL2:aroswindow] %s: screen 0x%08lx is %ld/%ld\n", __func__, scr, scr->Width, scr->Height));
++		D(bug("[SDL3:aroswindow] %s: initial sizes %ld/%ld and max: %ld/%ld\n", __func__, w, h, max_w, max_h));
++		D(bug("[SDL3:aroswindow] %s: screen 0x%08lx is %ld/%ld\n", __func__, scr, scr->Width, scr->Height));
 +
 +#if !defined(__AROS__)
 +		// Add border sizes
@@ -7548,7 +7548,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +			border_w = GetSkinInfoAttrA(di, SI_BorderLeft    , NULL) + GetSkinInfoAttrA(di, SI_BorderRight, NULL);
 +			border_h = GetSkinInfoAttrA(di, SI_BorderTopTitle, NULL) + GetSkinInfoAttrA(di, win_resizable ? SI_BorderBottomSize : SI_BorderBottom, NULL);
 +#endif
-+			D(bug("[SDL2:aroswindow] %s: Border width %ld, border height %ld, bar height %ld\n", __func__, border_w, border_h, barheight));
++			D(bug("[SDL3:aroswindow] %s: Border width %ld, border height %ld, bar height %ld\n", __func__, border_w, border_h, barheight));
 +
 +			max_w = MAX(w, max_w) - border_w;
 +			max_h = MAX(h, max_h) - border_h;
@@ -7560,7 +7560,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +			w = max_w;
 +			h = max_h;
 +
-+			D(bug("[SDL2:aroswindow] %s: maximize to %ld/%ld\n", __func__, w, h));
++			D(bug("[SDL3:aroswindow] %s: maximize to %ld/%ld\n", __func__, w, h));
 +		}
 +
 +		min_w = MIN(min_w, scr->Width);
@@ -7586,7 +7586,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +		{
 +			data->window_title = AROS_ConvertUTF8Text(window->title);
 +		}
-+		D(bug("[SDL2:aroswindow] %s: min %ld/%ld, normal %ld/%ld, max %ld/%ld\n", __func__, min_w, min_h, w, h, max_w, max_h));
++		D(bug("[SDL3:aroswindow] %s: min %ld/%ld, normal %ld/%ld, max %ld/%ld\n", __func__, min_w, min_h, w, h, max_w, max_h));
 +
 +		ULONG opacity_value = ((window->opacity) * (ULONG_MAX));
 +		
@@ -7614,10 +7614,10 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +			TAG_DONE);
 +
 +		if (data->win) {
-+			D(bug("[SDL2:aroswindow] %s: current cursor = 0x%p\n", __func__, vd->CurrentPointer));
++			D(bug("[SDL3:aroswindow] %s: current cursor = 0x%p\n", __func__, vd->CurrentPointer));
 +			if (IS_SYSTEM_CURSOR(vd->CurrentPointer)) {
 +				if (vd->CurrentPointer == NULL) {
-+					D(bug("[SDL2:aroswindow] %s: using blank pointer (blank ptrobj @ 0x%p)\n", __func__, vd->BlankPtrObj));
++					D(bug("[SDL3:aroswindow] %s: using blank pointer (blank ptrobj @ 0x%p)\n", __func__, vd->BlankPtrObj));
 +					if (vd->BlankPtrObj)
 +						SetWindowPointer(data->win, WA_Pointer, (IPTR)vd->BlankPtrObj, TAG_DONE);
 +				} else {
@@ -7626,14 +7626,14 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +						SetWindowPointer(data->win, WA_Pointer, 0, WA_BusyPointer, TRUE, TAG_DONE);
 +					} else {
 +						if ((IPTR)vd->CurrentPointer->internal != SDL_SYSTEM_CURSOR_DEFAULT) {
-+							bug("[SDL2:aroswindow] %s: unhandled cursor type %u\n", __func__, ((IPTR)vd->CurrentPointer->internal));
++							bug("[SDL3:aroswindow] %s: unhandled cursor type %u\n", __func__, ((IPTR)vd->CurrentPointer->internal));
 +						}
 +						SetWindowPointer(data->win, WA_Pointer, 0, TAG_DONE);
 +					}
 +				}
 +			} else{
 +				SDL_AROSCursor *ac = (SDL_AROSCursor *)vd->CurrentPointer;
-+				D(bug("[SDL2:aroswindow] %s: using custom cursor 0x%p\n", __func__, ac));
++				D(bug("[SDL3:aroswindow] %s: using custom cursor 0x%p\n", __func__, ac));
 +				if (ac && ac->Pointer.ptrclassobj) {
 +					SetWindowPointer(data->win, WA_Pointer, (IPTR)ac->Pointer.ptrclassobj, TAG_DONE);
 +				}
@@ -7739,7 +7739,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +				data->appmsg = AddAppWindow(0, (IPTR)window, data->win, &vd->WBPort, TAG_DONE);
 +				if (!data->appmsg)
 +				{
-+					D(bug("[SDL2:aroswindow] %s: ERROR AddAppWindow \n", __func__));
++					D(bug("[SDL3:aroswindow] %s: ERROR AddAppWindow \n", __func__));
 +				}
 +			}
 +			
@@ -7764,7 +7764,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	AROS_ShowWindow_Internal(_this, window);
 +}
@@ -7772,7 +7772,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	
@@ -7789,7 +7789,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
 +
 +	if (data->win)
 +		AROS_WindowToFront(data->win);
@@ -7801,7 +7801,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	SDL_VideoData *vd = (SDL_VideoData *) data->videodata;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx - w=%d, h=%d\n", __func__, data->win, data->win->MaxWidth, data->win->MaxHeight));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx - w=%d, h=%d\n", __func__, data->win, data->win->MaxWidth, data->win->MaxHeight));
 +	
 +	if (data->win && window->flags & SDL_WINDOW_RESIZABLE) {
 +		
@@ -7817,7 +7817,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
 +
 +	data->sdlflags |=  SDL_WINDOW_MINIMIZED;
 +	data->sdlflags &= ~SDL_WINDOW_MAXIMIZED;
@@ -7830,7 +7830,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: wnd 0x%08lx\n", __func__, data->win));
 +
 +	if (data->win) {
 +		data->sdlflags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED);
@@ -7859,14 +7859,14 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +		data->old_w = ww;
 +		data->old_h = hh;
 +
-+		D(bug("[SDL2:aroswindow] %s: Save actual position %d,%d and size %d,%d\n", __func__, data->old_x, data->old_y, data->old_w, data->old_h));
++		D(bug("[SDL3:aroswindow] %s: Save actual position %d,%d and size %d,%d\n", __func__, data->old_x, data->old_y, data->old_w, data->old_h));
 +		
 +	} else {
 +		
 +		data->winflags &= ~SDL_AROS_WINDOW_FULLSCREEN;
 +
 +		if ((data->old_w && data->old_h) && (data->old_w != data->curr_w && data->old_h != data->curr_h)) {
-+			D(bug("[SDL2:aroswindow] %s: Change position %d,%d and size %d,%d\n", __func__, data->old_x, data->old_y, data->old_w, data->old_h));
++			D(bug("[SDL3:aroswindow] %s: Change position %d,%d and size %d,%d\n", __func__, data->old_x, data->old_y, data->old_w, data->old_h));
 +			window->x = data->old_x;
 +			window->y = data->old_y;
 +			window->w = data->old_w;
@@ -7891,7 +7891,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
 +	if (data->win && data->grabbed != (grabbed ? 1 : 0)) {
-+		D(bug("[SDL2:aroswindow] %s: %s\n", __func__, grabbed ? "grabbed" : "not grabbed"));
++		D(bug("[SDL3:aroswindow] %s: %s\n", __func__, grabbed ? "grabbed" : "not grabbed"));
 +
 +		data->grabbed = grabbed ? 1 : 0;
 +
@@ -7908,7 +7908,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	
@@ -7927,7 +7927,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +			DisposeRegion(data->region);
 +
 +		if (IsListEmpty((struct List *)&videodata->windowlist)) {
-+			D(bug("[SDL2:aroswindow] %s: Was last window... get rid of screen.\n", __func__));
++			D(bug("[SDL3:aroswindow] %s: Was last window... get rid of screen.\n", __func__));
 +			AROS_CloseDisplay(_this);
 +		}
 +
@@ -7940,7 +7940,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +AROS_CloseWindow(SDL_Window *window)
 +{
 +    SDL_WindowData *data = (SDL_WindowData *)window->internal;
-+	D(bug("[SDL2:aroswindow] %s: 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: 0x%08lx\n", __func__, data->win));
 +
 +    if (data->win) {
 +        if (data->appmsg) {
@@ -7974,15 +7974,15 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +AROS_RecreateWindow(SDL_VideoDevice *_this, SDL_Window * window)
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
-+	D(bug("[SDL2:aroswindow] %s: 0x%08lx\n", __func__, data->win));
++	D(bug("[SDL3:aroswindow] %s: 0x%08lx\n", __func__, data->win));
 +	
 +    if (window->flags & SDL_WINDOW_EXTERNAL) {
-+		D(bug("[SDL2:aroswindow] %s: Cannot modify native window '%s'\n", __func__, window->title));
++		D(bug("[SDL3:aroswindow] %s: Cannot modify native window '%s'\n", __func__, window->title));
 +        return;
 +    }
 +
 +    if (data->win) {
-+		D(bug("[SDL2:aroswindow] %s: Closing system window '%s' before re-creation\n", __func__, window->title));
++		D(bug("[SDL3:aroswindow] %s: Closing system window '%s' before re-creation\n", __func__, window->title));
 +        AROS_CloseWindow(window);
 +    }
 +
@@ -7996,7 +7996,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window * window, bool on_top)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	AROS_RecreateWindow(_this, window);
 +}
@@ -8010,7 +8010,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	AROS_RecreateWindow(_this, window);
 +}
@@ -8018,7 +8018,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +void
 +AROS_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, bool bordered)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	AROS_RecreateWindow(_this, window);
 +}
@@ -8033,7 +8033,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	ret = SetAttrs(data->win, WA_Opacity, value, TAG_DONE);
 +#endif
 +	if (ret) {
-+		D(bug("[SDL2:aroswindow] %s: Failed to set window opaqueness to %lu\n", __func__, value));
++		D(bug("[SDL3:aroswindow] %s: Failed to set window opaqueness to %lu\n", __func__, value));
 +		return false;
 +	}
 +
@@ -8049,7 +8049,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	
 +    ULONG value = ((opacity) * (ULONG_MAX));
 +
-+	D(bug("[SDL2:aroswindow] %s: set window opaqueness to %lu\n", __func__, value));
++	D(bug("[SDL3:aroswindow] %s: set window opaqueness to %lu\n", __func__, value));
 +	bool ret = true;
 +#if !defined(__AROS__)
 +	ret = AROS_SetWindowOpacityPrivate(_this, window, value);
@@ -8088,7 +8088,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +bool
 +AROS_FlashWindow(SDL_VideoDevice *_this, SDL_Window * window, SDL_FlashOperation operation)
 +{
-+	D(bug("[SDL2:aroswindow] %s()\n", __func__));
++	D(bug("[SDL3:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +	if (!data->win) 
@@ -8128,7 +8128,7 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +}
 diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.h SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h
 --- SDL3-3.4.10/src/video/aros/SDL_aroswindow.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h	2026-06-26 19:28:30.292655189 +0000
++++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h	2026-06-26 22:20:50.990895731 +0000
 @@ -0,0 +1,133 @@
 +/*
 +  Simple DirectMedia Layer

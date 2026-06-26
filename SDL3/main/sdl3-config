@@ -37,7 +37,7 @@ while test $# -gt 0; do
       echo $exec_prefix
       ;;
     --version)
-      echo 2.32.8
+      echo 3.4.10
       ;;
     --cflags)
       echo -I${prefix}/include/SDL3 -D_GNU_SOURCE=1
