@@ -1,0 +1,46 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#
+#  libsndfile (https://libsndfile.github.io/libsndfile/) - a library for
+#  reading and writing sampled audio files.
+#
+#  optional external codecs (FLAC/Vorbis/Opus/mp3/...) and the test/example
+#  programs are disabled, leaving the core WAV/AIFF/etc.
+#
+
+SNDFILE_VERSION := 1.2.2
+REPOSITORIES = github://libsndfile/libsndfile/releases/download/$(SNDFILE_VERSION)
+ARCHBASE := libsndfile-$(SNDFILE_VERSION)
+ARCHSRCDIR := $(ARCHBASE)
+SNDFILE_SOURCE := $(PORTSDIR)/libsndfile/$(ARCHSRCDIR)
+
+USER_CFLAGS := $(CFLAGS_GNU99)
+
+SNDFILE_EXTRA_OPTS := \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DENABLE_EXTERNAL_LIBS=OFF \
+        -DBUILD_PROGRAMS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_TESTING=OFF \
+        -DENABLE_CPACK=OFF
+
+#MM- contrib-development : contrib-development-libs-libsndfile
+
+#MM- development-libsndfile : contrib-development-libs-libsndfile
+
+#MM contrib-development-libs-libsndfile : includes-copy contrib-development-libs-libsndfile-fetch
+
+%fetch mmake=contrib-development-libs-libsndfile-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/libsndfile \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.xz"
+
+%create_patch mmake=contrib-development-libs-libsndfile-create-patch \
+    archive=$(ARCHBASE) srcdir=$(ARCHSRCDIR) destination=$(PORTSDIR)/libsndfile
+
+%build_with_cmake mmake=contrib-development-libs-libsndfile \
+    srcdir=$(SNDFILE_SOURCE) prefix="$(AROS_DEVELOPER)" \
+    extraoptions="$(SNDFILE_EXTRA_OPTS)"
+
+%common
