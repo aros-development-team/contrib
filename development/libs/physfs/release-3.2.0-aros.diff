@@ -1,0 +1,14 @@
+diff -ruN physfs-release-3.2.0/src/physfs_platforms.h physfs-release-3.2.0.aros/src/physfs_platforms.h
+--- physfs-release-3.2.0/src/physfs_platforms.h	2026-06-27 11:36:31.157492734 +0000
++++ physfs-release-3.2.0.aros/src/physfs_platforms.h	2026-06-27 11:36:31.154580034 +0000
+@@ -69,6 +69,10 @@
+ #elif defined(__QNX__)
+ #  define PHYSFS_PLATFORM_QNX 1
+ #  define PHYSFS_PLATFORM_POSIX 1
++#elif defined(__AROS__)
++#  define PHYSFS_PLATFORM_UNIX 1
++#  define PHYSFS_PLATFORM_POSIX 1
++#  define PHYSFS_NO_CDROM_SUPPORT 1
+ #elif defined(unix) || defined(__unix__)
+ #  define PHYSFS_PLATFORM_UNIX 1
+ #  define PHYSFS_PLATFORM_POSIX 1

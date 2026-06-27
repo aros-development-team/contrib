@@ -1,0 +1,52 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#
+#  PhysicsFS (https://icculus.org/physfs/) - an archive abstraction filesystem.
+#
+#  PhysFS is a CMake project.  The single AROS adaptation is a branch added to
+#  src/physfs_platforms.h that maps __AROS__ onto the generic UNIX/POSIX
+#  backends (AROS' posixc provides the needed APIs) while disabling the CD-ROM
+#  / mount-table enumeration that AROS lacks (PHYSFS_NO_CDROM_SUPPORT).
+#
+
+PHYSFSVERSION := 3.2.0
+REPOSITORIES = github://icculus/physfs/archive
+ARCHBASE := release-$(PHYSFSVERSION)
+ARCHSRCDIR := physfs-$(ARCHBASE)
+
+PATCHSPEC := $(ARCHBASE)-aros.diff:$(ARCHSRCDIR):-p1
+PHYSFS_SOURCE := $(PORTSDIR)/physfs/$(ARCHSRCDIR)
+
+USER_CFLAGS := $(CFLAGS_GNU99)
+
+#
+#  Build only the static library; the test/doc targets pull in host tooling
+#  that is not relevant to the AROS cross build.
+#
+PHYSFS_EXTRA_OPTS := \
+        -DPHYSFS_BUILD_SHARED=OFF \
+        -DPHYSFS_BUILD_STATIC=ON \
+        -DPHYSFS_BUILD_TEST=OFF \
+        -DPHYSFS_BUILD_DOCS=OFF
+
+#MM- contrib-development : contrib-development-libs-physfs
+
+#MM- development-physfs : contrib-development-libs-physfs
+
+#MM contrib-development-libs-physfs : includes-copy contrib-development-libs-physfs-fetch
+
+%fetch mmake=contrib-development-libs-physfs-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/physfs \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.gz" \
+    patches_specs=$(PATCHSPEC)
+
+%create_patch mmake=contrib-development-libs-physfs-create-patch \
+    archive=$(ARCHBASE) srcdir=$(ARCHSRCDIR) destination=$(PORTSDIR)/physfs
+
+%build_with_cmake mmake=contrib-development-libs-physfs \
+    srcdir=$(PHYSFS_SOURCE) prefix="$(AROS_DEVELOPER)" \
+    extraoptions="$(PHYSFS_EXTRA_OPTS)"
+
+%common
