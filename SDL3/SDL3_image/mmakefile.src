@@ -1,0 +1,65 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-sdl3-sdl-image : development-SDL3_image
+
+#MM- development-SDL3_image : \
+#MM    development-sdl3 \
+#MM    workbench-libs-z \
+#MM    workbench-libs-png-linklib \
+#MM    workbench-libs-jpeg-linklib
+
+USER_INCLUDES := -I$(AROS_INCLUDES)/SDL3 -I$(AROS_CONTRIB_INCLUDES)
+USER_LDFLAGS := -L$(AROS_CONTRIB_LIB) -L$(AROS_LIB)
+
+SDL3IMAGE_VERSION := 3.4.4
+SDL3IMAGE_REPOSITORIES := https://www.libsdl.org/projects/SDL_image/release
+SDL3IMAGE_ARCHBASE := SDL3_image-$(SDL3IMAGE_VERSION)
+SDL3IMAGE_ARCHSUFFIX := tar.gz
+SDL3IMAGE_ARCHSRCDIR := $(PORTSDIR)/SDL3_image/$(SDL3IMAGE_ARCHBASE)
+
+%fetch mmake=contrib-sdl3-image-fetch archive=$(SDL3IMAGE_ARCHBASE) \
+    destination=$(PORTSDIR)/SDL3_image location=$(PORTSSOURCEDIR) \
+    archive_origins="$(SDL3IMAGE_REPOSITORIES)" suffixes=$(SDL3IMAGE_ARCHSUFFIX)
+
+%create_patch mmake=contrib-sdl3-image-create-patch \
+    archive=$(SDL3IMAGE_ARCHBASE) suffixes=$(SDL3IMAGE_ARCHSUFFIX) \
+    srcdir="$(SDL3IMAGE_ARCHBASE)" destination=$(PORTSDIR)/SDL3_image
+
+#MM development-SDL3_image : contrib-sdl3-image-fetch development-sdl3
+
+#
+#  SDL3_image is built as a static library that links against the AROS SDL3.
+#  The AROS SDL3 port is a native AROS module and does not ship a generated
+#  SDL3Config.cmake, so config-mode find_package(SDL3) cannot locate it.  A
+#  small shim (cmake/SDL3Config.cmake) recreates the SDL3::Headers / SDL3::SDL3
+#  imported targets from the SDL3 include dir and link library passed in below;
+#  -DSDL3_DIR points find_package() at it.  Vendored third-party libraries are
+#  disabled in favour of the AROS zlib/libpng/libjpeg (PNG/JPEG fall back to the
+#  header-only stb backend when libpng is not detected), and the sample/test
+#  programs are skipped.
+#
+SDL3IMAGE_CMAKEOPTIONS := \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DSDLIMAGE_VENDORED=OFF \
+    -DSDLIMAGE_DEPS_SHARED=OFF \
+    -DSDLIMAGE_SAMPLES=OFF \
+    -DSDLIMAGE_TESTS=OFF \
+    -DSDLIMAGE_INSTALL=ON \
+    -DSDLIMAGE_STRICT=OFF \
+    -DSDLIMAGE_AVIF=OFF \
+    -DSDLIMAGE_JXL=OFF \
+    -DSDLIMAGE_TIF=OFF \
+    -DSDLIMAGE_WEBP=OFF \
+    -DSDL3_DIR=$(SRCDIR)/$(CURDIR)/cmake \
+    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES)/SDL3 \
+    -DSDL3_LIBRARY=$(AROS_LIB)/libSDL3.a
+
+%build_with_cmake mmake=development-SDL3_image package=SDL3_image \
+    srcdir=$(SDL3IMAGE_ARCHSRCDIR) \
+    prefix="$(AROS_DEVELOPER)" usecppflags=no \
+    extraoptions="$(SDL3IMAGE_CMAKEOPTIONS)"
+
+%common
