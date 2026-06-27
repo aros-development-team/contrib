@@ -1,0 +1,60 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-sdl3-sdl-ttf : development-SDL3_ttf
+
+#MM- development-SDL3_ttf : \
+#MM    development-sdl3 \
+#MM    workbench-libs-freetype2
+
+USER_INCLUDES := -I$(AROS_INCLUDES)/SDL3 -I$(AROS_CONTRIB_INCLUDES)
+USER_LDFLAGS := -L$(AROS_CONTRIB_LIB) -L$(AROS_LIB)
+
+SDL3TTF_VERSION := 3.2.2
+SDL3TTF_REPOSITORIES := https://www.libsdl.org/projects/SDL_ttf/release
+SDL3TTF_ARCHBASE := SDL3_ttf-$(SDL3TTF_VERSION)
+SDL3TTF_ARCHSUFFIX := tar.gz
+SDL3TTF_ARCHSRCDIR := $(PORTSDIR)/SDL3_ttf/$(SDL3TTF_ARCHBASE)
+
+%fetch mmake=contrib-sdl3-ttf-fetch archive=$(SDL3TTF_ARCHBASE) \
+    destination=$(PORTSDIR)/SDL3_ttf location=$(PORTSSOURCEDIR) \
+    archive_origins="$(SDL3TTF_REPOSITORIES)" suffixes=$(SDL3TTF_ARCHSUFFIX)
+
+%create_patch mmake=contrib-sdl3-ttf-create-patch \
+    archive=$(SDL3TTF_ARCHBASE) suffixes=$(SDL3TTF_ARCHSUFFIX) \
+    srcdir="$(SDL3TTF_ARCHBASE)" destination=$(PORTSDIR)/SDL3_ttf
+
+#MM development-SDL3_ttf : contrib-sdl3-ttf-fetch development-sdl3
+
+#
+#  SDL3_ttf is built as a static library that links against the AROS SDL3.
+#  As with SDL3_image, the native AROS SDL3 module ships no generated
+#  SDL3Config.cmake, so a shim (cmake/SDL3Config.cmake) recreates the
+#  SDL3::Headers / SDL3::SDL3 imported targets from the SDL3 include dir and
+#  link library passed in below (-DSDL3_DIR points find_package at it).  The
+#  bundled (vendored) FreeType/HarfBuzz/plutosvg are disabled in favour of the
+#  AROS FreeType; harfbuzz text shaping and plutosvg colour emoji are turned
+#  off for the initial port, and the sample programs are skipped.
+#
+SDL3TTF_CMAKEOPTIONS := \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DSDLTTF_VENDORED=OFF \
+    -DSDLTTF_SAMPLES=OFF \
+    -DSDLTTF_INSTALL=ON \
+    -DSDLTTF_STRICT=OFF \
+    -DSDLTTF_HARFBUZZ=OFF \
+    -DSDLTTF_PLUTOSVG=OFF \
+    -DFREETYPE_LIBRARY=$(AROS_LIB)/libfreetype2.a \
+    -DFREETYPE_INCLUDE_DIRS=$(AROS_INCLUDES) \
+    -DSDL3_DIR=$(SRCDIR)/$(CURDIR)/cmake \
+    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES)/SDL3 \
+    -DSDL3_LIBRARY=$(AROS_LIB)/libSDL3.a
+
+%build_with_cmake mmake=development-SDL3_ttf package=SDL3_ttf \
+    srcdir=$(SDL3TTF_ARCHSRCDIR) \
+    prefix="$(AROS_DEVELOPER)" usecppflags=no \
+    extraoptions="$(SDL3TTF_CMAKEOPTIONS)"
+
+%common
