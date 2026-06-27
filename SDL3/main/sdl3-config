@@ -40,7 +40,7 @@ while test $# -gt 0; do
       echo 3.4.10
       ;;
     --cflags)
-      echo -I${prefix}/include/SDL3 -D_GNU_SOURCE=1
+      echo -I${prefix}/include -D_GNU_SOURCE=1
       ;;
     --libs)
       echo -L${exec_prefix}/lib  -lSDL3
