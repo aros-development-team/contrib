@@ -11,7 +11,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM    workbench-libs-png-linklib \
 #MM    workbench-libs-jpeg-linklib
 
-USER_INCLUDES := -I$(AROS_INCLUDES)/SDL3 -I$(AROS_CONTRIB_INCLUDES)
+USER_INCLUDES := -I$(AROS_INCLUDES) -I$(AROS_CONTRIB_INCLUDES)
 USER_LDFLAGS := -L$(AROS_CONTRIB_LIB) -L$(AROS_LIB)
 
 SDL3IMAGE_VERSION := 3.4.4
@@ -54,7 +54,7 @@ SDL3IMAGE_CMAKEOPTIONS := \
     -DSDLIMAGE_TIF=OFF \
     -DSDLIMAGE_WEBP=OFF \
     -DSDL3_DIR=$(SRCDIR)/$(CURDIR)/cmake \
-    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES)/SDL3 \
+    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES) \
     -DSDL3_LIBRARY=$(AROS_LIB)/libSDL3.a
 
 %build_with_cmake mmake=development-SDL3_image package=SDL3_image \

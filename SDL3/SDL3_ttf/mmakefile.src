@@ -9,7 +9,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM    development-sdl3 \
 #MM    workbench-libs-freetype2
 
-USER_INCLUDES := -I$(AROS_INCLUDES)/SDL3 -I$(AROS_CONTRIB_INCLUDES)
+USER_INCLUDES := -I$(AROS_INCLUDES) -I$(AROS_CONTRIB_INCLUDES)
 USER_LDFLAGS := -L$(AROS_CONTRIB_LIB) -L$(AROS_LIB)
 
 SDL3TTF_VERSION := 3.2.2
@@ -49,7 +49,7 @@ SDL3TTF_CMAKEOPTIONS := \
     -DFREETYPE_LIBRARY=$(AROS_LIB)/libfreetype2.a \
     -DFREETYPE_INCLUDE_DIRS=$(AROS_INCLUDES) \
     -DSDL3_DIR=$(SRCDIR)/$(CURDIR)/cmake \
-    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES)/SDL3 \
+    -DSDL3_INCLUDE_DIR=$(AROS_INCLUDES) \
     -DSDL3_LIBRARY=$(AROS_LIB)/libSDL3.a
 
 %build_with_cmake mmake=development-SDL3_ttf package=SDL3_ttf \

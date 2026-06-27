@@ -1,4 +1,4 @@
-# Copyright � 2025, The AROS Development Team. All rights reserved.
+# Copyright (c) 2025-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -294,7 +294,7 @@ USER_CPPFLAGS := \
     files="SDL3_static $(FILES)"
 
 %copy_dir_recursive mmake=SDL3-aros-copy-includes \
-    src=$(ARCHSRCDIR)/include/. dst="$(SDL3INCDIR)"
+    src=$(ARCHSRCDIR)/include/SDL3/. dst="$(SDL3INCDIR)"
 
 $(AROS_DEVELOPER)/bin:
 	%mkdir_q dir=$@
@@ -310,17 +310,16 @@ $(AROS_LIB)/pkgconfig:
 $(AROS_LIB)/pkgconfig/sdl3.pc: $(ARCHSRCDIR)/cmake/sdl3.pc.in | $(AROS_LIB)/pkgconfig
 	$(Q)$(ECHO) Generating pkgconfig/sdl3.pc ...
 	$(Q)$(SED) \
-		-e 's#@prefix@#/PROGDIR#g' \
-		-e 's#@exec_prefix@#$${prefix}#g' \
-		-e 's#@libdir@#$${exec_prefix}/lib#g' \
-		-e 's#@includedir@#$${prefix}/include#g' \
-		-e 's#@SDL_VERSION@#$(ARCHVER)#g' \
-		-e 's#@PKGCONFIG_DEPENDS@##g' \
+		-e 's#@SDL_PKGCONFIG_PREFIX@#$(AROS_DEVELOPER)#g' \
+		-e 's#@LIBDIR_FOR_PKG_CONFIG@#$${prefix}/lib#g' \
+		-e 's#@INCLUDEDIR_FOR_PKG_CONFIG@#$${prefix}/include#g' \
+		-e 's#@PROJECT_VERSION@#$(ARCHVER)#g' \
+		-e 's#@SDL_PC_PRIVATE_REQUIRES@##g' \
 		-e 's#@SDL_RLD_FLAGS@##g' \
-		-e 's#@SDL_LIBS@##g' \
-		-e 's#@PKGCONFIG_LIBS_PRIV@##g' \
-		-e 's#@SDL_STATIC_LIBS@#-lSDL3 -lGL#g' \
-		-e 's#@SDL_CFLAGS@#-D_GNU_SOURCE=1#g' \
+		-e 's#@SDL_PC_LIBS@#-lSDL3#g' \
+		-e 's#@SDL_PC_SECTION_LIBS_PRIVATE@##g' \
+		-e 's#@SDL_PC_STATIC_LIBS@#-lGL -liconv#g' \
+		-e 's#@SDL_PC_CFLAGS@#-D_GNU_SOURCE=1#g' \
 		$< > $@
 	$(Q)$(CHMOD) a+x $@
 
@@ -330,7 +329,7 @@ SDL3-aros-genfiles : $(AROS_DEVELOPER)/bin/sdl3-config $(AROS_LIB)/pkgconfig/sdl
 
 #MM SDL3-aros-copy-includes : contrib-sdl3-fetch
 
-USER_INCLUDES := -I$(SDL3INCDIR)  -I$(AROS_CONTRIB_INCLUDES) -I$(ARCHSRCDIR)/test
+USER_INCLUDES := -I$(AROS_INCLUDES)  -I$(AROS_CONTRIB_INCLUDES) -I$(ARCHSRCDIR)/test
 
 SDL3TESTSFILES := \
     $(ARCHSRCDIR)/test/testver \
