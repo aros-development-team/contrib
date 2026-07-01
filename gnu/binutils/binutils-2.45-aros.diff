@@ -144,13 +144,13 @@ diff -ruN binutils-2.45/bfd/elf32-arm.c binutils-2.45.aros/bfd/elf32-arm.c
 +#define ELF_COMMONPAGESIZE		0x1000
 +
 +#undef  elf_backend_may_use_rel_p
-+#define elf_backend_may_use_rel_p	0
++#define elf_backend_may_use_rel_p	1
 +#undef  elf_backend_may_use_rela_p
-+#define elf_backend_may_use_rela_p	1
++#define elf_backend_may_use_rela_p	0
 +#undef  elf_backend_default_use_rela_p
-+#define elf_backend_default_use_rela_p	1
++#define elf_backend_default_use_rela_p	0
 +#undef  elf_backend_rela_normal
-+#define elf_backend_rela_normal		1
++#define elf_backend_rela_normal		0
 +#undef  elf_backend_want_plt_sym
 +#define elf_backend_want_plt_sym	0
 +
@@ -377,6 +377,30 @@ diff -ruN binutils-2.45/binutils/configure binutils-2.45.aros/binutils/configure
  int
  main ()
  {
+diff -ruN binutils-2.45/binutils/Makefile.am binutils-2.45.aros/binutils/Makefile.am
+--- binutils-2.45/binutils/Makefile.am	2025-07-26 23:00:00.000000000 +0000
++++ binutils-2.45.aros/binutils/Makefile.am	2025-07-26 23:00:00.000000000 +0000
+@@ -55,7 +55,7 @@
+ WARN_CFLAGS_FOR_BUILD = @WARN_CFLAGS_FOR_BUILD@
+ NO_WERROR = @NO_WERROR@
+ AM_CFLAGS = $(WARN_CFLAGS) $(ZLIBINC) $(ZSTD_CFLAGS)
+-AM_CFLAGS_FOR_BUILD = $(WARN_CFLAGS_FOR_BUILD) $(ZLIBINC) $(ZSTD_CFLAGS)
++AM_CFLAGS_FOR_BUILD = $(WARN_CFLAGS_FOR_BUILD)
+ LIBICONV = @LIBICONV@
+ 
+ # these two are almost the same program
+diff -ruN binutils-2.45/binutils/Makefile.in binutils-2.45.aros/binutils/Makefile.in
+--- binutils-2.45/binutils/Makefile.in	2025-07-26 23:00:00.000000000 +0000
++++ binutils-2.45.aros/binutils/Makefile.in	2025-07-26 23:00:00.000000000 +0000
+@@ -657,7 +657,7 @@
+ ZLIB = @zlibdir@ -lz
+ ZLIBINC = @zlibinc@
+ AM_CFLAGS = $(WARN_CFLAGS) $(ZLIBINC) $(ZSTD_CFLAGS)
+-AM_CFLAGS_FOR_BUILD = $(WARN_CFLAGS_FOR_BUILD) $(ZLIBINC) $(ZSTD_CFLAGS)
++AM_CFLAGS_FOR_BUILD = $(WARN_CFLAGS_FOR_BUILD)
+ 
+ # these two are almost the same program
+ AR_PROG = ar
 diff -ruN binutils-2.45/gas/config/tc-arm.c binutils-2.45.aros/gas/config/tc-arm.c
 --- binutils-2.45/gas/config/tc-arm.c	2025-07-26 23:00:00.000000000 +0000
 +++ binutils-2.45.aros/gas/config/tc-arm.c	2025-07-26 23:00:00.000000000 +0000

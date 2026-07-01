@@ -1,4 +1,4 @@
-# Copyright © 2004-2017, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -12,6 +12,9 @@ BINUTILS_VERSION     = $(TARGET_BINUTILS_VER)
 BINUTILS_EXTRAOPTS := --with-sysroot=/$(AROS_DIR_DEVELOPER)
 BINUTILS_EXTRAOPTS += --with-build-sysroot=$(AROS_DEVELOPER)
 BINUTILS_EXTRAOPTS += --libdir=$(AROS_LIB)
+BINUTILS_EXTRAOPTS += --with-system-zlib
+BINUTILS_EXTRAOPTS += --disable-gprofng
+BINUTILS_EXTRAOPTS += --disable-silent-rules
 
 BINUTILS_CFLAGS := -DPOSIXC_NO_VAARGS
 
