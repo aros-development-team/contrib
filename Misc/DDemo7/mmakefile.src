@@ -1,6 +1,11 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
+NOWARN_FLAGS := \
+    $(NOWARN_OLD_STYLE_DEFINITION)
+
+USER_CFLAGS := $(NOWARN_FLAGS)
+
 %build_prog mmake=contrib-ddemo7 \
     progname=DDemo7 targetdir=$(AROS_CONTRIB)/Misc \
     files=DDemo7
