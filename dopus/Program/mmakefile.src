@@ -16,7 +16,7 @@ EXEDIR := $(DOPUSDIR)
 
 #MM- DirOpus : dopus-library \
 #MM     workbench-libs-rexxsyslib-linklib \
-#MM     contrib-libs-asyncio-linklib
+#MM     workbench-libs-asyncio-linklib
 
 NOWARN_FLAGS := \
     $(NOWARN_OLD_STYLE_DEFINITION)
