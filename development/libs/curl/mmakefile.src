@@ -4,7 +4,7 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-curl : development-curl
-#MM- development-curl : contrib-openssl linklibs-pthread
+#MM- development-curl : contrib-openssl linklibs-pthread workbench-libs-zstd-library-linklib
 #MM development-curl-fixconfig : development-curl-pakagefiles
 
 REPOSITORIES := https://curl.haxx.se/download \
