@@ -5,6 +5,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 # The apps target points back to config/$(ARCH)/mmakefile:
 #MM- contrib : \
 #MM     includes linklibs \
+#MM     toolchain-linklibs \
 #MM     contrib-setup-dirs
 
 #MM- contrib : contrib-aminet
