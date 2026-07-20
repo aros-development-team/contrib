@@ -1,7 +1,7 @@
-diff -ruN binutils-2.32/bfd/Makefile.in binutils-2.32-aros/bfd/Makefile.in
---- binutils-2.32/bfd/Makefile.in	2019-02-02 16:47:56.000000000 +0100
-+++ binutils-2.32-aros/bfd/Makefile.in	2019-01-19 17:10:54.000000000 +0100
-@@ -719,6 +719,7 @@
+diff -ruN binutils-2.35/bfd/Makefile.in binutils-2.35.aros/bfd/Makefile.in
+--- binutils-2.35/bfd/Makefile.in	2020-07-24 09:18:07.000000000 +0000
++++ binutils-2.35.aros/bfd/Makefile.in	2019-01-19 16:10:54.000000000 +0000
+@@ -714,6 +714,7 @@
  	elf-nacl.lo \
  	elf-strtab.lo \
  	elf-vxworks.lo \
@@ -9,7 +9,7 @@ diff -ruN binutils-2.32/bfd/Makefile.in binutils-2.32-aros/bfd/Makefile.in
  	elf.lo \
  	elf32-am33lin.lo \
  	elf32-arc.lo \
-@@ -856,6 +857,7 @@
+@@ -849,6 +850,7 @@
  	elf-nacl.c \
  	elf-strtab.c \
  	elf-vxworks.c \
@@ -17,7 +17,7 @@ diff -ruN binutils-2.32/bfd/Makefile.in binutils-2.32-aros/bfd/Makefile.in
  	elf.c \
  	elf32-am33lin.c \
  	elf32-arc.c \
-@@ -1413,6 +1415,7 @@
+@@ -1419,6 +1421,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf-properties.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf-strtab.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf-vxworks.Plo@am__quote@
@@ -25,10 +25,10 @@ diff -ruN binutils-2.32/bfd/Makefile.in binutils-2.32-aros/bfd/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-aarch64.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-am33lin.Plo@am__quote@
-diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
---- binutils-2.32/bfd/config.bfd	2019-01-19 17:01:32.000000000 +0100
-+++ binutils-2.32-aros/bfd/config.bfd	2019-01-19 17:10:54.000000000 +0100
-@@ -230,7 +230,7 @@
+diff -ruN binutils-2.35/bfd/config.bfd binutils-2.35.aros/bfd/config.bfd
+--- binutils-2.35/bfd/config.bfd	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/bfd/config.bfd	2019-01-19 16:10:54.000000000 +0000
+@@ -229,7 +229,7 @@
      targ_archs="$targ_archs bfd_i386_arch bfd_powerpc_arch bfd_rs6000_arch"
      want64=true
      ;;
@@ -37,7 +37,7 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
      targ_defvec=aarch64_elf64_le_vec
      targ_selvecs="aarch64_elf64_be_vec aarch64_elf32_le_vec aarch64_elf32_be_vec arm_elf32_le_vec arm_elf32_be_vec"
      want64=true
-@@ -387,6 +387,10 @@
+@@ -382,6 +382,10 @@
      targ_defvec=arm_elf32_le_vec
      targ_selvecs=arm_elf32_be_vec
      ;;
@@ -48,7 +48,7 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
    arm-*-elf | arm*-*-freebsd* | arm*-*-linux-* | arm*-*-conix* | \
    arm*-*-uclinux* | arm-*-kfreebsd*-gnu | \
    arm*-*-eabi* | arm-*-rtems* | arm*-*-uclinuxfdpiceabi)
-@@ -587,7 +591,7 @@
+@@ -578,7 +582,7 @@
      ;;
    i[3-7]86-*-aros*)
      targ_defvec=i386_elf32_vec
@@ -57,7 +57,7 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
      ;;
    i[3-7]86-*-dicos*)
      targ_defvec=i386_elf32_vec
-@@ -718,6 +722,11 @@
+@@ -697,6 +701,11 @@
      targ_selvecs=i386_elf32_vec
      want64=true
      ;;
@@ -69,7 +69,7 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
  #endif
    i[3-7]86-*-lynxos*)
      targ_defvec=i386_elf32_vec
-@@ -1103,6 +1112,11 @@
+@@ -1078,6 +1087,11 @@
      targ_selvecs=rs6000_xcoff_vec
      want64=true
      ;;
@@ -81,7 +81,7 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
    powerpc64-*-freebsd*)
      targ_defvec=powerpc_elf64_fbsd_vec
      targ_selvecs="powerpc_elf64_vec powerpc_elf32_vec powerpc_elf32_fbsd_vec powerpc_elf32_le_vec rs6000_xcoff_vec rs6000_xcoff64_vec rs6000_xcoff64_aix_vec"
-@@ -1121,6 +1135,11 @@
+@@ -1096,6 +1110,11 @@
      want64=true
      ;;
  #endif
@@ -93,10 +93,10 @@ diff -ruN binutils-2.32/bfd/config.bfd binutils-2.32-aros/bfd/config.bfd
    powerpc-*-*freebsd*)
      targ_defvec=powerpc_elf32_fbsd_vec
      targ_selvecs="rs6000_xcoff_vec powerpc_elf32_vec powerpc_elf32_le_vec powerpc_boot_vec"
-diff -ruN binutils-2.32/bfd/configure binutils-2.32-aros/bfd/configure
---- binutils-2.32/bfd/configure	2019-02-02 16:47:56.000000000 +0100
-+++ binutils-2.32-aros/bfd/configure	2019-01-19 17:10:54.000000000 +0100
-@@ -14669,16 +14669,18 @@
+diff -ruN binutils-2.35/bfd/configure binutils-2.35.aros/bfd/configure
+--- binutils-2.35/bfd/configure	2020-07-24 09:18:07.000000000 +0000
++++ binutils-2.35.aros/bfd/configure	2019-01-19 16:10:54.000000000 +0000
+@@ -14723,16 +14723,18 @@
      aout_vec)			 tb="$tb host-aout.lo aout32.lo" ;;
      arc_elf32_be_vec)		 tb="$tb elf32-arc.lo elf32.lo $elf" ;;
      arc_elf32_le_vec)		 tb="$tb elf32-arc.lo elf32.lo $elf" ;;
@@ -125,10 +125,10 @@ diff -ruN binutils-2.32/bfd/configure binutils-2.32-aros/bfd/configure
      arm_pe_be_vec)		 tb="$tb pe-arm.lo peigen.lo $coff" ;;
      arm_pe_le_vec)		 tb="$tb pe-arm.lo peigen.lo $coff" ;;
      arm_pe_wince_be_vec)	 tb="$tb pe-arm-wince.lo pe-arm.lo peigen.lo $coff" ;;
-diff -ruN binutils-2.32/bfd/configure.ac binutils-2.32-aros/bfd/configure.ac
---- binutils-2.32/bfd/configure.ac	2019-01-19 17:01:32.000000000 +0100
-+++ binutils-2.32-aros/bfd/configure.ac	2019-01-19 17:10:54.000000000 +0100
-@@ -437,16 +437,18 @@
+diff -ruN binutils-2.35/bfd/configure.ac binutils-2.35.aros/bfd/configure.ac
+--- binutils-2.35/bfd/configure.ac	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/bfd/configure.ac	2019-01-19 16:10:54.000000000 +0000
+@@ -459,16 +459,18 @@
      aout_vec)			 tb="$tb host-aout.lo aout32.lo" ;;
      arc_elf32_be_vec)		 tb="$tb elf32-arc.lo elf32.lo $elf" ;;
      arc_elf32_le_vec)		 tb="$tb elf32-arc.lo elf32.lo $elf" ;;
@@ -157,9 +157,9 @@ diff -ruN binutils-2.32/bfd/configure.ac binutils-2.32-aros/bfd/configure.ac
      arm_pe_be_vec)		 tb="$tb pe-arm.lo peigen.lo $coff" ;;
      arm_pe_le_vec)		 tb="$tb pe-arm.lo peigen.lo $coff" ;;
      arm_pe_wince_be_vec)	 tb="$tb pe-arm-wince.lo pe-arm.lo peigen.lo $coff" ;;
-diff -ruN binutils-2.32/bfd/elf-aros.c binutils-2.32-aros/bfd/elf-aros.c
---- binutils-2.32/bfd/elf-aros.c	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/bfd/elf-aros.c	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/bfd/elf-aros.c binutils-2.35.aros/bfd/elf-aros.c
+--- binutils-2.35/bfd/elf-aros.c	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/bfd/elf-aros.c	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1,90 @@
 +/* AROS support for ELF
 +   Copyright (C) 2005-2019 Free Software Foundation, Inc.
@@ -251,9 +251,9 @@ diff -ruN binutils-2.32/bfd/elf-aros.c binutils-2.32-aros/bfd/elf-aros.c
 +  link_info->output_bfd->flags &= ~D_PAGED;
 +  return bfd_elf_final_link(abfd, link_info);
 +}
-diff -ruN binutils-2.32/bfd/elf-aros.h binutils-2.32-aros/bfd/elf-aros.h
---- binutils-2.32/bfd/elf-aros.h	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/bfd/elf-aros.h	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/bfd/elf-aros.h binutils-2.35.aros/bfd/elf-aros.h
+--- binutils-2.35/bfd/elf-aros.h	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/bfd/elf-aros.h	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1,27 @@
 +/* AROS support for ELF
 +   Copyright (C) 2019 Free Software Foundation, Inc.
@@ -282,18 +282,18 @@ diff -ruN binutils-2.32/bfd/elf-aros.h binutils-2.32-aros/bfd/elf-aros.h
 +
 +bfd_boolean elf_aros_final_link
 +  (bfd *abfd, struct bfd_link_info *link_info);
-diff -ruN binutils-2.32/bfd/elf32-arm.c binutils-2.32-aros/bfd/elf32-arm.c
---- binutils-2.32/bfd/elf32-arm.c	2019-01-28 18:09:04.000000000 +0100
-+++ binutils-2.32-aros/bfd/elf32-arm.c	2019-04-14 07:59:15.000000000 +0200
+diff -ruN binutils-2.35/bfd/elf32-arm.c binutils-2.35.aros/bfd/elf32-arm.c
+--- binutils-2.35/bfd/elf32-arm.c	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/bfd/elf32-arm.c	2019-04-14 05:59:15.000000000 +0000
 @@ -27,6 +27,7 @@
  #include "elf-bfd.h"
  #include "elf-nacl.h"
  #include "elf-vxworks.h"
 +#include "elf-aros.h"
  #include "elf/arm.h"
- 
- /* Return the relocation section associated with NAME.  HTAB is the
-@@ -20296,6 +20297,77 @@
+ #include "elf32-arm.h"
+ #include "cpu-arm.h"
+@@ -20326,6 +20327,77 @@
  
  #include "elf32-target.h"
  
@@ -371,7 +371,7 @@ diff -ruN binutils-2.32/bfd/elf32-arm.c binutils-2.32-aros/bfd/elf32-arm.c
  /* Native Client targets.  */
  
  #undef	TARGET_LITTLE_SYM
-@@ -20408,6 +20480,7 @@
+@@ -20438,6 +20510,7 @@
  #undef ELF_OSABI
  #define ELF_OSABI		ELFOSABI_ARM_FDPIC
  
@@ -379,21 +379,21 @@ diff -ruN binutils-2.32/bfd/elf32-arm.c binutils-2.32-aros/bfd/elf32-arm.c
  /* Like elf32_arm_link_hash_table_create -- but overrides
     appropriately for FDPIC.  */
  
-diff -ruN binutils-2.32/bfd/po/SRC-POTFILES.in binutils-2.32-aros/bfd/po/SRC-POTFILES.in
---- binutils-2.32/bfd/po/SRC-POTFILES.in	2019-02-02 16:48:06.000000000 +0100
-+++ binutils-2.32-aros/bfd/po/SRC-POTFILES.in	2019-01-19 17:10:54.000000000 +0100
-@@ -140,6 +140,7 @@
- elf-properties.c
+diff -ruN binutils-2.35/bfd/po/SRC-POTFILES.in binutils-2.35.aros/bfd/po/SRC-POTFILES.in
+--- binutils-2.35/bfd/po/SRC-POTFILES.in	2020-07-24 09:18:12.000000000 +0000
++++ binutils-2.35.aros/bfd/po/SRC-POTFILES.in	2020-12-15 04:47:41.600000000 +0000
+@@ -149,6 +149,7 @@
  elf-strtab.c
  elf-vxworks.c
+ elf-vxworks.h
 +elf-aros.c
  elf.c
  elf32-am33lin.c
  elf32-arc.c
-diff -ruN binutils-2.32/bfd/targets.c binutils-2.32-aros/bfd/targets.c
---- binutils-2.32/bfd/targets.c	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/bfd/targets.c	2019-01-19 17:10:54.000000000 +0100
-@@ -604,6 +604,8 @@
+diff -ruN binutils-2.35/bfd/targets.c binutils-2.35.aros/bfd/targets.c
+--- binutils-2.35/bfd/targets.c	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/bfd/targets.c	2019-01-19 16:10:54.000000000 +0000
+@@ -679,6 +679,8 @@
  extern const bfd_target arc_elf32_le_vec;
  extern const bfd_target arm_elf32_be_vec;
  extern const bfd_target arm_elf32_le_vec;
@@ -402,10 +402,10 @@ diff -ruN binutils-2.32/bfd/targets.c binutils-2.32-aros/bfd/targets.c
  extern const bfd_target arm_elf32_fdpic_be_vec;
  extern const bfd_target arm_elf32_fdpic_le_vec;
  extern const bfd_target arm_elf32_nacl_be_vec;
-diff -ruN binutils-2.32/binutils/configure binutils-2.32-aros/binutils/configure
---- binutils-2.32/binutils/configure	2019-02-02 16:54:08.000000000 +0100
-+++ binutils-2.32-aros/binutils/configure	2019-01-19 17:10:54.000000000 +0100
-@@ -13774,7 +13774,9 @@
+diff -ruN binutils-2.35/binutils/configure binutils-2.35.aros/binutils/configure
+--- binutils-2.35/binutils/configure	2020-07-24 09:20:46.000000000 +0000
++++ binutils-2.35.aros/binutils/configure	2019-01-19 16:10:54.000000000 +0000
+@@ -13895,7 +13895,9 @@
  $as_echo_n "checking for mbstate_t... " >&6; }
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
@@ -415,21 +415,9 @@ diff -ruN binutils-2.32/binutils/configure binutils-2.32-aros/binutils/configure
  int
  main ()
  {
-diff -ruN binutils-2.32/binutils/objcopy.c binutils-2.32.aros/binutils/objcopy.c
---- binutils-2.32/binutils/objcopy.c	2019-01-19 16:01:33.000000000 +0000
-+++ binutils-2.32.aros/binutils/objcopy.c	2022-05-21 10:55:32.285339053 +0000
-@@ -3772,7 +3772,7 @@
-   if (p != NULL)
-     flags = p->flags | (flags & (SEC_HAS_CONTENTS | SEC_RELOC));
-   else if (strip_symbols == STRIP_NONDEBUG
--	   && (flags & (SEC_ALLOC | SEC_GROUP)) != 0
-+	   && (flags & (SEC_ALLOC /*| SEC_GROUP*/)) != 0
- 	   && !is_nondebug_keep_contents_section (ibfd, isection))
-     {
-       flags &= ~(SEC_HAS_CONTENTS | SEC_LOAD | SEC_GROUP);
-diff -ruN binutils-2.32/binutils/sysdep.h binutils-2.32-aros/binutils/sysdep.h
---- binutils-2.32/binutils/sysdep.h	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/binutils/sysdep.h	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/binutils/sysdep.h binutils-2.35.aros/binutils/sysdep.h
+--- binutils-2.35/binutils/sysdep.h	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/binutils/sysdep.h	2019-01-19 16:10:54.000000000 +0000
 @@ -24,6 +24,7 @@
  #include "ansidecl.h"
  #include <stdio.h>
@@ -438,10 +426,10 @@ diff -ruN binutils-2.32/binutils/sysdep.h binutils-2.32-aros/binutils/sysdep.h
  
  #include "bfdver.h"
  
-diff -ruN binutils-2.32/config.guess binutils-2.32-aros/config.guess
---- binutils-2.32/config.guess	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/config.guess	2019-01-19 17:10:54.000000000 +0100
-@@ -342,6 +342,9 @@
+diff -ruN binutils-2.35/config.guess binutils-2.35.aros/config.guess
+--- binutils-2.35/config.guess	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/config.guess	2019-01-19 16:10:54.000000000 +0000
+@@ -350,6 +350,9 @@
      *:[Mm]orph[Oo][Ss]:*:*)
  	echo "$UNAME_MACHINE"-unknown-morphos
  	exit ;;
@@ -451,10 +439,10 @@ diff -ruN binutils-2.32/config.guess binutils-2.32-aros/config.guess
      *:OS/390:*:*)
  	echo i370-ibm-openedition
  	exit ;;
-diff -ruN binutils-2.32/gas/Makefile.am binutils-2.32-aros/gas/Makefile.am
---- binutils-2.32/gas/Makefile.am	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/gas/Makefile.am	2019-04-14 08:31:52.000000000 +0200
-@@ -303,6 +303,7 @@
+diff -ruN binutils-2.35/gas/Makefile.am binutils-2.35.aros/gas/Makefile.am
+--- binutils-2.35/gas/Makefile.am	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/gas/Makefile.am	2019-04-14 06:31:52.000000000 +0000
+@@ -305,6 +305,7 @@
  # Emulation header files in config
  
  TARG_ENV_HFILES = \
@@ -462,10 +450,10 @@ diff -ruN binutils-2.32/gas/Makefile.am binutils-2.32-aros/gas/Makefile.am
  	config/te-386bsd.h \
  	config/te-aix5.h \
  	config/te-armeabi.h \
-diff -ruN binutils-2.32/gas/Makefile.in binutils-2.32-aros/gas/Makefile.in
---- binutils-2.32/gas/Makefile.in	2019-02-02 16:50:20.000000000 +0100
-+++ binutils-2.32-aros/gas/Makefile.in	2019-04-14 08:32:11.000000000 +0200
-@@ -692,6 +692,7 @@
+diff -ruN binutils-2.35/gas/Makefile.in binutils-2.35.aros/gas/Makefile.in
+--- binutils-2.35/gas/Makefile.in	2020-07-24 09:20:24.000000000 +0000
++++ binutils-2.35.aros/gas/Makefile.in	2019-04-14 06:32:11.000000000 +0000
+@@ -694,6 +694,7 @@
  
  # Emulation header files in config
  TARG_ENV_HFILES = \
@@ -473,10 +461,10 @@ diff -ruN binutils-2.32/gas/Makefile.in binutils-2.32-aros/gas/Makefile.in
  	config/te-386bsd.h \
  	config/te-aix5.h \
  	config/te-armeabi.h \
-diff -ruN binutils-2.32/gas/config/tc-arm.c binutils-2.32-aros/gas/config/tc-arm.c
---- binutils-2.32/gas/config/tc-arm.c	2019-02-01 12:19:06.000000000 +0100
-+++ binutils-2.32-aros/gas/config/tc-arm.c	2019-04-14 08:36:10.000000000 +0200
-@@ -25177,6 +25177,10 @@
+diff -ruN binutils-2.35/gas/config/tc-arm.c binutils-2.35.aros/gas/config/tc-arm.c
+--- binutils-2.35/gas/config/tc-arm.c	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/gas/config/tc-arm.c	2019-04-14 06:36:10.000000000 +0000
+@@ -30490,6 +30490,10 @@
    return (target_big_endian
  	  ? "elf32-bigarm-nacl"
  	  : "elf32-littlearm-nacl");
@@ -487,9 +475,9 @@ diff -ruN binutils-2.32/gas/config/tc-arm.c binutils-2.32-aros/gas/config/tc-arm
  #else
    if (arm_fdpic)
      {
-diff -ruN binutils-2.32/gas/config/te-aros.h binutils-2.32-aros/gas/config/te-aros.h
---- binutils-2.32/gas/config/te-aros.h	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/gas/config/te-aros.h	2019-04-14 08:33:55.000000000 +0200
+diff -ruN binutils-2.35/gas/config/te-aros.h binutils-2.35.aros/gas/config/te-aros.h
+--- binutils-2.35/gas/config/te-aros.h	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/gas/config/te-aros.h	2019-04-14 06:33:55.000000000 +0000
 @@ -0,0 +1,22 @@
 +/* Copyright (C) 2004-2019 Free Software Foundation, Inc.
 +
@@ -513,9 +501,9 @@ diff -ruN binutils-2.32/gas/config/te-aros.h binutils-2.32-aros/gas/config/te-ar
 +#define TE_AROS 1
 +
 +#include "te-armeabi.h"
-diff -ruN binutils-2.32/gas/configure.tgt binutils-2.32-aros/gas/configure.tgt
---- binutils-2.32/gas/configure.tgt	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/gas/configure.tgt	2019-04-14 08:31:27.000000000 +0200
+diff -ruN binutils-2.35/gas/configure.tgt binutils-2.35.aros/gas/configure.tgt
+--- binutils-2.35/gas/configure.tgt	2020-07-24 09:12:19.000000000 +0000
++++ binutils-2.35.aros/gas/configure.tgt	2019-04-14 06:31:27.000000000 +0000
 @@ -137,6 +137,7 @@
    arc-*-elf*)				fmt=elf ;;
    arc*-*-linux*)			fmt=elf bfd_gas=yes ;;
@@ -524,10 +512,10 @@ diff -ruN binutils-2.32/gas/configure.tgt binutils-2.32-aros/gas/configure.tgt
    arm-*-phoenix*)			fmt=elf ;;
    arm-*-elf)				fmt=elf ;;
    arm-*-eabi* | arm-*-rtems*)		fmt=elf em=armeabi ;;
-diff -ruN binutils-2.32/gas/po/POTFILES.in binutils-2.32-aros/gas/po/POTFILES.in
---- binutils-2.32/gas/po/POTFILES.in	2019-02-02 16:50:28.000000000 +0100
-+++ binutils-2.32-aros/gas/po/POTFILES.in	2019-04-14 08:32:41.000000000 +0200
-@@ -180,6 +180,7 @@
+diff -ruN binutils-2.35/gas/po/POTFILES.in binutils-2.35.aros/gas/po/POTFILES.in
+--- binutils-2.35/gas/po/POTFILES.in	2020-07-24 09:20:30.000000000 +0000
++++ binutils-2.35.aros/gas/po/POTFILES.in	2019-04-14 06:32:41.000000000 +0000
+@@ -182,6 +182,7 @@
  config/tc-z8k.c
  config/tc-z8k.h
  config/te-386bsd.h
@@ -535,10 +523,10 @@ diff -ruN binutils-2.32/gas/po/POTFILES.in binutils-2.32-aros/gas/po/POTFILES.in
  config/te-aix5.h
  config/te-armeabi.h
  config/te-armfbsdeabi.h
-diff -ruN binutils-2.32/intl/configure binutils-2.32-aros/intl/configure
---- binutils-2.32/intl/configure	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/intl/configure	2019-01-19 17:10:54.000000000 +0100
-@@ -4748,6 +4748,9 @@
+diff -ruN binutils-2.35/intl/configure binutils-2.35.aros/intl/configure
+--- binutils-2.35/intl/configure	2020-07-24 09:17:59.000000000 +0000
++++ binutils-2.35.aros/intl/configure	2019-01-19 16:10:54.000000000 +0000
+@@ -4752,6 +4752,9 @@
  
  int main ()
  {
@@ -548,18 +536,18 @@ diff -ruN binutils-2.32/intl/configure binutils-2.32-aros/intl/configure
    signal (SIGFPE, sigfpe_handler);
  /* IRIX and AIX (when "xlc -qcheck" is used) yield signal SIGTRAP.  */
  #if (defined (__sgi) || defined (_AIX)) && defined (SIGTRAP)
-diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
---- binutils-2.32/ld/Makefile.in	2019-02-02 16:54:43.000000000 +0100
-+++ binutils-2.32-aros/ld/Makefile.in	2019-01-19 17:10:54.000000000 +0100
-@@ -654,6 +654,7 @@
- 	earclinux_prof.c \
+diff -ruN binutils-2.35/ld/Makefile.am binutils-2.35.aros/ld/Makefile.am
+--- binutils-2.35/ld/Makefile.am	2020-07-24 09:12:20.000000000 +0000
++++ binutils-2.35.aros/ld/Makefile.am	2020-12-15 04:54:35.050000000 +0000
+@@ -165,6 +165,7 @@
+ 	earclinux_nps.c \
  	earm_wince_pe.c \
  	earmelf.c \
 +	earmelf_aros.c \
  	earmelf_fbsd.c \
  	earmelf_fuchsia.c \
  	earmelf_linux.c \
-@@ -664,6 +665,7 @@
+@@ -175,6 +176,7 @@
  	earmelf_phoenix.c \
  	earmelf_vxworks.c \
  	earmelfb.c \
@@ -567,7 +555,42 @@ diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
  	earmelfb_fbsd.c \
  	earmelfb_fuchsia.c \
  	earmelfb_linux.c \
-@@ -875,6 +877,8 @@
+@@ -651,6 +653,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earclinux_nps.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earm_wince_pe.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf.Pc@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_aros.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fbsd.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fuchsia.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_linux.Pc@am__quote@
+@@ -661,6 +664,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_phoenix.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_vxworks.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb.Pc@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_aros.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fbsd.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fuchsia.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_linux.Pc@am__quote@
+diff -ruN binutils-2.35/ld/Makefile.in binutils-2.35.aros/ld/Makefile.in
+--- binutils-2.35/ld/Makefile.in	2020-07-24 09:21:17.000000000 +0000
++++ binutils-2.35.aros/ld/Makefile.in	2020-12-15 04:52:02.780000000 +0000
+@@ -648,6 +648,7 @@
+ 	earclinux_nps.c \
+ 	earm_wince_pe.c \
+ 	earmelf.c \
++	earmelf_aros.c \
+ 	earmelf_fbsd.c \
+ 	earmelf_fuchsia.c \
+ 	earmelf_linux.c \
+@@ -658,6 +659,7 @@
+ 	earmelf_phoenix.c \
+ 	earmelf_vxworks.c \
+ 	earmelfb.c \
++	earmelfb_aros.c \
+ 	earmelfb_fbsd.c \
+ 	earmelfb_fuchsia.c \
+ 	earmelfb_linux.c \
+@@ -867,6 +869,8 @@
  	eaarch64elf32.c \
  	eaarch64elfb.c \
  	eaarch64elf32b.c \
@@ -576,7 +599,7 @@ diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
  	eaarch64cloudabi.c \
  	eaarch64cloudabib.c \
  	eaarch64fbsd.c \
-@@ -1197,6 +1201,8 @@
+@@ -1182,6 +1186,8 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64elf32.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64elf32b.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64elfb.Po@am__quote@
@@ -585,7 +608,7 @@ diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64fbsd.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64fbsdb.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eaarch64linux.Po@am__quote@
-@@ -1218,6 +1224,7 @@
+@@ -1201,6 +1207,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earcv2elfx.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earm_wince_pe.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf.Po@am__quote@
@@ -593,7 +616,7 @@ diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fbsd.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fuchsia.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_linux.Po@am__quote@
-@@ -1228,6 +1235,7 @@
+@@ -1211,6 +1218,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_phoenix.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_vxworks.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb.Po@am__quote@
@@ -601,63 +624,37 @@ diff -ruN binutils-2.32/ld/Makefile.in binutils-2.32-aros/ld/Makefile.in
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fbsd.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fuchsia.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_linux.Po@am__quote@
-@@ -2321,6 +2329,12 @@
-   $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
-   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
- 
-+earmelf_aros.c: $(srcdir)/emulparams/armelf_aros.sh \
-+  $(srcdir)/emulparams/armelf_linux_eabi.sh \
-+  $(srcdir)/emulparams/armelf_linux.sh \
-+  $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
-+  $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-+
- earmelf_nacl.c: $(srcdir)/emulparams/armelf_nacl.sh \
-   $(srcdir)/emulparams/armelf_linux_eabi.sh \
-   $(srcdir)/emulparams/armelf_linux.sh \
-@@ -2375,6 +2389,13 @@
-   $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
-   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
- 
-+earmelfb_aros.c: $(srcdir)/emulparams/armelfb_aros.sh \
-+  $(srcdir)/emulparams/armelf_aros.sh \
-+  $(srcdir)/emulparams/armelf_linux_eabi.sh \
-+  $(srcdir)/emulparams/armelf_linux.sh \
-+  $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
-+  $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-+
- earmelfb_nacl.c: $(srcdir)/emulparams/armelfb_nacl.sh \
-   $(srcdir)/emulparams/armelf_nacl.sh \
-   $(srcdir)/emulparams/armelf_linux_eabi.sh \
-@@ -3144,6 +3165,14 @@
-   $(ELF_DEPS) $(srcdir)/emultempl/aarch64elf.em \
-   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
- 
-+eaarch64elf_aros.c: $(srcdir)/emulparams/aarch64elf_aros.sh \
-+  $(ELF_DEPS) $(srcdir)/emultempl/aarch64elf.em \
-+  $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-+
-+eaarch64elfb_aros.c: $(srcdir)/emulparams/aarch64elfb_aros.sh $(srcdir)/emulparams/aarch64elf_aros.sh \
-+  $(ELF_DEPS) $(srcdir)/emultempl/aarch64elf.em \
-+  $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-+
- eaarch64linux.c: $(srcdir)/emulparams/aarch64linux.sh \
-   $(ELF_DEPS) $(srcdir)/emultempl/aarch64elf.em \
-   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-diff -ruN binutils-2.32/ld/configure.tgt binutils-2.32-aros/ld/configure.tgt
---- binutils-2.32/ld/configure.tgt	2019-01-19 17:01:33.000000000 +0100
-+++ binutils-2.32-aros/ld/configure.tgt	2019-01-19 17:10:54.000000000 +0100
-@@ -45,6 +45,10 @@
- # architecture variants should be kept together even if their names
- # break the alpha sorting.
+@@ -2246,6 +2254,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earclinux_nps.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earm_wince_pe.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf.Pc@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_aros.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fbsd.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_fuchsia.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_linux.Pc@am__quote@
+@@ -2256,6 +2265,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_phoenix.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelf_vxworks.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb.Pc@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_aros.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fbsd.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_fuchsia.Pc@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/earmelfb_linux.Pc@am__quote@
+diff -ruN binutils-2.35/ld/configure.tgt binutils-2.35.aros/ld/configure.tgt
+--- binutils-2.35/ld/configure.tgt	2020-07-24 09:12:20.000000000 +0000
++++ binutils-2.35.aros/ld/configure.tgt	2020-12-15 04:57:40.130000000 +0000
+@@ -43,6 +43,10 @@
+ # Please try to keep this table more or less in alphabetic order - it
+ # makes it much easier to lookup a specific archictecture.
  case "${targ}" in
 +aarch64-*-aros*)		targ_emul=aarch64elf_aros
 +			targ_extra_emuls=aarch64elfb_aros
 +			targ_extra_libpath=$targ_extra_emuls
 +			;;
  aarch64_be-*-elf)	targ_emul=aarch64elfb
- 			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b armelfb armelf" ;;
- aarch64-*-elf | aarch64-*-rtems*)
-@@ -128,6 +132,10 @@
+ 			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b armelfb armelf"
+ 			;;
+@@ -164,6 +168,10 @@
  			targ_extra_emuls="armelfb armelf armelf_linux"
  			targ_extra_libpath="armelf_linux"
  			;;
@@ -668,37 +665,38 @@ diff -ruN binutils-2.32/ld/configure.tgt binutils-2.32-aros/ld/configure.tgt
  arm*-*-linux-*eabi*)	targ_emul=armelf_linux_eabi
  			targ_extra_emuls="armelfb_linux_eabi"
  			targ_extra_libpath=$targ_extra_emuls
-@@ -315,6 +323,9 @@
- 			targ_extra_libpath="elf_i386 elf_iamcu elf32_x86_64 elf_l1om elf_k1om"
- 			tdir_elf_i386=`echo ${targ_alias} | sed -e 's/x86_64/i386/'`
+@@ -731,6 +739,8 @@
+ powerpc-*-aix*)		targ_emul=aixppc
+ 			targ_extra_ofiles=
+ 			;;
++powerpc-*-aros*)	targ_emul=elf32ppc
++			;;
+ powerpc-*-beos*)	targ_emul=aixppc
+ 			targ_extra_ofiles=
+ 			;;
+@@ -913,6 +923,9 @@
+ 			;;
+ visium-*-elf)		targ_emul=elf32visium
  			;;
 +x86_64-*-aros*)		targ_emul=elf_x86_64
 +			targ_extra_emuls=elf_i386
 +			;;
- i[3-7]86-*-kaos*)	targ_emul=elf_i386 ;;
- i[3-7]86-*-dragonfly*)	targ_emul=elf_i386
- 			targ_extra_emuls="elf_iamcu i386bsd" ;;
-@@ -632,6 +643,7 @@
- powerpc-*-beos*)	targ_emul=aixppc ;;
- powerpc-*-windiss*)	targ_emul=elf32ppcwindiss ;;
- powerpc-*-lynxos*)	targ_emul=ppclynx ;;
-+powerpc-*-aros*)	targ_emul=elf32ppc ;;
- pru*-*-*)		targ_emul=pruelf ;;
- riscv32*-*-linux*)	targ_emul=elf32lriscv
- 			targ_extra_emuls="elf32lriscv_ilp32f elf32lriscv_ilp32 elf64lriscv elf64lriscv_lp64f elf64lriscv_lp64"
-diff -ruN binutils-2.32/ld/emulparams/aarch64elf_aros.sh binutils-2.32-aros/ld/emulparams/aarch64elf_aros.sh
---- binutils-2.32/ld/emulparams/aarch64elf_aros.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/ld/emulparams/aarch64elf_aros.sh	2019-01-19 17:10:54.000000000 +0100
+ x86_64-*-rdos*)		targ_emul=elf64rdos
+ 			;;
+ x86_64-*-cloudabi*)	targ_emul=elf_x86_64_cloudabi
+diff -ruN binutils-2.35/ld/emulparams/aarch64elf_aros.sh binutils-2.35.aros/ld/emulparams/aarch64elf_aros.sh
+--- binutils-2.35/ld/emulparams/aarch64elf_aros.sh	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/ld/emulparams/aarch64elf_aros.sh	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1 @@
 +. ${srcdir}/emulparams/aarch64elf.sh
-diff -ruN binutils-2.32/ld/emulparams/aarch64elfb_aros.sh binutils-2.32-aros/ld/emulparams/aarch64elfb_aros.sh
---- binutils-2.32/ld/emulparams/aarch64elfb_aros.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/ld/emulparams/aarch64elfb_aros.sh	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/ld/emulparams/aarch64elfb_aros.sh binutils-2.35.aros/ld/emulparams/aarch64elfb_aros.sh
+--- binutils-2.35/ld/emulparams/aarch64elfb_aros.sh	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/ld/emulparams/aarch64elfb_aros.sh	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1 @@
 +. ${srcdir}/emulparams/aarch64elfb.sh
-diff -ruN binutils-2.32/ld/emulparams/armelf_aros.sh binutils-2.32-aros/ld/emulparams/armelf_aros.sh
---- binutils-2.32/ld/emulparams/armelf_aros.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/ld/emulparams/armelf_aros.sh	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/ld/emulparams/armelf_aros.sh binutils-2.35.aros/ld/emulparams/armelf_aros.sh
+--- binutils-2.35/ld/emulparams/armelf_aros.sh	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/ld/emulparams/armelf_aros.sh	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1,7 @@
 +. ${srcdir}/emulparams/armelf_linux_eabi.sh
 +OUTPUT_FORMAT="elf32-littlearm-aros"
@@ -707,32 +705,11 @@ diff -ruN binutils-2.32/ld/emulparams/armelf_aros.sh binutils-2.32-aros/ld/emulp
 +
 +TEXT_START_ADDR=0x80000000
 +SEPARATE_CODE=yes
-diff -ruN binutils-2.32/ld/emulparams/armelfb_aros.sh binutils-2.32-aros/ld/emulparams/armelfb_aros.sh
---- binutils-2.32/ld/emulparams/armelfb_aros.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.32-aros/ld/emulparams/armelfb_aros.sh	2019-01-19 17:10:54.000000000 +0100
+diff -ruN binutils-2.35/ld/emulparams/armelfb_aros.sh binutils-2.35.aros/ld/emulparams/armelfb_aros.sh
+--- binutils-2.35/ld/emulparams/armelfb_aros.sh	1970-01-01 00:00:00.000000000 +0000
++++ binutils-2.35.aros/ld/emulparams/armelfb_aros.sh	2019-01-19 16:10:54.000000000 +0000
 @@ -0,0 +1,4 @@
 +. ${srcdir}/emulparams/armelf_aros.sh
 +OUTPUT_FORMAT="elf32-bigarm-aros"
 +BIG_OUTPUT_FORMAT="elf32-bigarm-aros"
 +LITTLE_OUTPUT_FORMAT="elf32-littlearm-aros"
-diff -ruN binutils-2.32/libiberty/pex-unix.c binutils-2.32.aros/libiberty/pex-unix.c
---- binutils-2.32/libiberty/pex-unix.c	2019-01-19 16:01:34.000000000 +0000
-+++ binutils-2.32.aros/libiberty/pex-unix.c	2019-01-19 16:10:54.000000000 +0000
-@@ -305,7 +305,7 @@
- 				 int, int, int, int,
- 				 const char **, int *);
- static int pex_unix_close (struct pex_obj *, int);
--static int pex_unix_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
-+static pid_t pex_unix_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
- 			  int, const char **, int *);
- static int pex_unix_pipe (struct pex_obj *, int *, int);
- static FILE *pex_unix_fdopenr (struct pex_obj *, int, int);
-@@ -766,7 +766,7 @@
- 
- /* Wait for a child process to complete.  */
- 
--static int
-+static pid_t
- pex_unix_wait (struct pex_obj *obj, pid_t pid, int *status,
- 	       struct pex_time *time, int done, const char **errmsg,
- 	       int *err)
