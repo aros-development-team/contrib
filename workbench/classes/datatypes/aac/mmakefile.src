@@ -1,0 +1,19 @@
+#   $Id$
+
+# Have a look at doc/PATENTS
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+FILES := aacclass
+
+#MM- contrib-datatypes-complete : contrib-datatype-aac
+#MM contrib-datatype-aac : includes linklibs linklibs-faad
+
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
+USER_LDFLAGS  := -static
+
+%build_module mmake=contrib-datatype-aac \
+    modname=aac modtype=datatype \
+    files="$(FILES)" uselibs="faad stdc stdcio"
+
+%common
