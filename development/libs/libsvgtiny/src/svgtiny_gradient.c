@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include "svgtiny.h"
 #include "svgtiny_internal.h"
