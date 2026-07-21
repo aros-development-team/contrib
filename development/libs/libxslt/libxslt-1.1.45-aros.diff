@@ -1,0 +1,33 @@
+diff -ruN libxslt-1.1.45/configure libxslt-1.1.45.aros/configure
+--- libxslt-1.1.45/configure	2025-11-30 06:59:59.000000000 +0000
++++ libxslt-1.1.45.aros/configure	2026-07-21 11:23:04.968283495 +0000
+@@ -15861,7 +15861,7 @@
+   ;;
+   *)
+   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in ${LIBXML_CONFIG_PREFIX}/bin
++for as_dir in ${LIBXML_CONFIG_PREFIX} ${LIBXML_CONFIG_PREFIX}/bin
+ do
+   IFS=$as_save_IFS
+   case $as_dir in #(((
+@@ -15909,7 +15909,7 @@
+   ;;
+   *)
+   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in ${LIBXML_CONFIG_PREFIX}/bin
++for as_dir in ${LIBXML_CONFIG_PREFIX} ${LIBXML_CONFIG_PREFIX}/bin
+ do
+   IFS=$as_save_IFS
+   case $as_dir in #(((
+diff -ruN libxslt-1.1.45/configure.ac libxslt-1.1.45.aros/configure.ac
+--- libxslt-1.1.45/configure.ac	2025-11-30 06:59:31.000000000 +0000
++++ libxslt-1.1.45.aros/configure.ac	2026-07-21 11:23:04.972082395 +0000
+@@ -327,7 +327,7 @@
+ AC_SUBST(LIBXML_REQUIRED_VERSION)
+ if test "x$LIBXML_CONFIG_PREFIX" != "x"
+ then
+-	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false], [${LIBXML_CONFIG_PREFIX}/bin])
++	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false], [${LIBXML_CONFIG_PREFIX} ${LIBXML_CONFIG_PREFIX}/bin])
+ else
+ 	AC_PATH_TOOL([XML_CONFIG], [xml2-config], [false])
+ fi
