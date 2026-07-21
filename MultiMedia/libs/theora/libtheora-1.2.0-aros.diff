@@ -1,0 +1,40 @@
+diff -ruN libtheora-1.2.0/config.sub libtheora-1.2.0.aros/config.sub
+--- libtheora-1.2.0/config.sub	2022-01-31 14:43:17.000000000 +0000
++++ libtheora-1.2.0.aros/config.sub	2011-12-27 10:21:52.575097366 +0000
+@@ -1300,6 +1300,8 @@
+ 	commodore*)
+ 		vendor=cbm
+ 		;;
++	-aros)
++		;;
+ 	*)
+ 		;;
+ esac
+diff -ruN libtheora-1.2.0/configure libtheora-1.2.0.aros/configure
+--- libtheora-1.2.0/configure	2025-03-29 06:07:39.000000000 +0000
++++ libtheora-1.2.0.aros/configure	2011-12-27 10:22:31.356545090 +0000
+@@ -14785,6 +14785,10 @@
+ cflags_save="$CFLAGS"
+ if test $cc_compiler != "gcc" ; then
+         case $host in
++        m68k-*-aros)
++                DEBUG="-g -Wall -Wno-parentheses -DDEBUG -D__NO_MATH_INLINES"
++                CFLAGS="-Wall -Wno-parentheses"
++                PROFILE="-Wall -Wno-parentheses -pg -g -DDEBUG";;
+         *)
+                 DEBUG="-g -DDEBUG"
+                 CFLAGS="-O"
+diff -ruN libtheora-1.2.0/configure.ac libtheora-1.2.0.aros/configure.ac
+--- libtheora-1.2.0/configure.ac	2025-03-29 06:06:12.000000000 +0000
++++ libtheora-1.2.0.aros/configure.ac	2011-12-27 10:23:23.475691517 +0000
+@@ -192,6 +192,10 @@
+ cflags_save="$CFLAGS"
+ if test $cc_compiler != "gcc" ; then
+         case $host in 
++        m68k-*-aros)
++                DEBUG="-g -Wall -Wno-parentheses -DDEBUG -D__NO_MATH_INLINES"
++                CFLAGS="-Wall -Wno-parentheses"
++                PROFILE="-Wall -Wno-parentheses -pg -g -DDEBUG";;
+         *)
+                 DEBUG="-g -DDEBUG"
+                 CFLAGS="-O"
