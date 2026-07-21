@@ -1176,7 +1176,7 @@ static void xmlreader_error_handler(void *out, xmlError *error)
 
 static void xmlreader_pusherror(lua_State *L)
 {
-  xmlError *e = xmlGetLastError();
+  const xmlError *e = xmlGetLastError();
   if (e==NULL)
     luaL_error(L, "error was NULL");
   xml_push_error(L, e);

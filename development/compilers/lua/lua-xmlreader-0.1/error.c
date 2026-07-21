@@ -1,12 +1,13 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include <libxml/tree.h>
 #include <libxml/xmlerror.h>
-/* TODO: wrap the error object so user code can retrieve and query the last 
+/* TODO: wrap the error object so user code can retrieve and query the last
  * error */
-/* Mostly ripped from code in parser.c and error.c in libxml. Not ideal, but 
+/* Mostly ripped from code in parser.c and error.c in libxml. Not ideal, but
  * it seems impossible to hook into libxml's error string generation */
-int xml_push_error(lua_State *L, xmlErrorPtr err)
+int xml_push_error(lua_State *L, const xmlError *err)
 {
   if (err==NULL)
     luaL_error(L, "a NULL error was raised. Should not happen");
