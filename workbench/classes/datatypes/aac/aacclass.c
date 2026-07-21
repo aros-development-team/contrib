@@ -10,10 +10,15 @@
     SDTA_Sample attributes.  Multichannel (5.1) streams are down-mixed
     to stereo by the decoder.
 
-    Also parses ID3v2 (2.2, 2.3, 2.4) and ID3v1 / ID3v1.1 tags and
-    exposes title, artist, album, year, copyright and comment via the
-    standard DTA_ObjName / ObjAuthor / ObjAnnotation / ObjCopyright /
-    ObjVersion datatypes attributes.
+    AAC audio inside an MP4 (ISO-BMFF) container - .m4a/.m4b files,
+    and .aac files as written e.g. by ffmpeg without '-f adts' - is
+    demuxed with faad2's mp4ff and decoded the same way.
+
+    Also parses ID3v2 (2.2, 2.3, 2.4) and ID3v1 / ID3v1.1 tags (or the
+    iTunes-style metadata of MP4 files) and exposes title, artist,
+    album, year, copyright and comment via the standard DTA_ObjName /
+    ObjAuthor / ObjAnnotation / ObjCopyright / ObjVersion datatypes
+    attributes.
 */
 
 #include <stdio.h>
@@ -41,6 +46,7 @@
 #include <aros/symbolsets.h>
 
 #include <neaacdec.h>
+#include <mp4ff.h>
 
 #include "debug.h"
 #include "aacclass.h"
@@ -146,6 +152,39 @@ static BOOL aac_EnsureCapacity(struct AACDecodeCtx *ctx, ULONG needed)
     }
     ctx->aac_PCM = newbuf;
     ctx->aac_PCMCapacity = newcap;
+    return TRUE;
+}
+
+/* Append one decoded frame's worth of PCM to the destination buffer,
+ * capturing the output format from the first frame that carries audio.
+ */
+static BOOL aac_AppendFrame(struct AACDecodeCtx *ctx,
+                            const NeAACDecFrameInfo *fi, const void *frame)
+{
+    ULONG bytes;
+
+    if (fi->samples == 0 || !frame)
+        return TRUE;
+
+    bytes = (ULONG)fi->samples * sizeof(WORD);
+
+    if (ctx->aac_SampleRate == 0)
+    {
+        ctx->aac_SampleRate = fi->samplerate;
+        ctx->aac_Channels   = fi->channels;
+        D(bug("[aac.dt] output: rate %lu, channels %u\n",
+              ctx->aac_SampleRate, ctx->aac_Channels));
+    }
+
+    if (!aac_EnsureCapacity(ctx, ctx->aac_PCMUsed + bytes))
+    {
+        D(bug("[aac.dt] out of memory\n"));
+        ctx->aac_Error = TRUE;
+        return FALSE;
+    }
+
+    CopyMem((APTR)frame, ctx->aac_PCM + ctx->aac_PCMUsed, bytes);
+    ctx->aac_PCMUsed += bytes;
     return TRUE;
 }
 
@@ -645,28 +684,8 @@ static BOOL aac_DecodeStream(struct AACDecodeCtx *ctx)
             break;
         }
 
-        if (fi.samples > 0 && frame)
-        {
-            ULONG bytes = (ULONG)fi.samples * sizeof(WORD);
-
-            if (ctx->aac_SampleRate == 0)
-            {
-                ctx->aac_SampleRate = fi.samplerate;
-                ctx->aac_Channels   = fi.channels;
-                D(bug("[aac.dt] output: rate %lu, channels %u\n",
-                      ctx->aac_SampleRate, ctx->aac_Channels));
-            }
-
-            if (!aac_EnsureCapacity(ctx, ctx->aac_PCMUsed + bytes))
-            {
-                D(bug("[aac.dt] out of memory\n"));
-                ctx->aac_Error = TRUE;
-                goto out;
-            }
-
-            CopyMem(frame, ctx->aac_PCM + ctx->aac_PCMUsed, bytes);
-            ctx->aac_PCMUsed += bytes;
-        }
+        if (!aac_AppendFrame(ctx, &fi, frame))
+            goto out;
 
         if (fi.bytesconsumed == 0 && fi.samples == 0)
             break;
@@ -680,6 +699,175 @@ static BOOL aac_DecodeStream(struct AACDecodeCtx *ctx)
 
 out:
     NeAACDecClose(dec);
+    return ok;
+}
+
+/**************************************************************************/
+/* MP4 (ISO-BMFF) container decode via mp4ff                              */
+/**************************************************************************/
+
+static uint32_t aac_MP4Read(void *udata, void *buffer, uint32_t length)
+{
+    struct AACDecodeCtx *ctx = (struct AACDecodeCtx *)udata;
+    LONG r = Read(ctx->aac_File, buffer, (LONG)length);
+    return (r < 0) ? 0 : (uint32_t)r;
+}
+
+static uint32_t aac_MP4Seek(void *udata, uint64_t position)
+{
+    struct AACDecodeCtx *ctx = (struct AACDecodeCtx *)udata;
+    /* like fseek(): 0 on success */
+    return (Seek(ctx->aac_File, (LONG)position, OFFSET_BEGINNING) < 0)
+           ? (uint32_t)-1 : 0;
+}
+
+/* Find the first track whose decoder config libfaad accepts */
+static LONG aac_MP4FindTrack(mp4ff_t *mp4)
+{
+    LONG i, numTracks = mp4ff_total_tracks(mp4);
+
+    for (i = 0; i < numTracks; i++)
+    {
+        unsigned char *buff = NULL;
+        unsigned int   buff_size = 0;
+        mp4AudioSpecificConfig mp4ASC;
+
+        mp4ff_get_decoder_config(mp4, i, &buff, &buff_size);
+        if (buff)
+        {
+            char rc = NeAACDecAudioSpecificConfig(buff, buff_size, &mp4ASC);
+            free(buff);
+            if (rc < 0)
+                continue;
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static void aac_MP4Meta(struct AACDecodeCtx *ctx, APTR pool, mp4ff_t *mp4)
+{
+    struct { STRPTR *target; int32_t (*get)(const mp4ff_t *, char **); }
+    fields[] =
+    {
+        { &ctx->aac_Title,     mp4ff_meta_get_title   },
+        { &ctx->aac_Artist,    mp4ff_meta_get_artist  },
+        { &ctx->aac_Album,     mp4ff_meta_get_album   },
+        { &ctx->aac_Year,      mp4ff_meta_get_date    },
+        { &ctx->aac_Genre,     mp4ff_meta_get_genre   },
+        { &ctx->aac_Track,     mp4ff_meta_get_track   },
+        { &ctx->aac_Comment,   mp4ff_meta_get_comment },
+        { NULL, NULL }
+    };
+    LONG i;
+
+    for (i = 0; fields[i].target; i++)
+    {
+        char *value = NULL;
+        if (fields[i].get(mp4, &value) && value)
+        {
+            if (*value && !*fields[i].target)
+                *fields[i].target = aac_PoolDupBytes(pool,
+                                                     (const UBYTE *)value,
+                                                     strlen(value));
+            free(value);
+        }
+    }
+}
+
+static BOOL aac_DecodeMP4(struct AACDecodeCtx *ctx, APTR pool)
+{
+    NeAACDecHandle           dec;
+    NeAACDecConfigurationPtr cfg;
+    mp4ff_callback_t         cb;
+    mp4ff_t                 *mp4;
+    unsigned char           *asc = NULL;
+    unsigned int             asc_size = 0;
+    unsigned long            samplerate = 0;
+    unsigned char            channels = 0;
+    LONG                     track, numSamples, i;
+    BOOL                     ok = FALSE;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.read      = aac_MP4Read;
+    cb.seek      = aac_MP4Seek;
+    cb.user_data = ctx;
+
+    Seek(ctx->aac_File, 0, OFFSET_BEGINNING);
+
+    mp4 = mp4ff_open_read(&cb);
+    if (!mp4)
+        return FALSE;
+
+    dec = NeAACDecOpen();
+    if (!dec)
+    {
+        mp4ff_close(mp4);
+        return FALSE;
+    }
+
+    cfg = NeAACDecGetCurrentConfiguration(dec);
+    cfg->outputFormat = FAAD_FMT_16BIT;
+    cfg->downMatrix   = 1;      /* fold 5.1 down to stereo */
+    NeAACDecSetConfiguration(dec, cfg);
+
+    track = aac_MP4FindTrack(mp4);
+    if (track < 0)
+    {
+        D(bug("[aac.dt] no decodable AAC track in MP4 container\n"));
+        goto out;
+    }
+
+    mp4ff_get_decoder_config(mp4, track, &asc, &asc_size);
+    if (!asc)
+        goto out;
+
+    if (NeAACDecInit2(dec, asc, asc_size, &samplerate, &channels) < 0)
+    {
+        D(bug("[aac.dt] NeAACDecInit2 failed\n"));
+        free(asc);
+        goto out;
+    }
+    free(asc);
+
+    D(bug("[aac.dt] mp4: track %ld, rate %lu, channels %u\n",
+          track, samplerate, channels));
+
+    numSamples = mp4ff_num_samples(mp4, track);
+
+    for (i = 0; i < numSamples; i++)
+    {
+        unsigned char    *sample = NULL;
+        unsigned int      samplesize = 0;
+        NeAACDecFrameInfo fi;
+        void             *frame;
+
+        if (!mp4ff_read_sample(mp4, track, i, &sample, &samplesize))
+            break;
+
+        frame = NeAACDecDecode(dec, &fi, sample, samplesize);
+        free(sample);
+
+        if (fi.error)
+        {
+            D(bug("[aac.dt] mp4 decode error %u (%s)\n", fi.error,
+                  NeAACDecGetErrorMessage(fi.error)));
+            break;
+        }
+
+        if (!aac_AppendFrame(ctx, &fi, frame))
+            goto out;
+    }
+
+    ok = (ctx->aac_PCMUsed > 0 && ctx->aac_SampleRate != 0);
+
+    if (ok)
+        aac_MP4Meta(ctx, pool, mp4);
+
+out:
+    NeAACDecClose(dec);
+    mp4ff_close(mp4);
     return ok;
 }
 
@@ -699,6 +887,8 @@ static BOOL ReadAAC(Class *cl, Object *o)
     LONG                id3v1size;
     LONG                filesize;
     STRPTR              annotation;
+    BOOL                ismp4 = FALSE;
+    BOOL                decoded;
 
     D(bug("aac.datatype/ReadAAC()\n"));
 
@@ -727,38 +917,62 @@ static BOOL ReadAAC(Class *cl, Object *o)
         return FALSE;
     }
 
-    ctx.aac_File  = handle;
-    ctx.aac_InBuf = AllocVec(AAC_INPUT_BUFFER_SIZE, MEMF_PUBLIC);
-    if (!ctx.aac_InBuf)
+    ctx.aac_File = handle;
+
+    /* MP4 (ISO-BMFF) container? First atom is size(4) + 'ftyp'. */
     {
-        SetIoErr(ERROR_NO_FREE_STORE);
-        return FALSE;
+        UBYTE hdr[8];
+        Seek(handle, 0, OFFSET_BEGINNING);
+        if (Read(handle, hdr, 8) == 8
+            && hdr[4] == 'f' && hdr[5] == 't'
+            && hdr[6] == 'y' && hdr[7] == 'p')
+            ismp4 = TRUE;
     }
 
-    id3v2size = aac_ParseID3v2(&ctx, id->aacd_StringPool, handle);
+    if (ismp4)
+    {
+        D(bug("[aac.dt] MP4 container detected\n"));
+        decoded = aac_DecodeMP4(&ctx, id->aacd_StringPool);
+    }
+    else
+    {
+        ctx.aac_InBuf = AllocVec(AAC_INPUT_BUFFER_SIZE, MEMF_PUBLIC);
+        if (!ctx.aac_InBuf)
+        {
+            SetIoErr(ERROR_NO_FREE_STORE);
+            return FALSE;
+        }
 
-    id3v1size = aac_ParseID3v1(&ctx, id->aacd_StringPool, handle);
+        id3v2size = aac_ParseID3v2(&ctx, id->aacd_StringPool, handle);
 
-    Seek(handle, 0, OFFSET_END);
-    filesize = Seek(handle, 0, OFFSET_CURRENT);
-    ctx.aac_StreamLeft = filesize - (LONG)id3v2size - id3v1size;
+        id3v1size = aac_ParseID3v1(&ctx, id->aacd_StringPool, handle);
 
-    /* Rewind past the ID3v2 tag for the decoder. */
-    Seek(handle, id3v2size, OFFSET_BEGINNING);
+        Seek(handle, 0, OFFSET_END);
+        filesize = Seek(handle, 0, OFFSET_CURRENT);
+        ctx.aac_StreamLeft = filesize - (LONG)id3v2size - id3v1size;
 
-    if (!aac_DecodeStream(&ctx) || ctx.aac_Error
+        /* Rewind past the ID3v2 tag for the decoder. */
+        Seek(handle, id3v2size, OFFSET_BEGINNING);
+
+        decoded = aac_DecodeStream(&ctx);
+    }
+
+    if (!decoded || ctx.aac_Error
         || ctx.aac_Channels == 0 || ctx.aac_Channels > 2)
     {
         D(bug("[aac.dt] decode failed (used=%lu rate=%lu channels=%u)\n",
               ctx.aac_PCMUsed, ctx.aac_SampleRate, ctx.aac_Channels));
-        FreeVec(ctx.aac_InBuf);
+        if (ctx.aac_InBuf) FreeVec(ctx.aac_InBuf);
         if (ctx.aac_PCM) FreeVec(ctx.aac_PCM);
         SetIoErr(ERROR_OBJECT_WRONG_TYPE);
         return FALSE;
     }
 
-    FreeVec(ctx.aac_InBuf);
-    ctx.aac_InBuf = NULL;
+    if (ctx.aac_InBuf)
+    {
+        FreeVec(ctx.aac_InBuf);
+        ctx.aac_InBuf = NULL;
+    }
 
     sampletype = (ctx.aac_Channels == 2) ? SDTST_S16S : SDTST_M16S;
     framecount = ctx.aac_PCMUsed

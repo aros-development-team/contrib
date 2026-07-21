@@ -7,13 +7,14 @@ include $(SRCDIR)/config/aros-contrib.cfg
 FILES := aacclass
 
 #MM- contrib-datatypes-complete : contrib-datatype-aac
-#MM contrib-datatype-aac : includes linklibs linklibs-faad
+#MM contrib-datatype-aac : includes linklibs linklibs-faad linklibs-mp4ff
 
+USER_CPPFLAGS := -DHAVE_STDINT_H
 USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
 USER_LDFLAGS  := -static
 
 %build_module mmake=contrib-datatype-aac \
     modname=aac modtype=datatype \
-    files="$(FILES)" uselibs="faad stdc stdcio"
+    files="$(FILES)" uselibs="mp4ff faad stdc stdcio"
 
 %common
