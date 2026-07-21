@@ -1,0 +1,66 @@
+# Copyright © 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+# Have a look at doc/PATENTS
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+###################################################################################
+# Static link library version of libfaad (faad2), used by e.g. the aac.datatype.
+
+FAAD_LIBFILES := \
+    bits \
+    cfft \
+    common \
+    decoder \
+    drc \
+    drm_dec \
+    error \
+    filtbank \
+    hcr \
+    huffman \
+    ic_predict \
+    is \
+    lt_predict \
+    mdct \
+    mp4 \
+    ms \
+    output \
+    pns \
+    ps_dec \
+    ps_syntax \
+    pulse \
+    rvlc \
+    sbr_dct \
+    sbr_dec \
+    sbr_e_nf \
+    sbr_fbt \
+    sbr_hfadj \
+    sbr_hfgen \
+    sbr_huff \
+    sbr_qmf \
+    sbr_syntax \
+    sbr_tf_grid \
+    specrec \
+    ssr \
+    ssr_fb \
+    ssr_ipqf \
+    syntax \
+    tns
+
+NOWARN_FLAGS := $(NOWARN_CPP)
+
+USER_CFLAGS   := -DHAVE_CONFIG_H $(NOWARN_FLAGS)
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
+
+#MM- linklibs : linklibs-faad
+#MM linklibs-faad : includes
+
+%build_linklib mmake=linklibs-faad libname=faad \
+    files="$(FAAD_LIBFILES)" \
+    objdir=$(OBJDIR)/linklib
+
+INCLUDE_FILES := neaacdec.h faad.h
+%copy_includes mmake=includes-copy
+
+%common
