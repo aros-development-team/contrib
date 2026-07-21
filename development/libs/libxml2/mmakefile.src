@@ -4,10 +4,10 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-development : development-libxml2
-#MM- development-libxml2 : workbench-libs-z-linklib workbench-libs-lzma-library-linklib development-libiconv
+#MM- development-libxml2 : development-libiconv
 
-XML2_VERS := 2.9
-XML2_VERSFULL := $(XML2_VERS).9
+XML2_VERS := 2.15
+XML2_VERSFULL := $(XML2_VERS).3
 
 REPOSITORIES := https://download.gnome.org/sources/libxml2/$(XML2_VERS) \
  http://bbgentoo.ilb.ru/distfiles \
@@ -16,14 +16,9 @@ REPOSITORIES := https://download.gnome.org/sources/libxml2/$(XML2_VERS) \
 
 XML2_OPTIONS = \
     --disable-shared \
-    --with-http=no \
-    --with-ftp=no \
     --with-modules=no \
-    --with-mem-debug=no \
     --with-iconv=no \
     --with-debug=no \
-    --with-run-debug=no \
-    --enable-shared=no \
     --with-threads=no \
     --with-python=no \
     --libdir=$(AROS_LIB) \
@@ -41,6 +36,6 @@ libxml2-post:
         && $(SED) -i -e "s|$(AROS_DEVELOPER)|\$${prefix}|g" $(AROS_DEV_BINS)/xml2-config ; \
 	fi
 
-%fetch_and_build_gnu_development package=libxml2 version=$(XML2_VERSFULL) patch=yes \
+%fetch_and_build_gnu_development package=libxml2 version=$(XML2_VERSFULL) patch=no \
     package_repo=$(REPOSITORIES) suffixes="tar.xz tar.gz" postinstall=libxml2-post \
     extracflags="$(XML2_CFLAGS)" extraoptions="$(XML2_OPTIONS)" nlsflag=no xflag=no
