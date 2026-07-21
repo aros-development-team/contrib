@@ -63,4 +63,31 @@ USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)
 INCLUDE_FILES := neaacdec.h faad.h
 %copy_includes mmake=includes-copy
 
+###################################################################################
+# Static link library version of mp4ff (faad2's MP4/M4A demuxer), used
+# together with libfaad to play AAC audio from MP4 containers.
+
+MP4FF_LIBFILES := \
+    mp4ff/mp4ff \
+    mp4ff/mp4atom \
+    mp4ff/mp4meta \
+    mp4ff/mp4sample \
+    mp4ff/mp4tagupdate \
+    mp4ff/mp4util
+
+# mp4ff must not see HAVE_CONFIG_H - its "../../config.h" include does
+# not resolve in the vendored layout; HAVE_STDINT_H is all it needs.
+USER_CFLAGS   := -DHAVE_STDINT_H -DUSE_TAGGING $(NOWARN_FLAGS)
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/mp4ff
+
+#MM- linklibs : linklibs-mp4ff
+#MM linklibs-mp4ff : includes
+
+%build_linklib mmake=linklibs-mp4ff libname=mp4ff \
+    files="$(MP4FF_LIBFILES)" \
+    objdir=$(OBJDIR)/linklib-mp4ff
+
+INCLUDE_FILES := mp4ff.h mp4ff_int_types.h
+%copy_includes mmake=includes-copy dir=mp4ff
+
 %common
