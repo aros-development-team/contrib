@@ -64,6 +64,13 @@ ADD2LIBS("datatypes/sound.datatype", 0, struct Library *, SoundBase);
 #define AAC_REFILL_THRESHOLD    16384
 #define AAC_INITIAL_PCM_BYTES   (1 * 1024 * 1024)
 
+/* libfaad decodes with large stack frames (ifilter_bank alone keeps
+ * ~8KB of coefficients on the stack; measured usage is beyond 40KB),
+ * far more than a caller like MultiView has - so imports run on a
+ * support process with a suitably sized stack.
+ */
+#define AAC_IMPORTPROC_STACK    131072
+
 #define AAC_STR_MAX             256
 #define AAC_ANNOT_MAX           1024
 
@@ -1009,6 +1016,99 @@ static BOOL ReadAAC(Class *cl, Object *o)
 }
 
 /**************************************************************************/
+/* Import support process                                                 */
+/*                                                                        */
+/* The decode runs on its own process because libfaad needs far more     */
+/* stack than the task instantiating the object may have available      */
+/* (cf. the heic datatype, which does the same for libheif).            */
+/**************************************************************************/
+
+struct ImportProcMsg
+{
+    struct Message  ipm_ExecMessage;
+    Object         *ipm_Object;
+    Class          *ipm_Class;
+    IPTR           *ipm_retval;
+};
+
+static VOID ImportProc_entry(void)
+{
+    struct Process *proc = (struct Process *)FindTask(NULL);
+    struct ImportProcMsg *imsg;
+    volatile IPTR exitflag = 0;
+    IPTR retval;
+
+    WaitPort(&proc->pr_MsgPort);
+    imsg = (struct ImportProcMsg *)GetMsg(&proc->pr_MsgPort);
+
+    imsg->ipm_retval = (IPTR *)&exitflag;
+
+    if (ReadAAC(imsg->ipm_Class, imsg->ipm_Object))
+        retval = 0;
+    else
+    {
+        retval = (IPTR)IoErr();
+        if (retval == 0)
+            retval = ERROR_OBJECT_WRONG_TYPE;
+    }
+
+    exitflag = retval;
+    ReplyMsg(&imsg->ipm_ExecMessage);
+    /* Wait until its safe for us to exit... */
+    while (exitflag == retval)
+        ;
+}
+
+static LONG CreateImportProcess(Class *cl, Object *obj)
+{
+    struct MsgPort *mport;
+    struct Process *proc;
+    LONG retval = ERROR_NO_FREE_STORE;
+
+    if ((mport = CreateMsgPort()))
+    {
+        struct ImportProcMsg *imsg = (struct ImportProcMsg *)
+            AllocVec(sizeof(struct ImportProcMsg), MEMF_PUBLIC);
+        if (imsg)
+        {
+            BOOL got = FALSE;
+
+            imsg->ipm_Object                      = obj;
+            imsg->ipm_Class                       = cl;
+            imsg->ipm_ExecMessage.mn_Node.ln_Type = NT_MESSAGE;
+            imsg->ipm_ExecMessage.mn_ReplyPort    = mport;
+
+            if ((proc = CreateNewProcTags(NP_Entry, ImportProc_entry,
+                              NP_StackSize, AAC_IMPORTPROC_STACK,
+                              NP_Name, "aac.datatype import process",
+                          TAG_DONE)))
+            {
+                IPTR *exitflag = NULL;
+                struct ImportProcMsg *reply;
+
+                PutMsg(&proc->pr_MsgPort, &imsg->ipm_ExecMessage);
+                WaitPort(mport);
+                while ((reply = (struct ImportProcMsg *)GetMsg(mport)) != NULL)
+                {
+                    if (!got)
+                    {
+                        exitflag = reply->ipm_retval;
+                        retval = (LONG)*exitflag;
+                        got = TRUE;
+                    }
+                }
+                if (exitflag)
+                    *exitflag = !*exitflag;
+            }
+            FreeVec(imsg);
+        }
+        DeleteMsgPort(mport);
+    }
+
+    return retval;
+}
+
+/**************************************************************************/
 
 IPTR AAC__OM_NEW(Class *cl, Object *o, struct opSet *msg)
 {
@@ -1017,9 +1117,11 @@ IPTR AAC__OM_NEW(Class *cl, Object *o, struct opSet *msg)
     retval = DoSuperMethodA(cl, o, (Msg)msg);
     if (retval)
     {
-        if (!ReadAAC(cl, (Object *)retval))
+        LONG error = CreateImportProcess(cl, (Object *)retval);
+        if (error != 0)
         {
             CoerceMethod(cl, (Object *)retval, OM_DISPOSE);
+            SetIoErr(error);
             retval = 0;
         }
     }
