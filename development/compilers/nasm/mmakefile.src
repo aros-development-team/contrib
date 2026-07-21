@@ -109,7 +109,7 @@ PATCHSPECS :=$(ARCHBASE)-aros.diff:$(ARCHBASE):-p1
 ARCHSRCDIR := $(PORTSDIR)/nasm/$(ARCHBASE)
 
 %fetch mmake=contrib-development-nasm-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/nasm \
-    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.gz" \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.xz tar.gz" \
     patches_specs=$(PATCHSPECS)
 
 %create_patch mmake=contrib-development-nasm-create-patch \
