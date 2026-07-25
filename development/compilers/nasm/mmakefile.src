@@ -104,7 +104,8 @@ EXEDIR := $(AROS_CONTRIB)/$(AROS_DIR_DEVELOPER)/nasm
 
 NASMVERS := 2.16.03
 ARCHBASE := nasm-$(NASMVERS)
-REPOSITORIES = https://www.nasm.us/pub/nasm/releasebuilds/$(NASMVERS)
+REPOSITORIES = https://www.nasm.us/pub/nasm/releasebuilds/$(NASMVERS) \
+ https://pub.sortix.org/mirror/nasm
 PATCHSPECS :=$(ARCHBASE)-aros.diff:$(ARCHBASE):-p1
 ARCHSRCDIR := $(PORTSDIR)/nasm/$(ARCHBASE)
 
