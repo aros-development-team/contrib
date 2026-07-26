@@ -1,4 +1,4 @@
-# Copyright © 2008-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2008-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -17,7 +17,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- includes-iconv : contrib-libiconv
 #MM- linklibs-iconv : contrib-libiconv
 
-ICONV_VERS := 1.14
+ICONV_VERS := 1.19
 ICONV_OPTS := \
     --bindir=$(AROS_CONTRIB_DEVELOPER)/$(AROS_DIR_BIN) \
     --libdir=$(AROS_CONTRIB_LIB) \
@@ -25,5 +25,5 @@ ICONV_OPTS := \
 
 USER_CFLAGS := $(CFLAGS_GNU11)
 
-%fetch_and_build_gnu_development package=libiconv version=$(ICONV_VERS) patch=no \
+%fetch_and_build_gnu_development package=libiconv version=$(ICONV_VERS) patch=yes \
     prefix=$(AROS_CONTRIB_SDK) suffixes="tar.gz" extraoptions="$(ICONV_OPTS)"
