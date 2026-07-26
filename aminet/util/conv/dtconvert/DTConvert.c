@@ -394,12 +394,12 @@ void chkabort( void )
 long wbmain( struct WBStartup *wbstartup )
 {
     /* Call main like SAS-C */
-    return( (int)main( 0L, (STRPTR *)wbstartup ) );
+    return( (int)main( 0L, (char **)wbstartup ) );
 }
 #endif /* _DCC */
 
 
-int main( int ac, STRPTR *av )
+int main( int ac, char **av )
 {
     LONG               numArgs,
                        x;

@@ -4,7 +4,7 @@
 /* DTConvert.c */
 void chkabort ( void );
 long wbmain ( struct WBStartup *wbstartup );
-int main ( int ac , STRPTR *av );
+int main ( int ac , char **av );
 void Message ( STRPTR fmt , ...);
 
 /* gui.c */
