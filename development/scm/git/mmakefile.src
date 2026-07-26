@@ -1,4 +1,4 @@
-# Copyright © 2016-2018, The AROS Development Team. All rights reserved.
+# Copyright © 2016-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros.cfg
@@ -11,10 +11,12 @@ GIT_DESTDIR     :=	$(AROS_DEVELOPER)
 GIT_NATIVEDIR  :=	/$(AROS_DIR_DEVELOPER)
 
 GIT_ENV := \
-           UNAME="$(CROSSTOOLSDIR)/$(AROS_TARGET_CPU)-aros-uname"
+           UNAME="$(CROSSTOOLSDIR)/$(AROS_TARGET_CPU)-aros-uname" \
+           NO_RUST="YesPlease"
 GIT_CONFIG_ENV := \
             ac_cv_fread_reads_directories="no" \
             ac_cv_snprintf_returns_bogus="no" \
+            ac_cv_iconv_omits_bom="no" \
             CURL_CONFIG="$(AROS_DEVELOPER)/bin/curl-config" \
             $(GIT_ENV)
 GIT_INSTALL_ENV := \
@@ -26,7 +28,7 @@ GIT_OPTIONS := \
             --with-curl \
             --with-lib='$(AROS_LIB)'
 
-GIT_VERSION := 2.17.1
+GIT_VERSION := 2.55.0
 GIT_PORTDIR := $(PORTSDIR)/git
 
 GIT_ARCHBASE := v$(GIT_VERSION)
