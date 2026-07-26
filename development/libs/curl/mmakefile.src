@@ -1,4 +1,4 @@
-# Copyright © 2009-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2009-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -7,56 +7,21 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- development-curl : contrib-openssl linklibs-pthread workbench-libs-zstd-library-linklib
 #MM development-curl-fixconfig : development-curl-pakagefiles
 
-REPOSITORIES := https://curl.haxx.se/download \
+REPOSITORIES := https://curl.se/download \
  http://piotrkosoft.net/pub/mirrors/curl \
  https://ftp.icm.edu.pl/packages/curl \
  https://mirror.sobukus.de/files/src/curl
 
-CURL_VERSION=7.76.0
+CURL_VERSION=8.21.0
 USER_CPPFLAGS= \
-        -D_XOPEN_SOURCE=500 \
+        -D_XOPEN_SOURCE=600 \
         -D__BSD_VISIBLE=1
-CURL_OPTIONS=--disable-shared --without-random --without-libpsl --disable-threaded-resolver --disable-ipv6 --disable-ntlm-wb --with-ssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB)
+CURL_OPTIONS=--disable-shared --without-libpsl --disable-threaded-resolver --disable-ipv6 --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet"
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
     patch=yes package_repo="$(REPOSITORIES)" \
     extraoptions="$(CURL_OPTIONS)" \
-    postconfigure="development-curl-fixenv" postinstall="development-curl-fixconfig"
-
-#MM
-development-curl-fixenv :
-	@for file in $(GENDIR)/$(CURDIR)/curl/lib/curl_config.h; \
-	do \
-	$(SED) -i -e 's@/\* #undef HAVE_SOCKET \*/@#define HAVE_SOCKET 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_SELECT \*/@#define HAVE_SELECT 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG1 \*/@#define RECVFROM_TYPE_ARG1 int@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG2 \*/@#define RECVFROM_TYPE_ARG2 void *@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG3 \*/@#define RECVFROM_TYPE_ARG3 int@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG4 \*/@#define RECVFROM_TYPE_ARG4 int@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG5 \*/@#define RECVFROM_TYPE_ARG5 struct sockaddr *@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_ARG6 \*/@#define RECVFROM_TYPE_ARG6 int *@' $$file; \
-	$(SED) -i -e 's@/\* #undef RECVFROM_TYPE_RETV \*/@#define RECVFROM_TYPE_RETV int@' $$file; \
-	$(SED) -i -e 's@/\* #undef SELECT_TYPE_ARG1 \*/@#define SELECT_TYPE_ARG1 int@' $$file; \
-	$(SED) -i -e 's@/\* #undef SELECT_TYPE_ARG234 \*/@#define SELECT_TYPE_ARG234 fd_set *@' $$file; \
-	$(SED) -i -e 's@/\* #undef SELECT_TYPE_ARG5 \*/@#define SELECT_TYPE_ARG5 struct timeval *@' $$file; \
-	$(SED) -i -e 's@/\* #undef SELECT_TYPE_RETV \*/@#define SELECT_TYPE_RETV int@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_GETHOSTBYADDR \*/@#define HAVE_GETHOSTBYADDR 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_GETHOSTNAME \*/@#define HAVE_GETHOSTNAME 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_PROTOBYNAME \*/@#define HAVE_PROTOBYNAME 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_INET_ADDR \*/@#define HAVE_INET_ADDR 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_CLOSESOCKET_CAMEL \*/@#define HAVE_CLOSESOCKET_CAMEL 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_IOCTLSOCKET_CAMEL \*/@#define HAVE_IOCTLSOCKET_CAMEL 1@' $$file; \
-	$(SED) -i -e 's@/\* #undef HAVE_IOCTLSOCKET_CAMEL_FIONBIO \*/@#define HAVE_IOCTLSOCKET_CAMEL_FIONBIO 1@' $$file; \
-	$(SED) -i -e 's@#define HAVE_FCNTL 1@/\* #undef HAVE_FCNTL \*/@' $$file; \
-	$(SED) -i -e 's@#define HAVE_FCNTL_O_NONBLOCK 1@/\* #undef HAVE_FCNTL_O_NONBLOCK \*/@' $$file; \
-	$(SED) -i -e 's@#define HAVE_IOCTL 1@/\* #undef HAVE_IOCTL \*/@' $$file; \
-	$(SED) -i -e 's@#define HAVE_IOCTL_FIONBIO 1@/\* #undef HAVE_IOCTL_FIONBIO \*/@' $$file; \
-	$(SED) -i -e 's@#define HAVE_IOCTL_SIOCGIFADDR 1@/\* #undef HAVE_IOCTL_SIOCGIFADDR \*/@' $$file; \
-	done; \
-	for file in $(GENDIR)/$(CURDIR)/curl/src/Makefile; \
-	do \
-	$(SED) -i -e 's@-lssl -lssl -lcrypto -lz@-lssl -lcrypto -lz@' $$file; \
-	done
+    postinstall="development-curl-fixconfig"
 
 #MM
 development-curl-fixconfig :
