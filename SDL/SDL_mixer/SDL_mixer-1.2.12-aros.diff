@@ -1,17 +1,36 @@
-diff -ruN SDL_mixer-1.2.11/configure SDL_mixer-1.2.11.aros/configure
---- SDL_mixer-1.2.11/configure	2009-11-12 06:44:13.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/configure	2017-01-04 20:34:37.423517751 +0000
-@@ -12053,7 +12053,7 @@
+diff -ruN SDL_mixer-1.2.12/build-scripts/config.sub SDL_mixer-1.2.12.aros/build-scripts/config.sub
+--- SDL_mixer-1.2.12/build-scripts/config.sub	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/build-scripts/config.sub	2026-07-26 19:21:47.115655369 +0100
+@@ -245,6 +245,7 @@
+ 	# Some are omitted here because they have special meanings below.
+ 	1750a | 580 \
+ 	| a29k \
++	| aarch64 | aarch64_be \
+ 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
+ 	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
+ 	| am33_2.0 \
+@@ -326,6 +327,7 @@
+ 	# Recognize the basic CPU types with company name.
+ 	580-* \
+ 	| a29k-* \
++	| aarch64-* | aarch64_be-* \
+ 	| alpha-* | alphaev[4-8]-* | alphaev56-* | alphaev6[78]-* \
+ 	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
+ 	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* \
+diff -ruN SDL_mixer-1.2.12/configure SDL_mixer-1.2.12.aros/configure
+--- SDL_mixer-1.2.12/configure	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/configure	2026-07-26 19:21:47.115317769 +0100
+@@ -12013,7 +12013,7 @@
  
    if test "x$sdl_prefix$sdl_exec_prefix" = x ; then
  
 -pkg_failed=no
 +pkg_failed=yes
- { $as_echo "$as_me:$LINENO: checking for SDL" >&5
- $as_echo_n "checking for SDL... " >&6; }
+ { echo "$as_me:$LINENO: checking for SDL" >&5
+ echo $ECHO_N "checking for SDL... $ECHO_C" >&6; }
  
-@@ -13275,7 +13275,7 @@
-   $as_echo_n "(cached) " >&6
+@@ -13576,7 +13576,7 @@
+   echo $ECHO_N "(cached) $ECHO_C" >&6
  else
    ac_check_lib_save_LIBS=$LIBS
 -LIBS="-lvorbisfile  $LIBS"
@@ -19,20 +38,10 @@ diff -ruN SDL_mixer-1.2.11/configure SDL_mixer-1.2.11.aros/configure
  cat >conftest.$ac_ext <<_ACEOF
  /* confdefs.h.  */
  _ACEOF
-@@ -15227,7 +15227,8 @@
- if test -n "$CONFIG_FILES"; then
- 
- 
--ac_cr=''
-+ac_cr='
-+'
- ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
- if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
-   ac_cs_awk_cr='\\r'
-diff -ruN SDL_mixer-1.2.11/dynamic_mod.h SDL_mixer-1.2.11.aros/dynamic_mod.h
---- SDL_mixer-1.2.11/dynamic_mod.h	2009-11-07 05:00:12.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/dynamic_mod.h	2017-01-04 20:34:37.423517751 +0000
-@@ -31,11 +31,11 @@
+diff -ruN SDL_mixer-1.2.12/dynamic_mod.h SDL_mixer-1.2.12.aros/dynamic_mod.h
+--- SDL_mixer-1.2.12/dynamic_mod.h	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/dynamic_mod.h	2026-07-26 19:21:47.102306469 +0100
+@@ -30,11 +30,11 @@
  	void (*MikMod_Exit)(void);
  	CHAR* (*MikMod_InfoDriver)(void);
  	CHAR* (*MikMod_InfoLoader)(void);
@@ -46,10 +55,10 @@ diff -ruN SDL_mixer-1.2.11/dynamic_mod.h SDL_mixer-1.2.11.aros/dynamic_mod.h
  	BOOL (*Player_Active)(void);
  	void (*Player_Free)(MODULE*);
  	MODULE* (*Player_LoadGeneric)(MREADER*,int,BOOL);
-diff -ruN SDL_mixer-1.2.11/dynamic_ogg.h SDL_mixer-1.2.11.aros/dynamic_ogg.h
---- SDL_mixer-1.2.11/dynamic_ogg.h	2009-11-07 05:00:12.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/dynamic_ogg.h	2025-07-18 22:20:59.409594433 +0000
-@@ -32,7 +32,7 @@
+diff -ruN SDL_mixer-1.2.12/dynamic_ogg.h SDL_mixer-1.2.12.aros/dynamic_ogg.h
+--- SDL_mixer-1.2.12/dynamic_ogg.h	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/dynamic_ogg.h	2026-07-26 19:21:47.102357769 +0100
+@@ -31,7 +31,7 @@
  	void *handle;
  	int (*ov_clear)(OggVorbis_File *vf);
  	vorbis_info *(*ov_info)(OggVorbis_File *vf,int link);
@@ -58,10 +67,10 @@ diff -ruN SDL_mixer-1.2.11/dynamic_ogg.h SDL_mixer-1.2.11.aros/dynamic_ogg.h
  	ogg_int64_t (*ov_pcm_total)(OggVorbis_File *vf,int i);
  #ifdef OGG_USE_TREMOR
  	long (*ov_read)(OggVorbis_File *vf,char *buffer,int length, int *bitstream);
-diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
---- SDL_mixer-1.2.11/Makefile.in	2009-10-12 23:06:53.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/Makefile.in	2017-01-04 20:34:37.423517751 +0000
-@@ -32,7 +32,7 @@
+diff -ruN SDL_mixer-1.2.12/Makefile.in SDL_mixer-1.2.12.aros/Makefile.in
+--- SDL_mixer-1.2.12/Makefile.in	2012-01-15 22:01:04.000000000 +0000
++++ SDL_mixer-1.2.12.aros/Makefile.in	2026-07-26 19:21:47.102417769 +0100
+@@ -33,7 +33,7 @@
  SDL_CFLAGS = @SDL_CFLAGS@
  SDL_LIBS = @SDL_LIBS@
  
@@ -70,7 +79,7 @@ diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
  OBJECTS = @OBJECTS@
  VERSION_OBJECTS = @VERSION_OBJECTS@
  PLAYWAVE_OBJECTS = @PLAYWAVE_OBJECTS@
-@@ -46,7 +46,7 @@
+@@ -47,7 +47,7 @@
  LT_REVISION = @LT_REVISION@
  LT_LDFLAGS  = -no-undefined -rpath $(libdir) -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
  
@@ -79,9 +88,9 @@ diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
  
  $(srcdir)/configure: $(srcdir)/configure.in
  	@echo "Warning, configure.in is out of date"
-@@ -71,14 +71,14 @@
- -include $(PLAYMUS_OBJECTS:.lo=.d)
- @PLAYMUS_DEPENDS@
+@@ -62,14 +62,14 @@
+ 
+ .PHONY: all install install-hdrs install-lib install-bin uninstall uninstall-hdrs uninstall-lib uninstall-bin clean distclean dist
  
 -$(objects)/$(TARGET): $(OBJECTS) $(VERSION_OBJECTS)
 +$(objects)/$(SDL_TARGET): $(OBJECTS) $(VERSION_OBJECTS)
@@ -99,7 +108,7 @@ diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
  
  install: all install-hdrs install-lib #install-bin
  install-hdrs:
-@@ -89,9 +89,9 @@
+@@ -80,9 +80,9 @@
  	done
  	$(SHELL) $(auxdir)/mkinstalldirs $(libdir)/pkgconfig
  	$(INSTALL) -m 644 SDL_mixer.pc $(libdir)/pkgconfig/
@@ -111,7 +120,7 @@ diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
  install-bin:
  	$(SHELL) $(auxdir)/mkinstalldirs $(bindir)
  	$(LIBTOOL) --mode=install $(INSTALL) -m 755 $(objects)/playwave$(EXE) $(bindir)/playwave$(EXE)
-@@ -107,7 +107,7 @@
+@@ -98,7 +98,7 @@
  	rm -f $(libdir)/pkgconfig/SDL_mixer.pc
  	-rmdir $(libdir)/pkgconfig
  uninstall-lib:
@@ -120,10 +129,10 @@ diff -ruN SDL_mixer-1.2.11/Makefile.in SDL_mixer-1.2.11.aros/Makefile.in
  uninstall-bin:
  	rm -f $(bindir)/playwave$(EXE)
  	rm -f $(bindir)/playmus$(EXE)
-diff -ruN SDL_mixer-1.2.11/mixer.c SDL_mixer-1.2.11.aros/mixer.c
---- SDL_mixer-1.2.11/mixer.c	2009-11-12 06:41:28.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/mixer.c	2017-01-04 20:34:37.423517751 +0000
-@@ -513,6 +513,14 @@
+diff -ruN SDL_mixer-1.2.12/mixer.c SDL_mixer-1.2.12.aros/mixer.c
+--- SDL_mixer-1.2.12/mixer.c	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/mixer.c	2026-07-26 19:21:47.102501169 +0100
+@@ -538,6 +538,14 @@
  }
  
  
@@ -138,34 +147,10 @@ diff -ruN SDL_mixer-1.2.11/mixer.c SDL_mixer-1.2.11.aros/mixer.c
  /*
   * !!! FIXME: Ideally, we want a Mix_LoadSample_RW(), which will handle the
   *             generic setup, then call the correct file format loader.
-@@ -601,7 +609,7 @@
- 	if ( SDL_BuildAudioCVT(&wavecvt,
- 			wavespec.format, wavespec.channels, wavespec.freq,
- 			mixer.format, mixer.channels, mixer.freq) < 0 ) {
--		SDL_FreeWAV(chunk->abuf);
-+		Mix_FreeWAV(magic, chunk->abuf);
- 		free(chunk);
- 		return(NULL);
- 	}
-@@ -610,12 +618,12 @@
- 	wavecvt.buf = (Uint8 *)malloc(wavecvt.len*wavecvt.len_mult);
- 	if ( wavecvt.buf == NULL ) {
- 		SDL_SetError("Out of memory");
--		SDL_FreeWAV(chunk->abuf);
-+		Mix_FreeWAV(magic, chunk->abuf);
- 		free(chunk);
- 		return(NULL);
- 	}
- 	memcpy(wavecvt.buf, chunk->abuf, chunk->alen);
--	SDL_FreeWAV(chunk->abuf);
-+	Mix_FreeWAV(magic, chunk->abuf);
- 
- 	/* Run the audio converter */
- 	if ( SDL_ConvertAudio(&wavecvt) < 0 ) {
-diff -ruN SDL_mixer-1.2.11/music_mod.c SDL_mixer-1.2.11.aros/music_mod.c
---- SDL_mixer-1.2.11/music_mod.c	2009-11-12 07:48:25.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/music_mod.c	2017-01-04 20:34:37.423517751 +0000
-@@ -165,7 +165,7 @@
+diff -ruN SDL_mixer-1.2.12/music_mod.c SDL_mixer-1.2.12.aros/music_mod.c
+--- SDL_mixer-1.2.12/music_mod.c	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/music_mod.c	2026-07-26 19:21:47.102643969 +0100
+@@ -149,7 +149,7 @@
  	SDL_RWops *rw;
  } LMM_MREADER;
  
@@ -174,10 +159,10 @@ diff -ruN SDL_mixer-1.2.11/music_mod.c SDL_mixer-1.2.11.aros/music_mod.c
  {
  	LMM_MREADER* lmmmr = (LMM_MREADER*)mr;
  	if ( dir == SEEK_SET ) {
-diff -ruN SDL_mixer-1.2.11/timidity/config.h SDL_mixer-1.2.11.aros/timidity/config.h
---- SDL_mixer-1.2.11/timidity/config.h	2009-10-12 23:06:52.000000000 +0000
-+++ SDL_mixer-1.2.11.aros/timidity/config.h	2017-01-04 20:34:37.423517751 +0000
-@@ -176,6 +176,8 @@
+diff -ruN SDL_mixer-1.2.12/timidity/config.h SDL_mixer-1.2.12.aros/timidity/config.h
+--- SDL_mixer-1.2.12/timidity/config.h	2012-01-15 22:01:05.000000000 +0000
++++ SDL_mixer-1.2.12.aros/timidity/config.h	2026-07-26 19:21:47.102702469 +0100
+@@ -165,6 +165,8 @@
  
  #if defined(__WIN32__) || defined(__OS2__)
  #define DEFAULT_PATH	"C:\\TIMIDITY"
