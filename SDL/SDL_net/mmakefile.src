@@ -1,4 +1,4 @@
-# Copyright © 2008-2019, The AROS Development Team. All rights reserved.
+# Copyright © 2008-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -16,6 +16,6 @@ REPOSITORIES := https://www.libsdl.org/projects/SDL_net/release \
  https://gsdview.appspot.com/webports/mirror \
  https://floss.freebox.fr/packages
 
-%fetch_and_build_gnu_development package=SDL_net version=1.2.7 patch=yes \
+%fetch_and_build_gnu_development package=SDL_net version=1.2.8 patch=yes \
     package_repo="$(REPOSITORIES)" \
     suffixes="tar.gz" extraoptions="libdir=$(AROS_LIB)"
