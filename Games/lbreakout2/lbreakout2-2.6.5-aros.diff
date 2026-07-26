@@ -322,3 +322,21 @@ diff -ruN lbreakout2-2.6.5/server/levels/Makefile.in lbreakout2-2.6.5.aros/serve
  	done
  
  win32-install-script:
+--- lbreakout2-2.6.5/config.sub	2026-07-26 20:03:25.592725290 +0100
++++ lbreakout2-2.6.5.aros/config.sub	2026-07-26 20:03:25.593709490 +0100
+@@ -227,6 +227,7 @@
+ 	# Some are omitted here because they have special meanings below.
+ 	1750a | 580 \
+ 	| a29k \
++	| aarch64 | aarch64_be \
+ 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
+ 	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
+ 	| am33_2.0 \
+@@ -293,6 +294,7 @@
+ 	# Recognize the basic CPU types with company name.
+ 	580-* \
+ 	| a29k-* \
++	| aarch64-* | aarch64_be-* \
+ 	| alpha-* | alphaev[4-8]-* | alphaev56-* | alphaev6[78]-* \
+ 	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
+ 	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* \
