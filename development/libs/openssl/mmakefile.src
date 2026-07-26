@@ -1,15 +1,15 @@
-# Copyright © 2008-2020, The AROS Development Team. All rights reserved.
+# Copyright © 2008-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-OPENSSL_RELEASE=1.1.0
+OPENSSL_RELEASE=4.0
 REPOSITORIES = http://www.openssl.org/source/ \
  ftp://mirror.switch.ch/mirror/openssl/source/ \
  http://www.openssl.org/source/old/$(OPENSSL_RELEASE)/ \
  ftp://mirror.switch.ch/mirror/openssl/source/old/$(OPENSSL_RELEASE)/
 
-OPENSSL_VERSION=$(OPENSSL_RELEASE)h
+OPENSSL_VERSION=$(OPENSSL_RELEASE).1
 ARCHBASE := openssl-$(OPENSSL_VERSION)
 OPENSSL_SOURCE := $(PORTSDIR)/openssl/$(ARCHBASE)
 OPENSSL_BUILD_DIR := $(GENDIR)/$(CURDIR)/$(ARCHBASE)
@@ -29,7 +29,7 @@ else
 OPENSSL_TARGET := aros-$(AROS_TARGET_CPU)-buildsys
 endif
 
-OPENSSL_OPTIONS:=no-threads no-ssl3
+OPENSSL_OPTIONS:=no-threads no-ssl3 no-asm no-shared
 ifneq ($(AROS_TARGET_CPU),x86_64)
 OPENSSL_OPTIONS+=no-sse2
 endif

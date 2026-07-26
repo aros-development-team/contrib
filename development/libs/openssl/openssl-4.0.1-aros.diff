@@ -1,0 +1,324 @@
+--- openssl-4.0.1/Configurations/15-aros.conf	1970-01-01 01:00:00.000000000 +0100
++++ openssl-4.0.1.aros/Configurations/15-aros.conf	2026-07-26 21:41:56.712336633 +0100
+@@ -0,0 +1,75 @@
++my %targets = (
++    "aros-common" => {
++        template         => 1,
++        sys_id           => "AROS",
++        cflags           => add("-DNO_FORK -DOPENSSL_NO_SECURE_MEMORY -D_XOPEN_SOURCE=500 -D__BSD_VISIBLE=1"),
++        ex_libs          => "-lmiami -lnet",
++        perlasm_scheme   => "elf",
++        thread_scheme    => "(unknown)",
++        perl_platform    => 'Unix',
++    },
++    "aros-buildsys" => {
++        template         => 1,
++        inherit_from     => [ "aros-common" ],
++        CC               => "$ENV{'AROS_CC'}",
++        ARFLAGS          => "qc",
++        CFLAGS           => "$ENV{'AROS_CFLAGS'}",
++        RANLIB           => "$ENV{'AROS_RANLIB'}",
++    },
++    "aros-arm" => {
++        template         => 1,
++        bn_ops           => "BN_LLONG",
++    },
++    "aros-aarch64" => {
++        template         => 1,
++        bn_ops           => "SIXTY_FOUR_BIT_LONG",
++    },
++    "aros-i386" => {
++        template         => 1,
++        bn_ops           => "BN_LLONG",
++    },
++    "aros-m68k" => {
++        template         => 1,
++        bn_ops           => "BN_LLONG",
++    },
++    "aros-ppc" => {
++        template         => 1,
++        bn_ops           => "BN_LLONG",
++    },
++    "aros-riscv" => {
++        template         => 1,
++        bn_ops           => "BN_LLONG",
++    },
++    "aros-riscv64" => {
++        template         => 1,
++        bn_ops           => "SIXTY_FOUR_BIT_LONG",
++    },
++    "aros-x86_64" => {
++        template         => 1,
++        bn_ops           => "SIXTY_FOUR_BIT_LONG",
++    },
++    "aros-arm-buildsys" => {
++        inherit_from     => [ "aros-arm",  "aros-buildsys" ],
++    },
++    "aros-aarch64-buildsys" => {
++        inherit_from     => [ "aros-aarch64",  "aros-buildsys" ],
++    },
++    "aros-i386-buildsys" => {
++        inherit_from     => [ "aros-i386",  "aros-buildsys" ],
++    },
++    "aros-m68k-buildsys" => {
++        inherit_from     => [ "aros-m68k",  "aros-buildsys" ],
++    },
++    "aros-ppc-buildsys" => {
++        inherit_from     => [ "aros-ppc",  "aros-buildsys" ],
++    },
++    "aros-riscv-buildsys" => {
++        inherit_from     => [ "aros-riscv",  "aros-buildsys" ],
++    },
++    "aros-riscv64-buildsys" => {
++        inherit_from     => [ "aros-riscv64",  "aros-buildsys" ],
++    },
++    "aros-x86_64-buildsys" => {
++        inherit_from     => [ "aros-x86_64",  "aros-buildsys" ],
++    },
++);
+--- openssl-4.0.1/include/internal/sockets.h	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/include/internal/sockets.h	2026-07-26 21:18:09.036830448 +0100
+@@ -118,7 +118,7 @@
+ #endif
+ 
+ #ifdef OPENSSL_SYS_UNIX
+-#ifndef OPENSSL_SYS_TANDEM
++#if !defined(OPENSSL_SYS_TANDEM) && !defined(OPENSSL_SYS_AROS)
+ #include <poll.h>
+ #endif
+ #include <errno.h>
+--- openssl-4.0.1/include/internal/rio_notifier.h	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/include/internal/rio_notifier.h	2026-07-26 21:24:54.916802920 +0100
+@@ -26,7 +26,7 @@
+ #if !defined(RIO_NOTIFIER_METHOD)
+ #if defined(OPENSSL_SYS_WINDOWS)
+ #define RIO_NOTIFIER_METHOD RIO_NOTIFIER_METHOD_SOCKET
+-#elif defined(OPENSSL_SYS_UNIX)
++#elif defined(OPENSSL_SYS_UNIX) && !defined(OPENSSL_SYS_AROS)
+ #define RIO_NOTIFIER_METHOD RIO_NOTIFIER_METHOD_SOCKETPAIR
+ #else
+ #define RIO_NOTIFIER_METHOD RIO_NOTIFIER_METHOD_SOCKET
+--- openssl-4.0.1/apps/lib/apps.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/apps/lib/apps.c	2026-07-26 21:19:36.918430808 +0100
+@@ -3032,7 +3032,7 @@
+     return ret;
+ }
+ 
+-#elif defined(_SC_CLK_TCK) /* by means of unistd.h */
++#elif defined(_SC_CLK_TCK) || defined(OPENSSL_SYS_AROS) /* by means of unistd.h; AROS _SC_CLK_TCK is an enum */
+ #include <sys/times.h>
+ 
+ double app_tminterval(int stop, int usertime)
+--- openssl-4.0.1/apps/speed.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/apps/speed.c	2026-07-26 21:31:46.104855817 +0100
+@@ -77,7 +77,7 @@
+ #include <openssl/modes.h>
+ 
+ #ifndef HAVE_FORK
+-#if defined(OPENSSL_SYS_VMS) || defined(OPENSSL_SYS_WINDOWS) || defined(OPENSSL_SYS_VXWORKS)
++#if defined(OPENSSL_SYS_VMS) || defined(OPENSSL_SYS_WINDOWS) || defined(OPENSSL_SYS_VXWORKS) || defined(OPENSSL_SYS_AROS)
+ #define HAVE_FORK 0
+ #else
+ #define HAVE_FORK 1
+@@ -143,7 +143,37 @@
+ #define START 0
+ #define STOP 1
+ 
+-#ifdef SIGALRM
++#if defined(OPENSSL_SYS_AROS)
++
++/*
++ * AROS has no alarm() or interval timers; benchmark for the requested
++ * duration by polling a wall-clock deadline from the COND() macro.
++ */
++static time_t aros_alarm_deadline;
++static unsigned int aros_alarm(unsigned int secs)
++{
++    aros_alarm_deadline = (secs != 0) ? time(NULL) + (time_t)secs : 0;
++    return 0;
++}
++#define alarm aros_alarm
++
++static int aros_alarm_check(void)
++{
++    if (aros_alarm_deadline != 0 && time(NULL) >= aros_alarm_deadline)
++        run = 0;
++    return run;
++}
++#define AROS_COND_POLL(count) (((count) & 0xfff) != 0xfff || aros_alarm_check())
++
++static double Time_F(int s)
++{
++    double ret = app_tminterval(s, usertime);
++    if (s == STOP)
++        alarm(0);
++    return ret;
++}
++
++#elif defined(SIGALRM)
+ 
+ static void alarmed(ossl_unused int sig)
+ {
+@@ -584,7 +614,11 @@
+ static char *sigs_algname[MAX_SIG_NUM] = { NULL };
+ static double sigs_results[MAX_SIG_NUM][3]; /* keygen, sign, verify */
+ 
++#if defined(OPENSSL_SYS_AROS)
++#define COND(unused_cond) (run && AROS_COND_POLL(count) && count < (testmode ? 1 : INT_MAX))
++#else
+ #define COND(unused_cond) (run && count < (testmode ? 1 : INT_MAX))
++#endif
+ #define COUNT(d) (count)
+ 
+ #define TAG_LEN 16 /* 16 bytes tag length works for all AEAD modes */
+@@ -2501,7 +2535,7 @@
+             "You have chosen to measure elapsed time "
+             "instead of user CPU time.\n");
+ 
+-#if SIGALRM > 0
++#if SIGALRM > 0 && !defined(OPENSSL_SYS_AROS)
+     signal(SIGALRM, alarmed);
+ #endif
+ 
+--- openssl-4.0.1/apps/s_server.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/apps/s_server.c	2026-07-26 21:29:26.834300894 +0100
+@@ -534,9 +534,11 @@
+ #else
+         res = getpeername(sockfd, sa, (int *)&salen);
+ #endif
++#if !defined(OPENSSL_SYS_AROS)
+         if (res == 0)
+             res = getnameinfo(sa, salen, clientip, INET6_ADDRSTRLEN,
+                 0, 0, NI_NUMERICHOST);
++#endif
+     }
+     /* Name that matches "main" ctx */
+     servername = SSL_get_servername(s, TLSEXT_NAMETYPE_host_name);
+--- openssl-4.0.1/apps/include/http_server.h	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/apps/include/http_server.h	2026-07-26 21:31:46.104543617 +0100
+@@ -14,7 +14,7 @@
+ #include "log.h"
+ 
+ #ifndef HAVE_FORK
+-#if defined(OPENSSL_SYS_VMS) || defined(OPENSSL_SYS_WINDOWS)
++#if defined(OPENSSL_SYS_VMS) || defined(OPENSSL_SYS_WINDOWS) || defined(OPENSSL_SYS_AROS)
+ #define HAVE_FORK 0
+ #else
+ #define HAVE_FORK 1
+--- openssl-4.0.1/crypto/bio/bss_dgram.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/crypto/bio/bss_dgram.c	2026-07-26 21:20:19.202873229 +0100
+@@ -64,6 +64,13 @@
+ #undef NO_RECVMSG
+ #define NO_RECVMSG
+ #endif
++#if defined(OPENSSL_SYS_AROS)
++/* AROS bsdsocket.library has no sendmsg/recvmsg or ancillary data support */
++#undef NO_RECVMMSG
++#define NO_RECVMMSG
++#undef NO_RECVMSG
++#define NO_RECVMSG
++#endif
+ #if (defined(__ANDROID_API__) && __ANDROID_API__ < 21)
+ #undef NO_RECVMMSG
+ #define NO_RECVMMSG
+--- openssl-4.0.1/crypto/bio/bio_local.h	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/crypto/bio/bio_local.h	2026-07-26 21:24:54.916852220 +0100
+@@ -34,7 +34,7 @@
+ #error openssl/bio.h included before bio_local.h
+ #endif
+ 
+-#ifdef AI_PASSIVE
++#if defined(AI_PASSIVE) && !defined(OPENSSL_SYS_AROS)
+ 
+ /*
+  * There's a bug in VMS C header file netdb.h, where struct addrinfo
+--- openssl-4.0.1/crypto/bio/bio_addr.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/crypto/bio/bio_addr.c	2026-07-26 21:24:54.916946120 +0100
+@@ -233,7 +233,7 @@
+         return 0;
+ 
+     if (1) {
+-#ifdef AI_PASSIVE
++#if defined(AI_PASSIVE) && !defined(OPENSSL_SYS_AROS)
+         int ret = 0;
+         char host[NI_MAXHOST] = "", serv[NI_MAXSERV] = "";
+         int flags = 0;
+@@ -455,7 +455,7 @@
+     if (bai == NULL)
+         return;
+ 
+-#ifdef AI_PASSIVE
++#if defined(AI_PASSIVE) && !defined(OPENSSL_SYS_AROS)
+ #ifndef OPENSSL_NO_UNIX_SOCK
+ #define _cond bai->bai_family != AF_UNIX
+ #else
+@@ -713,7 +713,7 @@
+         return 0;
+ 
+     if (1) {
+-#ifdef AI_PASSIVE
++#if defined(AI_PASSIVE) && !defined(OPENSSL_SYS_AROS)
+         int gai_ret = 0, old_ret = 0;
+         struct addrinfo hints;
+ 
+--- openssl-4.0.1/providers/implementations/rands/seeding/rand_unix.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/providers/implementations/rands/seeding/rand_unix.c	2026-07-26 21:41:56.711848633 +0100
+@@ -12,6 +12,7 @@
+ #endif
+ #include "internal/e_os.h"
+ #include <stdio.h>
++#include <time.h>
+ #include "internal/cryptlib.h"
+ #include <openssl/rand.h>
+ #include <openssl/crypto.h>
+@@ -353,7 +354,16 @@
+      * Note: Sometimes getentropy() can be provided but not implemented
+      * internally. So we need to check errno for ENOSYS
+      */
+-#if !defined(__DragonFly__) && !defined(__NetBSD__) && !defined(__FreeBSD__)
++#if defined(OPENSSL_SYS_AROS)
++    /*
++     * AROS posixc.library implements getentropy(). Call it directly:
++     * runtime weak-symbol detection is not usable with the AROS static
++     * link model (collect-aros rejects weak undefined symbols).
++     */
++    if (getentropy(buf, buflen) == 0)
++        return (ssize_t)buflen;
++    return -1;
++#elif !defined(__DragonFly__) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+ #if defined(__GNUC__) && __GNUC__ >= 2 && defined(__ELF__) && !defined(__hpux)
+     extern int getentropy(void *buffer, size_t length) __attribute__((weak));
+ 
+--- openssl-4.0.1/test/drbgtest.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/test/drbgtest.c	2026-07-26 21:30:46.910847578 +0100
+@@ -269,7 +269,7 @@
+     return 1;
+ }
+ 
+-#if defined(OPENSSL_SYS_UNIX) && !defined(OPENSSL_RAND_SEED_EGD)
++#if defined(OPENSSL_SYS_UNIX) && !defined(OPENSSL_RAND_SEED_EGD) && !defined(OPENSSL_SYS_AROS)
+ /* number of children to fork */
+ #define DRBG_FORK_COUNT 9
+ /* two results per child, two for the parent */
+@@ -885,7 +885,7 @@
+ int setup_tests(void)
+ {
+     ADD_TEST(test_rand_reseed);
+-#if defined(OPENSSL_SYS_UNIX) && !defined(OPENSSL_RAND_SEED_EGD)
++#if defined(OPENSSL_SYS_UNIX) && !defined(OPENSSL_RAND_SEED_EGD) && !defined(OPENSSL_SYS_AROS)
+     ADD_ALL_TESTS(test_rand_fork_safety, RANDOM_SIZE);
+ #endif
+     ADD_TEST(test_rand_prediction_resistance);
+--- openssl-4.0.1/test/quicapitest.c	2026-06-09 12:36:41.000000000 +0100
++++ openssl-4.0.1.aros/test/quicapitest.c	2026-07-26 21:41:56.712238333 +0100
+@@ -3306,6 +3306,10 @@
+     return ret;
+ }
+ 
++#if defined(OPENSSL_SYS_AROS)
++#include <proto/miami.h>        /* inet_pton() via miami.library */
++#endif
++
+ /* Parameterized test: family=AF_INET/AF_INET6, e.g. "127.0.0.1" / "::1" */
+ static int test_quic_peer_addr_common(int family,
+     const char *srv_str, uint16_t srv_port,
