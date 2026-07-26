@@ -1,4 +1,4 @@
-# Copyright © 2004-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -8,5 +8,5 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 USER_CFLAGS := $(CFLAGS_GNU99) 
 
-%fetch_and_build_gnu_development package=bison version=1.875 patch=yes \
+%fetch_and_build_gnu_development package=bison version=3.8.2 patch=yes \
     extraoptions="--libdir=$(AROS_LIB)"

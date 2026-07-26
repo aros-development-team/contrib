@@ -1,0 +1,64 @@
+--- bison-3.8.2/lib/getprogname.c	2021-06-23 06:08:39.000000000 +0100
++++ bison-3.8.2.aros/lib/getprogname.c	2026-07-27 00:40:28.303893764 +0100
+@@ -287,6 +287,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+--- bison-3.8.2/lib/fpending.c	2021-03-10 05:41:25.000000000 +0000
++++ bison-3.8.2.aros/lib/fpending.c	2026-07-27 00:40:28.305209064 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+--- bison-3.8.2/lib/fseterr.c	2021-06-23 06:08:39.000000000 +0100
++++ bison-3.8.2.aros/lib/fseterr.c	2026-07-27 00:40:28.306409864 +0100
+@@ -53,7 +53,7 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->state != 0 /* CLOSED */)
+     fp->state = 5 /* ERR */;
+-#elif 0                             /* unknown  */
++#elif defined __AROS__
+   /* Portable fallback, based on an idea by Rich Felker.
+      Wow! 6 system calls for something that is just a bit operation!
+      Not activated on any system, because there is no way to repair FP when
+--- bison-3.8.2/lib/spawni.c	2021-06-23 06:08:39.000000000 +0100
++++ bison-3.8.2.aros/lib/spawni.c	2026-07-27 00:40:28.307286164 +0100
+@@ -752,7 +752,12 @@
+     new_pid = vfork ();
+   else
+ #endif
++#ifdef __AROS__
++    /* AROS has no fork(); posixc.library provides vfork()+exec. */
++    new_pid = vfork ();
++#else
+     new_pid = fork ();
++#endif
+ 
+   if (new_pid != 0)
+     {
+@@ -809,9 +814,15 @@
+ #endif
+ 
+   /* Set the process group ID.  */
++#ifdef __AROS__
++  /* AROS has no process groups. */
++  if ((flags & POSIX_SPAWN_SETPGROUP) != 0)
++    _exit (SPAWN_ERROR);
++#else
+   if ((flags & POSIX_SPAWN_SETPGROUP) != 0
+       && setpgid (0, attrp->_pgrp) != 0)
+     _exit (SPAWN_ERROR);
++#endif
+ 
+   /* Set the effective user and group IDs.  */
+   if ((flags & POSIX_SPAWN_RESETIDS) != 0
