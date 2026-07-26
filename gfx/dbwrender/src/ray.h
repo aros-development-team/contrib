@@ -612,9 +612,9 @@ extern void         read_vec();         /* v                            */
 extern void         read_attr();        /* attr                         */
 extern void         dofractal();        /* level a b c attr             */
 extern void         readimagefile();    /* opp                          */
-extern void         getinput(int, char *);         /* argc argv                    */
+extern void         getinput(int, char **);        /* argc argv                    */
 extern void         write_scanline();   /*                              */
-extern void         getoutput(int, char *);        /* argc argv                    */
+extern void         getoutput(int, char **);       /* argc argv                    */
 #endif
 
 #ifndef MODULE_INTER

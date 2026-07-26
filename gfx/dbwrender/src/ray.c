@@ -316,9 +316,7 @@ void do_raytrace()
      computes[col] = curr_runs;
 }
 
-int main(argc,argv)
-int     argc;
-char    *argv;
+int main(int argc, char **argv)
 {
      stacktop = curstack();
      stackbot = stacktop;
