@@ -125,9 +125,7 @@ char   heading[][7]={"North"," East ","South"," West "};
 
 int IsPassage(short, short);
 
-int main(argc,argv)
-int argc;
-char argv[];
+int main(int argc, char **argv)
 {
  if (!argc) WorkBench=TRUE;      /* open stuff */
  if (!(IntuitionBase = (struct IntuitionBase*)
