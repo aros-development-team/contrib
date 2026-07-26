@@ -103,7 +103,7 @@ contrib-openssl-install : $(OPENSSL_BUILD_DIR)/.install-flag
 $(OPENSSL_BUILD_DIR)/.installtest-flag : $(OPENSSL_BUILD_DIR)/.build-flag $(AROS_TESTS)/openssl
 	@$(RM) $@
 	@$(ECHO) "Installing    OpenSSL Tests..."
-	@$(CP) -L -R $(OPENSSL_BUILD_DIR)/test/* $(AROS_TESTS)/openssl/
+	@$(CP) -f -L -R $(OPENSSL_BUILD_DIR)/test/* $(AROS_TESTS)/openssl/
 	@$(RM) $(AROS_TESTS)/openssl/*.c
 	@$(RM) $(AROS_TESTS)/openssl/*.h
 	@$(RM) $(AROS_TESTS)/openssl/*.d
