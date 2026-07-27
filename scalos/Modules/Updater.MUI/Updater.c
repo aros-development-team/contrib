@@ -217,7 +217,9 @@ struct DosLibrary *DOSBase;
 struct IntuitionBase *IntuitionBase = NULL;
 struct Library *MUIMasterBase = NULL;
 struct ScalosBase *ScalosBase = NULL;
-extern struct Library *SocketBase;
+/* Definition (not extern): libcurl references SocketBase, and since
+   curl 8.x the AROS port no longer provides the variable itself. */
+struct Library *SocketBase = NULL;
 T_LOCALEBASE LocaleBase = NULL;
 T_TIMERBASE TimerBase;
 struct Library *IconBase = NULL;
