@@ -1,0 +1,31 @@
+diff -ruN gawk-5.4.1/builtin.c gawk-5.4.1.aros/builtin.c
+--- gawk-5.4.1/builtin.c	2026-07-09 17:47:00.000000000 +0100
++++ gawk-5.4.1.aros/builtin.c	2026-07-27 11:49:55.052792242 +0100
+@@ -25,6 +25,11 @@
+ 
+ 
+ #include "awk.h"
++
++#ifdef __AROS__
++/* AROS has no fork(); posixc.library provides vfork()+exec (see io.c). */
++#define fork() vfork()
++#endif
+ #if defined(HAVE_FCNTL_H)
+ #include <fcntl.h>
+ #endif
+diff -ruN gawk-5.4.1/io.c gawk-5.4.1.aros/io.c
+--- gawk-5.4.1/io.c	2026-07-09 17:47:00.000000000 +0100
++++ gawk-5.4.1.aros/io.c	2026-07-27 11:46:26.120007675 +0100
+@@ -25,6 +25,12 @@
+ 
+ #include "awk.h"
+ 
++#ifdef __AROS__
++/* AROS has no fork(); posixc.library provides vfork()+exec.  The child
++   code below only adjusts descriptors and execs immediately. */
++#define fork() vfork()
++#endif
++
+ #ifdef HAVE_SYS_PARAM_H
+ #undef RE_DUP_MAX	/* avoid spurious conflict w/regex.h */
+ #include <sys/param.h>
