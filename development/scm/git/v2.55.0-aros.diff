@@ -1,6 +1,5 @@
-diff -ruN git-2.55.0/abspath.c git-2.55.0.aros/abspath.c
 --- git-2.55.0/abspath.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/abspath.c	2026-07-26 22:56:17.783998268 +0100
++++ git-2.55.0.aros/abspath.c	2026-07-26 23:54:06.241252723 +0100
 @@ -10,6 +10,15 @@
  int is_directory(const char *path)
  {
@@ -17,9 +16,8 @@ diff -ruN git-2.55.0/abspath.c git-2.55.0.aros/abspath.c
  	return (!stat(path, &st) && S_ISDIR(st.st_mode));
  }
  
-diff -ruN git-2.55.0/abspath.c.orig git-2.55.0.aros/abspath.c.orig
 --- git-2.55.0/abspath.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/abspath.c.orig	2026-07-26 22:56:17.728332267 +0100
++++ git-2.55.0.aros/abspath.c.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,327 @@
 +#include "git-compat-util.h"
 +#include "abspath.h"
@@ -348,9 +346,8 @@ diff -ruN git-2.55.0/abspath.c.orig git-2.55.0.aros/abspath.c.orig
 +	} else
 +		strbuf_realpath(sb, path, 1);
 +}
-diff -ruN git-2.55.0/builtin/name-rev.c git-2.55.0.aros/builtin/name-rev.c
 --- git-2.55.0/builtin/name-rev.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/builtin/name-rev.c	2026-07-26 23:19:49.491962406 +0100
++++ git-2.55.0.aros/builtin/name-rev.c	2026-07-26 23:54:06.241252723 +0100
 @@ -285,7 +285,7 @@
  };
  
@@ -378,9 +375,8 @@ diff -ruN git-2.55.0/builtin/name-rev.c git-2.55.0.aros/builtin/name-rev.c
  		while (getline_fn(&scratch_buf, stdin) != EOF) {
  			name_rev_line(scratch_buf.buf, &cmd);
  			/*
-diff -ruN git-2.55.0/common-main.c git-2.55.0.aros/common-main.c
 --- git-2.55.0/common-main.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/common-main.c	2026-07-26 22:56:43.807538708 +0100
++++ git-2.55.0.aros/common-main.c	2026-07-26 23:54:06.241252723 +0100
 @@ -1,11 +1,19 @@
  #include "git-compat-util.h"
  #include "common-init.h"
@@ -402,9 +398,8 @@ diff -ruN git-2.55.0/common-main.c git-2.55.0.aros/common-main.c
  	result = cmd_main(argc, argv);
  
  	/* Not exit(3), but a wrapper calling our common_exit() */
-diff -ruN git-2.55.0/common-main.c.orig git-2.55.0.aros/common-main.c.orig
 --- git-2.55.0/common-main.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/common-main.c.orig	2026-07-26 22:56:17.731428967 +0100
++++ git-2.55.0.aros/common-main.c.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,13 @@
 +#include "git-compat-util.h"
 +#include "common-init.h"
@@ -419,9 +414,8 @@ diff -ruN git-2.55.0/common-main.c.orig git-2.55.0.aros/common-main.c.orig
 +	/* Not exit(3), but a wrapper calling our common_exit() */
 +	exit(result);
 +}
-diff -ruN git-2.55.0/compat/poll/poll.c git-2.55.0.aros/compat/poll/poll.c
 --- git-2.55.0/compat/poll/poll.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/compat/poll/poll.c	2026-07-26 22:56:17.784354268 +0100
++++ git-2.55.0.aros/compat/poll/poll.c	2026-07-26 23:54:06.241252723 +0100
 @@ -49,6 +49,10 @@
  # include <stdio.h>
  # include <conio.h>
@@ -433,9 +427,8 @@ diff -ruN git-2.55.0/compat/poll/poll.c git-2.55.0.aros/compat/poll/poll.c
  # include <sys/time.h>
  # include <sys/socket.h>
  # ifndef NO_SYS_SELECT_H
-diff -ruN git-2.55.0/compat/poll/poll.c.orig git-2.55.0.aros/compat/poll/poll.c.orig
 --- git-2.55.0/compat/poll/poll.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/compat/poll/poll.c.orig	2026-07-26 22:56:17.731899867 +0100
++++ git-2.55.0.aros/compat/poll/poll.c.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,610 @@
 +/* Emulation for poll(2)
 +   Contributed by Paolo Bonzini.
@@ -1047,9 +1040,8 @@ diff -ruN git-2.55.0/compat/poll/poll.c.orig git-2.55.0.aros/compat/poll/poll.c.
 +  return rc;
 +#endif
 +}
-diff -ruN git-2.55.0/compat/posix.h git-2.55.0.aros/compat/posix.h
 --- git-2.55.0/compat/posix.h	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/compat/posix.h	2026-07-26 22:58:43.715784279 +0100
++++ git-2.55.0.aros/compat/posix.h	2026-07-26 23:54:06.241252723 +0100
 @@ -124,7 +124,15 @@
  #include <assert.h>
  #include <regex.h>
@@ -1066,9 +1058,8 @@ diff -ruN git-2.55.0/compat/posix.h git-2.55.0.aros/compat/posix.h
  #if !defined(NO_POLL_H)
  #include <poll.h>
  #elif !defined(NO_SYS_POLL_H)
-diff -ruN git-2.55.0/config.mak.uname git-2.55.0.aros/config.mak.uname
 --- git-2.55.0/config.mak.uname	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/config.mak.uname	2026-07-26 23:33:58.220271088 +0100
++++ git-2.55.0.aros/config.mak.uname	2026-07-26 23:54:06.241252723 +0100
 @@ -4,11 +4,13 @@
  # Microsoft's Safe Exception Handling in libraries (such as zlib).
  # Typically required for VS2013+/32-bit compilation on Vista+ versions.
@@ -1112,9 +1103,8 @@ diff -ruN git-2.55.0/config.mak.uname git-2.55.0.aros/config.mak.uname
  ifeq ($(uname_S),OSF1)
  	# Need this for u_short definitions et al
  	BASIC_CFLAGS += -D_OSF_SOURCE
-diff -ruN git-2.55.0/config.mak.uname.orig git-2.55.0.aros/config.mak.uname.orig
 --- git-2.55.0/config.mak.uname.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/config.mak.uname.orig	2026-07-26 22:56:17.732871567 +0100
++++ git-2.55.0.aros/config.mak.uname.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,803 @@
 +# Platform specific Makefile tweaks based on uname detection
 +
@@ -1919,9 +1909,8 @@ diff -ruN git-2.55.0/config.mak.uname.orig git-2.55.0.aros/config.mak.uname.orig
 +	NO_STRCASESTR = YesPlease
 +	NO_STRLCPY = YesPlease
 +endif
-diff -ruN git-2.55.0/configure.ac git-2.55.0.aros/configure.ac
 --- git-2.55.0/configure.ac	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/configure.ac	2026-07-26 22:57:33.842949287 +0100
++++ git-2.55.0.aros/configure.ac	2026-07-27 08:54:47.478079480 +0100
 @@ -550,7 +550,7 @@
  
  GIT_STASH_FLAGS($CURLDIR)
@@ -1975,9 +1964,23 @@ diff -ruN git-2.55.0/configure.ac git-2.55.0.aros/configure.ac
  GIT_CONF_SUBST([NEEDS_LIBGEN])
  test -n "$NEEDS_LIBGEN" && LIBS="$LIBS -lgen"
  
-diff -ruN git-2.55.0/configure.ac.orig git-2.55.0.aros/configure.ac.orig
+@@ -757,6 +772,14 @@
+ AC_CHECK_HEADER([libintl.h],
+ [NO_GETTEXT=],
+ [NO_GETTEXT=YesPlease])
++case "$target" in
++*aros)
++	dnl A libintl.h in the SDK does not mean a usable gettext runtime;
++	dnl keep Git untranslated on AROS (matches config.mak.uname, which
++	dnl config.mak.autogen would otherwise override with this result).
++	NO_GETTEXT=YesPlease
++	;;
++esac
+ GIT_CONF_SUBST([NO_GETTEXT])
+ 
+ if test -z "$NO_GETTEXT"; then
 --- git-2.55.0/configure.ac.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/configure.ac.orig	2026-07-26 22:56:17.732889467 +0100
++++ git-2.55.0.aros/configure.ac.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,1323 @@
 +#                                               -*- Autoconf -*-
 +# Process this file with autoconf to produce a configure script.
@@ -3302,9 +3305,8 @@ diff -ruN git-2.55.0/configure.ac.orig git-2.55.0.aros/configure.ac.orig
 +## Output files
 +AC_CONFIG_FILES(["${config_file}":"${config_in}"])
 +AC_OUTPUT
-diff -ruN git-2.55.0/git-compat-util.h git-2.55.0.aros/git-compat-util.h
 --- git-2.55.0/git-compat-util.h	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/git-compat-util.h	2026-07-26 22:58:43.715663879 +0100
++++ git-2.55.0.aros/git-compat-util.h	2026-07-26 23:54:06.241252723 +0100
 @@ -163,6 +163,34 @@
  #include "compat/msvc.h"
  #endif
@@ -3340,9 +3342,8 @@ diff -ruN git-2.55.0/git-compat-util.h git-2.55.0.aros/git-compat-util.h
  /* used on Mac OS X */
  #ifdef PRECOMPOSE_UNICODE
  #include "compat/precompose_utf8.h"
-diff -ruN git-2.55.0/git-compat-util.h.orig git-2.55.0.aros/git-compat-util.h.orig
 --- git-2.55.0/git-compat-util.h.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/git-compat-util.h.orig	2026-07-26 22:56:17.735015267 +0100
++++ git-2.55.0.aros/git-compat-util.h.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,1140 @@
 +#ifndef GIT_COMPAT_UTIL_H
 +#define GIT_COMPAT_UTIL_H
@@ -4484,9 +4485,8 @@ diff -ruN git-2.55.0/git-compat-util.h.orig git-2.55.0.aros/git-compat-util.h.or
 +#ifdef DISABLE_SIGN_COMPARE_WARNINGS
 +DISABLE_WARNING(-Wsign-compare)
 +#endif
-diff -ruN git-2.55.0/Makefile git-2.55.0.aros/Makefile
 --- git-2.55.0/Makefile	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/Makefile	2026-07-26 22:59:27.543664534 +0100
++++ git-2.55.0.aros/Makefile	2026-07-26 23:54:06.241252723 +0100
 @@ -1857,6 +1857,9 @@
          ifdef NEEDS_CRYPTO_WITH_SSL
  		OPENSSL_LIBSSL += -lcrypto
@@ -4529,9 +4529,8 @@ diff -ruN git-2.55.0/Makefile git-2.55.0.aros/Makefile
  		echo "$$FLAGS" >GIT-PREFIX; \
  	fi
  
-diff -ruN git-2.55.0/Makefile.orig git-2.55.0.aros/Makefile.orig
 --- git-2.55.0/Makefile.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/Makefile.orig	2026-07-26 22:56:17.728267967 +0100
++++ git-2.55.0.aros/Makefile.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,4090 @@
 +# The default target of this Makefile is...
 +all::
@@ -8623,9 +8622,8 @@ diff -ruN git-2.55.0/Makefile.orig git-2.55.0.aros/Makefile.orig
 +	$(RM) \
 +		contrib/credential/osxkeychain/git-credential-osxkeychain \
 +		contrib/credential/osxkeychain/git-credential-osxkeychain.o
-diff -ruN git-2.55.0/refs/iterator.c git-2.55.0.aros/refs/iterator.c
 --- git-2.55.0/refs/iterator.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/refs/iterator.c	2026-07-26 22:56:17.785837168 +0100
++++ git-2.55.0.aros/refs/iterator.c	2026-07-26 23:54:06.241252723 +0100
 @@ -10,6 +10,12 @@
  #include "refs/refs-internal.h"
  #include "iterator.h"
@@ -8639,9 +8637,8 @@ diff -ruN git-2.55.0/refs/iterator.c git-2.55.0.aros/refs/iterator.c
  int ref_iterator_advance(struct ref_iterator *ref_iterator)
  {
  	return ref_iterator->vtable->advance(ref_iterator);
-diff -ruN git-2.55.0/refs/iterator.c.orig git-2.55.0.aros/refs/iterator.c.orig
 --- git-2.55.0/refs/iterator.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/refs/iterator.c.orig	2026-07-26 22:56:17.745267867 +0100
++++ git-2.55.0.aros/refs/iterator.c.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,441 @@
 +/*
 + * Generic reference iterator infrastructure. See refs-internal.h for
@@ -9084,9 +9081,8 @@ diff -ruN git-2.55.0/refs/iterator.c.orig git-2.55.0.aros/refs/iterator.c.orig
 +	ref_iterator_free(iter);
 +	return retval;
 +}
-diff -ruN git-2.55.0/t/unit-tests/clar/clar/sandbox.h git-2.55.0.aros/t/unit-tests/clar/clar/sandbox.h
 --- git-2.55.0/t/unit-tests/clar/clar/sandbox.h	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/t/unit-tests/clar/clar/sandbox.h	2026-07-26 23:49:47.703807173 +0100
++++ git-2.55.0.aros/t/unit-tests/clar/clar/sandbox.h	2026-07-26 23:54:06.241252723 +0100
 @@ -164,7 +164,7 @@
  
  	if (mkdir(_clar_tempdir, 0700) != 0)
@@ -9096,9 +9092,8 @@ diff -ruN git-2.55.0/t/unit-tests/clar/clar/sandbox.h git-2.55.0.aros/t/unit-tes
  	if (mktemp(_clar_tempdir) == NULL)
  		return -1;
  
-diff -ruN git-2.55.0/transport.c git-2.55.0.aros/transport.c
 --- git-2.55.0/transport.c	2026-06-29 15:58:39.000000000 +0100
-+++ git-2.55.0.aros/transport.c	2026-07-26 22:56:17.785986868 +0100
++++ git-2.55.0.aros/transport.c	2026-07-26 23:54:06.241252723 +0100
 @@ -79,6 +79,12 @@
  	return "";
  }
@@ -9112,9 +9107,8 @@ diff -ruN git-2.55.0/transport.c git-2.55.0.aros/transport.c
  static void set_upstreams(struct transport *transport, struct ref *refs,
  	int pretend)
  {
-diff -ruN git-2.55.0/transport.c.orig git-2.55.0.aros/transport.c.orig
 --- git-2.55.0/transport.c.orig	1970-01-01 01:00:00.000000000 +0100
-+++ git-2.55.0.aros/transport.c.orig	2026-07-26 22:56:17.773549267 +0100
++++ git-2.55.0.aros/transport.c.orig	2026-07-26 23:54:06.241252723 +0100
 @@ -0,0 +1,1735 @@
 +#define USE_THE_REPOSITORY_VARIABLE
 +
