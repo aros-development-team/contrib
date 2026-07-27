@@ -3,7 +3,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-MAKE_VERSION = 3.81
+MAKE_VERSION = 4.4.1
 
 #MM- contrib-gnu : contrib-gnu-make
 #MM- contrib-gnu-make : development-make
@@ -12,4 +12,4 @@ NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
 %fetch_and_build_gnu_development package=make version=$(MAKE_VERSION) patch=yes \
-     extraoptions="--disable-job-server CPPFLAGS='-U_AMIGA -UAMIGA'"
+     extraoptions="--disable-job-server --disable-year2038 CPPFLAGS='-U_AMIGA -UAMIGA'"
