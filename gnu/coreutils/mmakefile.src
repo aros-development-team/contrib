@@ -1,11 +1,9 @@
-# Copyright © 2008, 2025, The AROS Development Team. All rights reserved.
+# Copyright © 2008-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-##TODO: update to 9.7
-
-COREUTILS_VERSION = 6.9
+COREUTILS_VERSION = 9.11
 APPLYPATCH=yes
 
 #MM- contrib-gnu : contrib-gnu-coreutils
@@ -15,8 +13,8 @@ NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
 COREUTILS_SUFFIXES=tar.xz tar.bz2
-COREUTILS_OPTS=
+COREUTILS_OPTS=--disable-year2038 --disable-silent-rules --enable-no-install-program=stdbuf
 
 %fetch_and_build_gnu_development package=coreutils version=$(COREUTILS_VERSION) patch=$(APPLYPATCH) \
     extraoptions="$(COREUTILS_OPTS)" suffixes="$(COREUTILS_SUFFIXES)" \
-    use_build_env=yes config_env_extra="GETHOSTNAME_LIB=-lnet" 
+    use_build_env=yes config_env_extra="GETHOSTNAME_LIB=-lnet LIBS=-lnet" 
