@@ -1,9 +1,9 @@
-# Copyright © 2004-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-GREP_VERSION = 2.5.1
+GREP_VERSION = 3.12
 
 #MM- contrib-gnu : contrib-gnu-grep
 #MM- contrib-gnu-grep : development-grep
@@ -13,4 +13,4 @@ NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
 %fetch_and_build_gnu_development package=grep version=$(GREP_VERSION) patch=yes \
-	extraoptions="CPPFLAGS='-UMBS_SUPPORT'"
+    extraoptions="--disable-year2038"

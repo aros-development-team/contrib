@@ -1,0 +1,37 @@
+diff -ruN grep-3.12/gnulib-tests/getlocalename_l-unsafe.c grep-3.12.aros/gnulib-tests/getlocalename_l-unsafe.c
+--- grep-3.12/gnulib-tests/getlocalename_l-unsafe.c	2025-04-02 22:47:17.000000000 +0100
++++ grep-3.12.aros/gnulib-tests/getlocalename_l-unsafe.c	2026-07-27 12:14:30.655514621 +0100
+@@ -657,6 +657,9 @@
+       };
+       const char *name = ((struct __locale_t *) locale)->mb_cur_max == 4 ? "C.UTF-8" : "C";
+       return (struct string_with_storage) { name, STORAGE_INDEFINITE };
++#elif defined __AROS__
++      /* AROS only supports the "C" locale at the libc level. */
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #else
+  #error "Please port gnulib getlocalename_l-unsafe.c to your platform! Report this to bug-gnulib."
+ #endif
+diff -ruN grep-3.12/lib/fpending.c grep-3.12.aros/lib/fpending.c
+--- grep-3.12/lib/fpending.c	2025-01-02 04:07:16.000000000 +0000
++++ grep-3.12.aros/lib/fpending.c	2026-07-27 12:07:28.196844515 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+diff -ruN grep-3.12/lib/getprogname.c grep-3.12.aros/lib/getprogname.c
+--- grep-3.12/lib/getprogname.c	2025-01-02 02:33:12.000000000 +0000
++++ grep-3.12.aros/lib/getprogname.c	2026-07-27 12:11:28.177979205 +0100
+@@ -297,6 +297,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
