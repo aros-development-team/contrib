@@ -210,6 +210,24 @@ timeval_diff(struct timeval * tv0, struct timeval * tv1)
     return time1;
 }
 
+#ifdef __AROS__
+/* posixc.library declares but does not implement getrusage(); derive
+   user time from clock() and report zero system time. */
+static int
+aros_getrusage(int who, struct rusage *ru)
+{
+    clock_t c = clock();
+    (void) who;
+    memset(ru, 0, sizeof *ru);
+    ru->ru_utime.tv_sec = c / CLOCKS_PER_SEC;
+    ru->ru_utime.tv_usec = (long)((c % CLOCKS_PER_SEC)
+                                  * (1000000.0 / CLOCKS_PER_SEC));
+    return 0;
+}
+#define getrusage(who, ru) aros_getrusage(who, ru)
+#endif
+
+
 void
 cpu_util(double pcpu[3])
 {
