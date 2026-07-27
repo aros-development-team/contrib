@@ -41,6 +41,15 @@
 
 #include <time.h>      /* clock_gettime()*/
 #include <sys/types.h> /* sockets*/
+
+#if defined(__AROS__) && defined(__cplusplus)
+/* Include the libc++ headers that declare std::bind and friends BEFORE
+   the AROS bsdsocket headers define bind() as a function-like macro. */
+#include <functional>
+#include <algorithm>
+#include <unordered_map>
+#endif
+
 #include "ticks_os.h"
 
 /***********************************************************************************
