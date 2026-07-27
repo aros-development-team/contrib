@@ -5,7 +5,7 @@
 +    "aros-common" => {
 +        template         => 1,
 +        sys_id           => "AROS",
-+        cflags           => add("-DNO_FORK -DOPENSSL_NO_SECURE_MEMORY -D_XOPEN_SOURCE=500 -D__BSD_VISIBLE=1"),
++        cflags           => add("-DNO_FORK -DOPENSSL_NO_SECURE_MEMORY -D_XOPEN_SOURCE=600 -D__BSD_VISIBLE=1"),
 +        ex_libs          => "-lmiami -lnet",
 +        perlasm_scheme   => "elf",
 +        thread_scheme    => "(unknown)",
