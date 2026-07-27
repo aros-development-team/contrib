@@ -30,6 +30,15 @@
 #ifndef DEFS_H_
 #define DEFS_H_
 
+#if defined(__AROS__) && defined(__cplusplus)
+/* Pull in the C++ standard headers that declare std::bind and friends
+   BEFORE any AROS bsdsocket header defines bind() as a function-like
+   macro; their include guards then keep them out of macro range. */
+#include <functional>
+#include <algorithm>
+#include <unordered_map>
+#endif
+
 #define __STDC_FORMAT_MACROS
 
 #ifdef __windows__
