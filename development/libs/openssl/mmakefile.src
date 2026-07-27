@@ -91,6 +91,10 @@ $(OPENSSL_BUILD_DIR)/.install-flag : $(OPENSSL_BUILD_DIR)/.build-flag
 	done;
 	@cd $(OPENSSL_BUILD_DIR); \
 	env -i PATH="$(PATH)" make install_sw install_ssldirs
+	@for file in $(AROS_LIB)/pkgconfig/openssl.pc $(AROS_LIB)/pkgconfig/libssl.pc $(AROS_LIB)/pkgconfig/libcrypto.pc; \
+	do \
+		$(SED) -i -e "s|=/Developer|=$(AROS_DEVELOPER)|" $$file; \
+	done;
 	for file in $(AROS_DEVELOPER)/etc/ssl/openssl.cnf; \
 	do \
 		$(SED) -i -e 's|$$dir/certs	|/ENV/SYS/Certificates|' $$file; \

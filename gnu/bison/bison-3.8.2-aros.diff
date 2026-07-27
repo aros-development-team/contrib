@@ -1,16 +1,6 @@
---- bison-3.8.2/lib/getprogname.c	2021-06-23 06:08:39.000000000 +0100
-+++ bison-3.8.2.aros/lib/getprogname.c	2026-07-27 00:40:28.303893764 +0100
-@@ -287,6 +287,8 @@
-       close (fd);
-     }
-   return "?";
-+# elif defined __AROS__
-+  return "";
- # else
- #  error "getprogname module not ported to this OS"
- # endif
+diff -ruN bison-3.8.2/lib/fpending.c bison-3.8.2.aros/lib/fpending.c
 --- bison-3.8.2/lib/fpending.c	2021-03-10 05:41:25.000000000 +0000
-+++ bison-3.8.2.aros/lib/fpending.c	2026-07-27 00:40:28.305209064 +0100
++++ bison-3.8.2.aros/lib/fpending.c	2026-07-27 16:32:41.297764996 +0100
 @@ -56,6 +56,8 @@
    return fp->__bufp - fp->__buffer;
  #elif defined EPLAN9                 /* Plan9 */
@@ -20,9 +10,23 @@
  #else
  # error "Please port gnulib fpending.c to your platform!"
    return 1;
+diff -ruN bison-3.8.2/lib/fseterr.c bison-3.8.2.aros/lib/fseterr.c
 --- bison-3.8.2/lib/fseterr.c	2021-06-23 06:08:39.000000000 +0100
-+++ bison-3.8.2.aros/lib/fseterr.c	2026-07-27 00:40:28.306409864 +0100
-@@ -53,7 +53,7 @@
++++ bison-3.8.2.aros/lib/fseterr.c	2026-07-27 16:32:41.308682096 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
  #elif defined EPLAN9                /* Plan9 */
    if (fp->state != 0 /* CLOSED */)
      fp->state = 5 /* ERR */;
@@ -31,8 +35,21 @@
    /* Portable fallback, based on an idea by Rich Felker.
       Wow! 6 system calls for something that is just a bit operation!
       Not activated on any system, because there is no way to repair FP when
+diff -ruN bison-3.8.2/lib/getprogname.c bison-3.8.2.aros/lib/getprogname.c
+--- bison-3.8.2/lib/getprogname.c	2021-06-23 06:08:39.000000000 +0100
++++ bison-3.8.2.aros/lib/getprogname.c	2026-07-27 16:32:41.297705296 +0100
+@@ -287,6 +287,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff -ruN bison-3.8.2/lib/spawni.c bison-3.8.2.aros/lib/spawni.c
 --- bison-3.8.2/lib/spawni.c	2021-06-23 06:08:39.000000000 +0100
-+++ bison-3.8.2.aros/lib/spawni.c	2026-07-27 00:40:28.307286164 +0100
++++ bison-3.8.2.aros/lib/spawni.c	2026-07-27 16:32:41.297918896 +0100
 @@ -752,7 +752,12 @@
      new_pid = vfork ();
    else

@@ -1,0 +1,148 @@
+diff -ruN m4-1.4.21/lib/fpending.c m4-1.4.21.aros/lib/fpending.c
+--- m4-1.4.21/lib/fpending.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/fpending.c	2026-07-27 12:26:38.478631367 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+diff -ruN m4-1.4.21/lib/fpurge.c m4-1.4.21.aros/lib/fpurge.c
+--- m4-1.4.21/lib/fpurge.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/fpurge.c	2026-07-27 12:26:38.478684267 +0100
+@@ -142,6 +142,10 @@
+ # elif defined EPLAN9               /* Plan9 */
+   fp->rp = fp->wp = fp->lp = fp->buf;
+   return 0;
++# elif defined __AROS__
++  /* AROS FILE is opaque; nothing to purge at this level. */
++  (void) fp;
++  return 0;
+ # else
+ #  error "Please port gnulib fpurge.c to your platform! Look at the definitions of fflush, setvbuf and ungetc on your system, then report this to bug-gnulib."
+ # endif
+diff -ruN m4-1.4.21/lib/freadahead.c m4-1.4.21.aros/lib/freadahead.c
+--- m4-1.4.21/lib/freadahead.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/freadahead.c	2026-07-27 12:26:38.478779667 +0100
+@@ -97,6 +97,9 @@
+ #elif defined SLOW_BUT_NO_HACKS     /* users can define this */
+   abort ();
+   return 0;
++#elif defined __AROS__
++  /* AROS FILE is opaque; no look-ahead information available. */
++  return 0;
+ #else
+  #error "Please port gnulib freadahead.c to your platform! Look at the definition of fflush, fread, ungetc on your system, then report this to bug-gnulib."
+ #endif
+diff -ruN m4-1.4.21/lib/freading.c m4-1.4.21.aros/lib/freading.c
+--- m4-1.4.21/lib/freading.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/freading.c	2026-07-27 12:26:38.478735267 +0100
+@@ -72,6 +72,10 @@
+   if (fp->state == 0 /* CLOSED */ || fp->state == 4 /* WR */)
+     return 0;
+   return (fp->state == 3 /* RD */ && (fp->bufl == 0 || fp->rp < fp->wp));
++# elif defined __AROS__
++  /* AROS FILE is opaque; assume not reading. */
++  (void) fp;
++  return 0;
+ # else
+ #  error "Please port gnulib freading.c to your platform!"
+ # endif
+diff -ruN m4-1.4.21/lib/fseeko.c m4-1.4.21.aros/lib/fseeko.c
+--- m4-1.4.21/lib/fseeko.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/fseeko.c	2026-07-27 12:26:38.479022666 +0100
+@@ -107,6 +107,9 @@
+ #elif defined __OpenBSD__ && !defined __sferror /* OpenBSD >= 7.8 */
+   /* fseeko and fflush work as advertised.  */
+   if (0)
++#elif defined __AROS__
++  /* AROS FILE is opaque; trust fseeko/fflush to work as advertised. */
++  if (0)
+ #elif FUNC_FFLUSH_STDIN < 0 && 200809 <= _POSIX_VERSION
+   /* Cross-compiling to some other system advertising conformance to
+      POSIX.1-2008 or later.  Assume fseeko and fflush work as advertised.
+diff -ruN m4-1.4.21/lib/fseterr.c m4-1.4.21.aros/lib/fseterr.c
+--- m4-1.4.21/lib/fseterr.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/fseterr.c	2026-07-27 16:32:41.308828996 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->state != 0 /* CLOSED */)
+     fp->state = 5 /* ERR */;
+-#elif 0                             /* unknown  */
++#elif defined __AROS__
+   /* Portable fallback, based on an idea by Rich Felker.
+      Wow! 6 system calls for something that is just a bit operation!
+      Not activated on any system, because there is no way to repair FP when
+diff -ruN m4-1.4.21/lib/getlocalename_l-unsafe.c m4-1.4.21.aros/lib/getlocalename_l-unsafe.c
+--- m4-1.4.21/lib/getlocalename_l-unsafe.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/getlocalename_l-unsafe.c	2026-07-27 12:26:38.478919967 +0100
+@@ -658,6 +658,9 @@
+       };
+       const char *name = ((struct __locale_t *) locale)->mb_cur_max == 4 ? "C.UTF-8" : "C";
+       return (struct string_with_storage) { name, STORAGE_INDEFINITE };
++#elif defined __AROS__
++      /* AROS only supports the "C" locale at the libc level. */
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #else
+  #error "Please port gnulib getlocalename_l-unsafe.c to your platform! Report this to bug-gnulib."
+ #endif
+diff -ruN m4-1.4.21/lib/getprogname.c m4-1.4.21.aros/lib/getprogname.c
+--- m4-1.4.21/lib/getprogname.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/getprogname.c	2026-07-27 12:26:38.478838567 +0100
+@@ -251,6 +251,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff -ruN m4-1.4.21/lib/spawni.c m4-1.4.21.aros/lib/spawni.c
+--- m4-1.4.21/lib/spawni.c	2026-02-03 19:04:18.000000000 +0000
++++ m4-1.4.21.aros/lib/spawni.c	2026-07-27 12:26:38.479224966 +0100
+@@ -922,7 +922,12 @@
+     new_pid = vfork ();
+   else
+ #endif
++#ifdef __AROS__
++    /* AROS has no fork(); posixc.library provides vfork()+exec. */
++    new_pid = vfork ();
++#else
+     new_pid = fork ();
++#endif
+ 
+   if (new_pid != 0)
+     {
+@@ -978,9 +983,15 @@
+ #endif
+ 
+   /* Set the process group ID.  */
++#ifdef __AROS__
++  /* AROS has no process groups. */
++  if ((flags & POSIX_SPAWN_SETPGROUP) != 0)
++    _exit (SPAWN_ERROR);
++#else
+   if ((flags & POSIX_SPAWN_SETPGROUP) != 0
+       && setpgid (0, attrp->_pgrp) != 0)
+     _exit (SPAWN_ERROR);
++#endif
+ 
+   /* Set the effective user and group IDs.  */
+   if ((flags & POSIX_SPAWN_RESETIDS) != 0

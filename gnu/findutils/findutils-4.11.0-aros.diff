@@ -81,8 +81,21 @@ diff -ruN findutils-4.11.0/gl/lib/fseeko.c findutils-4.11.0.aros/gl/lib/fseeko.c
       POSIX.1-2008 or later.  Assume fseeko and fflush work as advertised.
 diff -ruN findutils-4.11.0/gl/lib/fseterr.c findutils-4.11.0.aros/gl/lib/fseterr.c
 --- findutils-4.11.0/gl/lib/fseterr.c	2026-06-24 10:56:19.000000000 +0100
-+++ findutils-4.11.0.aros/gl/lib/fseterr.c	2026-07-27 11:18:53.783374019 +0100
-@@ -53,7 +53,7 @@
++++ findutils-4.11.0.aros/gl/lib/fseterr.c	2026-07-27 16:32:41.308782896 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
  #elif defined EPLAN9                /* Plan9 */
    if (fp->state != 0 /* CLOSED */)
      fp->state = 5 /* ERR */;

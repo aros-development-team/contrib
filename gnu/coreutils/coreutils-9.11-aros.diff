@@ -140354,8 +140354,21 @@ diff -ruN -x autom4te.cache coreutils-9.11/lib/freading.c coreutils-9.11.aros/li
  # endif
 diff -ruN -x autom4te.cache coreutils-9.11/lib/fseterr.c coreutils-9.11.aros/lib/fseterr.c
 --- coreutils-9.11/lib/fseterr.c	2026-01-03 14:27:29.000000000 +0000
-+++ coreutils-9.11.aros/lib/fseterr.c	2026-07-27 09:16:16.652182526 +0100
-@@ -53,7 +53,7 @@
++++ coreutils-9.11.aros/lib/fseterr.c	2026-07-27 16:32:41.308734996 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
  #elif defined EPLAN9                /* Plan9 */
    if (fp->state != 0 /* CLOSED */)
      fp->state = 5 /* ERR */;

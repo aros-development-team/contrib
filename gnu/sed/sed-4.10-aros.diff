@@ -54,8 +54,21 @@ diff -ruN sed-4.10/gnulib-tests/getlocalename_l-unsafe.c sed-4.10.aros/gnulib-te
  #endif
 diff -ruN sed-4.10/lib/fseterr.c sed-4.10.aros/lib/fseterr.c
 --- sed-4.10/lib/fseterr.c	2026-01-03 01:28:00.000000000 +0000
-+++ sed-4.10.aros/lib/fseterr.c	2026-07-27 14:08:06.693237376 +0100
-@@ -53,7 +53,7 @@
++++ sed-4.10.aros/lib/fseterr.c	2026-07-27 16:32:41.308874096 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
  #elif defined EPLAN9                /* Plan9 */
    if (fp->state != 0 /* CLOSED */)
      fp->state = 5 /* ERR */;
