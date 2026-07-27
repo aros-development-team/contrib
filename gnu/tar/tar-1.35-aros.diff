@@ -1,0 +1,146 @@
+diff -ruN tar-1.35/gnu/fpending.c tar-1.35.aros/gnu/fpending.c
+--- tar-1.35/gnu/fpending.c	2023-06-17 07:47:52.000000000 +0100
++++ tar-1.35.aros/gnu/fpending.c	2026-07-27 14:25:47.816232596 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+diff -ruN tar-1.35/gnu/fseeko.c tar-1.35.aros/gnu/fseeko.c
+--- tar-1.35/gnu/fseeko.c	2023-04-18 08:41:35.000000000 +0100
++++ tar-1.35.aros/gnu/fseeko.c	2026-07-27 14:25:47.816380596 +0100
+@@ -101,6 +101,9 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->rp == fp->buf
+       && fp->wp == fp->buf)
++#elif defined __AROS__
++  /* AROS FILE is opaque; trust fseeko/fflush to work as advertised. */
++  if (0)
+ #elif FUNC_FFLUSH_STDIN < 0 && 200809 <= _POSIX_VERSION
+   /* Cross-compiling to some other system advertising conformance to
+      POSIX.1-2008 or later.  Assume fseeko and fflush work as advertised.
+diff -ruN tar-1.35/gnu/getprogname.c tar-1.35.aros/gnu/getprogname.c
+--- tar-1.35/gnu/getprogname.c	2023-06-17 07:47:53.000000000 +0100
++++ tar-1.35.aros/gnu/getprogname.c	2026-07-27 14:25:47.816318796 +0100
+@@ -297,6 +297,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff -ruN tar-1.35/lib/rtapelib.c tar-1.35.aros/lib/rtapelib.c
+--- tar-1.35/lib/rtapelib.c	2023-06-17 07:46:55.000000000 +0100
++++ tar-1.35.aros/lib/rtapelib.c	2026-07-27 14:32:49.106675216 +0100
+@@ -367,8 +367,10 @@
+ 
+   if (!pw)
+     return "getpwuid";
++#ifndef __AROS__
+   if (initgroups (pw->pw_name, gid) != 0 && errno != EPERM)
+     return "initgroups";
++#endif
+   if (gid != getegid () && setgid (gid) != 0 && errno != EPERM)
+     return "setgid";
+   if (uid != geteuid () && setuid (uid) != 0 && errno != EPERM)
+@@ -510,7 +512,11 @@
+ 	return -1;
+       }
+ 
++#ifdef __AROS__
++    status = vfork ();
++#else
+     status = fork ();
++#endif
+     if (status == -1)
+       {
+ 	int e = errno;
+diff -ruN tar-1.35/lib/wordsplit.c tar-1.35.aros/lib/wordsplit.c
+--- tar-1.35/lib/wordsplit.c	2023-07-10 08:29:17.000000000 +0100
++++ tar-1.35.aros/lib/wordsplit.c	2026-07-27 14:29:43.588798696 +0100
+@@ -26,7 +26,9 @@
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <pwd.h>
+-#include <glob.h>
++#ifndef __AROS__
++# include <glob.h>
++#endif
+ 
+ #if ENABLE_NLS
+ # include <gettext.h>
+@@ -1803,6 +1805,10 @@
+ 
+       if (isglob (str, slen))
+ 	{
++#ifdef __AROS__
++	  /* AROS libc has no glob(); leave patterns unexpanded. */
++	  continue;
++#else
+ 	  int i;
+ 	  glob_t g;
+ 	  struct wordsplit_node *prev;
+@@ -1875,6 +1881,7 @@
+ 
+ 	  wsnode_remove (wsp, p);
+ 	  wsnode_free (p);
++#endif /* !__AROS__ */
+ 	}
+     }
+   return 0;
+diff -ruN tar-1.35/src/checkpoint.c tar-1.35.aros/src/checkpoint.c
+--- tar-1.35/src/checkpoint.c	2023-07-10 08:29:17.000000000 +0100
++++ tar-1.35.aros/src/checkpoint.c	2026-07-27 14:36:53.908438212 +0100
+@@ -428,8 +428,16 @@
+ 
+ 	case cop_wait:
+ 	  {
++#ifdef __AROS__
++	    /* AROS has no sigwait(); sigsuspend with an empty mask
++	       blocks until any signal is delivered. */
++	    sigset_t empty;
++	    sigemptyset (&empty);
++	    sigsuspend (&empty);
++#else
+ 	    int n;
+ 	    sigwait (&sigs, &n);
++#endif
+ 	  }
+ 	}
+     }
+diff -ruN tar-1.35/src/misc.c tar-1.35.aros/src/misc.c
+--- tar-1.35/src/misc.c	2023-07-17 15:07:12.000000000 +0100
++++ tar-1.35.aros/src/misc.c	2026-07-27 14:25:47.816517896 +0100
+@@ -1195,7 +1195,12 @@
+ pid_t
+ xfork (void)
+ {
++#ifdef __AROS__
++  /* AROS has no fork(); posixc.library provides vfork()+exec. */
++  pid_t p = vfork ();
++#else
+   pid_t p = fork ();
++#endif
+   if (p == (pid_t) -1)
+     call_arg_fatal ("fork", _("child process"));
+   return p;
+diff -ruN tar-1.35/src/tar.c tar-1.35.aros/src/tar.c
+--- tar-1.35/src/tar.c	2023-07-10 08:29:17.000000000 +0100
++++ tar-1.35.aros/src/tar.c	2026-07-27 14:25:47.816797396 +0100
+@@ -2286,6 +2286,10 @@
+   argp_version_setup ("tar", tar_authors);
+ 
+   /* Set some default option values.  */
++#ifdef __AROS__
++  /* No rsh/remote tape support on AROS; treat all archives as local. */
++  force_local_option = true;
++#endif
+   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
+ 
+   posixly_correct = getenv ("POSIXLY_CORRECT") != NULL;

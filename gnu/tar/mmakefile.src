@@ -8,5 +8,5 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 TARCFLAGS := $(OPTIMIZATION_CFLAGS) -D__BSD_VISIBLE=1
 
-%fetch_and_build_gnu_development package=tar version=1.26 patch=yes \
-    extracflags="$(TARCFLAGS)"
+%fetch_and_build_gnu_development package=tar version=1.35 patch=yes \
+    extracflags="$(TARCFLAGS)" extraoptions="--disable-year2038 LIBS=-lnet"
