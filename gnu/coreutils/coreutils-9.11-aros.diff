@@ -140364,6 +140364,19 @@ diff -ruN -x autom4te.cache coreutils-9.11/lib/fseterr.c coreutils-9.11.aros/lib
    /* Portable fallback, based on an idea by Rich Felker.
       Wow! 6 system calls for something that is just a bit operation!
       Not activated on any system, because there is no way to repair FP when
+diff -ruN -x autom4te.cache coreutils-9.11/lib/getlocalename_l-unsafe.c coreutils-9.11.aros/lib/getlocalename_l-unsafe.c
+--- coreutils-9.11/lib/getlocalename_l-unsafe.c	2026-04-05 12:27:04.000000000 +0100
++++ coreutils-9.11.aros/lib/getlocalename_l-unsafe.c	2026-07-27 10:54:12.148250519 +0100
+@@ -658,6 +658,9 @@
+       };
+       const char *name = ((struct __locale_t *) locale)->mb_cur_max == 4 ? "C.UTF-8" : "C";
+       return (struct string_with_storage) { name, STORAGE_INDEFINITE };
++#elif defined __AROS__
++      /* AROS only supports the "C" locale at the libc level. */
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #else
+  #error "Please port gnulib getlocalename_l-unsafe.c to your platform! Report this to bug-gnulib."
+ #endif
 diff -ruN -x autom4te.cache coreutils-9.11/lib/getprogname.c coreutils-9.11.aros/lib/getprogname.c
 --- coreutils-9.11/lib/getprogname.c	2026-01-03 14:27:29.000000000 +0000
 +++ coreutils-9.11.aros/lib/getprogname.c	2026-07-27 09:16:16.652219426 +0100
