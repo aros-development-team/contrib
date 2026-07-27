@@ -1,0 +1,196 @@
+diff -ruN findutils-4.11.0/find/exec.c findutils-4.11.0.aros/find/exec.c
+--- findutils-4.11.0/find/exec.c	2026-06-28 12:28:31.000000000 +0100
++++ findutils-4.11.0.aros/find/exec.c	2026-07-27 11:19:36.397210839 +0100
+@@ -316,7 +316,11 @@
+       signal (SIGCHLD, SIG_DFL);
+     }
+ 
++#ifdef __AROS__
++  child_pid = vfork ();
++#else
+   child_pid = fork ();
++#endif
+   if (child_pid == -1)
+     {
+       /* TRANSLATORS: fork is the name of a system call, and so it
+diff -ruN findutils-4.11.0/gl/lib/fpending.c findutils-4.11.0.aros/gl/lib/fpending.c
+--- findutils-4.11.0/gl/lib/fpending.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/fpending.c	2026-07-27 11:18:53.783438219 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+diff -ruN findutils-4.11.0/gl/lib/fpurge.c findutils-4.11.0.aros/gl/lib/fpurge.c
+--- findutils-4.11.0/gl/lib/fpurge.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/fpurge.c	2026-07-27 11:19:36.396880639 +0100
+@@ -142,6 +142,10 @@
+ # elif defined EPLAN9               /* Plan9 */
+   fp->rp = fp->wp = fp->lp = fp->buf;
+   return 0;
++# elif defined __AROS__
++  /* AROS FILE is opaque; nothing to purge at this level. */
++  (void) fp;
++  return 0;
+ # else
+ #  error "Please port gnulib fpurge.c to your platform! Look at the definitions of fflush, setvbuf and ungetc on your system, then report this to bug-gnulib."
+ # endif
+diff -ruN findutils-4.11.0/gl/lib/freadahead.c findutils-4.11.0.aros/gl/lib/freadahead.c
+--- findutils-4.11.0/gl/lib/freadahead.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/freadahead.c	2026-07-27 11:19:36.396971339 +0100
+@@ -97,6 +97,9 @@
+ #elif defined SLOW_BUT_NO_HACKS     /* users can define this */
+   abort ();
+   return 0;
++#elif defined __AROS__
++  /* AROS FILE is opaque; no look-ahead information available. */
++  return 0;
+ #else
+  #error "Please port gnulib freadahead.c to your platform! Look at the definition of fflush, fread, ungetc on your system, then report this to bug-gnulib."
+ #endif
+diff -ruN findutils-4.11.0/gl/lib/freading.c findutils-4.11.0.aros/gl/lib/freading.c
+--- findutils-4.11.0/gl/lib/freading.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/freading.c	2026-07-27 11:19:36.396933839 +0100
+@@ -72,6 +72,10 @@
+   if (fp->state == 0 /* CLOSED */ || fp->state == 4 /* WR */)
+     return 0;
+   return (fp->state == 3 /* RD */ && (fp->bufl == 0 || fp->rp < fp->wp));
++# elif defined __AROS__
++  /* AROS FILE is opaque; assume not reading. */
++  (void) fp;
++  return 0;
+ # else
+ #  error "Please port gnulib freading.c to your platform!"
+ # endif
+diff -ruN findutils-4.11.0/gl/lib/fseeko.c findutils-4.11.0.aros/gl/lib/fseeko.c
+--- findutils-4.11.0/gl/lib/fseeko.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/fseeko.c	2026-07-27 11:19:36.397163539 +0100
+@@ -107,6 +107,9 @@
+ #elif defined __OpenBSD__ && !defined __sferror /* OpenBSD >= 7.8 */
+   /* fseeko and fflush work as advertised.  */
+   if (0)
++#elif defined __AROS__
++  /* AROS FILE is opaque; trust fseeko/fflush to work as advertised. */
++  if (0)
+ #elif FUNC_FFLUSH_STDIN < 0 && 200809 <= _POSIX_VERSION
+   /* Cross-compiling to some other system advertising conformance to
+      POSIX.1-2008 or later.  Assume fseeko and fflush work as advertised.
+diff -ruN findutils-4.11.0/gl/lib/fseterr.c findutils-4.11.0.aros/gl/lib/fseterr.c
+--- findutils-4.11.0/gl/lib/fseterr.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/fseterr.c	2026-07-27 11:18:53.783374019 +0100
+@@ -53,7 +53,7 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->state != 0 /* CLOSED */)
+     fp->state = 5 /* ERR */;
+-#elif 0                             /* unknown  */
++#elif defined __AROS__
+   /* Portable fallback, based on an idea by Rich Felker.
+      Wow! 6 system calls for something that is just a bit operation!
+      Not activated on any system, because there is no way to repair FP when
+diff -ruN findutils-4.11.0/gl/lib/getlocalename_l-unsafe.c findutils-4.11.0.aros/gl/lib/getlocalename_l-unsafe.c
+--- findutils-4.11.0/gl/lib/getlocalename_l-unsafe.c	2026-06-25 20:35:13.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/getlocalename_l-unsafe.c	2026-07-27 11:19:36.397101539 +0100
+@@ -658,6 +658,9 @@
+       };
+       const char *name = ((struct __locale_t *) locale)->mb_cur_max == 4 ? "C.UTF-8" : "C";
+       return (struct string_with_storage) { name, STORAGE_INDEFINITE };
++#elif defined __AROS__
++      /* AROS only supports the "C" locale at the libc level. */
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #else
+  #error "Please port gnulib getlocalename_l-unsafe.c to your platform! Report this to bug-gnulib."
+ #endif
+diff -ruN findutils-4.11.0/gl/lib/getprogname.c findutils-4.11.0.aros/gl/lib/getprogname.c
+--- findutils-4.11.0/gl/lib/getprogname.c	2026-06-24 10:56:19.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/getprogname.c	2026-07-27 11:19:36.397021939 +0100
+@@ -251,6 +251,8 @@
+       close (fd);
+     }
+   return "?";
++# elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff -ruN findutils-4.11.0/gl/lib/mountlist.c findutils-4.11.0.aros/gl/lib/mountlist.c
+--- findutils-4.11.0/gl/lib/mountlist.c	2026-06-25 20:35:13.000000000 +0100
++++ findutils-4.11.0.aros/gl/lib/mountlist.c	2026-07-27 11:20:13.557674544 +0100
+@@ -1245,7 +1245,10 @@
+ #endif
+ 
+ #if MOUNTED_NOT_PORTED
+-# error "Please port gnulib mountlist.c to your platform!"
++# ifndef __AROS__
++#  error "Please port gnulib mountlist.c to your platform!"
++# endif
++  /* AROS has no mount table API; return an empty list. */
+ #endif
+ 
+   *mtail = NULL;
+diff -ruN findutils-4.11.0/lib/fdleak.c findutils-4.11.0.aros/lib/fdleak.c
+--- findutils-4.11.0/lib/fdleak.c	2026-06-27 12:44:31.000000000 +0100
++++ findutils-4.11.0.aros/lib/fdleak.c	2026-07-27 11:27:10.607639118 +0100
+@@ -22,7 +22,9 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <limits.h>
+-#include <poll.h>
++#ifndef __AROS__
++# include <poll.h>
++#endif
+ #include <stdarg.h>
+ #include <stdbool.h>
+ #include <stdio.h>
+@@ -136,6 +138,25 @@
+ }
+ 
+ 
++#ifdef __AROS__
++/* AROS has no poll(); probe each descriptor with fcntl() instead. */
++static int
++visit_open_fds (int fd_min, int fd_max,
++                int (*callback)(int, void*), void *cb_context)
++{
++  int fd, rv;
++
++  for (fd = fd_min; fd < fd_max; fd++)
++    {
++      if (fcntl (fd, F_GETFD) != -1)
++        {
++          if (0 != (rv = callback (fd, cb_context)))
++            return rv;
++        }
++    }
++  return 0;
++}
++#else
+ static int
+ visit_open_fds (int fd_min, int fd_max,
+                 int (*callback)(int, void*), void *cb_context)
+@@ -178,6 +199,7 @@
+     }
+   return 0;
+ }
++#endif /* __AROS__ */
+ 
+ static int
+ fd_is_cloexec (int fd)
+diff -ruN findutils-4.11.0/xargs/xargs.c findutils-4.11.0.aros/xargs/xargs.c
+--- findutils-4.11.0/xargs/xargs.c	2026-07-08 09:20:59.000000000 +0100
++++ findutils-4.11.0.aros/xargs/xargs.c	2026-07-27 11:19:36.397335139 +0100
+@@ -1354,7 +1354,11 @@
+ 
+       /* If we run out of processes, wait for a child to return and
+          try again.  */
++#ifdef __AROS__
++      while ((child = vfork ()) < 0 && errno == EAGAIN && procs_executing)
++#else
+       while ((child = fork ()) < 0 && errno == EAGAIN && procs_executing)
++#endif
+         wait_for_proc (false, 1u);
+ 
+       switch (child)
