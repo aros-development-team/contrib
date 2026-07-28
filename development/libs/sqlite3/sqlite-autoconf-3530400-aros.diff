@@ -1,0 +1,247 @@
+diff -ruN --strip-trailing-cr sqlite-autoconf-3530400/Makefile.in work/Makefile.in
+--- sqlite-autoconf-3530400/Makefile.in	2026-07-24 20:28:58.000000000 +0100
++++ work/Makefile.in	2026-07-28 15:32:29.842138650 +0100
+@@ -7,14 +7,16 @@
+ # Maintenance reminders:
+ #
+ # - To keep this working with an out-of-tree build, be sure to prefix
+-#   input file names with $(TOP)/ where appropriate (which is most
++#   input file names with $(SQLITE_TOP)/ where appropriate (which is most
+ #   places).
+ #
+ # - The original/canonical recipes can be found in /main.mk in the
+ #   canonical source tree.
+ all:
+ 
+-TOP = @abs_top_srcdir@
++# Renamed from TOP: AROS invokes make with TOP=<builddir> on the command
++# line, which would override it and propagate into sub-makes.
++SQLITE_TOP = @abs_top_srcdir@
+ 
+ PACKAGE_VERSION = @PACKAGE_VERSION@
+ 
+@@ -94,18 +96,18 @@
+ #
+ # AS_AUTO_DEF is the main configure script.
+ #
+-AS_AUTO_DEF = $(TOP)/auto.def
++AS_AUTO_DEF = $(SQLITE_TOP)/auto.def
+ 
+ #
+-# Shell commands to re-run $(TOP)/configure with the same args it was
++# Shell commands to re-run $(SQLITE_TOP)/configure with the same args it was
+ # invoked with to produce this makefile.
+ #
+ AS_AUTORECONFIG = @SQLITE_AUTORECONFIG@
+-Makefile: $(TOP)/Makefile.in $(AS_AUTO_DEF)
++Makefile: $(SQLITE_TOP)/Makefile.in $(AS_AUTO_DEF)
+ 	$(AS_AUTORECONFIG)
+ 	@touch $@
+ 
+-sqlite3.pc: $(TOP)/sqlite3.pc.in $(AS_AUTO_DEF)
++sqlite3.pc: $(SQLITE_TOP)/sqlite3.pc.in $(AS_AUTO_DEF)
+ 	$(AS_AUTORECONFIG)
+ 	@touch $@
+ 
+@@ -135,8 +137,8 @@
+   $(LDFLAGS.rt) $(LDFLAGS.configure)
+ CFLAGS.libsqlite3 = -I. $(CFLAGS.core) $(CFLAGS.icu) $(OPT_FEATURE_FLAGS)
+ 
+-sqlite3.o: $(TOP)/sqlite3.h $(TOP)/sqlite3.c
+-	$(CC) -c $(TOP)/sqlite3.c -o $@ $(CFLAGS) $(CFLAGS.libsqlite3)
++sqlite3.o: $(SQLITE_TOP)/sqlite3.h $(SQLITE_TOP)/sqlite3.c
++	$(CC) -c $(SQLITE_TOP)/sqlite3.c -o $@ $(CFLAGS) $(CFLAGS.libsqlite3)
+ 
+ libsqlite3.LIB = libsqlite3$(T.lib)
+ libsqlite3.DLL.basename = @SQLITE_DLL_BASENAME@
+@@ -226,9 +228,9 @@
+ # some platforms than others:
+ # https://sqlite.org/forum/forumpost/d80ecdaddd
+ ENABLE_STATIC_SHELL = @ENABLE_STATIC_SHELL@
+-sqlite3-shell-link-flags.1 = $(TOP)/sqlite3.c $(LDFLAGS) $(LDFLAGS.libsqlite3)
++sqlite3-shell-link-flags.1 = $(SQLITE_TOP)/sqlite3.c $(LDFLAGS) $(LDFLAGS.libsqlite3)
+ sqlite3-shell-link-flags.0 = $(LDFLAGS) -L. -lsqlite3 $(LDFLAGS.zlib) $(LDFLAGS.math)
+-sqlite3-shell-deps.1 = $(TOP)/sqlite3.c
++sqlite3-shell-deps.1 = $(SQLITE_TOP)/sqlite3.c
+ sqlite3-shell-deps.0 = $(libsqlite3.DLL)
+ #
+ # STATIC_CLI_SHELL = 1 to statically link sqlite3$(T.exe), else
+@@ -242,9 +244,9 @@
+ #
+ sqlite3-shell-static.flags.1 = -static
+ sqlite3-shell-static.flags.0 =
+-sqlite3$(T.exe): $(TOP)/shell.c $(sqlite3-shell-deps.$(ENABLE_STATIC_SHELL))
++sqlite3$(T.exe): $(SQLITE_TOP)/shell.c $(sqlite3-shell-deps.$(ENABLE_STATIC_SHELL))
+ 	$(CC) -o $@ \
+-		$(TOP)/shell.c $(sqlite3-shell-link-flags.$(ENABLE_STATIC_SHELL)) \
++		$(SQLITE_TOP)/shell.c $(sqlite3-shell-link-flags.$(ENABLE_STATIC_SHELL)) \
+ 		$(sqlite3-shell-static.flags.$(STATIC_CLI_SHELL)) \
+ 		-I. $(OPT_FEATURE_FLAGS) $(SHELL_OPT) \
+ 		$(CFLAGS) $(CFLAGS.readline) $(CFLAGS.icu) \
+@@ -259,16 +261,16 @@
+ install-shell-1:
+ install: install-shell-$(HAVE_WASI_SDK)
+ 
+-install-headers: $(TOP)/sqlite3.h $(install-dir.include)
+-	$(INSTALL.noexec) $(TOP)/sqlite3.h $(TOP)/sqlite3ext.h "$(install-dir.include)"
++install-headers: $(SQLITE_TOP)/sqlite3.h $(install-dir.include)
++	$(INSTALL.noexec) $(SQLITE_TOP)/sqlite3.h $(SQLITE_TOP)/sqlite3ext.h "$(install-dir.include)"
+ install: install-headers
+ 
+ install-pc: sqlite3.pc $(install-dir.pkgconfig)
+ 	$(INSTALL.noexec) sqlite3.pc "$(install-dir.pkgconfig)"
+ install: install-pc
+ 
+-install-man1: $(TOP)/sqlite3.1 $(install-dir.man1)
+-	$(INSTALL.noexec) $(TOP)/sqlite3.1 "$(install-dir.man1)"
++install-man1: $(SQLITE_TOP)/sqlite3.1 $(install-dir.man1)
++	$(INSTALL.noexec) $(SQLITE_TOP)/sqlite3.1 "$(install-dir.man1)"
+ install: install-man1
+ 
+ clean:
+diff -ruN --strip-trailing-cr sqlite-autoconf-3530400/shell.c work/shell.c
+--- sqlite-autoconf-3530400/shell.c	2026-07-24 20:28:58.000000000 +0100
++++ work/shell.c	2026-07-28 14:59:29.313510774 +0100
+@@ -24758,7 +24758,7 @@
+ 
+ 
+ /************************* BEGIN PERFORMANCE TIMER *****************************/
+-#if !defined(_WIN32) && !defined(WIN32) && !defined(__minux)
++#if !defined(_WIN32) && !defined(WIN32) && !defined(__minux) && !defined(__AROS__)
+ #include <sys/time.h>
+ #include <sys/resource.h>
+ /* VxWorks does not support getrusage() as far as we can determine */
+@@ -36145,7 +36145,7 @@
+   if( home_dir ) return home_dir;
+ 
+ #if !defined(_WIN32) && !defined(WIN32) && !defined(_WIN32_WCE) \
+-     && !defined(__RTP__) && !defined(_WRS_KERNEL) && !defined(SQLITE_WASI)
++     && !defined(__RTP__) && !defined(_WRS_KERNEL) && !defined(SQLITE_WASI) && !defined(__AROS__)
+   {
+     struct passwd *pwent;
+     uid_t uid = getuid();
+@@ -36167,6 +36167,12 @@
+   }
+ #endif
+ 
++#if defined(__AROS__)
++  if (!home_dir) {
++    home_dir = "PROGDIR:";
++  }
++#endif
++
+   if (!home_dir) {
+     home_dir = getenv("HOME");
+   }
+@@ -36226,7 +36232,7 @@
+ static char *find_xdg_file(const char *zEnvVar, const char *zSubdir,
+                            const char *zBaseName){
+ #if defined(_WIN32) || defined(WIN32) || defined(_WIN32_WCE) \
+-     || defined(__RTP__) || defined(_WRS_KERNEL)
++     || defined(__RTP__) || defined(_WRS_KERNEL) || defined(__AROS__)
+   return 0;
+ #else
+   char *zConfigFile = 0;
+diff -ruN --strip-trailing-cr sqlite-autoconf-3530400/sqlite3.c work/sqlite3.c
+--- sqlite-autoconf-3530400/sqlite3.c	2026-07-24 20:28:58.000000000 +0100
++++ work/sqlite3.c	2026-07-28 15:01:06.179635746 +0100
+@@ -1,3 +1,6 @@
++
++#define SQLITE_OMIT_WAL
++
+ /******************************************************************************
+ ** This file is an amalgamation of many separate C source files from SQLite
+ ** version 3.53.4.  By combining all the individual C code files into this
+@@ -41327,7 +41330,7 @@
+   struct vxworksFileId *pCandidate;   /* For looping over existing file IDs */
+   int n;                              /* Length of zAbsoluteName string */
+ 
+-  assert( zAbsoluteName[0]=='/' );
++  assert( zAbsoluteName[0]=='/' || strchr(zAbsoluteName, ':') );
+   n = (int)strlen(zAbsoluteName);
+   pNew = sqlite3_malloc64( sizeof(*pNew) + (n+1) );
+   if( pNew==0 ) return 0;
+@@ -43674,6 +43677,19 @@
+     got = osPread64(id->h, pBuf, cnt, offset);
+     SimulateIOError( got = -1 );
+ #else
++    /* Workaround for issue visible when creating empty database. AROS lseek
++       when seeking beyond end of file will enlarge the file to allow writes to
++       work "beyond" file. This is needed to support GCC. However this confuses
++       sqlite as it now sees zeros at beginning of database file and considers
++       it an invalid database. Avoid writting zeros by avoid calling lseek with
++       position beyong end of file */
++    if(offset == 24 && cnt == 16){
++      newOffset = lseek(id->h, 0, SEEK_END);
++      if( newOffset < offset ){
++        got = 0;
++        break;
++      }
++    }
+     newOffset = lseek(id->h, offset, SEEK_SET);
+     SimulateIOError( newOffset = -1 );
+     if( newOffset<0 ){
+@@ -44074,7 +44090,7 @@
+   char zDirname[MAX_PATHNAME+1];
+ 
+   sqlite3_snprintf(MAX_PATHNAME, zDirname, "%s", zFilename);
+-  for(ii=(int)strlen(zDirname); ii>0 && zDirname[ii]!='/'; ii--);
++  for(ii=(int)strlen(zDirname); ii>0 && zDirname[ii]!='/' && zDirname[ii-1]!=':'; ii--);
+   if( ii>0 ){
+     zDirname[ii] = '\0';
+   }else{
+@@ -47139,6 +47155,7 @@
+     return;
+   }
+   pPath->zOut[pPath->nUsed++] = '/';
++  if( pPath->nUsed == 1) pPath->nUsed--;
+   memcpy(&pPath->zOut[pPath->nUsed], zName, nName);
+   pPath->nUsed += nName;
+ #if defined(HAVE_READLINK) && defined(HAVE_LSTAT)
+@@ -47215,7 +47232,7 @@
+   path.nSymlink = 0;
+   path.nOut = nOut;
+   path.zOut = zOut;
+-  if( zPath[0]!='/' ){
++  if( zPath[0]!='/' && strchr(zPath, ':')==NULL ){
+     char zPwd[SQLITE_MAX_PATHLEN+2];
+     if( osGetcwd(zPwd, sizeof(zPwd)-2)==0 ){
+       return unixLogError(SQLITE_CANTOPEN_BKPT, "getcwd", zPath);
+@@ -47332,6 +47349,18 @@
+   return nBuf;
+ }
+ 
++/*
++** Write nBuf bytes of random data to the supplied buffer zBuf.
++*/
++static int arosRandomness(sqlite3_vfs *NotUsed, int nBuf, char *zBuf){
++  UNUSED_PARAMETER(NotUsed);
++  assert((size_t)nBuf>=(sizeof(time_t)+sizeof(int)));
++  int i;
++  srand(time(NULL));
++  for( i=0; i<nBuf; i++ )
++    zBuf[i] = rand() % 0xFF; 
++  return nBuf;
++}
+ 
+ /*
+ ** Sleep for a little while.  Return the amount of time slept.
+@@ -48678,7 +48707,7 @@
+     unixDlError,          /* xDlError */                    \
+     unixDlSym,            /* xDlSym */                      \
+     unixDlClose,          /* xDlClose */                    \
+-    unixRandomness,       /* xRandomness */                 \
++    arosRandomness,       /* xRandomness */                 \
+     unixSleep,            /* xSleep */                      \
+     unixCurrentTime,      /* xCurrentTime */                \
+     unixGetLastError,     /* xGetLastError */               \
+@@ -48696,6 +48725,9 @@
+   ** array cannot be const.
+   */
+   static sqlite3_vfs aVfs[] = {
++#if defined(__AROS__)
++    UNIXVFS("unix-none",     nolockIoFinder ),
++#endif
+ #if SQLITE_ENABLE_LOCKING_STYLE && defined(__APPLE__)
+     UNIXVFS("unix",          autolockIoFinder ),
+ #elif OS_VXWORKS

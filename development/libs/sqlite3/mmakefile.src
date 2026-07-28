@@ -1,4 +1,4 @@
-# Copyright © 1995-2025, The AROS Development Team. All rights reserved.
+# Copyright © 1995-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -8,9 +8,16 @@ include $(SRCDIR)/config/aros-contrib.cfg
 REPOSITORIES := https://www.sqlite.org/2025 https://www2.sqlite.org/2025 \
  https://ftp.osuosl.org/pub/blfs/conglomeration/sqlite
 
-%fetch_and_build_gnu_development package=sqlite-autoconf version=3480000 \
+# sqlite's "autoconf" tarball is autosetup-based since 3.49.  Its configure
+# rejects --target (buildflags) and --without-pic (gnuflags), so both groups
+# are disabled and the options it does understand are passed explicitly.
+# CCACHE is cleared because autosetup prepends its own ccache to CC, and
+# AROS' TARGET_CC already carries one (giving "ccache ccache <gcc>").
+%fetch_and_build_gnu_development package=sqlite-autoconf version=3530400 \
     suffixes="tar.gz" \
     package_repo="$(REPOSITORIES)" \
     patch="yes" \
-    extraoptions="--disable-threadsafe --disable-dynamic-extensions --libdir=$(AROS_LIB)" nlsflag=no xflag=no
+    buildflags=no gnuflags=no \
+    config_env_extra="CCACHE=" \
+    extraoptions="--host=$(AROS_TARGET_CPU)-aros --build=$(AROS_HOST_CPU)-$(AROS_HOST_ARCH) --disable-shared --disable-threadsafe --disable-load-extension --libdir=$(AROS_LIB)" nlsflag=no xflag=no
 
