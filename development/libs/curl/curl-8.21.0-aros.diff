@@ -1,5 +1,33 @@
+diff -ruN --strip-trailing-cr curl-8.21.0/configure curl-8.21.0.aros/configure
+--- curl-8.21.0/configure	2026-06-24 06:53:29.000000000 +0100
++++ curl-8.21.0.aros/configure	2026-07-28 21:26:25.919710494 +0100
+@@ -48402,6 +48402,9 @@
+           powerpc-*amigaos*)
+                         PTHREAD=" -lpthread"
+             ;;
++          *-aros*)
++                        PTHREAD=" -lpthread"
++            ;;
+           *)
+             CFLAGS="$CFLAGS -pthread"
+             ;;
+diff -ruN --strip-trailing-cr curl-8.21.0/configure.ac curl-8.21.0.aros/configure.ac
+--- curl-8.21.0/configure.ac	2026-06-24 06:53:29.000000000 +0100
++++ curl-8.21.0.aros/configure.ac	2026-07-28 21:26:25.917311394 +0100
+@@ -4288,6 +4288,10 @@
+             dnl No -pthread option, but link with -lpthread
+             PTHREAD=" -lpthread"
+             ;;
++          *-aros*)
++            dnl Same as AmigaOS: no -pthread option, link with -lpthread
++            PTHREAD=" -lpthread"
++            ;;
+           *)
+             CFLAGS="$CFLAGS -pthread"
+             ;;
+diff -ruN --strip-trailing-cr curl-8.21.0/lib/curl_setup.h curl-8.21.0.aros/lib/curl_setup.h
 --- curl-8.21.0/lib/curl_setup.h	2026-06-24 06:53:29.000000000 +0100
-+++ curl-8.21.0.aros/lib/curl_setup.h	2026-07-26 22:14:13.579177645 +0100
++++ curl-8.21.0.aros/lib/curl_setup.h	2026-07-28 21:25:53.111632248 +0100
 @@ -671,6 +671,14 @@
  
  #  endif /* MSDOS */

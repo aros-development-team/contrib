@@ -16,7 +16,21 @@ CURL_VERSION=8.21.0
 USER_CPPFLAGS= \
         -D_XOPEN_SOURCE=600 \
         -D__BSD_VISIBLE=1
-CURL_OPTIONS=--disable-shared --without-libpsl --disable-threaded-resolver --disable-ipv6 --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet"
+# curl uses C11 atomics.  Targets whose CPU has no native atomic instructions
+# resolve them through libatomic; configure flags those with TARGET_LIBATOMIC.
+ifeq ($(TARGET_LIBATOMIC),yes)
+CURL_ATOMIC_LIBS := -latomic
+endif
+
+# The 68000 (d8,PC,Xn) addressing mode has only an 8-bit displacement, so the
+# switch jump tables GCC emits for casesi cannot be encoded once a function
+# grows ("value of -1530 too large for field of 1 byte" in cookie.c).  Fall
+# back to comparison chains there.
+ifeq ($(AROS_TARGET_CPU),m68k)
+USER_CFLAGS += $(CFLAGS_NO_JUMP_TABLES)
+endif
+
+CURL_OPTIONS=--disable-shared --without-libpsl --disable-threaded-resolver --disable-ipv6 --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet $(CURL_ATOMIC_LIBS)"
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
     patch=yes package_repo="$(REPOSITORIES)" \
