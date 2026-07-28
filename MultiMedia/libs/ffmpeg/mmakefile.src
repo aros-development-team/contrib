@@ -24,7 +24,7 @@ endif
 FFMPEG_LIBS=-lnet
 FFMPEG_PROGS=--disable-programs
 
-VERSION      := 4.4.5
+VERSION      := 8.1.2
 REPOSITORIES := https://ffmpeg.org/releases \
  http://mirror.sobukus.de/files/src/ffmpeg \
  http://download.openpkg.org/components/cache/ffmpeg
@@ -45,7 +45,7 @@ FFMPEG_OPTIONS := \
         --disable-pic \
         --disable-shared \
         --disable-rpath \
-        --disable-yasm \
+        --disable-x86asm \
         --disable-doc \
         --disable-debug \
         $(FFMPEG_PROGS)
@@ -57,6 +57,6 @@ FFMPEG_OPTIONS += \
 endif
 
 %fetch_and_build mmake=contrib-ffmpeg prefix=$(AROS_DEVELOPER) \
-	package=ffmpeg version=$(VERSION) suffixes="tar.bz2" \
+	package=ffmpeg version=$(VERSION) suffixes="tar.xz tar.bz2" \
 	patch=yes nix=no package_repo=$(REPOSITORIES) \
 	extraoptions="$(FFMPEG_OPTIONS)" buildflags=no gnuflags=no

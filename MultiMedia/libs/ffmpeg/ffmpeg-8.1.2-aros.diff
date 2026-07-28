@@ -1,0 +1,28 @@
+diff -ruN ffmpeg-8.1.2/configure ffmpeg-8.1.2.aros/configure
+--- ffmpeg-8.1.2/configure	2026-06-17 03:17:51.000000000 +0100
++++ ffmpeg-8.1.2.aros/configure	2026-07-27 22:34:09.315618949 +0100
+@@ -6041,6 +6041,8 @@
+         SLIB_INSTALL_LINKS=
+         SHFLAGS='-shared -Wl,-soname,$(SLIBNAME)'
+         ;;
++    aros)
++        ;;
+     haiku)
+         prefix_default="/boot/common"
+         network_extralibs="-lnetwork"
+diff -ruN ffmpeg-8.1.2/libavformat/os_support.h ffmpeg-8.1.2.aros/libavformat/os_support.h
+--- ffmpeg-8.1.2/libavformat/os_support.h	2026-06-17 03:17:51.000000000 +0100
++++ ffmpeg-8.1.2.aros/libavformat/os_support.h	2026-07-27 22:34:09.315888049 +0100
+@@ -136,6 +136,12 @@
+ #define closesocket close
+ #endif
+ 
++#if defined(__AROS__)
++#undef closesocket
++#define closesocket CloseSocket
++#include <proto/socket.h>
++#endif
++
+ #if !HAVE_POLL_H
+ typedef unsigned long nfds_t;
+ 
