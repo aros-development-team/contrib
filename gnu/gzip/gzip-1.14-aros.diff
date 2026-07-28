@@ -1,0 +1,61 @@
+diff -ruN --strip-trailing-cr gzip-1.14/lib/fpurge.c gzip-1.14.aros/lib/fpurge.c
+--- gzip-1.14/lib/fpurge.c	2025-01-03 17:36:44.000000000 +0000
++++ gzip-1.14.aros/lib/fpurge.c	2026-07-28 10:43:00.791450389 +0100
+@@ -142,6 +142,8 @@
+ # elif defined EPLAN9               /* Plan9 */
+   fp->rp = fp->wp = fp->lp = fp->buf;
+   return 0;
++# elif defined __AROS__
++  return 0;
+ # else
+ #  error "Please port gnulib fpurge.c to your platform! Look at the definitions of fflush, setvbuf and ungetc on your system, then report this to bug-gnulib."
+ # endif
+diff -ruN --strip-trailing-cr gzip-1.14/lib/freading.c gzip-1.14.aros/lib/freading.c
+--- gzip-1.14/lib/freading.c	2025-01-03 17:36:44.000000000 +0000
++++ gzip-1.14.aros/lib/freading.c	2026-07-28 10:43:00.791537889 +0100
+@@ -68,6 +68,8 @@
+   if (fp->state == 0 /* CLOSED */ || fp->state == 4 /* WR */)
+     return 0;
+   return (fp->state == 3 /* RD */ && (fp->bufl == 0 || fp->rp < fp->wp));
++# elif defined __AROS__
++  return 0;
+ # else
+ #  error "Please port gnulib freading.c to your platform!"
+ # endif
+diff -ruN --strip-trailing-cr gzip-1.14/lib/fseterr.c gzip-1.14.aros/lib/fseterr.c
+--- gzip-1.14/lib/fseterr.c	2025-01-03 17:36:44.000000000 +0000
++++ gzip-1.14.aros/lib/fseterr.c	2026-07-28 10:43:00.791601989 +0100
+@@ -21,6 +21,12 @@
+ 
+ #include <errno.h>
+ 
++#ifdef __AROS__
++/* For the portable fallback below. */
++# include <stdlib.h>
++# include <unistd.h>
++#endif
++
+ #include "stdio-impl.h"
+ 
+ /* This file is not used on systems that have the __fseterr function,
+@@ -53,7 +59,7 @@
+ #elif defined EPLAN9                /* Plan9 */
+   if (fp->state != 0 /* CLOSED */)
+     fp->state = 5 /* ERR */;
+-#elif 0                             /* unknown  */
++#elif defined __AROS__
+   /* Portable fallback, based on an idea by Rich Felker.
+      Wow! 6 system calls for something that is just a bit operation!
+      Not activated on any system, because there is no way to repair FP when
+diff -ruN --strip-trailing-cr gzip-1.14/lib/getprogname.c gzip-1.14.aros/lib/getprogname.c
+--- gzip-1.14/lib/getprogname.c	2025-01-03 17:36:44.000000000 +0000
++++ gzip-1.14.aros/lib/getprogname.c	2026-07-28 10:43:00.791672089 +0100
+@@ -297,6 +297,8 @@
+       close (fd);
+     }
+   return "?";
++#elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
