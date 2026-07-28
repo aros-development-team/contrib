@@ -1,6 +1,6 @@
-diff -ruN SDL2_mixer-2.8.1/Makefile.in SDL2_mixer-2.8.1.aros/Makefile.in
---- SDL2_mixer-2.8.1/Makefile.in	2025-02-07 20:11:45.000000000 +0000
-+++ SDL2_mixer-2.8.1.aros/Makefile.in	2025-08-14 16:10:58.992519855 +0000
+diff -ruN --strip-trailing-cr SDL2_mixer-2.8.2/Makefile.in SDL2_mixer-2.8.2.aros/Makefile.in
+--- SDL2_mixer-2.8.2/Makefile.in	2025-02-07 20:11:45.000000000 +0000
++++ SDL2_mixer-2.8.2.aros/Makefile.in	2026-07-28 11:53:11.786446806 +0100
 @@ -34,7 +34,7 @@
  SDL_CFLAGS = @SDL_CFLAGS@
  SDL_LIBS = @SDL_LIBS@
@@ -60,9 +60,9 @@ diff -ruN SDL2_mixer-2.8.1/Makefile.in SDL2_mixer-2.8.1.aros/Makefile.in
  uninstall-bin:
  	rm -f $(bindir)/playwave$(EXE)
  	rm -f $(bindir)/playmus$(EXE)
-diff -ruN SDL2_mixer-2.8.1/src/codecs/music_timidity.c SDL2_mixer-2.8.1.aros/src/codecs/music_timidity.c
---- SDL2_mixer-2.8.1/src/codecs/music_timidity.c	2025-02-07 20:09:52.000000000 +0000
-+++ SDL2_mixer-2.8.1.aros/src/codecs/music_timidity.c	2025-08-14 16:07:07.966503293 +0000
+diff -ruN --strip-trailing-cr SDL2_mixer-2.8.2/src/codecs/music_timidity.c SDL2_mixer-2.8.2.aros/src/codecs/music_timidity.c
+--- SDL2_mixer-2.8.2/src/codecs/music_timidity.c	2025-02-07 20:09:52.000000000 +0000
++++ SDL2_mixer-2.8.2.aros/src/codecs/music_timidity.c	2026-07-28 11:53:11.787661906 +0100
 @@ -47,6 +47,8 @@
   * of the config file to its search path, too. */
  #if defined(__WIN32__)
