@@ -21,3 +21,10 @@ REPOSITORIES := https://www.sqlite.org/2025 https://www2.sqlite.org/2025 \
     config_env_extra="CCACHE=" \
     extraoptions="--host=$(AROS_TARGET_CPU)-aros --build=$(AROS_HOST_CPU)-$(AROS_HOST_ARCH) --disable-shared --disable-threadsafe --disable-load-extension --libdir=$(AROS_LIB)" nlsflag=no xflag=no
 
+# sqlite's configure hard-codes -fPIC (SH_CFLAGS in autosetup/cc-shared.tcl)
+# into CFLAGS.core even with --disable-shared, and its configure rejects
+# --without-pic.  On m68k that produces 16-bit PC-relative offsets which cannot
+# span the sqlite3.c amalgamation ("value of -66006 too large for field of 2
+# bytes"), so clear it on the make command line, where it overrides the
+# generated Makefile.
+development-sqlite-autoconf--make-env += CFLAGS.core=
