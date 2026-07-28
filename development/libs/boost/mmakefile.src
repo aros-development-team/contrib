@@ -1,9 +1,9 @@
-# Copyright 2018-2025, The AROS Development Team. All rights reserved.
+# Copyright 2018-2026, The AROS Development Team. All rights reserved.
 # $Id: mmakefile.src $
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-BOOSTVERSION=1.88.0
+BOOSTVERSION=1.89.0
 BOOSTVRS=1_88_0
 ARCHBASE     := boost_$(BOOSTVRS)
 ARCHSRCDIR := $(PORTSDIR)/boost/$(ARCHBASE)
