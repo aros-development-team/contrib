@@ -1,4 +1,4 @@
-# Copyright © 2004, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -6,4 +6,4 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-gnu : contrib-gnu-autoconf
 #MM- contrib-gnu-autoconf : development-autoconf
 
-%fetch_and_build_gnu_development package=autoconf version=2.62 patch=yes
+%fetch_and_build_gnu_development package=autoconf version=2.73 patch=no
