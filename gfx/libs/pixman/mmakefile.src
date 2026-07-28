@@ -1,0 +1,119 @@
+#   $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-gfx-libs : contrib-gfx-libs-pixman contrib-gfx-libs-pixman-includes
+
+PIXMANVERSION := 0.46.4
+# version components for pixman/pixman-version.h
+PIXMAN_VER_MAJOR := $(word 1,$(subst ., ,$(PIXMANVERSION)))
+PIXMAN_VER_MINOR := $(word 2,$(subst ., ,$(PIXMANVERSION)))
+PIXMAN_VER_MICRO := $(word 3,$(subst ., ,$(PIXMANVERSION)))
+
+REPOSITORIES := https://www.cairographics.org/releases
+ARCHBASE     := pixman-$(PIXMANVERSION)
+ARCHSUFFIX   := "tar.gz"
+# No AROS changes are needed against this version; re-enable if that changes
+# (and drop the stale diff when bumping PIXMANVERSION).
+#PATCHSPEC   := $(ARCHBASE)-aros.diff:$(ARCHBASE):-f,-p1
+ARCHSRCDIR   := $(PORTSDIR)/pixman/$(ARCHBASE)
+# NB: do not call this GENINCDIR - that name belongs to the build system
+# and is used internally by %copy_includes.
+PIXMANINCDIR := $(GENDIR)/$(CURDIR)/include
+
+%fetch mmake=contrib-gfx-libs-pixman-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/pixman \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes=$(ARCHSUFFIX) \
+    patches_specs=$(PATCHSPEC)
+
+%create_patch mmake=contrib-gfx-libs-pixman-create-patch \
+    archive=$(ARCHBASE) suffixes=$(ARCHSUFFIX) \
+    location=$(PORTSSOURCEDIR) destination=$(PORTSDIR)/pixman \
+    srcdir=$(ARCHBASE)
+
+# Source list taken from pixman_files in pixman/meson.build.  pixman-region.c is
+# deliberately absent: it is #included by the region16/32/64f variants.  The
+# pixman-arm/mips/ppc/riscv/x86 files are CPU dispatchers which compile to
+# nothing when their SIMD implementations are not enabled.
+FILES := \
+	pixman \
+	pixman-access \
+	pixman-access-accessors \
+	pixman-arm \
+	pixman-bits-image \
+	pixman-combine-float \
+	pixman-combine32 \
+	pixman-conical-gradient \
+	pixman-edge \
+	pixman-edge-accessors \
+	pixman-fast-path \
+	pixman-filter \
+	pixman-general \
+	pixman-glyph \
+	pixman-gradient-walker \
+	pixman-image \
+	pixman-implementation \
+	pixman-linear-gradient \
+	pixman-matrix \
+	pixman-mips \
+	pixman-noop \
+	pixman-ppc \
+	pixman-radial-gradient \
+	pixman-region16 \
+	pixman-region32 \
+	pixman-region64f \
+	pixman-riscv \
+	pixman-solid-fill \
+	pixman-timer \
+	pixman-trap \
+	pixman-utils \
+	pixman-x86
+
+NOWARN_FLAGS := $(NOWARN_UNUSED_LOCAL_TYPEDEFS) $(NOWARN_FORMAT) $(NOWARN_UNINITIALIZED) $(NOWARN_UNUSED_FUNCTION)
+USER_INCLUDES := -I$(PIXMANINCDIR) -I$(SRCDIR)/$(CURDIR)/aros -I$(ARCHSRCDIR)/pixman
+USER_CFLAGS := -noposixc $(NOWARN_FLAGS)
+USER_CPPFLAGS := -DHAVE_CONFIG_H -DPIXMAN_NO_TLS
+
+ifeq ($(AROS_TARGET_CPU),x86_64)
+# MMX and SSE2 are baseline on x86_64 so they need no extra -m flags.  SSSE3 is
+# deliberately left out: pixman-ssse3.c needs -mssse3, and %build_module has no
+# per-file flags - enabling it globally would let the compiler emit SSSE3 in
+# every file, which would fault on CPUs without it.
+FILES += pixman-mmx pixman-sse2
+USER_CPPFLAGS += -DUSE_SSE2=1 -DUSE_X86_MMX=1
+endif
+
+$(PIXMANINCDIR)/pixman-version.h : $(ARCHSRCDIR)/pixman/pixman-version.h.in
+	@$(ECHO) "Generating pixman-version.h ..."
+	%mkdir_q dir=$(PIXMANINCDIR)
+	@cat $< | $(SED) s/@PIXMAN_VERSION_MAJOR@/$(PIXMAN_VER_MAJOR)/g \
+	    | $(SED) s/@PIXMAN_VERSION_MINOR@/$(PIXMAN_VER_MINOR)/g \
+	    | $(SED) s/@PIXMAN_VERSION_MICRO@/$(PIXMAN_VER_MICRO)/g > $@
+
+# %copy_includes takes a single source directory, so stage pixman.h beside the
+# generated pixman-version.h.
+$(PIXMANINCDIR)/pixman.h : $(ARCHSRCDIR)/pixman/pixman.h
+	%mkdir_q dir=$(PIXMANINCDIR)
+	@$(CP) $< $@
+
+#MM contrib-gfx-libs-pixman-genfiles : contrib-gfx-libs-pixman-fetch
+
+#MM
+contrib-gfx-libs-pixman-genfiles : $(PIXMANINCDIR)/pixman-version.h $(PIXMANINCDIR)/pixman.h
+
+# includes-copy stages headers that only exist after the fetch, so order it
+# behind genfiles (which itself depends on the fetch).
+#MM includes-copy : contrib-gfx-libs-pixman-genfiles
+
+#MM contrib-gfx-libs-pixman-includes : includes-copy contrib-gfx-libs-pixman-genfiles
+
+#MM contrib-gfx-libs-pixman : linklibs contrib-gfx-libs-pixman-fetch contrib-gfx-libs-pixman-genfiles
+
+%build_module mmake=contrib-gfx-libs-pixman \
+    modname=pixman modtype=library \
+    files="$(addprefix $(ARCHSRCDIR)/pixman/,$(FILES))" \
+    uselibs="stdcio stdc"
+
+INCLUDE_FILES := pixman.h pixman-version.h
+%copy_includes mmake=includes-copy path=pixman-1 dir=$(PIXMANINCDIR)
+
+%common
