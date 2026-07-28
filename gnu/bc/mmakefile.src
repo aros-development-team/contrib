@@ -1,4 +1,4 @@
-# Copyright © 2004-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -9,6 +9,8 @@ include $(SRCDIR)/config/aros-contrib.cfg
 NOWARN_FLAGS := $(NOWARN_UNUSED_BUT_SET_VARIABLE) \
         $(NOWARN_IMPLICIT_FUNCTION_DECL) $(NOWARN_IMPLICIT_INT) \
         $(NOWARN_BUILTIN_DECLARATION_MISMATCH)
-USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
+USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS) -fcommon
 
-%fetch_and_build_gnu_development package=bc version=1.06 suffixes="tar.gz"
+%fetch_and_build_gnu_development package=bc version=1.08.2 suffixes="tar.gz" extraoptions="--disable-year2038"
+
+development-bc--make-env += MAKEINFO=true
