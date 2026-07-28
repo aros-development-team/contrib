@@ -1,0 +1,69 @@
+diff -ruN --strip-trailing-cr flac-1.5.0/include/share/compat.h flac-1.5.0.aros/include/share/compat.h
+--- flac-1.5.0/include/share/compat.h	2025-02-10 14:20:26.474898632 +0000
++++ flac-1.5.0.aros/include/share/compat.h	2026-07-28 11:36:52.227433817 +0100
+@@ -126,7 +126,7 @@
+ #include <sys/utime.h> /* for utime() */
+ #endif
+ #else
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__)
+ #include <fcntl.h>
+ #else
+ #include <sys/types.h> /* some flavors of BSD (like OS X) require this to get time_t */
+@@ -203,7 +203,7 @@
+ #define flac_rename rename
+ #define flac_stat stat
+ 
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__)
+ #define flac_utime(a, b) utimensat (AT_FDCWD, a, *b, 0)
+ #else
+ #define flac_utime utime
+diff -ruN --strip-trailing-cr flac-1.5.0/src/libFLAC/metadata_iterators.c flac-1.5.0.aros/src/libFLAC/metadata_iterators.c
+--- flac-1.5.0/src/libFLAC/metadata_iterators.c	2025-02-10 14:20:26.485898643 +0000
++++ flac-1.5.0.aros/src/libFLAC/metadata_iterators.c	2026-07-28 11:36:52.227767817 +0100
+@@ -3599,7 +3599,7 @@
+ 
+ void set_file_stats_(const char *filename, struct flac_stat_s *stats)
+ {
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(_WIN32)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__) && !defined(_WIN32)
+ 	struct timespec srctime[2] = {};
+ 	srctime[0].tv_sec = stats->st_atime;
+ 	srctime[1].tv_sec = stats->st_mtime;
+diff -ruN --strip-trailing-cr flac-1.5.0/src/share/grabbag/file.c flac-1.5.0.aros/src/share/grabbag/file.c
+--- flac-1.5.0/src/share/grabbag/file.c	2025-02-10 14:20:26.489898648 +0000
++++ flac-1.5.0.aros/src/share/grabbag/file.c	2026-07-28 11:36:52.227483717 +0100
+@@ -54,7 +54,7 @@
+ 	struct flac_stat_s srcstat;
+ 
+ 	if(0 == flac_stat(srcpath, &srcstat)) {
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(_WIN32)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__) && !defined(_WIN32)
+ 		struct timespec srctime[2] = {};
+ 		srctime[0].tv_sec = srcstat.st_atime;
+ 		srctime[1].tv_sec = srcstat.st_mtime;
+diff -ruN --strip-trailing-cr flac-1.5.0/src/test_libFLAC/metadata_manip.c flac-1.5.0.aros/src/test_libFLAC/metadata_manip.c
+--- flac-1.5.0/src/test_libFLAC/metadata_manip.c	2025-02-10 14:20:26.493898652 +0000
++++ flac-1.5.0.aros/src/test_libFLAC/metadata_manip.c	2026-07-28 11:36:52.227918317 +0100
+@@ -258,7 +258,7 @@
+ 
+ static void set_file_stats_(const char *filename, struct flac_stat_s *stats)
+ {
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(_WIN32)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__) && !defined(_WIN32)
+ 	struct timespec srctime[2] = {};
+ 	srctime[0].tv_sec = stats->st_atime;
+ 	srctime[1].tv_sec = stats->st_mtime;
+diff -ruN --strip-trailing-cr flac-1.5.0/src/test_libFLAC++/metadata_manip.cpp flac-1.5.0.aros/src/test_libFLAC++/metadata_manip.cpp
+--- flac-1.5.0/src/test_libFLAC++/metadata_manip.cpp	2025-02-10 14:20:26.491898650 +0000
++++ flac-1.5.0.aros/src/test_libFLAC++/metadata_manip.cpp	2026-07-28 11:36:52.228033917 +0100
+@@ -275,7 +275,7 @@
+ 	FLAC__ASSERT(0 != filename);
+ 	FLAC__ASSERT(0 != stats);
+ 
+-#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(_WIN32)
++#if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L) && !defined(__AROS__) && !defined(_WIN32)
+ 	struct timespec srctime[2] = {};
+ 	srctime[0].tv_sec = stats->st_atime;
+ 	srctime[1].tv_sec = stats->st_mtime;
