@@ -9,18 +9,46 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-icu4c-complete : crosstools-icu
 
+# ICU 75 and later require a C++17 compiler.  The 'auto' non-type template
+# parameters that <unicode/localpointer.h> relies on only arrived in GCC 7, so
+# older toolchains stay on the last ICU that builds for them.  (gnu.cfg does
+# the same for ISL.)
+ifeq ($(AROS_TOOLCHAIN),gnu)
+ifneq ($(findstring -,$(TARGET_GCC_VER)),)
+  ICU_GCC_MAJOR := $(firstword $(subst -, ,$(TARGET_GCC_VER)))
+else
+  ICU_GCC_MAJOR := $(shell echo "$(TARGET_GCC_VER)" | cut -d"." -f1)
+endif
+ifeq ($(shell [ $(ICU_GCC_MAJOR) -lt 7 ] && echo true),true)
+ICU_LEGACY := yes
+endif
+endif
+
+ifeq ($(ICU_LEGACY),yes)
 ICU_MAJOR := 61
 ISU_MINOR := 1
+else
+ICU_MAJOR := 78
+ISU_MINOR := 3
+endif
 ICU_VERSION := $(ICU_MAJOR).$(ISU_MINOR)
 ICU_PKGNAME := icu4c
+# 61 ships as icu4c-61_1-src.tgz, 78 as icu4c-78.3-sources.tgz
+ifeq ($(ICU_LEGACY),yes)
 ICU_PKGVERSION := $(subst .,_,$(ICU_VERSION))
+ICU_ARCHKIND := src
 ICU_REPOSITORY := https://github.com/unicode-org/icu/releases/download/release-$(ICU_MAJOR)-$(ISU_MINOR)
+else
+ICU_PKGVERSION := $(ICU_VERSION)
+ICU_ARCHKIND := sources
+ICU_REPOSITORY := https://github.com/unicode-org/icu/releases/download/release-$(ICU_VERSION)
+endif
 REPOSITORIES := $(ICU_REPOSITORY) \
  https://ftp.osuosl.org/pub/blfs/conglomeration/icu \
  http://bbgentoo.ilb.ru/distfiles \
  http://repository.timesys.com/buildsources/i/icu/icu-$(ICU_VERSION)
 
-ARCHBASE := $(ICU_PKGNAME)-$(ICU_VERSION)-src
+ARCHBASE := $(ICU_PKGNAME)-$(ICU_PKGVERSION)-$(ICU_ARCHKIND)
 
 NOWARN_FLAGS:= $(NOWARN_UNUSED_BUT_SET_VARIABLE)
 
@@ -50,7 +78,7 @@ ICU_EXTRA_OPTS += \
 endif
 endif
 
-%fetch_and_build mmake=contrib-icu4c-complete package=$(ICU_PKGNAME) version=$(ICU_PKGVERSION)-src \
+%fetch_and_build mmake=contrib-icu4c-complete package=$(ICU_PKGNAME) version=$(ICU_PKGVERSION)-$(ICU_ARCHKIND) \
 	package_repo="$(REPOSITORIES)" suffixes="tgz" \
 	patch=yes srcdir=icu builddir=source prefix=$(AROS_DEVELOPER) aros_prefix=/$(AROS_DIR_DEVELOPER) nix=yes \
 	extraoptions="$(ICU_EXTRA_OPTS)" nlsflag=no xflag=no
