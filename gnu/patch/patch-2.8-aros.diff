@@ -1,0 +1,24 @@
+diff -ruN --strip-trailing-cr patch-2.8/lib/fpending.c patch-2.8.aros/lib/fpending.c
+--- patch-2.8/lib/fpending.c	2025-02-27 13:35:02.000000000 +0000
++++ patch-2.8.aros/lib/fpending.c	2026-07-28 10:29:35.457839264 +0100
+@@ -56,6 +56,8 @@
+   return fp->__bufp - fp->__buffer;
+ #elif defined EPLAN9                 /* Plan9 */
+   return fp->wp - fp->buf;
++#elif defined __AROS__
++  return 0;
+ #else
+ # error "Please port gnulib fpending.c to your platform!"
+   return 1;
+diff -ruN --strip-trailing-cr patch-2.8/lib/getprogname.c patch-2.8.aros/lib/getprogname.c
+--- patch-2.8/lib/getprogname.c	2025-02-27 13:35:02.000000000 +0000
++++ patch-2.8.aros/lib/getprogname.c	2026-07-28 10:29:35.457947764 +0100
+@@ -297,6 +297,8 @@
+       close (fd);
+     }
+   return "?";
++#elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif

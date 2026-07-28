@@ -3,7 +3,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-PATCH_VERSION = 2.5.4
+PATCH_VERSION = 2.8
 
 #MM- contrib-gnu : contrib-gnu-patch
 #MM- contrib-gnu-patch : development-patch
@@ -11,4 +11,4 @@ PATCH_VERSION = 2.5.4
 NOWARN_FLAGS := $(NOWARN_IMPLICIT_INT) $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
-%fetch_and_build_gnu_development package=patch version=$(PATCH_VERSION) suffixes="tar.gz"
+%fetch_and_build_gnu_development package=patch version=$(PATCH_VERSION) patch=yes suffixes="tar.gz" extraoptions="--disable-year2038"
