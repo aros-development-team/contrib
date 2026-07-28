@@ -11,5 +11,12 @@ M4_VERSION = 1.4.21
 NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
+# gnulib uses C11 atomics.  Targets whose CPU has no native atomic
+# instructions resolve them through libatomic; configure flags those with
+# TARGET_LIBATOMIC.
+ifeq ($(TARGET_LIBATOMIC),yes)
+M4_ATOMIC_LIBS := -latomic
+endif
+
 %fetch_and_build_gnu_development package=m4 version=$(M4_VERSION) patch=yes \
-    extraoptions="--disable-year2038"
+    extraoptions="--disable-year2038 LIBS=$(M4_ATOMIC_LIBS)"
