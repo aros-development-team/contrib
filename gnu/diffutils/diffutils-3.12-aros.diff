@@ -1,0 +1,25 @@
+diff -ruN --strip-trailing-cr diffutils-3.12/lib/getlocalename_l-unsafe.c diffutils-3.12.aros/lib/getlocalename_l-unsafe.c
+--- diffutils-3.12/lib/getlocalename_l-unsafe.c	2025-04-02 22:47:17.000000000 +0100
++++ diffutils-3.12.aros/lib/getlocalename_l-unsafe.c	2026-07-28 10:50:57.037576480 +0100
+@@ -657,6 +657,9 @@
+       };
+       const char *name = ((struct __locale_t *) locale)->mb_cur_max == 4 ? "C.UTF-8" : "C";
+       return (struct string_with_storage) { name, STORAGE_INDEFINITE };
++#elif defined __AROS__
++      /* AROS only supports the "C" locale at the libc level. */
++      return (struct string_with_storage) { "C", STORAGE_INDEFINITE };
+ #else
+  #error "Please port gnulib getlocalename_l-unsafe.c to your platform! Report this to bug-gnulib."
+ #endif
+diff -ruN --strip-trailing-cr diffutils-3.12/lib/getprogname.c diffutils-3.12.aros/lib/getprogname.c
+--- diffutils-3.12/lib/getprogname.c	2025-01-02 02:33:12.000000000 +0000
++++ diffutils-3.12.aros/lib/getprogname.c	2026-07-28 10:50:57.037667080 +0100
+@@ -297,6 +297,8 @@
+       close (fd);
+     }
+   return "?";
++#elif defined __AROS__
++  return "";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
