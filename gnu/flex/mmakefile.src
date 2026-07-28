@@ -1,10 +1,10 @@
-# Copyright © 2004-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-FLEX_VERSBASE = 2.5.4
-FLEX_VERSION = $(FLEX_VERSBASE)a
+FLEX_VERSBASE = 2.6.4
+FLEX_VERSION = $(FLEX_VERSBASE)
 ARCHBASE := flex-$(FLEX_VERSBASE)
 
 #MM- contrib-gnu : contrib-gnu-flex
@@ -18,5 +18,6 @@ REPOSITORIES := \
 NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
 
-%fetch_and_build_gnu_development package=flex version=$(FLEX_VERSION) srcdir=$(ARCHBASE) patch=yes \
-    package_repo=$(REPOSITORIES) suffixes="tar.gz"
+%fetch_and_build_gnu_development package=flex version=$(FLEX_VERSION) srcdir=$(ARCHBASE) patch=no extraoptions="--disable-year2038" \
+    package_repo=$(REPOSITORIES) suffixes="tar.gz" usecppflags=no \
+    config_env_extra="ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes"
