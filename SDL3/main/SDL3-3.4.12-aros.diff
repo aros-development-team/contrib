@@ -699,6 +699,24 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_platform_defines.h SD
  #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
  
  /**
+diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_stdinc.h SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h
+--- SDL3-3.4.12/include/SDL3/SDL_stdinc.h	2026-05-31 03:50:12.000000000 +0100
++++ SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h	2026-07-28 21:47:30.670060310 +0100
+@@ -1184,7 +1184,14 @@
+     Uint8 a;
+     void *b;
+ } SDL_alignment_test;
++/* The size of the struct above is decided by how the ABI aligns a pointer,
++   which is not always the pointer's own size: m68k aligns pointers on 2 bytes,
++   giving sizeof(void *) + 2 rather than 2 * sizeof(void *).  */
++#ifdef __GNUC__
++SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (sizeof(void *) + __alignof__(void *)));
++#else
+ SDL_COMPILE_TIME_ASSERT(struct_alignment, sizeof(SDL_alignment_test) == (2 * sizeof(void *)));
++#endif
+ SDL_COMPILE_TIME_ASSERT(two_s_complement, SDL_static_cast(int, ~SDL_static_cast(int, 0)) == SDL_static_cast(int, -1));
+ #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
+ /** \endcond */
 diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c
 --- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 01:00:00.000000000 +0100
 +++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c	2026-07-28 13:08:21.755632791 +0100

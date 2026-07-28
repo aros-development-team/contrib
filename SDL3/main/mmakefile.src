@@ -279,12 +279,18 @@ USER_CPPFLAGS := \
         -DSDL3_AROS_SHARED \
         -DADATE="\"$(shell date '+%d.%m.%Y')\""
 
+# SDL3 uses C11 atomics.  Targets whose CPU has no native atomic instructions
+# resolve them through libatomic; configure flags those with TARGET_LIBATOMIC.
+ifeq ($(TARGET_LIBATOMIC),yes)
+SDL3_ATOMIC_LIBS := atomic
+endif
+
 %build_module mmake=SDL3-aros-sharedlib \
     modname=SDL3 modtype=library \
     files="SDL3_library $(FILES)" \
     linklibobjs="$(SDL3LINKLIBOBJS)" \
     conffile=SDL3.conf \
-    uselibs="iconv GL"
+    uselibs="iconv GL $(SDL3_ATOMIC_LIBS)"
 
 USER_CPPFLAGS := \
         -DSDL3_AROS_STATIC \
