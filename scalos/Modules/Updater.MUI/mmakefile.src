@@ -27,8 +27,15 @@ USER_CPPFLAGS := -DMUI_OBSOLETE -DSTATIC_SSL \
 
 TARGETDIR := $(AROS_CONTRIB)/Scalos/Modules
 
+# libcurl uses C11 atomics.  Targets whose CPU has no native atomic
+# instructions resolve them through libatomic; configure flags those with
+# TARGET_LIBATOMIC.
+ifeq ($(TARGET_LIBATOMIC),yes)
+UPDATER_ATOMIC_LIBS := atomic
+endif
+
 %build_prog mmake=contrib-scalos-modules-updater progname=Updater.module \
-    files=$(FILES) targetdir=$(TARGETDIR) uselibs="curl ssl crypto z zstd"
+    files=$(FILES) targetdir=$(TARGETDIR) uselibs="curl ssl crypto z zstd $(UPDATER_ATOMIC_LIBS)"
 
 
 #MM
