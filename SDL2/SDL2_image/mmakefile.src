@@ -1,4 +1,4 @@
-# Copyright © 2025, The AROS Development Team. All rights reserved.
+# Copyright © 2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -14,7 +14,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 USER_INCLUDES := -I$(AROS_INCLUDES)/SDL2 -I$(AROS_CONTRIB_INCLUDES)
 USER_LDFLAGS := -L$(AROS_CONTRIB_LIB)
 
-SDL2IMAGEVERS := 2.8.8
+SDL2IMAGEVERS := 2.8.12
 REPOSITORIES := https://www.libsdl.org/projects/SDL_image/release \
  http://downloads.openmoko.org/sources \
  http://ftp.riken.jp/Linux/momonga/1/PKGS/SOURCES \
