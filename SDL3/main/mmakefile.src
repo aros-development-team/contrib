@@ -20,7 +20,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM SDL3-aros-staticlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI
 
 REPOSITORIES := http://www.libsdl.org/release/
-ARCHVER      := 3.4.10
+ARCHVER      := 3.4.12
 ARCHBASE     := SDL3-$(ARCHVER)
 
 ARCHSRCDIR := $(PORTSDIR)/SDL3/$(ARCHBASE)

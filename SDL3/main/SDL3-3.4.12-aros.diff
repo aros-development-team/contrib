@@ -1,6 +1,6 @@
-diff -ruN SDL3-3.4.10/include/build_config/SDL_build_config_aros.h SDL3-3.4.10.aros/include/build_config/SDL_build_config_aros.h
---- SDL3-3.4.10/include/build_config/SDL_build_config_aros.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/include/build_config/SDL_build_config_aros.h	2026-06-26 17:06:49.028656216 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config_aros.h SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h
+--- SDL3-3.4.12/include/build_config/SDL_build_config_aros.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h	2026-07-28 13:08:21.751348390 +0100
 @@ -0,0 +1,664 @@
 +/*
 +  Simple DirectMedia Layer
@@ -666,9 +666,9 @@ diff -ruN SDL3-3.4.10/include/build_config/SDL_build_config_aros.h SDL3-3.4.10.a
 +   build FILES list (src/locale/aros, src/misc/aros, src/thread/aros). */
 +
 +#endif /* SDL_build_config_aros_h_ */
-diff -ruN SDL3-3.4.10/include/build_config/SDL_build_config.h SDL3-3.4.10.aros/include/build_config/SDL_build_config.h
---- SDL3-3.4.10/include/build_config/SDL_build_config.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/include/build_config/SDL_build_config.h	2026-06-26 15:44:50.540333026 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config.h SDL3-3.4.12.aros/include/build_config/SDL_build_config.h
+--- SDL3-3.4.12/include/build_config/SDL_build_config.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/include/build_config/SDL_build_config.h	2026-07-28 13:08:21.751768290 +0100
 @@ -45,6 +45,8 @@
  #include "SDL_build_config_ios.h"
  #elif defined(SDL_PLATFORM_ANDROID)
@@ -678,9 +678,9 @@ diff -ruN SDL3-3.4.10/include/build_config/SDL_build_config.h SDL3-3.4.10.aros/i
  #else
  /* This is a minimal configuration just to get SDL running on new platforms. */
  #include "SDL_build_config_minimal.h"
-diff -ruN SDL3-3.4.10/include/SDL3/SDL_platform_defines.h SDL3-3.4.10.aros/include/SDL3/SDL_platform_defines.h
---- SDL3-3.4.10/include/SDL3/SDL_platform_defines.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/include/SDL3/SDL_platform_defines.h	2026-06-26 15:44:50.540470726 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_platform_defines.h SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h
+--- SDL3-3.4.12/include/SDL3/SDL_platform_defines.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h	2026-07-28 13:08:21.751880290 +0100
 @@ -48,6 +48,17 @@
  #define SDL_PLATFORM_HAIKU 1
  #endif
@@ -699,9 +699,9 @@ diff -ruN SDL3-3.4.10/include/SDL3/SDL_platform_defines.h SDL3-3.4.10.aros/inclu
  #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
  
  /**
-diff -ruN SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.10.aros/src/audio/ahi/SDL_ahi_audio.c
---- SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/audio/ahi/SDL_ahi_audio.c	2026-06-26 02:00:10.269593405 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c
+--- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c	2026-07-28 13:08:21.755632791 +0100
 @@ -0,0 +1,484 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1187,9 +1187,9 @@ diff -ruN SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.10.aros/src/audio/a
 +};
 +
 +#endif // SDL_AUDIO_DRIVER_AHI
-diff -ruN SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4.10.aros/src/audio/ahi/SDL_ahi_audio.h
---- SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/audio/ahi/SDL_ahi_audio.h	2026-06-26 01:57:46.930336782 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h
+--- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h	2026-07-28 13:08:21.758620992 +0100
 @@ -0,0 +1,45 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1236,9 +1236,9 @@ diff -ruN SDL3-3.4.10/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4.10.aros/src/audio/a
 +typedef struct SDL_PrivateAudioData AHIAudioData;
 +
 +#endif // SDL_ahi_audio_h_
-diff -ruN SDL3-3.4.10/src/audio/SDL_audio.c SDL3-3.4.10.aros/src/audio/SDL_audio.c
---- SDL3-3.4.10/src/audio/SDL_audio.c	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/audio/SDL_audio.c	2026-06-26 15:44:50.541221526 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_audio.c SDL3-3.4.12.aros/src/audio/SDL_audio.c
+--- SDL3-3.4.12/src/audio/SDL_audio.c	2026-07-01 04:29:41.000000000 +0100
++++ SDL3-3.4.12.aros/src/audio/SDL_audio.c	2026-07-28 13:08:21.758846492 +0100
 @@ -92,6 +92,9 @@
  #ifdef SDL_AUDIO_DRIVER_QNX
      &QSAAUDIO_bootstrap,
@@ -1249,9 +1249,9 @@ diff -ruN SDL3-3.4.10/src/audio/SDL_audio.c SDL3-3.4.10.aros/src/audio/SDL_audio
  #ifdef SDL_AUDIO_DRIVER_DISK
      &DISKAUDIO_bootstrap,
  #endif
-diff -ruN SDL3-3.4.10/src/audio/SDL_sysaudio.h SDL3-3.4.10.aros/src/audio/SDL_sysaudio.h
---- SDL3-3.4.10/src/audio/SDL_sysaudio.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/audio/SDL_sysaudio.h	2026-06-26 15:44:50.541596226 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_sysaudio.h SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h
+--- SDL3-3.4.12/src/audio/SDL_sysaudio.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h	2026-07-28 13:08:21.759632792 +0100
 @@ -380,6 +380,7 @@
  extern AudioBootStrap HAIKUAUDIO_bootstrap;
  extern AudioBootStrap COREAUDIO_bootstrap;
@@ -1260,9 +1260,9 @@ diff -ruN SDL3-3.4.10/src/audio/SDL_sysaudio.h SDL3-3.4.10.aros/src/audio/SDL_sy
  extern AudioBootStrap DUMMYAUDIO_bootstrap;
  extern AudioBootStrap AAUDIO_bootstrap;
  extern AudioBootStrap OPENSLES_bootstrap;
-diff -ruN SDL3-3.4.10/src/dynapi/SDL_dynapi.h SDL3-3.4.10.aros/src/dynapi/SDL_dynapi.h
---- SDL3-3.4.10/src/dynapi/SDL_dynapi.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/dynapi/SDL_dynapi.h	2026-06-26 15:44:50.541713226 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/dynapi/SDL_dynapi.h SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h
+--- SDL3-3.4.12/src/dynapi/SDL_dynapi.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h	2026-07-28 13:08:21.761962992 +0100
 @@ -65,6 +65,8 @@
  #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
  #elif defined(SDL_PLATFORM_NGAGE)
@@ -1272,9 +1272,9 @@ diff -ruN SDL3-3.4.10/src/dynapi/SDL_dynapi.h SDL3-3.4.10.aros/src/dynapi/SDL_dy
  #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
  #define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
  #endif
-diff -ruN SDL3-3.4.10/src/filesystem/aros/SDL_sysfilesystem.c SDL3-3.4.10.aros/src/filesystem/aros/SDL_sysfilesystem.c
---- SDL3-3.4.10/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/filesystem/aros/SDL_sysfilesystem.c	2026-06-26 16:30:43.168657282 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c
+--- SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c	2026-07-28 13:08:21.763112093 +0100
 @@ -0,0 +1,208 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1484,9 +1484,9 @@ diff -ruN SDL3-3.4.10/src/filesystem/aros/SDL_sysfilesystem.c SDL3-3.4.10.aros/s
 +}
 +
 +#endif /* SDL_FILESYSTEM_AROS */
-diff -ruN SDL3-3.4.10/src/filesystem/aros/SDL_sysfsops.c SDL3-3.4.10.aros/src/filesystem/aros/SDL_sysfsops.c
---- SDL3-3.4.10/src/filesystem/aros/SDL_sysfsops.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/filesystem/aros/SDL_sysfsops.c	2026-06-26 16:31:50.540657418 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c
+--- SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c	2026-07-28 13:08:21.763677793 +0100
 @@ -0,0 +1,210 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1698,9 +1698,9 @@ diff -ruN SDL3-3.4.10/src/filesystem/aros/SDL_sysfsops.c SDL3-3.4.10.aros/src/fi
 +}
 +
 +#endif /* SDL_FSOPS_AROS */
-diff -ruN SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.10.aros/src/joystick/aros/SDL_sysjoystick.c
---- SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/joystick/aros/SDL_sysjoystick.c	2026-06-26 16:40:11.024656947 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c
+--- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c	2026-07-28 13:08:21.766765593 +0100
 @@ -0,0 +1,477 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2179,9 +2179,9 @@ diff -ruN SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.10.aros/src/j
 +};
 +
 +#endif /* SDL_JOYSTICK_AROS */
-diff -ruN SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.10.aros/src/joystick/aros/SDL_sysjoystick_c.h
---- SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick_c.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-06-26 16:39:57.594183140 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h
+--- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-07-28 13:08:21.766929593 +0100
 @@ -0,0 +1,42 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2225,9 +2225,9 @@ diff -ruN SDL3-3.4.10/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.10.aros/src
 +};
 +
 +#endif /* SDL_sysjoystick_aros_h_ */
-diff -ruN SDL3-3.4.10/src/joystick/SDL_joystick.c SDL3-3.4.10.aros/src/joystick/SDL_joystick.c
---- SDL3-3.4.10/src/joystick/SDL_joystick.c	2026-05-22 14:06:35.000000000 +0000
-+++ SDL3-3.4.10.aros/src/joystick/SDL_joystick.c	2026-06-26 16:34:56.876655560 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_joystick.c SDL3-3.4.12.aros/src/joystick/SDL_joystick.c
+--- SDL3-3.4.12/src/joystick/SDL_joystick.c	2026-06-28 04:12:20.000000000 +0100
++++ SDL3-3.4.12.aros/src/joystick/SDL_joystick.c	2026-07-28 13:08:21.767632794 +0100
 @@ -106,6 +106,9 @@
  #ifdef SDL_JOYSTICK_N3DS
      &SDL_N3DS_JoystickDriver,
@@ -2238,9 +2238,9 @@ diff -ruN SDL3-3.4.10/src/joystick/SDL_joystick.c SDL3-3.4.10.aros/src/joystick/
  #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
      &SDL_DUMMY_JoystickDriver
  #endif
-diff -ruN SDL3-3.4.10/src/joystick/SDL_sysjoystick.h SDL3-3.4.10.aros/src/joystick/SDL_sysjoystick.h
---- SDL3-3.4.10/src/joystick/SDL_sysjoystick.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/joystick/SDL_sysjoystick.h	2026-06-26 16:35:02.080655508 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_sysjoystick.h SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h
+--- SDL3-3.4.12/src/joystick/SDL_sysjoystick.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h	2026-07-28 13:08:21.771632795 +0100
 @@ -248,6 +248,7 @@
  extern SDL_JoystickDriver SDL_BSD_JoystickDriver;
  extern SDL_JoystickDriver SDL_DARWIN_JoystickDriver;
@@ -2249,9 +2249,9 @@ diff -ruN SDL3-3.4.10/src/joystick/SDL_sysjoystick.h SDL3-3.4.10.aros/src/joysti
  extern SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver;
  extern SDL_JoystickDriver SDL_HAIKU_JoystickDriver;
  extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
-diff -ruN SDL3-3.4.10/src/locale/aros/SDL_syslocale.c SDL3-3.4.10.aros/src/locale/aros/SDL_syslocale.c
---- SDL3-3.4.10/src/locale/aros/SDL_syslocale.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/locale/aros/SDL_syslocale.c	2026-06-26 16:28:04.288657585 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/locale/aros/SDL_syslocale.c SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c
+--- SDL3-3.4.12/src/locale/aros/SDL_syslocale.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c	2026-07-28 13:08:21.774211195 +0100
 @@ -0,0 +1,82 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2335,9 +2335,9 @@ diff -ruN SDL3-3.4.10/src/locale/aros/SDL_syslocale.c SDL3-3.4.10.aros/src/local
 +    SDL_strlcpy(buf, "en_GB", buflen);
 +    return true;
 +}
-diff -ruN SDL3-3.4.10/src/misc/aros/SDL_sysurl.c SDL3-3.4.10.aros/src/misc/aros/SDL_sysurl.c
---- SDL3-3.4.10/src/misc/aros/SDL_sysurl.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/misc/aros/SDL_sysurl.c	2026-06-26 16:27:46.880657435 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/misc/aros/SDL_sysurl.c SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c
+--- SDL3-3.4.12/src/misc/aros/SDL_sysurl.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c	2026-07-28 13:08:21.775632795 +0100
 @@ -0,0 +1,45 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2384,9 +2384,9 @@ diff -ruN SDL3-3.4.10/src/misc/aros/SDL_sysurl.c SDL3-3.4.10.aros/src/misc/aros/
 +
 +    return SDL_SetError("Failed to open URL '%s'", url);
 +}
-diff -ruN SDL3-3.4.10/src/power/aros/SDL_syspower.c SDL3-3.4.10.aros/src/power/aros/SDL_syspower.c
---- SDL3-3.4.10/src/power/aros/SDL_syspower.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/power/aros/SDL_syspower.c	2026-06-26 16:40:16.012656894 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/aros/SDL_syspower.c SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c
+--- SDL3-3.4.12/src/power/aros/SDL_syspower.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c	2026-07-28 13:08:21.778390696 +0100
 @@ -0,0 +1,42 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2430,9 +2430,9 @@ diff -ruN SDL3-3.4.10/src/power/aros/SDL_syspower.c SDL3-3.4.10.aros/src/power/a
 +
 +#endif /* SDL_POWER_AROS */
 +#endif /* SDL_POWER_DISABLED */
-diff -ruN SDL3-3.4.10/src/power/SDL_power.c SDL3-3.4.10.aros/src/power/SDL_power.c
---- SDL3-3.4.10/src/power/SDL_power.c	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/power/SDL_power.c	2026-06-26 16:34:36.700656625 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_power.c SDL3-3.4.12.aros/src/power/SDL_power.c
+--- SDL3-3.4.12/src/power/SDL_power.c	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/power/SDL_power.c	2026-07-28 13:08:21.778510896 +0100
 @@ -75,6 +75,10 @@
      SDL_GetPowerInfo_Emscripten,
  #endif
@@ -2444,9 +2444,9 @@ diff -ruN SDL3-3.4.10/src/power/SDL_power.c SDL3-3.4.10.aros/src/power/SDL_power
  #ifdef SDL_POWER_HARDWIRED
      SDL_GetPowerInfo_Hardwired,
  #endif
-diff -ruN SDL3-3.4.10/src/power/SDL_syspower.h SDL3-3.4.10.aros/src/power/SDL_syspower.h
---- SDL3-3.4.10/src/power/SDL_syspower.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/power/SDL_syspower.h	2026-06-26 16:34:43.056656142 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_syspower.h SDL3-3.4.12.aros/src/power/SDL_syspower.h
+--- SDL3-3.4.12/src/power/SDL_syspower.h	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/power/SDL_syspower.h	2026-07-28 13:08:21.778599196 +0100
 @@ -39,6 +39,7 @@
  bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
  bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
@@ -2455,9 +2455,9 @@ diff -ruN SDL3-3.4.10/src/power/SDL_syspower.h SDL3-3.4.10.aros/src/power/SDL_sy
  
  // this one is static in SDL_power.c
  /* bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
-diff -ruN SDL3-3.4.10/src/SDL.c SDL3-3.4.10.aros/src/SDL.c
---- SDL3-3.4.10/src/SDL.c	2026-05-27 00:34:28.000000000 +0000
-+++ SDL3-3.4.10.aros/src/SDL.c	2026-06-26 15:44:50.541842726 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL.c SDL3-3.4.12.aros/src/SDL.c
+--- SDL3-3.4.12/src/SDL.c	2026-05-27 01:34:28.000000000 +0100
++++ SDL3-3.4.12.aros/src/SDL.c	2026-07-28 13:08:21.779632796 +0100
 @@ -766,6 +766,8 @@
      return "AIX";
  #elif defined(SDL_PLATFORM_ANDROID)
@@ -2467,9 +2467,9 @@ diff -ruN SDL3-3.4.10/src/SDL.c SDL3-3.4.10.aros/src/SDL.c
  #elif defined(SDL_PLATFORM_BSDI)
      return "BSDI";
  #elif defined(SDL_PLATFORM_EMSCRIPTEN)
-diff -ruN SDL3-3.4.10/src/SDL_log.c SDL3-3.4.10.aros/src/SDL_log.c
---- SDL3-3.4.10/src/SDL_log.c	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.10.aros/src/SDL_log.c	2026-06-26 15:44:50.542083426 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL_log.c SDL3-3.4.12.aros/src/SDL_log.c
+--- SDL3-3.4.12/src/SDL_log.c	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/SDL_log.c	2026-07-28 13:08:21.781983497 +0100
 @@ -40,6 +40,10 @@
  #include <android/log.h>
  #endif
@@ -2501,9 +2501,9 @@ diff -ruN SDL3-3.4.10/src/SDL_log.c SDL3-3.4.10.aros/src/SDL_log.c
      !(defined(SDL_PLATFORM_WIN32))
      (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
  #endif
-diff -ruN SDL3-3.4.10/src/thread/aros/SDL_sysmutex.c SDL3-3.4.10.aros/src/thread/aros/SDL_sysmutex.c
---- SDL3-3.4.10/src/thread/aros/SDL_sysmutex.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/thread/aros/SDL_sysmutex.c	2026-06-26 16:28:33.972656596 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c
+--- SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c	2026-07-28 13:08:21.782410797 +0100
 @@ -0,0 +1,81 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2586,9 +2586,9 @@ diff -ruN SDL3-3.4.10/src/thread/aros/SDL_sysmutex.c SDL3-3.4.10.aros/src/thread
 +    }
 +#endif
 +}
-diff -ruN SDL3-3.4.10/src/thread/aros/SDL_syssem.c SDL3-3.4.10.aros/src/thread/aros/SDL_syssem.c
---- SDL3-3.4.10/src/thread/aros/SDL_syssem.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/thread/aros/SDL_syssem.c	2026-06-26 00:45:27.793594423 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_syssem.c SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c
+--- SDL3-3.4.12/src/thread/aros/SDL_syssem.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c	2026-07-28 13:08:21.783632797 +0100
 @@ -0,0 +1,192 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2782,9 +2782,9 @@ diff -ruN SDL3-3.4.10/src/thread/aros/SDL_syssem.c SDL3-3.4.10.aros/src/thread/a
 +}
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN SDL3-3.4.10/src/thread/aros/SDL_systhread.c SDL3-3.4.10.aros/src/thread/aros/SDL_systhread.c
---- SDL3-3.4.10/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/thread/aros/SDL_systhread.c	2026-06-26 00:43:30.761594391 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c
+--- SDL3-3.4.12/src/thread/aros/SDL_systhread.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c	2026-07-28 13:08:21.786563898 +0100
 @@ -0,0 +1,154 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2940,9 +2940,9 @@ diff -ruN SDL3-3.4.10/src/thread/aros/SDL_systhread.c SDL3-3.4.10.aros/src/threa
 +}
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN SDL3-3.4.10/src/thread/aros/SDL_systhread_c.h SDL3-3.4.10.aros/src/thread/aros/SDL_systhread_c.h
---- SDL3-3.4.10/src/thread/aros/SDL_systhread_c.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/thread/aros/SDL_systhread_c.h	2026-06-26 00:43:02.765594377 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h
+--- SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h	2026-07-28 13:08:21.786657998 +0100
 @@ -0,0 +1,32 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2976,9 +2976,9 @@ diff -ruN SDL3-3.4.10/src/thread/aros/SDL_systhread_c.h SDL3-3.4.10.aros/src/thr
 +};
 +
 +typedef struct _AROS_ThreadPrivate SYS_ThreadHandle;
-diff -ruN SDL3-3.4.10/src/thread/SDL_thread_c.h SDL3-3.4.10.aros/src/thread/SDL_thread_c.h
---- SDL3-3.4.10/src/thread/SDL_thread_c.h	2026-05-05 04:54:08.000000000 +0000
-+++ SDL3-3.4.10.aros/src/thread/SDL_thread_c.h	2026-06-26 15:44:50.542616326 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/SDL_thread_c.h SDL3-3.4.12.aros/src/thread/SDL_thread_c.h
+--- SDL3-3.4.12/src/thread/SDL_thread_c.h	2026-05-05 05:54:08.000000000 +0100
++++ SDL3-3.4.12.aros/src/thread/SDL_thread_c.h	2026-07-28 13:08:21.786721898 +0100
 @@ -38,6 +38,8 @@
  #include "vita/SDL_systhread_c.h"
  #elif defined(SDL_THREAD_N3DS)
@@ -2988,9 +2988,9 @@ diff -ruN SDL3-3.4.10/src/thread/SDL_thread_c.h SDL3-3.4.10.aros/src/thread/SDL_
  #else
  #error Need thread implementation for this platform
  #include "generic/SDL_systhread_c.h"
-diff -ruN SDL3-3.4.10/src/timer/aros/SDL_systimer.c SDL3-3.4.10.aros/src/timer/aros/SDL_systimer.c
---- SDL3-3.4.10/src/timer/aros/SDL_systimer.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/timer/aros/SDL_systimer.c	2026-06-26 00:44:57.757594333 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c
+--- SDL3-3.4.12/src/timer/aros/SDL_systimer.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c	2026-07-28 13:08:21.787632798 +0100
 @@ -0,0 +1,75 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3067,9 +3067,9 @@ diff -ruN SDL3-3.4.10/src/timer/aros/SDL_systimer.c SDL3-3.4.10.aros/src/timer/a
 +#endif /* SDL_TIMER_AROS */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN SDL3-3.4.10/src/video/aros/scancodes_amigaos.h SDL3-3.4.10.aros/src/video/aros/scancodes_amigaos.h
---- SDL3-3.4.10/src/video/aros/scancodes_amigaos.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/scancodes_amigaos.h	2026-06-26 22:20:50.978718031 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/scancodes_amigaos.h SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h
+--- SDL3-3.4.12/src/video/aros/scancodes_amigaos.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h	2026-07-28 13:08:21.790384199 +0100
 @@ -0,0 +1,144 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3215,9 +3215,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/scancodes_amigaos.h SDL3-3.4.10.aros/src/vi
 +    /*  113 */    SDL_SCANCODE_END,
 +};
 +/* *INDENT-ON* */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.c
---- SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.c	2026-06-26 22:20:50.965221831 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c	2026-07-28 13:08:21.792152599 +0100
 @@ -0,0 +1,277 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3496,9 +3496,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.c SDL3-3.4.10.aros/src/vi
 +
 +	return result;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.h
---- SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosclipboard.h	2026-06-26 22:20:50.979693131 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h	2026-07-28 13:08:21.794623200 +0100
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3530,9 +3530,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosclipboard.h SDL3-3.4.10.aros/src/vi
 +extern bool AROS_HasClipboardText(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_arosclipboard_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.c
---- SDL3-3.4.10/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.c	2026-06-26 22:29:09.379328911 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosevents.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c	2026-07-28 13:08:21.795632800 +0100
 @@ -0,0 +1,850 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4385,9 +4385,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.c SDL3-3.4.10.aros/src/video
 +    }
 +}
 \ No newline at end of file
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.h SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.h
---- SDL3-3.4.10/src/video/aros/SDL_arosevents.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosevents.h	2026-06-26 22:20:50.980742131 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.h SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosevents.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h	2026-07-28 13:08:21.802207901 +0100
 @@ -0,0 +1,29 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4418,9 +4418,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosevents.h SDL3-3.4.10.aros/src/video
 +extern void AROS_GlobalMenu(struct Menu *mymenu, UWORD menu, UWORD item, UWORD sub, UWORD check);
 +
 +#endif /* _SDL_arosevents_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.c
---- SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.c	2026-06-26 22:20:50.968015831 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c	2026-07-28 13:08:21.803632802 +0100
 @@ -0,0 +1,156 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4578,9 +4578,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.10.aros/src/
 +		}
 +	return true;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.h
---- SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosframebuffer.h	2026-06-26 22:20:50.981741531 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h	2026-07-28 13:08:21.806469202 +0100
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4612,9 +4612,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.10.aros/src/
 +extern void AROS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window);
 +
 +#endif /* _SDL_arosframebuffer_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.c
---- SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.c	2026-06-26 22:20:50.968972031 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c
+--- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c	2026-07-28 13:08:21.810268603 +0100
 @@ -0,0 +1,91 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4707,9 +4707,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.10.aros/src/vid
 +	//SDL_SetScancodeName(SDL_SCANCODE_LCTRL, "Control");
 +
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.h
---- SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroskeyboard.h	2026-06-26 22:20:50.982705031 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h
+--- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h	2026-07-28 13:08:21.812861104 +0100
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4739,9 +4739,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.10.aros/src/vid
 +extern void AROS_InitKeyboard(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_aroskeyboard_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.c
---- SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.c	2026-06-26 22:20:50.970013931 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c	2026-07-28 13:08:21.813010604 +0100
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4839,9 +4839,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.10.aros/src/v
 +
 +	return (rc == 0);
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.h
---- SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmessagebox.h	2026-06-26 22:20:50.983607631 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h	2026-07-28 13:08:21.813445504 +0100
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4871,9 +4871,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.10.aros/src/v
 +extern bool AROS_ShowMessageBox(const SDL_MessageBoxData *mbd, int *buttonid);
 +
 +#endif /* _SDL_arosmessagebox_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.c
---- SDL3-3.4.10/src/video/aros/SDL_arosmisc.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.c	2026-06-26 22:20:50.971075031 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmisc.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c	2026-07-28 13:08:21.813869204 +0100
 @@ -0,0 +1,130 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5005,9 +5005,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.c SDL3-3.4.10.aros/src/video/a
 +    *dst++ = '\0';
 +    return path;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.h
---- SDL3-3.4.10/src/video/aros/SDL_arosmisc.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmisc.h	2026-06-26 22:20:50.984592631 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmisc.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h	2026-07-28 13:08:21.813965804 +0100
 @@ -0,0 +1,33 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5042,9 +5042,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmisc.h SDL3-3.4.10.aros/src/video/a
 +extern char *AROS_ConvertPath(const char *fn);
 +
 +#endif /* SDL_arosmisc_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c
---- SDL3-3.4.10/src/video/aros/SDL_arosmodes.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.c	2026-06-26 22:20:50.972095331 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmodes.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c	2026-07-28 13:08:21.814923504 +0100
 @@ -0,0 +1,508 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5554,9 +5554,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.c SDL3-3.4.10.aros/src/video/
 +
 +    return true;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.h
---- SDL3-3.4.10/src/video/aros/SDL_arosmodes.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmodes.h	2026-06-26 22:20:50.985534831 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmodes.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h	2026-07-28 13:08:21.815073704 +0100
 @@ -0,0 +1,43 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5601,9 +5601,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmodes.h SDL3-3.4.10.aros/src/video/
 +extern bool AROS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay * display, SDL_Rect * rect);
 +
 +#endif /* _SDL_arosmodes_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c
---- SDL3-3.4.10/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.c	2026-06-26 22:20:50.973105131 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmouse.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c	2026-07-28 13:08:21.815798104 +0100
 @@ -0,0 +1,375 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5980,9 +5980,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.c SDL3-3.4.10.aros/src/video/
 +		mouse->cur_cursor = NULL;
 +	}
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.h SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.h
---- SDL3-3.4.10/src/video/aros/SDL_arosmouse.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosmouse.h	2026-06-26 22:20:50.986528231 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmouse.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h	2026-07-28 13:08:21.815964605 +0100
 @@ -0,0 +1,54 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6038,9 +6038,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosmouse.h SDL3-3.4.10.aros/src/video/
 +extern void AROS_QuitMouse(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_arosmouse_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.c
---- SDL3-3.4.10/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.c	2026-06-26 22:20:50.974255831 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosopengl.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c	2026-07-28 13:08:21.816580005 +0100
 @@ -0,0 +1,253 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6295,9 +6295,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.c SDL3-3.4.10.aros/src/video
 +}
 +
 +#endif /* SDL_VIDEO_OPENGL_AGL */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h
---- SDL3-3.4.10/src/video/aros/SDL_arosopengl.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosopengl.h	2026-06-26 22:20:50.987694131 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.h SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosopengl.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h	2026-07-28 13:08:21.816898705 +0100
 @@ -0,0 +1,60 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6359,9 +6359,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosopengl.h SDL3-3.4.10.aros/src/video
 +#endif /* !SDL_VIDEO_OPENGL_AGL_INTERN */
 +
 +#endif /* _SDL_arosopengl_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.c SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.c
---- SDL3-3.4.10/src/video/aros/SDL_arosshape.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.c	2026-06-26 22:20:50.975451231 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.c SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosshape.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c	2026-07-28 13:08:21.817229205 +0100
 @@ -0,0 +1,163 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6526,9 +6526,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.c SDL3-3.4.10.aros/src/video/
 +
 +	return true;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.h SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.h
---- SDL3-3.4.10/src/video/aros/SDL_arosshape.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosshape.h	2026-06-26 22:20:50.988703231 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.h SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosshape.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h	2026-07-28 13:08:21.817324805 +0100
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6558,9 +6558,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosshape.h SDL3-3.4.10.aros/src/video/
 +extern bool AROS_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 +
 +#endif /* _SDL_arosshape_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.c
---- SDL3-3.4.10/src/video/aros/SDL_arosvideo.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.c	2026-06-26 22:20:50.976488831 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.c SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosvideo.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c	2026-07-28 13:08:21.823632806 +0100
 @@ -0,0 +1,466 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7028,9 +7028,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.c SDL3-3.4.10.aros/src/video/
 +    AROS_ShowMessageBox,
 +    false
 +};
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.h SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.h
---- SDL3-3.4.10/src/video/aros/SDL_arosvideo.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_arosvideo.h	2026-06-26 22:20:50.989640931 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosvideo.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h	2026-07-28 13:08:21.825662107 +0100
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7128,9 +7128,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_arosvideo.h SDL3-3.4.10.aros/src/video/
 +extern size_t getv(APTR obj, size_t attr);
 +
 +#endif /* _SDL_arosvideo_h */
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.c
---- SDL3-3.4.10/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.c	2026-06-26 22:20:50.977552931 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c
+--- SDL3-3.4.12/src/video/aros/SDL_aroswindow.c	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c	2026-07-28 13:08:21.827328507 +0100
 @@ -0,0 +1,994 @@
 +/*
 +  Simple DirectMedia Layer
@@ -8126,9 +8126,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.c SDL3-3.4.10.aros/src/video
 +	
 +	return true;
 +}
-diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.h SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h
---- SDL3-3.4.10/src/video/aros/SDL_aroswindow.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/aros/SDL_aroswindow.h	2026-06-26 22:20:50.990895731 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.h SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h
+--- SDL3-3.4.12/src/video/aros/SDL_aroswindow.h	1970-01-01 01:00:00.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h	2026-07-28 13:08:21.828003607 +0100
 @@ -0,0 +1,133 @@
 +/*
 +  Simple DirectMedia Layer
@@ -8263,9 +8263,9 @@ diff -ruN SDL3-3.4.10/src/video/aros/SDL_aroswindow.h SDL3-3.4.10.aros/src/video
 +extern void AROS_WindowToFront(struct Window *win);
 +
 +#endif /* _SDL_aroswindow_h */
-diff -ruN SDL3-3.4.10/src/video/SDL_sysvideo.h SDL3-3.4.10.aros/src/video/SDL_sysvideo.h
---- SDL3-3.4.10/src/video/SDL_sysvideo.h	2026-04-19 11:06:43.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/SDL_sysvideo.h	2026-06-26 15:44:50.545657626 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_sysvideo.h SDL3-3.4.12.aros/src/video/SDL_sysvideo.h
+--- SDL3-3.4.12/src/video/SDL_sysvideo.h	2026-04-19 12:06:43.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/SDL_sysvideo.h	2026-07-28 13:08:21.829787108 +0100
 @@ -538,6 +538,7 @@
  extern VideoBootStrap RPI_bootstrap;
  extern VideoBootStrap KMSDRM_bootstrap;
@@ -8274,9 +8274,9 @@ diff -ruN SDL3-3.4.10/src/video/SDL_sysvideo.h SDL3-3.4.10.aros/src/video/SDL_sy
  extern VideoBootStrap DUMMY_evdev_bootstrap;
  extern VideoBootStrap Wayland_preferred_bootstrap;
  extern VideoBootStrap Wayland_bootstrap;
-diff -ruN SDL3-3.4.10/src/video/SDL_video.c SDL3-3.4.10.aros/src/video/SDL_video.c
---- SDL3-3.4.10/src/video/SDL_video.c	2026-05-26 22:28:41.000000000 +0000
-+++ SDL3-3.4.10.aros/src/video/SDL_video.c	2026-06-26 15:44:50.546050226 +0000
+diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_video.c SDL3-3.4.12.aros/src/video/SDL_video.c
+--- SDL3-3.4.12/src/video/SDL_video.c	2026-06-18 15:58:24.000000000 +0100
++++ SDL3-3.4.12.aros/src/video/SDL_video.c	2026-07-28 13:08:21.831632808 +0100
 @@ -146,6 +146,9 @@
  #ifdef SDL_VIDEO_DRIVER_QNX
      &QNX_bootstrap,
