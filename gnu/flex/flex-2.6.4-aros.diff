@@ -1,0 +1,279 @@
+diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
+--- flex-2.6.4/src/filter.c	2017-05-03 19:13:14.000000000 +0100
++++ flex-2.6.4.aros/src/filter.c	2026-07-28 20:02:10.863834731 +0100
+@@ -121,12 +121,198 @@
+ 	return f;
+ }
+ 
++#ifdef __AROS__
++/* AROS has no fork().  Its vfork() suspends the parent until the child
++ * exec()s or _exit()s, so the concurrent pipeline that filter_apply_chain()
++ * builds below would deadlock: the internal (non-exec) filters never exec,
++ * and they block reading a pipe that the still-suspended parent has not
++ * written to yet.
++ *
++ * Instead the chain is remembered here, flex' output is captured in a
++ * temporary file, and the filters are run one after another over temporary
++ * files once flex has finished writing - see filter_run_chain(), which
++ * flexend() calls.
++ */
++static struct filter *aros_chain = NULL;
++static char  *aros_stage0 = NULL;   /* file that flex' own output goes to */
++static int    aros_real_stdout = -1;
++FILE *aros_tee_to_c = NULL;         /* used by filter_tee_header() */
++FILE *aros_tee_to_h = NULL;
++
++/* Return a fresh temporary file name.  Freed by the caller. */
++static char *aros_tmpname (const char *tag)
++{
++	static int seq = 0;
++	char *name = malloc (64);
++
++	if (!name)
++		flexerror (_("malloc failed in aros_tmpname"));
++	snprintf (name, 64, "T:flex_%s_%d_%d", tag, (int) getpid (), seq++);
++	return name;
++}
++
++/* Run one link of the chain, reading `in' and writing `out'. */
++static void aros_run_link (struct filter *f, const char *in, const char *out)
++{
++	if (f->filter_func) {
++		if (freopen (in, "r", stdin) == NULL)
++			flexfatal (_("could not reopen stdin for filter"));
++		if (freopen (out, "w", stdout) == NULL)
++			flexfatal (_("could not reopen stdout for filter"));
++		f->filter_func (f);
++		/* the internal filters close stdout themselves */
++	}
++	else {
++		pid_t pid;
++		int   status;
++
++		fflush (NULL);
++		if ((pid = vfork ()) == -1)
++			flexfatal (_("vfork failed"));
++		if (pid == 0) {
++			/* Only exec() follows, so this is safe under AROS vfork(). */
++			if (freopen (in, "r", stdin) == NULL)
++				_exit (1);
++			if (freopen (out, "w", stdout) == NULL)
++				_exit (1);
++			execvp (f->argv[0], (char **const) (f->argv));
++			_exit (1);
++		}
++		if (waitpid (pid, &status, 0) == -1)
++			flexfatal (_("waitpid failed"));
++		if (!WIFEXITED (status) || WEXITSTATUS (status) != 0)
++			lerr (_("filter %s failed"), f->argv[0]);
++	}
++}
++
++/* Apply every link from `f' onwards to `in', leaving the result in `dest'. */
++static void aros_run_links (struct filter *f, char *in, const char *dest)
++{
++	char *out;
++
++	for (; f; f = f->next) {
++		out = f->next ? aros_tmpname ("s") : NULL;
++		aros_run_link (f, in, out ? out : dest);
++		remove (in);
++		free (in);
++		in = out;
++	}
++	if (in) {
++		free (in);
++	}
++}
++
++/* Copy a file to `dest'. */
++static void aros_copy_to (const char *path, FILE *dest)
++{
++	FILE *src = fopen (path, "r");
++	char  buf[512];
++	size_t n;
++
++	if (!src)
++		flexfatal (_("could not reopen filtered output"));
++	while ((n = fread (buf, 1, sizeof (buf), src)) > 0)
++		fwrite (buf, 1, n, dest);
++	fclose (src);
++}
++
++/** Run the filter chain that filter_apply_chain() recorded.
++ *  Called from flexend() once all of flex' output has been written.
++ */
++void filter_run_chain (void)
++{
++	struct filter *tee;
++	char *cfile, *hfile;
++	FILE *real_out;
++
++	if (!aros_chain || !aros_stage0)
++		return;
++
++	fflush (stdout);
++
++	/* stdout is a macro here and cannot be assigned, and the final internal
++	   filter closes it; write the finished output through the descriptor
++	   saved by filter_apply_chain() instead.  */
++	real_out = fdopen (aros_real_stdout, "w");
++	if (!real_out)
++		flexfatal (_("could not reopen the real stdout"));
++	aros_real_stdout = -1;
++
++	tee = aros_chain;
++	if (tee->filter_func == filter_tee_header) {
++		/* The tee splits the stream in two; run the remaining links over
++		 * each branch separately.
++		 */
++		cfile = aros_tmpname ("c");
++		hfile = tee->extra ? aros_tmpname ("h") : NULL;
++
++		aros_tee_to_c = fopen (cfile, "w");
++		aros_tee_to_h = hfile ? fopen (hfile, "w") : NULL;
++		if (!aros_tee_to_c || (hfile && !aros_tee_to_h))
++			flexfatal (_("could not create temporary filter output"));
++
++		if (freopen (aros_stage0, "r", stdin) == NULL)
++			flexfatal (_("could not reopen captured output"));
++		filter_tee_header (tee);	/* closes aros_tee_to_c/_to_h */
++		aros_tee_to_c = aros_tee_to_h = NULL;
++		remove (aros_stage0);
++
++		if (hfile)
++			aros_run_links (tee->next, hfile, (const char *) tee->extra);
++
++		if (tee->next) {
++			char *last = aros_tmpname ("f");
++
++			aros_run_links (tee->next, cfile, last);
++			aros_copy_to (last, real_out);
++			remove (last);
++			free (last);
++		}
++		else {
++			aros_copy_to (cfile, real_out);
++			remove (cfile);
++			free (cfile);
++		}
++	}
++	else {
++		char *last = aros_tmpname ("f");
++
++		aros_run_links (aros_chain, aros_stage0, last);
++		aros_copy_to (last, real_out);
++		remove (last);
++		free (last);
++		aros_stage0 = NULL;
++	}
++
++	free (aros_stage0);
++	aros_stage0 = NULL;
++	aros_chain = NULL;
++	fflush (real_out);
++	fclose (real_out);
++}
++#endif /* __AROS__ */
++
+ /** Fork and exec entire filter chain.
+  *  @param chain The head of the chain.
+  *  @return true on success.
+  */
+ bool filter_apply_chain (struct filter * chain)
+ {
++#ifdef __AROS__
++	/* No fork() here - capture flex' output and run the chain later.
++	   See the comment above filter_run_chain().  */
++	if (!chain)
++		return true;
++
++	aros_chain = chain;
++	aros_stage0 = aros_tmpname ("out");
++	if ((aros_real_stdout = dup (1)) == -1)
++		flexfatal (_("dup(1) failed"));
++	fflush (stdout);
++	if (freopen (aros_stage0, "w", stdout) == NULL)
++		flexfatal (_("could not create temporary output file"));
++	return true;
++#else
+ 	int     pid, pipes[2];
+ 
+ 
+@@ -196,6 +382,7 @@
+     fseek (stdout, 0, SEEK_CUR);
+ 
+ 	return true;
++#endif /* !__AROS__ */
+ }
+ 
+ /** Truncate the chain to max_len number of filters.
+@@ -243,6 +430,14 @@
+ 	 * stdout, and fork the rest of the chain again.
+ 	 */
+ 
++#ifdef __AROS__
++	/* Running sequentially: filter_run_chain() has already opened the two
++	   branch files for us, so no dup()/second pipeline is needed.  */
++	(void) to_cfd;
++	to_c = aros_tee_to_c;
++	if (write_header)
++		to_h = aros_tee_to_h;
++#else
+ 	if ((to_cfd = dup (1)) == -1)
+ 		flexfatal (_("dup(1) failed"));
+ 	to_c = fdopen (to_cfd, "w");
+@@ -254,6 +449,7 @@
+ 		filter_apply_chain (chain->next);
+ 		to_h = stdout;
+ 	}
++#endif
+ 
+ 	/* Now to_c is a pipe to the C branch, and to_h is a pipe to the H branch.
+ 	 */
+@@ -322,10 +518,15 @@
+ 		lerr (_("error closing output file %s"),
+ 			outfilename ? outfilename : "<stdout>");
+ 
++#ifdef __AROS__
++	/* Sequential: nothing was forked and flex must carry on running. */
++	return 0;
++#else
+ 	while (wait (0) > 0) ;
+ 
+ 	FLEX_EXIT (0);
+ 	return 0;
++#endif
+ }
+ 
+ /** Adjust the line numbers in the #line directives of the generated scanner.
+diff -ruN flex-2.6.4/src/flexdef.h flex-2.6.4.aros/src/flexdef.h
+--- flex-2.6.4/src/flexdef.h	2017-05-03 19:13:14.000000000 +0100
++++ flex-2.6.4.aros/src/flexdef.h	2026-07-28 19:54:17.083281127 +0100
+@@ -1125,6 +1125,10 @@
+ extern int filter_truncate(struct filter * chain, int max_len);
+ extern int filter_tee_header(struct filter *chain);
+ extern int filter_fix_linedirs(struct filter *chain);
++#ifdef __AROS__
++/* Runs the recorded filter chain sequentially; AROS has no fork(). */
++extern void filter_run_chain(void);
++#endif
+ 
+ 
+ /*
+diff -ruN flex-2.6.4/src/main.c flex-2.6.4.aros/src/main.c
+--- flex-2.6.4/src/main.c	2017-05-03 22:10:22.000000000 +0100
++++ flex-2.6.4.aros/src/main.c	2026-07-28 19:54:17.085396627 +0100
+@@ -516,6 +516,12 @@
+ 	if (++called_before)
+ 		FLEX_EXIT (exit_status);
+ 
++#ifdef __AROS__
++	/* All of flex' output has been written to the capture file by now, so
++	   run the filter chain over it before the output file is closed.  */
++	filter_run_chain ();
++#endif
++
+ 	if (skelfile != NULL) {
+ 		if (ferror (skelfile))
+ 			lerr (_("input error reading skeleton file %s"),
