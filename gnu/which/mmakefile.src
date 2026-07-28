@@ -1,4 +1,4 @@
-# Copyright © 2004-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -8,5 +8,5 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 USER_CFLAGS := $(CFLAGS_GNU99)
 
-%fetch_and_build_gnu_development package=which version=2.16 patch=yes \
+%fetch_and_build_gnu_development package=which version=2.25 patch=no extraoptions="--disable-year2038" \
     suffixes="tar.gz"
