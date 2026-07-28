@@ -387,8 +387,8 @@ char *argv[];
                vfi=-vfi;
                if ( dx< 80 ) vfi= 1;
                if ( dx>110 ) vfi=-1;
-               drot+=ddrot*(1.0+abs(drot)*10.0);
-               if (abs(drot)>.2)  { ddrot=-ddrot; drot=.9*drot; }
+               drot+=ddrot*(1.0+fabs(drot)*10.0);
+               if (fabs(drot)>.2)  { ddrot=-ddrot; drot=.9*drot; }
                w2+=1;
                if ( w2>1 )
                  { vfi=-1;         spiea=spieg;

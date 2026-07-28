@@ -267,7 +267,7 @@ void refresh () {
 	z0=( (int) 65536*zede[j][i]) ;
 
 	al1=alpha[j+1][i];
-        if (abs(al1-al0) > 100)    /* detecter la jonction entre les bords */
+	if (fabsf(al1-al0) > 100)    /* detecter la jonction entre les bords */
 	  al1=al0;     /* c'est du kludge pas efficace la...
 			  il faudrait renormaliser tout ca et garder 
 			  la valeur modulo 1 par exemple, plutot que d'egaliser
@@ -279,13 +279,13 @@ void refresh () {
 	z0i=(  ( (int) (65536*zede[j+1][i]))   -z0)  /8;
 
 	al2=alpha[j][i+1];
-	 if (abs(al2-al0) > 100)   
+	if (fabsf(al2-al0) > 100)   
 	  al2=al0;
 	a1=( (int) 65536*al2); 
 	z1=( (int) 65536*zede[j][i+1]) ;
 
 	al3=alpha[j+1][i+1];
-	if (abs(al3-al2) > 100)  
+	if (fabsf(al3-al2) > 100)  
 	  al3=al2;
 	
 
