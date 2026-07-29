@@ -11,9 +11,9 @@ ARCHBASE := flex-$(FLEX_VERSBASE)
 #MM- contrib-gnu-flex : development-flex
 
 REPOSITORIES := \
- https://mirrors.kernel.org/slackware/slackware-10.2/source/d/flex \
- http://www.theflatnet.de/pub/linux/system \
- http://download.nust.na/pub2/openpkg1/sources/DST/flex
+ https://github.com/westes/flex/releases/download/v$(FLEX_VERSION) \
+ https://downloads.yoctoproject.org/mirror/sources \
+ http://ftp.netbsd.org/pub/pkgsrc/distfiles
 
 NOWARN_FLAGS := $(NOWARN_IMPLICIT_FUNCTION_DECL)
 USER_CFLAGS := $(CFLAGS_GNU99) $(NOWARN_FLAGS)
