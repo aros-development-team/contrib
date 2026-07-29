@@ -5,7 +5,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-sqlite : development-sqlite-autoconf
 
-REPOSITORIES := https://www.sqlite.org/2025 https://www2.sqlite.org/2025 \
+REPOSITORIES := https://www.sqlite.org/2026 https://www2.sqlite.org/2026 \
  https://ftp.osuosl.org/pub/blfs/conglomeration/sqlite
 
 # sqlite's "autoconf" tarball is autosetup-based since 3.49.  Its configure
