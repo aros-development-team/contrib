@@ -1,4 +1,4 @@
-# Copyright © 2009-2025, The AROS Development Team. All rights reserved.
+# Copyright © 2009-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -45,7 +45,7 @@ ICU_REPOSITORY := https://github.com/unicode-org/icu/releases/download/release-$
 endif
 REPOSITORIES := $(ICU_REPOSITORY) \
  https://ftp.osuosl.org/pub/blfs/conglomeration/icu \
- http://bbgentoo.ilb.ru/distfiles \
+ https://downloads.yoctoproject.org/mirror/sources \
  http://repository.timesys.com/buildsources/i/icu/icu-$(ICU_VERSION)
 
 ARCHBASE := $(ICU_PKGNAME)-$(ICU_PKGVERSION)-$(ICU_ARCHKIND)
