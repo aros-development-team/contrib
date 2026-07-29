@@ -1,6 +1,6 @@
 diff -ruN cairo-1.16.0/configure cairo-1.16.0.aros/configure
 --- cairo-1.16.0/configure	2018-10-19 21:20:08.000000000 +0100
-+++ cairo-1.16.0.aros/configure	2026-07-28 11:46:25.567183386 +0100
++++ cairo-1.16.0.aros/configure	2026-07-29 12:47:53.196153604 +0100
 @@ -33026,11 +33026,6 @@
  
  
@@ -15,7 +15,7 @@ diff -ruN cairo-1.16.0/configure cairo-1.16.0.aros/configure
  
 diff -ruN cairo-1.16.0/configure.ac cairo-1.16.0.aros/configure.ac
 --- cairo-1.16.0/configure.ac	2018-10-18 01:21:03.000000000 +0100
-+++ cairo-1.16.0.aros/configure.ac	2026-07-28 11:45:29.171020799 +0100
++++ cairo-1.16.0.aros/configure.ac	2026-07-29 12:47:53.197662004 +0100
 @@ -693,9 +693,6 @@
    image_LIBS=$pixman_LIBS
  ])
@@ -28,9 +28,13 @@ diff -ruN cairo-1.16.0/configure.ac cairo-1.16.0.aros/configure.ac
  dnl ===========================================================================
 diff -ruN cairo-1.16.0/Makefile.am cairo-1.16.0.aros/Makefile.am
 --- cairo-1.16.0/Makefile.am	2018-08-17 02:10:53.000000000 +0100
-+++ cairo-1.16.0.aros/Makefile.am	2026-07-28 11:45:29.171105899 +0100
-@@ -20,7 +20,7 @@
- SUBDIRS = src doc util
++++ cairo-1.16.0.aros/Makefile.am	2026-07-29 12:48:05.286220689 +0100
+@@ -17,10 +17,10 @@
+ ACLOCAL_AMFLAGS = -I build ${ACLOCAL_FLAGS}
+ 
+ DIST_SUBDIRS = src doc util boilerplate test perf
+-SUBDIRS = src doc util
++SUBDIRS = src util
  # libpng is required for our test programs
  if CAIRO_HAS_PNG_FUNCTIONS
 -SUBDIRS += boilerplate test perf
@@ -40,7 +44,7 @@ diff -ruN cairo-1.16.0/Makefile.am cairo-1.16.0.aros/Makefile.am
  configure: cairo-version.h
 diff -ruN cairo-1.16.0/Makefile.in cairo-1.16.0.aros/Makefile.in
 --- cairo-1.16.0/Makefile.in	2018-10-19 21:20:07.000000000 +0100
-+++ cairo-1.16.0.aros/Makefile.in	2026-07-28 11:45:29.171623399 +0100
++++ cairo-1.16.0.aros/Makefile.in	2026-07-29 12:48:05.286369089 +0100
 @@ -107,7 +107,7 @@
  TESTS =
  check_PROGRAMS =
@@ -50,9 +54,18 @@ diff -ruN cairo-1.16.0/Makefile.in cairo-1.16.0.aros/Makefile.in
  subdir = .
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/build/aclocal.cairo.m4 \
+@@ -718,7 +718,7 @@
+ #	$(NULL)
+ ACLOCAL_AMFLAGS = -I build ${ACLOCAL_FLAGS}
+ DIST_SUBDIRS = src doc util boilerplate test perf
+-SUBDIRS = src doc util $(am__append_1)
++SUBDIRS = src util $(am__append_1)
+ DISTCHECK_CONFIGURE_FLAGS = \
+ 	--enable-gtk-doc \
+ 	--enable-test-surfaces \
 diff -ruN cairo-1.16.0/src/cairo-atomic-private.h cairo-1.16.0.aros/src/cairo-atomic-private.h
 --- cairo-1.16.0/src/cairo-atomic-private.h	2018-08-17 02:10:53.000000000 +0100
-+++ cairo-1.16.0.aros/src/cairo-atomic-private.h	2026-07-28 16:59:26.603102492 +0100
++++ cairo-1.16.0.aros/src/cairo-atomic-private.h	2026-07-29 12:47:53.197903304 +0100
 @@ -141,8 +141,10 @@
      return __atomic_compare_exchange_n(x, &expected, newv, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
  }
@@ -76,7 +89,7 @@ diff -ruN cairo-1.16.0/src/cairo-atomic-private.h cairo-1.16.0.aros/src/cairo-at
  
 diff -ruN cairo-1.16.0/src/cairo-mutex-impl-private.h cairo-1.16.0.aros/src/cairo-mutex-impl-private.h
 --- cairo-1.16.0/src/cairo-mutex-impl-private.h	2018-08-17 02:10:53.000000000 +0100
-+++ cairo-1.16.0.aros/src/cairo-mutex-impl-private.h	2026-07-28 11:45:29.172595699 +0100
++++ cairo-1.16.0.aros/src/cairo-mutex-impl-private.h	2026-07-29 12:47:53.198777804 +0100
 @@ -156,6 +156,10 @@
   *   poke around cairo-mutex-private.h for possible solutions.
   */
