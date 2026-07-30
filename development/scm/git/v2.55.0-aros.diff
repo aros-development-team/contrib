@@ -1079,7 +1079,7 @@
  
  ifneq ($(findstring MINGW,$(uname_S)),)
  	uname_S := MINGW
-@@ -39,6 +41,23 @@
+@@ -39,6 +41,26 @@
  # because maintaining the nesting to match is a pain.  If
  # we had "elif" things would have been much nicer...
  
@@ -1099,6 +1099,9 @@
 +	NO_MMAP = YesPlease
 +	NO_POLL = YesPlease
 +	NO_UNIX_SOCKETS = YesPlease
++	# AROS has no /dev/urandom; posixc provides getentropy() backed by
++	# entropy.resource, so use it for git's CSPRNG (temp-file names etc.)
++	CSPRNG_METHOD = getentropy
 +endif
  ifeq ($(uname_S),OSF1)
  	# Need this for u_short definitions et al
