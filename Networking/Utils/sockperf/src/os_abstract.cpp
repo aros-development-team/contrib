@@ -250,6 +250,42 @@ struct TimeHandler {
 };
 #endif
 
+#if defined(__AROS__)
+/* AROS has neither POSIX signals nor setitimer(), so the test-duration timer
+   is emulated with a helper thread (pthread is available): it sleeps for the
+   requested interval and then invokes the handler - which sets g_b_exit and so
+   ends the test - mirroring the Windows path above.  Sleeping in small slices
+   lets an early disarm (packet-count-based runs) stop it promptly. */
+#include <unistd.h>
+
+extern bool g_b_exit;
+
+struct ArosTimeHandler {
+    struct itimerval timer;
+    sig_handler *handler;
+};
+
+static volatile bool s_aros_timer_cancel = false;
+
+static void *aros_timer_thread(void *arg) {
+    ArosTimeHandler *th = (ArosTimeHandler *)arg;
+    unsigned long long usecs =
+        (unsigned long long)th->timer.it_value.tv_sec * 1000000ULL +
+        (unsigned long long)th->timer.it_value.tv_usec;
+    sig_handler *handler = th->handler;
+    delete th;
+
+    while (usecs > 0 && !s_aros_timer_cancel && !g_b_exit) {
+        unsigned long slice = usecs > 50000ULL ? 50000UL : (unsigned long)usecs;
+        usleep(slice);
+        usecs -= slice;
+    }
+    if (!s_aros_timer_cancel && !g_b_exit)
+        handler(SIGALRM);
+    return NULL;
+}
+#endif
+
 int os_set_duration_timer(const itimerval &timer, sig_handler handler) {
     int ret;
 #ifdef __windows__
@@ -265,10 +301,23 @@ int os_set_duration_timer(const itimerval &timer, sig_handler handler) {
         return -1;
     }
 #elif defined(__AROS__)
-    /* AROS has no POSIX signals or setitimer */
-    (void)timer;
-    (void)handler;
-    ret = 0;
+    /* Emulate the duration timer with a helper thread (see aros_timer_thread). */
+    {
+        s_aros_timer_cancel = false;
+        ArosTimeHandler *th = new ArosTimeHandler;
+        th->timer = timer;
+        th->handler = handler;
+
+        static os_thread_t aros_timer_thr;
+        os_thread_init(&aros_timer_thr);
+        ret = os_thread_exec(&aros_timer_thr, aros_timer_thread, (void *)th);
+        if (ret) {
+            printf("ERROR: os_set_duration_timer() thread failed\n");
+            delete th;
+            return -1;
+        }
+        os_thread_detach(&aros_timer_thr);
+    }
 #else
     os_set_signal_action(SIGALRM, handler);
     ret = setitimer(ITIMER_REAL, &timer, NULL);
@@ -287,6 +336,7 @@ void os_set_disarm_timer(const itimerval& timer) {
     }
 #elif defined(__AROS__)
     (void)timer;
+    s_aros_timer_cancel = true;
 #else
     if (setitimer(ITIMER_REAL, &timer, NULL)) {
         printf("ERROR: setitimer() failed when disarming");
