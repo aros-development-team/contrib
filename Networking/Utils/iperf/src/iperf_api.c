@@ -4822,11 +4822,23 @@ iperf_new_stream(struct iperf_test *test, int s, int sender)
         if (tempdir == 0){
 #if defined(__ANDROID__)
             tempdir = "/data/local/tmp";
+#elif defined(__AROS__)
+            /* AROS uses native device/assign paths, not nix-style /tmp. */
+            tempdir = "T:";
 #else
             tempdir = "/tmp";
 #endif
         }
+#if defined(__AROS__)
+        /* "T:" is an assign; avoid the extra '/' that would confuse the
+           AROS path parser ("T:/name" -> invalid). */
+        if (tempdir[0] && tempdir[strlen(tempdir) - 1] == ':')
+            snprintf(template, sizeof(template) / sizeof(char), "%siperf3.XXXXXX", tempdir);
+        else
+            snprintf(template, sizeof(template) / sizeof(char), "%s/iperf3.XXXXXX", tempdir);
+#else
         snprintf(template, sizeof(template) / sizeof(char), "%s/iperf3.XXXXXX", tempdir);
+#endif
     }
 
     sp = (struct iperf_stream *) malloc(sizeof(struct iperf_stream));
@@ -4859,10 +4871,16 @@ iperf_new_stream(struct iperf_test *test, int s, int sender)
         return NULL;
     }
     if (unlink(template) < 0) {
+#ifndef __AROS__
         i_errno = IECREATESTREAM;
         free(sp->result);
         free(sp);
         return NULL;
+#endif
+        /* AROS/AmigaOS filesystems cannot delete a file while it is open
+           (mkstemp keeps it open).  The buffer is a malloc-backed mmap
+           fallback so the file content is unused - just leave the small
+           temp file in place under TMPDIR. */
     }
     size = test->settings->blksize;
     if (test->protocol->id == Pudp && test->settings->gso && (size < test->settings->gso_bf_size))
