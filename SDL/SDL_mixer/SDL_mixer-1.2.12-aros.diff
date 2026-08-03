@@ -1,19 +1,21 @@
 diff -ruN SDL_mixer-1.2.12/build-scripts/config.sub SDL_mixer-1.2.12.aros/build-scripts/config.sub
 --- SDL_mixer-1.2.12/build-scripts/config.sub	2012-01-15 22:01:05.000000000 +0000
 +++ SDL_mixer-1.2.12.aros/build-scripts/config.sub	2026-07-26 19:21:47.115655369 +0100
-@@ -245,6 +245,7 @@
+@@ -245,6 +245,8 @@
  	# Some are omitted here because they have special meanings below.
  	1750a | 580 \
  	| a29k \
 +	| aarch64 | aarch64_be \
++	| riscv | riscv32 | riscv32be | riscv64 | riscv64be \
  	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
  	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
  	| am33_2.0 \
-@@ -326,6 +327,7 @@
+@@ -326,6 +328,8 @@
  	# Recognize the basic CPU types with company name.
  	580-* \
  	| a29k-* \
 +	| aarch64-* | aarch64_be-* \
++	| riscv-* | riscv32-* | riscv32be-* | riscv64-* | riscv64be-* \
  	| alpha-* | alphaev[4-8]-* | alphaev56-* | alphaev6[78]-* \
  	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
  	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* \
