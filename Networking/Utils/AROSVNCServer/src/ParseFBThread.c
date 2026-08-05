@@ -57,12 +57,16 @@ void probe_line(int row, int line, UBYTE *srcline)
 	int        column = 0;            								/* tile column index */
 	ULONG*     src;
 	ULONG*     dst;
-	ULONG*	   dstline;
+	UBYTE*	   dstline;
 	int    	   deltax = 4 / LocalFB->bytes_per_pixel;
-	
-	/* starting position in framebuffers */
+
+	/* starting position in framebuffers.  Both line pointers are kept as
+	   UBYTE * so that the per-tile jumps below index them in bytes - as
+	   a ULONG * dstline advanced four times too far, desynchronising the
+	   comparison from src after the first dirty tile in the row. */
 	src = (ULONG *)(srcline);
-	dst = dstline = (ULONG *)(LocalFB->data + line*LocalFB->bytes_per_line);
+	dstline = LocalFB->data + line*LocalFB->bytes_per_line;
+	dst = (ULONG *)dstline;
 
 	while (x<LocalFB->width)
 	{
