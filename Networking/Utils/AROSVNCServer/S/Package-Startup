@@ -1,0 +1,21 @@
+; $VER: AROSVNCServer-PackageStartup 1.0 (5.8.2026)
+; AROSVNCServer-PackageStartup (c) The AROS Dev Team.
+;
+; Run by the boot-time packages loop (see S:Startup-Sequence) after the
+; network stack's own Package-Startup, with the current directory set to
+; this package. Start the VNC server once AROSTCP is online so it can bind
+; and accept remote connections.
+
+If "${AROSTCP/AutoRun}" eq "True"
+    WaitForPort AROSTCP
+    If NOT WARN
+        ; UNKNOWN_IP ACCEPT: the default (ASK) opens a requester on the local
+        ; display for every new client, which can never be answered on an
+        ; unattended or headless machine.
+        If "${AROSVNC/AutoAccept}" eq "True"
+            Run <NIL: >NIL: QUIET "AROSVNCServer" RUNFOREVER STARTHIDDEN UNKNOWN_IP ACCEPT
+        Else
+            Run <NIL: >NIL: QUIET "AROSVNCServer" RUNFOREVER STARTHIDDEN
+        EndIf
+    EndIf
+EndIf

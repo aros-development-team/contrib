@@ -1,0 +1,96 @@
+AROS VNC Server v2.1
+(c)Yannick Erb, 2010-2014
+GPL v2.0 license
+
+AROS VNC server is based on libvncserver and uses some parts
+of gemsvnc (framebuffer changes detection) 
+and AmiVNC (keyboard and mouse inputs)
+
+It can be launched directly from it's icon or from the shell.
+
+When launched from shell the following options are available:
+	HELP              Display this help message.
+	
+	STARTHIDDEN       Doesn't show GUI on startup.
+	
+	RUNFOREVER        Do not time out waiting for a client, and do not exit
+	                  after the last client has disconnected.
+						
+	VIEWONLY          Only permit the remote view to view, but not to interact
+	                  with the display being served.
+						
+	SHARED            Allow multiple clients to be connected simultaneously.
+	
+	FORCE16B          Forces the internal framebuffer to be 16bits depth.
+	                  Improves processing speed at the expense of graphic quality.
+	
+	SCANS             Specify the maximum number of input events or sending 
+	                  framebuffer updates at each cycle.
+						
+	TARGETFPS         Specify target frame per seconds for local frame buffer update search
+						
+	TW                Specify the width in pixels of the tiles the framebuffer
+	                  is divided into.
+						
+	TH                Specify the height in pixels of the tiles the framebuffer
+	                  is divided into.
+						
+	LOG               Display log information
+	
+	UNKNOWN_IP        Specify how to react when an unknown IP tries to connect:
+	                  - ASK     : Open a requester for the user to answer
+	                  - ACCEPT  : Always Accept
+	                  - REJECT  : Always Reject Unknown IPs
+						
+	IPFILTER          Specify IPs that are allowed to connect, several filters can used,
+	                  they shall be separated by ";" 
+	                  examples : 
+	                    192.168.0.1      : this IP is allowed to connect
+	                    192.168.0.255    : all IPs starting with 192.168.0. are allowed
+	                    255.255.255.255  : Everyone is allowed
+						  
+	LIBVNCSERVER      Options to be passed to libvncserver
+	
+The same options can be defined when launched from WB using the icon TOOLTYPES
+
+The user interface can be invoqued using the commodity exchange program.
+The five buttons actions are the following:
+1. Turn ON/OFF the transmission (usefull to "hide" some actions to the viewers)
+2. Hide the GUI
+3. Turn ON/OFF logging
+4. Settings
+5. Shutdown the server
+
+History:
+V2.1 (5 August 2026) :
+- updated libvncserver to version 0.9.14, now fetched and patched at build
+  time instead of being bundled with the sources
+- fixed the dirty tile test, which relied on libvncserver's TRUE being -1
+  stored in a char array - no framebuffer update was ever sent to a client
+  on targets where char is unsigned (riscv64, arm, ppc)
+- the screen is always captured as BGRA32, so palette screens are converted
+  on capture instead of being sent in the wrong colours
+- fixed socket handling on AROS: bsdsocket.library is opened before the
+  first call that needs it, errno is wired up through SocketBaseTags(), and
+  sockets are released with CloseSocket() rather than close()
+- renamed to AROSVNCServer and started from its own package startup script
+  once the network stack is online
+- reports itself to viewers as "AROSVNCServer"
+V2.0 (29 June 2014) :
+- Reworked local framebuffer parsing (uses much less memory and is faster)
+- updated libvncserver to version 0.9.9
+- reworked the GUI
+    - non working close gadgets aren't displayed anymore
+    - log windows opens at startup when LOG option is selected
+V1.5 (24 February 2011) :
+- Added FORCE16B option
+- Application is now multithreaded, a independent thread is used to collect framebuffer and detect delta
+- Added Statistics window with real time tuning of scans and target FPS
+- Corrected mouse movements while buttons are pressed
+V1.1 (21 February 2011) :
+- Improved Delta detection algorithm speed
+- Framebuffers are now of same depth as initial screen and no more always 32bits
+- Speed improvement in lower depth modes
+- Now Active screen is transmitted and not only initial active screen (even if frambuffers remain at initial resolution and depth)
+
+Yannick Erb

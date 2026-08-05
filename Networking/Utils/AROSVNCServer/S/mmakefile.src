@@ -1,0 +1,24 @@
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-networking-utils-arosvncserver : contrib-networking-utils-arosvncserver-s \
+#MM  contrib-networking-utils-arosvncserver-envpackage
+
+AROSVNCSERVER_DIR := $(AROS_CONTRIB)/Networking/Utils/AROSVNCServer
+
+SFILES := \
+    Package-Startup
+
+%copy_files_q mmake=contrib-networking-utils-arosvncserver-s \
+    files="$(SFILES)" dst=$(AROSVNCSERVER_DIR)/S
+
+$(AROS_PACKAGES)/AROSVNCServer:
+	%fileactionmsg msg="Creating" file="$(AROS_PACKAGES)/AROSVNCServer"
+	%mkdirs_q $(AROS_PACKAGES)
+	@$(ECHO) "SYS:Extras/Networking/Utils/AROSVNCServer" >$(AROS_PACKAGES)/AROSVNCServer
+
+#MM
+contrib-networking-utils-arosvncserver-envpackage : $(AROS_PACKAGES)/AROSVNCServer
+	@$(NOP)
+
+#%common

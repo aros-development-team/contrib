@@ -1,0 +1,44 @@
+#   $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-networking-utils : contrib-networking-utils-arosvncserver
+
+#MM contrib-networking-utils-arosvncserver : \
+#MM     includes \
+#MM     linklibs \
+#MM     network-includes \
+#MM     arostcp-linklibs-netlib \
+#MM     contrib-networking-libvncserver \
+#MM     contrib-networking-utils-arosvncserver-cpy \
+#MM     contrib-networking-utils-arosvncserver-icons
+
+TARGETDIR := $(AROS_CONTRIB)/Networking/Utils/AROSVNCServer
+
+NOWARN_FLAGS := $(NOWARN_UNINITIALIZED) $(NOWARN_PARENTHESES) \
+    $(NOWARN_UNUSED) $(NOWARN_UNUSED_BUT_SET_VARIABLE) $(NOWARN_DEPRECATED_DECLARATIONS)
+USER_CFLAGS := $(NOWARN_FLAGS)
+USER_CPPFLAGS := -D_GNU_SOURCE=1 -DUSE_NEWFRAMEBUFFER
+USER_INCLUDES := \
+    -iquote $(SRCDIR)/$(CURDIR)/src
+
+FILES := \
+    src/ArosVNCserver \
+    src/AVS_gui \
+    src/ievents \
+    src/ilace \
+    src/ParseFBThread \
+    src/thread_compat
+
+%build_prog mmake=contrib-networking-utils-arosvncserver \
+    progname=AROSVNCServer files="$(FILES)" \
+    targetdir=$(TARGETDIR) \
+    uselibs="mui vncserver net pthread jpeg png z m"
+
+%copy_files_q mmake=contrib-networking-utils-arosvncserver-cpy \
+    files="Read.Me license AROSVNCServer.info" dst=$(TARGETDIR)
+
+%copy_dir_recursive mmake=contrib-networking-utils-arosvncserver-icons \
+    src=icons dst=$(TARGETDIR)/Icons
+
+%common
