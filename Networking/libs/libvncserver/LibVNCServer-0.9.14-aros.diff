@@ -1,6 +1,6 @@
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c libvncserver-LibVNCServer-0.9.14/common/sockets.c
 --- libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c	2026-08-05 10:39:16.859491872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/common/sockets.c	2026-08-05 13:31:30.521395873 +0100
++++ libvncserver-LibVNCServer-0.9.14/common/sockets.c	2026-08-05 16:22:51.404168984 +0100
 @@ -28,6 +28,12 @@
  
  #include "sockets.h"
@@ -39,7 +39,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c libvncserver-Li
        return FALSE;
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c
 --- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c	2026-08-05 10:39:16.862091772 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c	2026-08-05 13:31:30.523034073 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c	2026-08-05 16:22:51.409073384 +0100
 @@ -30,6 +30,12 @@
  
  #include <rfb/rfb.h>
@@ -81,7 +81,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c libvncserve
  	    if (got == 0) {
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver-LibVNCServer-0.9.14/libvncserver/main.c
 --- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c	2026-08-05 10:39:16.862158872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/main.c	2026-08-05 13:31:30.523055873 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/main.c	2026-08-05 16:22:51.409149384 +0100
 @@ -17,6 +17,28 @@
  #include <rfb/rfbregion.h>
  #include "private.h"
@@ -151,7 +151,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
  #if !defined LIBVNCSERVER_HAVE_GETTIMEOFDAY && defined WIN32
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c
 --- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c	2026-08-05 10:39:16.862406872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c	2026-08-05 13:31:30.523191973 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c	2026-08-05 16:22:51.409462484 +0100
 @@ -37,6 +37,12 @@
  #include <rfb/rfb.h>
  #include <rfb/rfbregion.h>
@@ -203,7 +203,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c libvncs
  	}
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c
 --- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c	2026-08-05 10:39:16.863250172 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c	2026-08-05 13:31:30.523414073 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c	2026-08-05 16:22:51.410834784 +0100
 @@ -53,6 +53,12 @@
  
  #include <rfb/rfb.h>
@@ -229,7 +229,19 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  	if (nfds == 0) {
  	    /* timed out, check for async events */
              i = rfbGetClientIterator(rfbScreen);
-@@ -659,10 +669,18 @@
+@@ -488,7 +498,11 @@
+       FD_SET(rfbScreen->listenSock, &listen_fds);
+     if(rfbScreen->listen6Sock != RFB_INVALID_SOCKET)
+       FD_SET(rfbScreen->listen6Sock, &listen_fds);
++#ifndef __AROS__
+     if (select(rfbScreen->maxFd+1, &listen_fds, NULL, NULL, NULL) == -1) {
++#else
++    if (WaitSelect(rfbScreen->maxFd+1, &listen_fds, NULL, NULL, NULL, NULL) == -1) {
++#endif
+       rfbLogPerror("rfbProcessNewConnection: error in select");
+       return FALSE;
+     }
+@@ -659,10 +673,18 @@
          } else if (cl->sslctx) {
  	    n = rfbssl_read(cl, buf, len);
  	} else {
@@ -248,7 +260,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  #endif
  
          if (n > 0) {
-@@ -698,7 +716,11 @@
+@@ -698,7 +720,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = timeout / 1000;
              tv.tv_usec = (timeout % 1000) * 1000;
@@ -260,7 +272,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
              if (n < 0) {
                  rfbLogPerror("ReadExact: select");
                  return n;
-@@ -784,7 +806,11 @@
+@@ -784,7 +810,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = timeout / 1000;
              tv.tv_usec = (timeout % 1000) * 1000;
@@ -272,7 +284,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
              if (n < 0) {
                  rfbLogPerror("PeekExact: select");
                  return n;
-@@ -863,7 +889,11 @@
+@@ -863,7 +893,11 @@
  	    n = rfbssl_write(cl, buf, len);
  	else
  #endif
@@ -284,7 +296,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  
          if (n > 0) {
  
-@@ -883,10 +913,16 @@
+@@ -883,10 +917,16 @@
  	    if (errno == EINTR)
  		continue;
  
@@ -301,7 +313,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  
              /* Retry every 5 seconds until we exceed timeout.  We
                 need to do this because select doesn't necessarily return
-@@ -896,7 +932,11 @@
+@@ -896,7 +936,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = 5;
              tv.tv_usec = 0;
@@ -315,8 +327,8 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
                  errno=WSAGetLastError();
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h
 --- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h	1970-01-01 01:00:00.000000000 +0100
-+++ libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h	2026-08-05 13:31:30.524339473 +0100
-@@ -0,0 +1,62 @@
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h	2026-08-05 16:22:51.413152884 +0100
+@@ -0,0 +1,68 @@
 +#ifndef _RFB_RFBCONFIG_H
 +#define _RFB_RFBCONFIG_H
 +
@@ -364,8 +376,14 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-Lib
 +
 +/* Single-threaded: no LIBVNCSERVER_HAVE_LIBPTHREAD / WIN32THREADS */
 +/* No fork/vfork - the inetd and http CGI paths stay disabled */
-+/* No LIBVNCSERVER_IPv6 - bsdsocket.library is IPv4 only */
 +/* No TLS/SASL/websockets */
++
++/*
++ * IPv6 needs getaddrinfo()/getnameinfo(), which bsdsocket.library
++ * provides as Roadshow extensions - hence the __CONFIG_ROADSHOW__ the
++ * mmakefile defines, which is what exposes them in <proto/bsdsocket.h>.
++ */
++#define LIBVNCSERVER_IPv6 1
 +
 +#define LIBVNCSERVER_PACKAGE_STRING "LibVNCServer 0.9.14"
 +#define LIBVNCSERVER_PACKAGE_VERSION "0.9.14"
@@ -381,7 +399,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-Lib
 +#endif /* _RFB_RFBCONFIG_H */
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h
 --- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h	2026-08-05 10:39:16.865491972 +0100
-+++ libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h	2026-08-05 13:31:30.524192873 +0100
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h	2026-08-05 16:22:51.412868984 +0100
 @@ -104,7 +104,13 @@
  #define rfbSocket int
  #define SOCKET int /* LibVNCServer versions older than 0.9.13 defined this for non-Windows, so keep it here */
