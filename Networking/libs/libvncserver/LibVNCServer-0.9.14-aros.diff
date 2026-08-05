@@ -1,0 +1,398 @@
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c libvncserver-LibVNCServer-0.9.14/common/sockets.c
+--- libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c	2026-08-05 10:39:16.859491872 +0100
++++ libvncserver-LibVNCServer-0.9.14/common/sockets.c	2026-08-05 13:31:30.521395873 +0100
+@@ -28,6 +28,12 @@
+ 
+ #include "sockets.h"
+ 
++#ifdef __AROS__
++#include <proto/exec.h>
++#include <proto/bsdsocket.h>
++#include <sys/ioctl.h>
++#endif
++
+ 
+ rfbBool sock_set_nonblocking(rfbSocket sock, rfbBool non_blocking, void (*log)(const char *format, ...))
+ {
+@@ -35,6 +41,10 @@
+   unsigned long block = non_blocking ? 0 : 1;
+   if(ioctlsocket(sock, FIONBIO, &block) == SOCKET_ERROR) {
+     errno=WSAGetLastError();
++#elif defined(__AROS__)
++  /* FIONBIO takes a pointer to a LONG on bsdsocket.library */
++  long block = non_blocking ? 1 : 0;
++  if(IoctlSocket(sock, FIONBIO, (void *)&block) != 0) {
+ #else
+   int flags = fcntl(sock, F_GETFL);
+   int new_flags;
+@@ -64,7 +74,11 @@
+   FD_SET(socket, &writefds);
+   FD_ZERO(&exceptfds);
+   FD_SET(socket, &exceptfds);
++#ifndef __AROS__
+   if (select(socket+1, NULL, &writefds, &exceptfds, &timeout)==1) {
++#else
++  if (WaitSelect(socket+1, NULL, &writefds, &exceptfds, &timeout, NULL)==1) {
++#endif
+ #ifdef WIN32
+     if (FD_ISSET(socket, &exceptfds))
+       return FALSE;
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c	2026-08-05 10:39:16.862091772 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c	2026-08-05 13:31:30.523034073 +0100
+@@ -30,6 +30,12 @@
+ 
+ #include <rfb/rfb.h>
+ 
++#ifdef __AROS__
++#include <proto/exec.h>
++#include <proto/bsdsocket.h>
++#include <sys/ioctl.h>
++#endif
++
+ #include <ctype.h>
+ #ifdef LIBVNCSERVER_HAVE_UNISTD_H
+ #include <unistd.h>
+@@ -181,7 +187,11 @@
+     }
+     tv.tv_sec = 0;
+     tv.tv_usec = 0;
++#ifndef __AROS__
+     nfds = select(rfbMax(rfbScreen->httpListen6Sock, rfbMax(rfbScreen->httpSock,rfbScreen->httpListenSock)) + 1, &fds, NULL, NULL, &tv);
++#else
++    nfds = WaitSelect(rfbMax(rfbScreen->httpListen6Sock, rfbMax(rfbScreen->httpSock,rfbScreen->httpListenSock)) + 1, &fds, NULL, NULL, &tv, NULL);
++#endif
+     if (nfds == 0) {
+ 	return;
+     }
+@@ -301,8 +311,13 @@
+ 	    return;
+ 	}
+ 
++#ifndef __AROS__
+ 	got = read (rfbScreen->httpSock, buf + buf_filled,
+ 			    sizeof (buf) - buf_filled - 1);
++#else
++	got = recv (rfbScreen->httpSock, buf + buf_filled,
++			    sizeof (buf) - buf_filled - 1, 0);
++#endif
+ 
+ 	if (got <= 0) {
+ 	    if (got == 0) {
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver-LibVNCServer-0.9.14/libvncserver/main.c
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c	2026-08-05 10:39:16.862158872 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/main.c	2026-08-05 13:31:30.523055873 +0100
+@@ -17,6 +17,28 @@
+ #include <rfb/rfbregion.h>
+ #include "private.h"
+ 
++#ifdef __AROS__
++#include <proto/exec.h>
++#include <proto/bsdsocket.h>
++#include <bsdsocket/socketbasetags.h>
++#include <errno.h>
++struct Library *SocketBase = NULL;
++
++/* bsdsocket.library only updates the caller's errno if asked to; without
++   this the EWOULDBLOCK/EAGAIN checks in the Read/Write/PeekExact retry
++   loops see a stale errno and treat every partial transfer as fatal */
++static struct Library *rfbAROSOpenSocket(void)
++{
++    struct Library *base = OpenLibrary("bsdsocket.library", 0);
++    if (base)
++    {
++        struct Library *SocketBase = base;   /* for the SocketBaseTags call */
++        SocketBaseTags(SBTC_ERRNOPTR(sizeof(errno)), (IPTR)&errno, TAG_DONE);
++    }
++    return base;
++}
++#endif
++
+ #include <stdarg.h>
+ #include <errno.h>
+ 
+@@ -919,6 +941,12 @@
+  int width,int height,int bitsPerSample,int samplesPerPixel,
+  int bytesPerPixel)
+ {
++#ifdef __AROS__
++   /* gethostname() below goes through bsdsocket.library - make sure the
++      base is open before any socket call, not only in rfbInitServer() */
++   if (!SocketBase)
++      SocketBase = rfbAROSOpenSocket();
++#endif
+    rfbScreenInfoPtr screen=calloc(sizeof(rfbScreenInfo),1);
+    if (!screen)
+        return NULL;
+@@ -1183,6 +1211,10 @@
+ 
+ void rfbInitServer(rfbScreenInfoPtr screen)
+ {
++#ifdef __AROS__
++  if (!SocketBase)
++    SocketBase = rfbAROSOpenSocket();
++#endif
+   rfbInitSockets(screen);
+   rfbHttpInitSockets(screen);
+ #ifndef WIN32
+@@ -1241,6 +1273,13 @@
+       close(screen->pipe_notify_listener_thread[1]);
+   }
+ #endif
++
++#ifdef __AROS__
++  if (SocketBase) {
++    CloseLibrary(SocketBase);
++    SocketBase = NULL;
++  }
++#endif
+ }
+ 
+ #if !defined LIBVNCSERVER_HAVE_GETTIMEOFDAY && defined WIN32
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c	2026-08-05 10:39:16.862406872 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c	2026-08-05 13:31:30.523191973 +0100
+@@ -37,6 +37,12 @@
+ #include <rfb/rfb.h>
+ #include <rfb/rfbregion.h>
+ #include "private.h"
++
++#ifdef __AROS__
++#include <proto/exec.h>
++#include <proto/bsdsocket.h>
++#include <sys/ioctl.h>
++#endif
+ #include "rfb/rfbconfig.h"
+ 
+ #ifdef LIBVNCSERVER_HAVE_FCNTL_H
+@@ -1572,7 +1578,11 @@
+         /* return immediately */
+ 	tv.tv_sec = 0; 
+ 	tv.tv_usec = 0;
++#ifndef __AROS__
+ 	n = select(cl->sock + 1, NULL, &wfds, NULL, &tv);
++#else
++	n = WaitSelect(cl->sock + 1, NULL, &wfds, NULL, &tv, NULL);
++#endif
+ 
+ 	if (n<0) {
+ #ifdef WIN32
+@@ -4103,7 +4113,11 @@
+ rfbNewUDPConnection(rfbScreenInfoPtr rfbScreen,
+                     rfbSocket sock)
+ {
++#ifndef __AROS__
+   if (write(sock, (char*) &ptrAcceleration, 1) < 0) {
++#else
++  if (send(sock, (char*) &ptrAcceleration, 1, 0) < 0) {
++#endif
+ 	rfbLogPerror("rfbNewUDPConnection: write");
+     }
+ }
+@@ -4125,7 +4139,11 @@
+     if((!cl) || cl->onHold)
+       return;
+ 
++#ifndef __AROS__
+     if ((n = read(rfbScreen->udpSock, (char *)&msg, sizeof(msg))) <= 0) {
++#else
++    if ((n = recv(rfbScreen->udpSock, (char *)&msg, sizeof(msg), 0)) <= 0) {
++#endif
+ 	if (n < 0) {
+ 	    rfbLogPerror("rfbProcessUDPInput: read");
+ 	}
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c	2026-08-05 10:39:16.863250172 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c	2026-08-05 13:31:30.523414073 +0100
+@@ -53,6 +53,12 @@
+ 
+ #include <rfb/rfb.h>
+ 
++#ifdef __AROS__
++#include <proto/exec.h>
++#include <proto/bsdsocket.h>
++#include <sys/ioctl.h>
++#endif
++
+ #ifdef LIBVNCSERVER_HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+ #endif
+@@ -362,7 +368,11 @@
+ 	memcpy((char *)&fds, (char *)&(rfbScreen->allFds), sizeof(fd_set));
+ 	tv.tv_sec = 0;
+ 	tv.tv_usec = usec;
++#ifndef __AROS__
+ 	nfds = select(rfbScreen->maxFd + 1, &fds, NULL, NULL /* &fds */, &tv);
++#else
++	nfds = WaitSelect(rfbScreen->maxFd + 1, &fds, NULL, NULL, &tv, NULL);
++#endif
+ 	if (nfds == 0) {
+ 	    /* timed out, check for async events */
+             i = rfbGetClientIterator(rfbScreen);
+@@ -659,10 +669,18 @@
+         } else if (cl->sslctx) {
+ 	    n = rfbssl_read(cl, buf, len);
+ 	} else {
++#ifndef __AROS__
+             n = read(sock, buf, len);
++#else
++            n = recv(sock, buf, len, 0);
++#endif
+         }
+ #else
++#ifndef __AROS__
+         n = read(sock, buf, len);
++#else
++        n = recv(sock, buf, len, 0);
++#endif
+ #endif
+ 
+         if (n > 0) {
+@@ -698,7 +716,11 @@
+             FD_SET(sock, &fds);
+             tv.tv_sec = timeout / 1000;
+             tv.tv_usec = (timeout % 1000) * 1000;
++#ifndef __AROS__
+             n = select(sock+1, &fds, NULL, &fds, &tv);
++#else
++            n = WaitSelect(sock+1, &fds, NULL, &fds, &tv, NULL);
++#endif
+             if (n < 0) {
+                 rfbLogPerror("ReadExact: select");
+                 return n;
+@@ -784,7 +806,11 @@
+             FD_SET(sock, &fds);
+             tv.tv_sec = timeout / 1000;
+             tv.tv_usec = (timeout % 1000) * 1000;
++#ifndef __AROS__
+             n = select(sock+1, &fds, NULL, &fds, &tv);
++#else
++            n = WaitSelect(sock+1, &fds, NULL, &fds, &tv, NULL);
++#endif
+             if (n < 0) {
+                 rfbLogPerror("PeekExact: select");
+                 return n;
+@@ -863,7 +889,11 @@
+ 	    n = rfbssl_write(cl, buf, len);
+ 	else
+ #endif
++#ifndef __AROS__
+ 	    n = write(sock, buf, len);
++#else
++	    n = send(sock, buf, len, 0);
++#endif
+ 
+         if (n > 0) {
+ 
+@@ -883,10 +913,16 @@
+ 	    if (errno == EINTR)
+ 		continue;
+ 
++#ifndef __AROS__
++            /* On AROS errno for socket calls only reaches us via
++               SocketBaseTags(SBTC_ERRNOPTR) in whichever task made the
++               call - do not gate the retry on it, just wait for the
++               socket to become writable again */
+             if (errno != EWOULDBLOCK && errno != EAGAIN) {
+ 	        UNLOCK(cl->outputMutex);
+                 return n;
+             }
++#endif
+ 
+             /* Retry every 5 seconds until we exceed timeout.  We
+                need to do this because select doesn't necessarily return
+@@ -896,7 +932,11 @@
+             FD_SET(sock, &fds);
+             tv.tv_sec = 5;
+             tv.tv_usec = 0;
++#ifndef __AROS__
+             n = select(sock+1, NULL, &fds, NULL /* &fds */, &tv);
++#else
++            n = WaitSelect(sock+1, NULL, &fds, NULL, &tv, NULL);
++#endif
+ 	    if (n < 0) {
+ #ifdef WIN32
+                 errno=WSAGetLastError();
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h
+--- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h	1970-01-01 01:00:00.000000000 +0100
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h	2026-08-05 13:31:30.524339473 +0100
+@@ -0,0 +1,62 @@
++#ifndef _RFB_RFBCONFIG_H
++#define _RFB_RFBCONFIG_H
++
++/*
++ * rfbconfig.h for AROS.
++ *
++ * Hand-written equivalent of the CMake-generated rfbconfig.h (see
++ * rfbconfig.h.cmakein): the library is built by the AROS metamake system
++ * without running CMake. Threading, forking, IPv6, TLS and websockets are
++ * all disabled - the server runs single-threaded on bsdsocket.library,
++ * with select()/read()/write() mapped to WaitSelect()/recv()/send() in
++ * the sources (see the -aros.diff applied over the pristine tree).
++ */
++
++#define LIBVNCSERVER_ALLOW24BPP 1
++
++#define LIBVNCSERVER_HAVE_DIRENT_H 1
++#define LIBVNCSERVER_HAVE_FCNTL_H 1
++#define LIBVNCSERVER_HAVE_GETTIMEOFDAY 1
++#define LIBVNCSERVER_HAVE_GETHOSTBYNAME 1
++#define LIBVNCSERVER_HAVE_GETHOSTNAME 1
++#define LIBVNCSERVER_HAVE_INET_NTOA 1
++#define LIBVNCSERVER_HAVE_MEMMOVE 1
++#define LIBVNCSERVER_HAVE_MEMSET 1
++#define LIBVNCSERVER_HAVE_SELECT 1
++#define LIBVNCSERVER_HAVE_SOCKET 1
++#define LIBVNCSERVER_HAVE_STRCHR 1
++#define LIBVNCSERVER_HAVE_STRCSPN 1
++#define LIBVNCSERVER_HAVE_STRDUP 1
++#define LIBVNCSERVER_HAVE_STRERROR 1
++#define LIBVNCSERVER_HAVE_STRSTR 1
++#define LIBVNCSERVER_HAVE_VPRINTF 1
++
++#define LIBVNCSERVER_HAVE_LIBJPEG 1
++#define LIBVNCSERVER_HAVE_LIBPNG 1
++#define LIBVNCSERVER_HAVE_LIBZ 1
++/* No system liblzo - the bundled minilzo is used instead */
++
++#define LIBVNCSERVER_HAVE_NETINET_IN_H 1
++#define LIBVNCSERVER_HAVE_SYS_SOCKET_H 1
++#define LIBVNCSERVER_HAVE_SYS_STAT_H 1
++#define LIBVNCSERVER_HAVE_SYS_TIME_H 1
++#define LIBVNCSERVER_HAVE_SYS_TYPES_H 1
++#define LIBVNCSERVER_HAVE_UNISTD_H 1
++
++/* Single-threaded: no LIBVNCSERVER_HAVE_LIBPTHREAD / WIN32THREADS */
++/* No fork/vfork - the inetd and http CGI paths stay disabled */
++/* No LIBVNCSERVER_IPv6 - bsdsocket.library is IPv4 only */
++/* No TLS/SASL/websockets */
++
++#define LIBVNCSERVER_PACKAGE_STRING "LibVNCServer 0.9.14"
++#define LIBVNCSERVER_PACKAGE_VERSION "0.9.14"
++#define LIBVNCSERVER_VERSION "0.9.14"
++#define LIBVNCSERVER_VERSION_MAJOR "0"
++#define LIBVNCSERVER_VERSION_MINOR "9"
++#define LIBVNCSERVER_VERSION_PATCHLEVEL "14"
++
++#define HAVE_LIBVNCSERVER_PID_T 1
++#define HAVE_LIBVNCSERVER_SIZE_T 1
++#define HAVE_LIBVNCSERVER_SOCKLEN_T 1
++
++#endif /* _RFB_RFBCONFIG_H */
+diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h
+--- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h	2026-08-05 10:39:16.865491972 +0100
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h	2026-08-05 13:31:30.524192873 +0100
+@@ -104,7 +104,13 @@
+ #define rfbSocket int
+ #define SOCKET int /* LibVNCServer versions older than 0.9.13 defined this for non-Windows, so keep it here */
+ #define RFB_INVALID_SOCKET (-1)
++#ifdef __AROS__
++/* sockets are bsdsocket.library descriptors, not file descriptors -
++   posixc close() cannot release them */
++#define _rfbCloseSocket CloseSocket
++#else
+ #define _rfbCloseSocket close
++#endif
+ typedef int8_t rfbBool;
+ #undef FALSE
+ #define FALSE 0
