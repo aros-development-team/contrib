@@ -157,6 +157,7 @@ FBthread *framebufThread = NULL;
 /* prototypes */
 static void CreateMyImage(MyImage **i, LONG Width, LONG Height, LONG pixfmt);
 static void FreeMyImage(MyImage **i);
+static void SetServerFormat(void);
 
 
 /*---------------------------- the hooks ----------------------------*/
@@ -364,16 +365,27 @@ void ChangeRFBScreen(void)
 		CreateMyImage(&NewScreen, screen->Width, screen->Height, pixfmt);
 		if (NewScreen)
 		{
-			rfbNewFramebuffer(	vncscreen, 
+			/*
+			 * The 5th argument is bitsPerSample, not bits per pixel.
+			 * Passing 32 made libvncserver evaluate (1 << 32) - 1 for
+			 * each channel maximum and shift green/blue by 32 and 64 -
+			 * shift counts wider than the type, so the advertised
+			 * format was undefined after any screen change. BGRA32 is
+			 * 8 bits per sample over 3 samples.
+			 */
+			rfbNewFramebuffer(	vncscreen,
 								(char *)NewScreen->data,
 								NewScreen->width,
 								NewScreen->height,
-								NewScreen->bits_per_pixel,
-								4,
+								8,
+								3,
 								NewScreen->bytes_per_pixel);
-								
+
 			FreeMyImage(&LocalFB);
 			LocalFB = NewScreen;
+
+			/* Restore the format rfbNewFramebuffer() just overwrote */
+			SetServerFormat();
 
 			/* how many tiles high is the framebuffer */	
 			tiles_high = (LocalFB->height + tileheight - 1)/tileheight;
@@ -402,6 +414,50 @@ void ChangeRFBScreen(void)
 	ScreenChange = (ULONG)FALSE;
     UnlockMutex(framebufThread->mutex);
 	SignalCondition(framebufThread->ScreenChangecond);
+}
+
+/*
+ * Describe LocalFB to libvncserver.
+ *
+ * rfbNewFramebuffer() derives the format itself from bitsPerSample, and
+ * always forces depth = 8 * bytesPerPixel with the red channel in the
+ * low byte. Neither matches what we serve - BGRA32 keeps red at bits
+ * 16..23 and is advertised as depth 24 - so the format is restored here
+ * after every call, and used for the initial screen too. Both paths
+ * therefore hand the viewer exactly the same description.
+ */
+static void SetServerFormat(void)
+{
+	vncscreen->paddedWidthInBytes         = LocalFB->bytes_per_line;
+	vncscreen->serverFormat.bitsPerPixel  = LocalFB->bits_per_pixel;
+	vncscreen->serverFormat.depth         = LocalFB->depth;
+	vncscreen->serverFormat.trueColour    = TRUE;
+
+	/* Always truecolour - LUT8 screens are converted to BGRA32 by
+	   ReadPixelArray() using the screen's palette */
+	vncscreen->serverFormat.redShift = 0;
+	if (LocalFB->red_mask) {
+		while (!(LocalFB->red_mask & (1 << vncscreen->serverFormat.redShift))) {
+			vncscreen->serverFormat.redShift++;
+		}
+	}
+	vncscreen->serverFormat.redMax   = LocalFB->red_mask   >> vncscreen->serverFormat.redShift;
+
+	vncscreen->serverFormat.greenShift = 0;
+	if (LocalFB->green_mask) {
+		while (!(LocalFB->green_mask & (1 << vncscreen->serverFormat.greenShift))) {
+			vncscreen->serverFormat.greenShift++;
+		}
+	}
+	vncscreen->serverFormat.greenMax = LocalFB->green_mask >> vncscreen->serverFormat.greenShift;
+
+	vncscreen->serverFormat.blueShift = 0;
+	if (LocalFB->blue_mask) {
+		while (!(LocalFB->blue_mask & (1 << vncscreen->serverFormat.blueShift))) {
+			vncscreen->serverFormat.blueShift++;
+		}
+	}
+	vncscreen->serverFormat.blueMax  = LocalFB->blue_mask  >> vncscreen->serverFormat.blueShift;
 }
 
 /*----------------------------  MyImage structure helping function  ---------------------------- */
@@ -752,38 +808,7 @@ void InitScreen(void)
 
 		vncscreen->deferUpdateTime = 10;
 							
-		vncscreen->paddedWidthInBytes = LocalFB->bytes_per_line;
-		vncscreen->serverFormat.bitsPerPixel = LocalFB->bits_per_pixel;
-		vncscreen->serverFormat.depth = LocalFB->depth;
-		vncscreen->serverFormat.trueColour = TRUE;
-		
-		{
-			// Always truecolour - LUT8 screens are converted to
-			// BGRA32 by ReadPixelArray() using the screen's palette
-			vncscreen->serverFormat.redShift = 0;                        // red
-			if (LocalFB->red_mask) {
-				while (!(LocalFB->red_mask & (1 << vncscreen->serverFormat.redShift))) {
-					vncscreen->serverFormat.redShift++;
-				}
-			}
-			vncscreen->serverFormat.redMax   = LocalFB->red_mask   >> vncscreen->serverFormat.redShift;
-
-			vncscreen->serverFormat.greenShift = 0;                      // green
-			if (LocalFB->green_mask) {
-				while (!(LocalFB->green_mask & (1 << vncscreen->serverFormat.greenShift))) {
-					vncscreen->serverFormat.greenShift++;
-				}
-			}
-			vncscreen->serverFormat.greenMax = LocalFB->green_mask >> vncscreen->serverFormat.greenShift;
-
-			vncscreen->serverFormat.blueShift = 0;                       // blue
-			if (LocalFB->blue_mask) {
-				while (!(LocalFB->blue_mask & (1 << vncscreen->serverFormat.blueShift))) {
-					vncscreen->serverFormat.blueShift++;
-				}
-			}
-			vncscreen->serverFormat.blueMax  = LocalFB->blue_mask  >> vncscreen->serverFormat.blueShift;
-		}
+		SetServerFormat();
 	}
 		
 	/* generate the interlace sequence */
