@@ -9,6 +9,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM     linklibs \
 #MM     network-includes \
 #MM     arostcp-linklibs-netlib \
+#MM     workbench-libs-jpeg-linklib \
 #MM     contrib-networking-libvncserver \
 #MM     contrib-networking-utils-arosvncserver-cpy \
 #MM     contrib-networking-utils-arosvncserver-icons
