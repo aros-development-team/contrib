@@ -118,6 +118,7 @@ void WaitMs(ULONG msec)
 void FramebufferThread(void *data)
 {
 	int row;
+	struct Screen *first;
 	static int probe_y = 0;
 	struct Task *ThisTask;
 	LONG TaskPri = 0;
@@ -171,7 +172,14 @@ void FramebufferThread(void *data)
 						}
 						
 						/* Check if screen has changed */
-						if (screen != ((struct IntuitionBase *) IntuitionBase) -> FirstScreen)
+						first = ((struct IntuitionBase *) IntuitionBase) -> FirstScreen;
+						if (!first)
+						{
+							/* No screen open (yet) - nothing to
+							   broadcast, keep checking for one */
+							WaitMs(100);
+						}
+						else if (screen != first)
 						{
 							LockMutex(framebufThread_loc->mutex);
 							rfbLog("FB Thread : First screen has changed\n");

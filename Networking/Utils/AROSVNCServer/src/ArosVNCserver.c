@@ -281,7 +281,8 @@ void mouse(int buttonMask, int x, int y, rfbClientPtr cl)
 	else
 	{	
 		/* perform mouse actions on server */
-		do_pointer(inputReqBlk, buttonMask, x, y, screen);
+		if (screen)
+			do_pointer(inputReqBlk, buttonMask, x, y, screen);
 		/* Report mouse position to all other clients that might be connected */
 		rfbDefaultPtrAddEvent(buttonMask,x,y,cl);
 	}
@@ -292,6 +293,9 @@ static void set_cursor_position()
 {
 	rfbClientIteratorPtr iter;
 	rfbClientPtr cl;
+
+	if (!screen)
+		return;
 
 	if ((vncscreen->cursorX != screen->MouseX) || (vncscreen->cursorY != screen->MouseY))
 	{
@@ -354,6 +358,14 @@ void ChangeRFBScreen(void)
 	rfbLog("Looking for the new screen data\n");
 	/* get screen information */
 	screen = ((struct IntuitionBase *) IntuitionBase) -> FirstScreen;
+	if (!screen)
+	{
+		/* the screen went away again before we could attach */
+		ScreenChange = (ULONG)FALSE;
+		UnlockMutex(framebufThread->mutex);
+		SignalCondition(framebufThread->ScreenChangecond);
+		return;
+	}
 	if ((LocalFB->height != screen->Height) || (LocalFB->width != screen->Width))
 	{
 #ifdef USE_NEWFRAMEBUFFER
@@ -766,11 +778,22 @@ void InitScreen(void)
 	
 	if (Force16Bits)
 		pixfmt = PIXFMT_BGR16PC;
-	else
+	else if (screen)
 		pixfmt = GetCyberMapAttr(screen->RastPort.BitMap,CYBRMATTR_PIXFMT);
-	
-	/* Initialise framebuffer */
-	CreateMyImage(&LocalFB, screen->Width, screen->Height, pixfmt);
+	else
+		pixfmt = PIXFMT_BGRA32;
+
+	/* Initialise framebuffer; with no screen yet this is a small blank
+	   placeholder, replaced through the normal screen-change path once a
+	   client connects and a screen is available */
+	if (screen)
+		CreateMyImage(&LocalFB, screen->Width, screen->Height, pixfmt);
+	else
+	{
+		CreateMyImage(&LocalFB, 160, 120, pixfmt);
+		if (LocalFB && LocalFB->data)
+			memset(LocalFB->data, 0, LocalFB->bytes_per_line * LocalFB->height);
+	}
 	if (!LocalFB)
 	{
 		cleanup("Couldn't initialise Frame Buffer");
@@ -869,11 +892,16 @@ int main(int argc, char** argv)
 		DoMethod(MuiWin, MUIM_Set, MUIA_Window_Open, TRUE);
     }
     
-	/* get screen information */
+	/* get screen information - legitimately NULL when started at boot,
+	   before Wanderer has opened the Workbench screen. Serve a blank
+	   placeholder framebuffer and attach to the frontmost screen once a
+	   client connects (the framebuffer thread swaps screens whenever the
+	   frontmost one differs from the broadcast one) */
 	screen = ((struct IntuitionBase *) IntuitionBase) -> FirstScreen;
-	if (!screen)
-		cleanup("Couldn't locate screen to broadcast");
-	rfbLog("Broadcasting screen %dx%d\n", screen->Width, screen->Height);
+	if (screen)
+		rfbLog("Broadcasting screen %dx%d\n", screen->Width, screen->Height);
+	else
+		rfbLog("No screen open yet, will broadcast the frontmost screen once a client connects\n");
 
 	InitScreen();
     
