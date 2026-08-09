@@ -30,6 +30,12 @@ endif
 #
 
 GCC_VERSION     = $(TARGET_GCC_VER)
+# Fall back to the newest version this port carries a patch for when the
+# build has not pinned one. This has to settle before REPOSITORIES below,
+# which is chosen from the version.
+ifeq ($(strip $(GCC_VERSION)),)
+GCC_VERSION     = 16.2.0
+endif
 ifeq (,$(findstring -,$(GCC_VERSION)))
     REPOSITORIES := $(GNU_REPOSITORY)/gcc/gcc-$(GCC_VERSION) \
         http://mirrors.ibiblio.org/gnu/ftp/gnu/gcc/gcc-$(GCC_VERSION) \
