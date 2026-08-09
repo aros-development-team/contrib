@@ -8,6 +8,11 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- development-binutils : workbench-libs-z
 
 BINUTILS_VERSION     = $(TARGET_BINUTILS_VER)
+# Fall back to the newest version this port carries a patch for when the
+# build has not pinned one.
+ifeq ($(strip $(BINUTILS_VERSION)),)
+BINUTILS_VERSION     = 2.47
+endif
 
 BINUTILS_EXTRAOPTS := --with-sysroot=/$(AROS_DIR_DEVELOPER)
 BINUTILS_EXTRAOPTS += --with-build-sysroot=$(AROS_DEVELOPER)
