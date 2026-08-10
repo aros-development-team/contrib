@@ -1,4 +1,4 @@
-# Copyright © 2004-2026, The AROS Development Team. All rights reserved.
+# Copyright (C) 2004-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -25,4 +25,3 @@ BINUTILS_CFLAGS := -DPOSIXC_NO_VAARGS
 
 %fetch_and_build_gnu_development package=binutils version=$(BINUTILS_VERSION) patch=yes \
     extraoptions=$(BINUTILS_EXTRAOPTS) extracflags="$(BINUTILS_CFLAGS)"
-
