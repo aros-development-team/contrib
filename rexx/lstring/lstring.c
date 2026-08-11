@@ -25,7 +25,10 @@
 #include <lstring.h>
 
 #ifndef WIN
-#	include <values.h>
+#	include <limits.h>
+#	ifndef MAXLONG
+#		define MAXLONG LONG_MAX
+#	endif
 #endif
 /* ================= Lstring routines ================== */
 
