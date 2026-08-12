@@ -1,5 +1,5 @@
 /*
-    Copyright © 2014, The AROS Development Team.
+    Copyright © 2014-2026, The AROS Development Team.
     All rights reserved.
     
     $Id$
@@ -81,6 +81,15 @@ static void InitClients(LIBBASETYPEPTR LIBBASE)
               {
                 STRPTR addr = (STRPTR)((IPTR)BADDR(seg) - sizeof(ULONG));
                 ULONG size = *(ULONG *)addr;
+
+                /* Hunks carved out of a LoadSeg arena store a size of 0,
+                   and a size smaller than a foreman can't match anyway -
+                   guard against the size underflowing below */
+                if (size < sizeof(xadUINT32) + sizeof(struct xadForeman))
+                {
+                  seg = *(BPTR *)BADDR(seg);
+                  continue;
+                }
 
                 for(addr += sizeof(xadUINT32), size -= sizeof(xadUINT32);
                    size >= sizeof(struct xadForeman);

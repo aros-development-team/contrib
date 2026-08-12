@@ -126,6 +126,10 @@ ASM(void) LIBxadCopyMem(REG(a0, const void *s), REG(a1, xadPTR d), REG(d0, xadSi
 /* xadDiskUnArc - diskunarc.c */
 ASM(xadERROR) LIBxadDiskUnArcA(REG(a0, struct xadArchiveInfoP *ai), REG(a1, xadTAGPTR tags), REG(a6, struct xadMasterBaseP *xadMasterBase));
 #define FUNCxadDiskUnArc ASM(xadERROR) LIBxadDiskUnArcA(REG(a0, struct xadArchiveInfoP *ai), REG(a1, xadTAGPTR tags), REG(a6, struct xadMasterBaseP *xadMasterBase)) { \
+
+/* xadDiskFileUnArc - diskfile.c */
+ASM(xadERROR) LIBxadDiskFileUnArcA(REG(a0, struct xadArchiveInfoP *ai), REG(a1, xadTAGPTR tags), REG(a6, struct xadMasterBaseP *xadMasterBase));
+#define FUNCxadDiskFileUnArc ASM(xadERROR) LIBxadDiskFileUnArcA(REG(a0, struct xadArchiveInfoP *ai), REG(a1, xadTAGPTR tags), REG(a6, struct xadMasterBaseP *xadMasterBase)) { \
   struct UtilityBase *UtilityBase = xadMasterBase->xmb_UtilityBase;
 
 /* xadFileUnArc - fileunarc.c */
@@ -270,6 +274,13 @@ AROS_LH3(void, xadCopyMem, AROS_LHA(const void *, s, A0), AROS_LHA(xadPTR, d, A1
 //AROS_LP2(xadERROR, xadDiskUnArcA, AROS_LPA(struct xadArchiveInfoP *, ai, A0), AROS_LPA(xadTAGPTR, tags, A1), struct xadMasterBaseP *, xadMasterBase, 11, xadmaster);
 #define FUNCxadDiskUnArc \
 AROS_LH2(xadERROR, xadDiskUnArcA, AROS_LHA(struct xadArchiveInfoP *, ai, A0), AROS_LHA(xadTAGPTR, tags, A1), struct xadMasterBaseP *, xadMasterBase, 11, xadmaster) { \
+    AROS_LIBFUNC_INIT \
+    struct UtilityBase *UtilityBase = xadMasterBase->xmb_UtilityBase;
+
+/* xadDiskFileUnArc - diskfile.c */
+//AROS_LP2(xadERROR, xadDiskFileUnArcA, AROS_LPA(struct xadArchiveInfoP *, ai, A0), AROS_LPA(xadTAGPTR, tags, A1), struct xadMasterBaseP *, xadMasterBase, 31, xadmaster);
+#define FUNCxadDiskFileUnArc \
+AROS_LH2(xadERROR, xadDiskFileUnArcA, AROS_LHA(struct xadArchiveInfoP *, ai, A0), AROS_LHA(xadTAGPTR, tags, A1), struct xadMasterBaseP *, xadMasterBase, 31, xadmaster) { \
     AROS_LIBFUNC_INIT \
     struct UtilityBase *UtilityBase = xadMasterBase->xmb_UtilityBase;
 

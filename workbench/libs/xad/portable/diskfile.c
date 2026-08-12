@@ -158,4 +158,14 @@ FUNCxadGetDiskInfo /* struct xadArchiveInfoP *ai, xadTAGPTR tags */
 }
 ENDFUNC
 
+
+
+FUNCxadDiskFileUnArc /* struct xadArchiveInfoP *ai, xadTAGPTR tags */
+{
+  /* Extracting single files from filesystem disk images is not
+     implemented in this version of the library. */
+  return XADERR_NOTSUPPORTED;
+}
+ENDFUNC
+
 #endif  /* XADMASTER_DISKFILE_C */
