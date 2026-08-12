@@ -38,15 +38,5 @@ FILES = 3dplot.r \
 	tb.r \
 	uniq.r
 
-DESTFILES := $(foreach f, $(FILES), $(DESTDIR)/$(f))
-	
-#MM contrib-rexx-demos :
-contrib-rexx-demos : setup $(DESTFILES)
-	@$(NOP)
-
-$(DESTDIR)/%.r : %.r
-	@$(CP) $< $@
-
-setup :
-	%mkdirs_q $(REXXDIR) $(DESTDIR)
+%copy_files_q mmake=contrib-rexx-demos files="$(FILES)" dst=$(DESTDIR)
 
