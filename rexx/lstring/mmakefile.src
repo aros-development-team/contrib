@@ -83,7 +83,9 @@ FILES := \
 	x2d \
 	xrange
 	
-USER_CFLAGS := -DAROS -I$(SRCDIR)/$(CURDIR)/../inc -O2 -DALIGN -DINLINE -DMAXLONG=0x7FFFFFFF
+# BREXX predates C23, where bool became a keyword: it typedefs bool to
+# int and relies on int and bool being interchangeable.
+USER_CFLAGS := $(CFLAGS_GNU17) -DAROS -I$(SRCDIR)/$(CURDIR)/../inc -O2 -DALIGN -DINLINE -DMAXLONG=0x7FFFFFFF
 
 %build_linklib mmake=linklibs-rexxlstring libname=rexxlstring files=$(FILES)
 

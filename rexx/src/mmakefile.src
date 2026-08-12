@@ -30,7 +30,9 @@ FILES := \
 
 EXEDIR := $(AROS_CONTRIB)/Rexx
 
-USER_CFLAGS := -DAROS -I$(SRCDIR)/$(CURDIR)/../inc -DALIGNED
+# BREXX predates C23, where bool became a keyword: it typedefs bool to
+# int and relies on int and bool being interchangeable.
+USER_CFLAGS := $(CFLAGS_GNU17) -DAROS -I$(SRCDIR)/$(CURDIR)/../inc -DALIGNED
 
 #MM contrib-rexx-program : includes linklibs linklibs-rexxlstring
 
