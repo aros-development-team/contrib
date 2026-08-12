@@ -8,6 +8,14 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- development-gcc : development-gmp development-mpfr development-mpc workbench-libs-zstd-library-linklib
 #MM- development-gcc : contrib-development-libs-gc
 
+# The hosted gcc is a "canadian cross" (build machine != host = target), and
+# gcc's build system requires a pre-installed build->target gcc for the
+# target side of the build (GCC_FOR_TARGET: dumping specs, building libgcc
+# and friends) - the freshly built xgcc is an AROS binary and cannot run on
+# the build machine. The gnu toolchain's crosstools provide that compiler;
+# other toolchains do not, so only build the port for the gnu toolchain.
+ifeq ($(AROS_TOOLCHAIN),gnu)
+
 #
 # GCC will fail to build if iconv is found, so check and generate an error if it
 # is present.
@@ -137,5 +145,19 @@ LIBATOMIC_SRCDIR := $(PORTSDIR)/gcc/gcc-$(GCC_VERSION)/libatomic
 
 ##MM- contrib-gnu-gcc-libatomic-arm : development-gcc-libatomic
 #MM- contrib-gnu-gcc-postinstall : contrib-gnu-gcc-deletefixed
+
+else
+
+#MM development-gcc
+development-gcc :
+	@$(ECHO) "development-gcc skipped : the hosted gcc can only be built with the gnu toolchain (this build uses the $(AROS_TOOLCHAIN) toolchain)"
+
+development-gcc-% :
+	@true
+
+postinstall-gcc-delete-la-files contrib-gnu-gcc-deletefixed :
+	@true
+
+endif
 
 %common
