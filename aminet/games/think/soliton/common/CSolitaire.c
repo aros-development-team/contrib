@@ -641,10 +641,9 @@ static void Undo(struct CSolitaire_Data *data)
         // Zug von open
         if(data->undohead->uncover) // Karte wieder auf Schattenstapel verdrängen
         {
-          int size, cards[5];
+          int size, cards[53];
           DoMethod(data->obj, MUIM_Cardgame_GetCards, 1, cards, &size);
-          data->opencards[data->opencardsSize] = cards[0];
-          data->opencardsSize++;
+          if(size > 0) { data->opencards[data->opencardsSize] = cards[0]; data->opencardsSize++; }
           DoMethod(data->obj, MUIM_Cardgame_SetCards, 1, cards, 0);
           DoMethod(data->obj, MUIM_Cardgame_SetEmptyImage, 1, 1);
         }
@@ -1034,7 +1033,7 @@ static void dragDone(struct CSolitaire_Data *data, int source, int dest, int siz
     //  Open nachfüllen
     if(source == 1)
     {
-      int size, cards[5];
+      int size, cards[53];
       DoMethod(data->obj, MUIM_Cardgame_GetCards, 1, cards, &size);
       if(!size && data->opencardsSize)
       {
