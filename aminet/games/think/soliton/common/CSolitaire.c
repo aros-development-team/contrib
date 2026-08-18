@@ -159,7 +159,7 @@ struct CSolitaire_Data
   /* Klondike */
   Object *         movebutton;
   Object *         score;
-  long             last_malus;              // letzter Zeitpkt timerbedingten Pkteabzugs
+  LONG             last_malus;              // letzter Zeitpkt timerbedingten Pkteabzugs
   int              opencards[53];           //  Nicht sichtbare Karten auf
   int              opencardsSize;           //  Open-Stack
   BOOL             gameonline;

@@ -43,8 +43,8 @@
 struct Score
 {
   char  name[20];
-  long  points;
-  long  time;
+  LONG  points;
+  LONG  time;
   char  date[20];
 };
 
@@ -60,7 +60,7 @@ struct Statistics_Data
 
   char    scoresdate[20];       // Datum seit Beginn der Highscoreliste
   int     won_all, lost_all, won_session, lost_session;
-  long    time_all, time_session, time_game;
+  LONG    time_all, time_session, time_game;
   int     unfinished_game;
   Object *TX_Score;
   Object *TX_Turns;
@@ -101,7 +101,7 @@ static void SaveHighscores(struct Statistics_Data *data)
     Flush(f);
 
     size = xget(data->LI_Highscores, MUIA_List_Entries);
-    Write(f, &size, sizeof(long));
+    Write(f, &size, sizeof(LONG));
 
     for(i = 0; i < size; i++)
     {
@@ -110,13 +110,13 @@ static void SaveHighscores(struct Statistics_Data *data)
 
       FPrintf(f, "%s\n%s\n", s->name, s->date);
       Flush(f);
-      Write(f, &(s->points), sizeof(long));
-      Write(f, &(s->time), sizeof(long));
+      Write(f, &(s->points), sizeof(LONG));
+      Write(f, &(s->time), sizeof(LONG));
     }
 
     Write(f, &data->won_all , sizeof(int));
     Write(f, &data->lost_all, sizeof(int));
-    Write(f, &data->time_all, sizeof(long));
+    Write(f, &data->time_all, sizeof(LONG));
 
     Close(f);
   }
@@ -141,7 +141,7 @@ static void LoadHighscores(struct Statistics_Data *data)
       if(getlin(f, data->scoresdate, sizeof(data->scoresdate)))
       {
         Flush(f);
-        if(Read(f, &size, sizeof(long)) != sizeof(long))
+        if(Read(f, &size, sizeof(LONG)) != sizeof(LONG))
           size = -1;
 
         for(i = 0; i < size; i++)
@@ -154,9 +154,9 @@ static void LoadHighscores(struct Statistics_Data *data)
             !getlin(f, s->date, sizeof(s->date)))
               size = -2;
             Flush(f);
-            if(Read(f, &(s->points), sizeof(long)) != sizeof(long))
+            if(Read(f, &(s->points), sizeof(LONG)) != sizeof(LONG))
               size = -2;
-            else if(Read(f, &(s->time), sizeof(long)) != sizeof(long))
+            else if(Read(f, &(s->time), sizeof(LONG)) != sizeof(LONG))
               size = -2;
             else
               DoMethod(data->LI_Highscores, MUIM_List_InsertSingle, s, MUIV_List_Insert_Bottom);
@@ -167,7 +167,7 @@ static void LoadHighscores(struct Statistics_Data *data)
         {
           Read(f, &data->won_all, sizeof(int));
           Read(f, &data->lost_all, sizeof(int));
-          Read(f, &data->time_all, sizeof(long));
+          Read(f, &data->time_all, sizeof(LONG));
         }
       }
     }
