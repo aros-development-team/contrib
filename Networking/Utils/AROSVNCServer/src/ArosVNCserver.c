@@ -580,7 +580,7 @@ void cleanup(char *msg)
 }
 
 static void openlibs(void)
-{		
+{
 	if (!(MUIMasterBase = OpenLibrary((UBYTE *)"muimaster.library", MUIMASTER_VMIN)))
         cleanup("Can't open muimaster.library!");
 		
