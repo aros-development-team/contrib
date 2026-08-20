@@ -1,6 +1,6 @@
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c libvncserver-LibVNCServer-0.9.14/common/sockets.c
---- libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c	2026-08-05 10:39:16.859491872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/common/sockets.c	2026-08-05 16:22:51.404168984 +0100
+--- libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c	2026-08-20 12:53:41.574510612 +0100
++++ libvncserver-LibVNCServer-0.9.14/common/sockets.c	2026-08-20 12:53:41.580479612 +0100
 @@ -28,6 +28,12 @@
  
  #include "sockets.h"
@@ -38,8 +38,8 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/common/sockets.c libvncserver-Li
      if (FD_ISSET(socket, &exceptfds))
        return FALSE;
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c
---- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c	2026-08-05 10:39:16.862091772 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c	2026-08-05 16:22:51.409073384 +0100
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c	2026-08-20 12:53:41.575207912 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/httpd.c	2026-08-20 12:53:41.580553412 +0100
 @@ -30,6 +30,12 @@
  
  #include <rfb/rfb.h>
@@ -80,9 +80,9 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/httpd.c libvncserve
  	if (got <= 0) {
  	    if (got == 0) {
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver-LibVNCServer-0.9.14/libvncserver/main.c
---- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c	2026-08-05 10:39:16.862158872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/main.c	2026-08-05 16:22:51.409149384 +0100
-@@ -17,6 +17,28 @@
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c	2026-08-20 12:53:41.575221312 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/main.c	2026-08-20 12:59:18.714931624 +0100
+@@ -17,6 +17,32 @@
  #include <rfb/rfbregion.h>
  #include "private.h"
  
@@ -91,7 +91,11 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
 +#include <proto/bsdsocket.h>
 +#include <bsdsocket/socketbasetags.h>
 +#include <errno.h>
-+struct Library *SocketBase = NULL;
++/* Defined by netlib's autoinit.o - REFERENCING it (not defining our own)
++   is what pulls the autoinit into the link, so its ADD2INIT constructor
++   both aborts the program early when no TCP stack is running and
++   registers the errno pointer with bsdsocket.library */
++extern struct Library *SocketBase;
 +
 +/* bsdsocket.library only updates the caller's errno if asked to; without
 +   this the EWOULDBLOCK/EAGAIN checks in the Read/Write/PeekExact retry
@@ -111,7 +115,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
  #include <stdarg.h>
  #include <errno.h>
  
-@@ -919,6 +941,12 @@
+@@ -919,6 +945,12 @@
   int width,int height,int bitsPerSample,int samplesPerPixel,
   int bytesPerPixel)
  {
@@ -124,7 +128,25 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
     rfbScreenInfoPtr screen=calloc(sizeof(rfbScreenInfo),1);
     if (!screen)
         return NULL;
-@@ -1183,6 +1211,10 @@
+@@ -1007,8 +1039,17 @@
+ 	   GetComputerName(screen->thisHost,&dummy);
+    }
+ #else
++#ifdef __AROS__
++   /* gethostname() is a bsdsocket.library call - with no TCP stack
++      running the base is NULL and the inline stub would fault */
++   if (SocketBase)
++      gethostname(screen->thisHost, 255);
++   else
++      strcpy(screen->thisHost, "localhost");
++#else
+    gethostname(screen->thisHost, 255);
+ #endif
++#endif
+ 
+    screen->paddedWidthInBytes = width*bytesPerPixel;
+ 
+@@ -1183,6 +1224,10 @@
  
  void rfbInitServer(rfbScreenInfoPtr screen)
  {
@@ -135,7 +157,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
    rfbInitSockets(screen);
    rfbHttpInitSockets(screen);
  #ifndef WIN32
-@@ -1241,6 +1273,13 @@
+@@ -1241,6 +1286,13 @@
        close(screen->pipe_notify_listener_thread[1]);
    }
  #endif
@@ -150,8 +172,8 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/main.c libvncserver
  
  #if !defined LIBVNCSERVER_HAVE_GETTIMEOFDAY && defined WIN32
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c
---- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c	2026-08-05 10:39:16.862406872 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c	2026-08-05 16:22:51.409462484 +0100
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c	2026-08-20 12:53:41.575259712 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/rfbserver.c	2026-08-20 12:53:41.581206212 +0100
 @@ -37,6 +37,12 @@
  #include <rfb/rfb.h>
  #include <rfb/rfbregion.h>
@@ -202,8 +224,8 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/rfbserver.c libvncs
  	    rfbLogPerror("rfbProcessUDPInput: read");
  	}
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c
---- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c	2026-08-05 10:39:16.863250172 +0100
-+++ libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c	2026-08-05 16:22:51.410834784 +0100
+--- libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c	2026-08-20 12:53:41.575395312 +0100
++++ libvncserver-LibVNCServer-0.9.14/libvncserver/sockets.c	2026-08-20 12:53:41.581406612 +0100
 @@ -53,6 +53,12 @@
  
  #include <rfb/rfb.h>
@@ -260,7 +282,22 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  #endif
  
          if (n > 0) {
-@@ -698,7 +720,11 @@
+@@ -678,6 +700,14 @@
+ #ifdef WIN32
+ 	    errno = WSAGetLastError();
+ #endif
++#ifdef __AROS__
++	    /* bsdsocket.library reports per-call errors via Errno(); the
++	       ERRNOPTR registered at startup does not reliably receive them,
++	       and a stale errno of 0 here turned every EWOULDBLOCK on a
++	       partial message into a fatal connection drop */
++	    if (n < 0)
++		errno = Errno();
++#endif
+ 	    if (errno == EINTR)
+ 		continue;
+ 
+@@ -698,7 +728,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = timeout / 1000;
              tv.tv_usec = (timeout % 1000) * 1000;
@@ -272,7 +309,22 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
              if (n < 0) {
                  rfbLogPerror("ReadExact: select");
                  return n;
-@@ -784,7 +810,11 @@
+@@ -764,6 +798,14 @@
+ #ifdef WIN32
+ 	    errno = WSAGetLastError();
+ #endif
++#ifdef __AROS__
++	    /* bsdsocket.library reports per-call errors via Errno(); the
++	       ERRNOPTR registered at startup does not reliably receive them,
++	       and a stale errno of 0 here turned every EWOULDBLOCK on a
++	       partial message into a fatal connection drop */
++	    if (n < 0)
++		errno = Errno();
++#endif
+ 	    if (errno == EINTR)
+ 		continue;
+ 
+@@ -784,7 +826,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = timeout / 1000;
              tv.tv_usec = (timeout % 1000) * 1000;
@@ -284,7 +336,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
              if (n < 0) {
                  rfbLogPerror("PeekExact: select");
                  return n;
-@@ -863,7 +893,11 @@
+@@ -863,7 +909,11 @@
  	    n = rfbssl_write(cl, buf, len);
  	else
  #endif
@@ -296,7 +348,14 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  
          if (n > 0) {
  
-@@ -883,10 +917,16 @@
+@@ -880,13 +930,23 @@
+ #ifdef WIN32
+ 			errno = WSAGetLastError();
+ #endif
++#ifdef __AROS__
++	    if (n < 0)
++		errno = Errno();
++#endif
  	    if (errno == EINTR)
  		continue;
  
@@ -313,7 +372,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
  
              /* Retry every 5 seconds until we exceed timeout.  We
                 need to do this because select doesn't necessarily return
-@@ -896,7 +936,11 @@
+@@ -896,7 +956,11 @@
              FD_SET(sock, &fds);
              tv.tv_sec = 5;
              tv.tv_usec = 0;
@@ -327,7 +386,7 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/libvncserver/sockets.c libvncser
                  errno=WSAGetLastError();
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h
 --- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h	1970-01-01 01:00:00.000000000 +0100
-+++ libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h	2026-08-05 16:22:51.413152884 +0100
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbconfig.h	2026-08-20 12:53:41.582368312 +0100
 @@ -0,0 +1,68 @@
 +#ifndef _RFB_RFBCONFIG_H
 +#define _RFB_RFBCONFIG_H
@@ -398,8 +457,8 @@ diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbconfig.h libvncserver-Lib
 +
 +#endif /* _RFB_RFBCONFIG_H */
 diff -ruN libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h
---- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h	2026-08-05 10:39:16.865491972 +0100
-+++ libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h	2026-08-05 16:22:51.412868984 +0100
+--- libvncserver-LibVNCServer-0.9.14.orig/rfb/rfbproto.h	2026-08-20 12:53:41.575827712 +0100
++++ libvncserver-LibVNCServer-0.9.14/rfb/rfbproto.h	2026-08-20 12:53:41.583234512 +0100
 @@ -104,7 +104,13 @@
  #define rfbSocket int
  #define SOCKET int /* LibVNCServer versions older than 0.9.13 defined this for non-Windows, so keep it here */
