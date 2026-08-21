@@ -4450,7 +4450,7 @@ void LoadConfig(Connection *cn)
 
             Close((BPTR) iff->iff_Stream);
         } else {
-            MUI_AddStatusWindow(cn, (char *)_(MSG_ERR_LOAD_CONFIG));  /* Removed references to PROGDIR: and renamed prefs file */ 
+            MUI_AddStatusWindow(cn, (char *)_(MSG_ERR_LOAD_CONFIG));  /* Removed references to PROGDIR: and renamed prefs file */
             caf_strncpy(g_config_filename, "PROGDIR:marranoftp.prefs", 512);
         }
 
@@ -4866,6 +4866,17 @@ void MUI_GetSet(APTR object, int attrib, int state)
         set(object, attrib, state);
 }
 
+LONG MUI_GetListboxActive(APTR Listbox)
+{
+    IPTR NList = 0, active = MUIV_NList_Active_Off;
+
+    get(Listbox, MUIA_NListview_NList, &NList);
+    if (NList)
+        get((APTR) NList, MUIA_NList_Active, &active);
+
+    return (LONG) active;
+}
+
 void MUI_UpdateQueueListbox(Connection *cn, BOOL b_full_update)
 {
     QueueColumn *qcptr, qc;
@@ -5030,7 +5041,7 @@ void OnUploadBtnClick(Connection *cn)
     int offset;
     IPTR itemp;
     void *ptr;
-    LONG id;
+    LONG id, active;
 
     // Updates the local path variable
     get(cn->S_LEFT_VIEW_PATH, MUIA_String_Contents, &itemp);
@@ -5048,10 +5059,11 @@ void OnUploadBtnClick(Connection *cn)
     sel_items = MUI_GetListboxSelItemCount(lv->ListView);
     if (sel_items == 1) {
         // Only one item is selected
-        get(lv->ListView, MUIA_List_Active, &itemp);
-        if (itemp != MUIV_NList_Active_Off) {
-            DoMethod(lv->ListView, MUIM_NList_GetEntry, itemp, &vcptr);
-            if (vcptr->is_dir == FALSE) {
+        active = MUI_GetListboxActive(lv->ListView);
+        if (active != MUIV_NList_Active_Off) {
+            vcptr = NULL;
+            DoMethod(lv->ListView, MUIM_NList_GetEntry, active, &vcptr);
+            if (vcptr && vcptr->is_dir == FALSE) {
                 // Only one item selected, no need to queue stuph
                 LeftListviewDblClickSingle(cn);
                 return;
@@ -5195,11 +5207,16 @@ void OnLeftListviewDblClick(Connection *cn)
     ViewColumn *vc;
     char temp[512];
     IPTR itmp;
+    LONG active;
     int chr;
 
-    get(lv->ListView, MUIA_List_Active, &itmp);
-    if (itmp != MUIV_NList_Active_Off) {
-        DoMethod(lv->ListView, MUIM_NList_GetEntry, itmp, &vc);
+    active = MUI_GetListboxActive(lv->ListView);
+    if (active != MUIV_NList_Active_Off) {
+        vc = NULL;
+        DoMethod(lv->ListView, MUIM_NList_GetEntry, active, &vc);
+        if (!vc)
+            return;
+
         if (vc->is_dir == TRUE) {
             if (!strcmp(vc->name, "..")) {
                 lock = Lock(cn->lv.CurrentPath, ACCESS_READ);
@@ -5240,11 +5257,16 @@ void OnRightListviewDblClick(Connection *cn)
     ViewColumn *vc;
     char temp[512];
     IPTR itmp;
+    LONG active;
     int chr;
 
-    get(rv->ListView, MUIA_List_Active, &itmp);
-    if (itmp != MUIV_NList_Active_Off) {
-        DoMethod(rv->ListView, MUIM_NList_GetEntry, itmp, &vc);
+    active = MUI_GetListboxActive(rv->ListView);
+    if (active != MUIV_NList_Active_Off) {
+        vc = NULL;
+        DoMethod(rv->ListView, MUIM_NList_GetEntry, active, &vc);
+        if (!vc)
+            return;
+
         if (vc->is_dir == TRUE) {
             if (!strcmp(vc->name, "..")) {
                 SendFtpCommand(cn, "CDUP", FALSE);
@@ -5268,12 +5290,14 @@ void LeftListviewDblClickSingle(Connection *cn)
 {
     LocalView *lv = &cn->lv;
     ViewColumn *vc;
-    IPTR itmp;
+    LONG active;
 
-    get(lv->ListView, MUIA_List_Active, &itmp);
-    if (itmp != MUIV_NList_Active_Off) {
-        DoMethod(lv->ListView, MUIM_NList_GetEntry, itmp, &vc);
-        InitiateFileTransfer(cn, vc->name, FALSE);
+    active = MUI_GetListboxActive(lv->ListView);
+    if (active != MUIV_NList_Active_Off) {
+        vc = NULL;
+        DoMethod(lv->ListView, MUIM_NList_GetEntry, active, &vc);
+        if (vc)
+            InitiateFileTransfer(cn, vc->name, FALSE);
     }
 }
 
@@ -5347,7 +5371,7 @@ void OnSiteWindowChange()
 
 void OnSiteWindowDelete()
 {
-    IPTR itmp;
+    LONG active;
     int i, used = 0;
 
     if (g_AddressBook.b_new_entry) {
@@ -5357,10 +5381,10 @@ void OnSiteWindowDelete()
         return;
     }
 
-    get(g_AddressBook.LV_HOSTS, MUIA_List_Active, &itmp);
-    if (itmp != MUIV_NList_Active_Off) {
+    active = MUI_GetListboxActive(g_AddressBook.LV_HOSTS);
+    if (active != MUIV_NList_Active_Off) {
         for (i = 0; i < g_AddressBook.used_hosts; i++) {
-            if (i == itmp)
+            if (i == active)
                 continue;
 
             g_AddressBook.Hosts_Temp[used] = g_AddressBook.Hosts[i];
@@ -5400,11 +5424,11 @@ void OnSiteWindowHostsLVDBLClick(Connection *cn)
     ClientInfo *ci = &cn->ci;
     HostInfo *hi = &cn->hi;
     Host *hst;
-    IPTR itmp;
+    LONG active;
 
-    get(g_AddressBook.LV_HOSTS, MUIA_List_Active, &itmp);
-    if (itmp != MUIV_NList_Active_Off) {
-            hst = &g_AddressBook.Hosts[itmp];
+    active = MUI_GetListboxActive(g_AddressBook.LV_HOSTS);
+    if (active >= 0 && active < g_AddressBook.used_hosts) {
+            hst = &g_AddressBook.Hosts[active];
         caf_strncpy(hi->hostname, 	hst->hostname, HOSTNAME_CONFIG_LEN);
         caf_strncpy(hi->ip_s,		hst->hostname, HOSTNAME_CONFIG_LEN);
         hi->port = caf_atol(hst->port);
@@ -5423,11 +5447,11 @@ void OnSiteWindowHostsLVDBLClick(Connection *cn)
 
 void OnSiteWindowHostsSelectChange(Connection *cn)
 {
-    IPTR itmp;
+    LONG active;
 
-    get(g_AddressBook.LV_HOSTS, MUIA_NList_Active, &itmp);
-    g_AddressBook.selected_host = itmp;
-    UpdateSiteWindowContents(itmp);
+    active = MUI_GetListboxActive(g_AddressBook.LV_HOSTS);
+    g_AddressBook.selected_host = active;
+    UpdateSiteWindowContents(active);
 }
 
 void UpdateSiteWindowListBox(int active)
@@ -5450,7 +5474,10 @@ void UpdateSiteWindowContents(int active)
 {
     Host *hst;
 
-    hst = &g_AddressBook.Hosts[active];	
+    if (active < 0 || active >= MAX_HOSTS)
+        return;
+
+    hst = &g_AddressBook.Hosts[active];
     set(g_AddressBook.S_ENTRYNAME, MUIA_String_Contents, (IPTR) hst->entryname);
     set(g_AddressBook.S_HOSTNAME, MUIA_String_Contents, (IPTR) hst->hostname);
     set(g_AddressBook.S_PORT, MUIA_String_Contents, (IPTR) hst->port);
