@@ -25,37 +25,37 @@
 #endif
 
 
+/* The stack is guarded by the 'available' byte, used as a simple spin lock.
+   This used to be hand-written 32-bit x86 assembly, which could not work on
+   x86_64 (it addressed 'available' at offset 4, valid only while head is four
+   bytes) and is not x86 at all on the other targets that reach this header.
+   The compiler's atomic builtins express the same thing portably.  */
+
 static inline void _atomic_stack_push(struct _atomic_stack* list, struct _atomic_item* item)
 {
-   asm volatile("   mov %%eax,%1\n"
-                "1: lock bts $31,4(%%eax)\n"
-                "   jb 1b\n"
-                "   mov %%ebx,%0\n"
-                "   mov %%ecx,(%%eax)\n"
-                "   mov (%%ebx),%%ecx\n"
-                "   mov (%%eax),%%ebx\n"
-                "   lock btr $31,4(%%eax)\n"
-                :
-                : "m" (item), "m" (list)
-                : "eax", "ebx", "ecx", "cc", "memory");
+   while (__atomic_test_and_set(&list->available, __ATOMIC_ACQUIRE))
+      ;
+
+   item->next = list->head;
+   list->head = item;
+
+   __atomic_clear(&list->available, __ATOMIC_RELEASE);
 }
 
 static inline struct _atomic_item* _atomic_stack_pop(struct _atomic_stack* list)
 {
-   register struct _atomic_item *n;
-   asm volatile("   mov %%eax,%1\n"
-                "1: lock bts $31,4(%%eax)\n"
-                "   jb 1b\n"
-                "   mov %0,(%%eax)\n"
-                "   je 2f\n"
-                "   mov %%ebx,(%0)\n"
-                "   mov (%%eax),%%ebx\n"
-                "2: lock btr $31,4(%%eax)\n"
-                : "=g"(n)
-                : "m"(list)
-                : "eax", "ebx", "cc", "memory");
+   struct _atomic_item *item;
 
-   return n;
+   while (__atomic_test_and_set(&list->available, __ATOMIC_ACQUIRE))
+      ;
+
+   item = list->head;
+   if (0 != item)
+      list->head = item->next;
+
+   __atomic_clear(&list->available, __ATOMIC_RELEASE);
+
+   return item;
 }
 
 static inline void _atomic_cnt_inc(struct _atomic_cnt* cnt)
@@ -63,10 +63,7 @@ static inline void _atomic_cnt_inc(struct _atomic_cnt* cnt)
 #ifdef __AROS__
    AROS_ATOMIC_INC(cnt->counter);
 #else
-   asm volatile("   lock incl (%0)\n"
-         :
-         : "g"(cnt)
-         : "cc", "memory");
+   __atomic_add_fetch(&cnt->counter, 1, __ATOMIC_SEQ_CST);
 #endif
 }
 
@@ -75,100 +72,55 @@ static inline void _atomic_cnt_dec(struct _atomic_cnt* cnt)
 #ifdef __AROS__
    AROS_ATOMIC_DEC(cnt->counter);
 #else
-   asm volatile("   lock decl (%0)\n"
-         :
-         : "g"(cnt)
-         : "cc", "memory");
+   __atomic_sub_fetch(&cnt->counter, 1, __ATOMIC_SEQ_CST);
 #endif
 }
 
+/* status: 0 = unlocked, ~0 = held for writing, otherwise the reader count.
+   The bodies here were commented-out m68k assembly, so every one of these
+   returned an uninitialised value.  Implemented with atomic builtins.  */
+
+#define _ATOMIC_SLOCK_WRITER   ((uint32)~0U)
+
 static inline int32 _atomic_slock_trywrite(struct _atomic_slock* lock)
 {
-   register int32 res;
-/*
+   uint32 expected = 0;
 
-   asm volatile("   move.l %1,a0\n"
-                "1: bset.b #7,(a0)\n"
-                "   bne.b 1b\n"
-                "   move.l (a0),d0\n"
-                "   bclr.b #31,d0\n"
-                "   moveq #0,d1\n"
-                "   tst.l d0\n"
-                "   bne.b 2f\n"
-                "   moveq #-1,d1\n"
-                "   move.l d1,(a0)\n"
-                "2: bclr.b #7,(a0)\n"
-                "   move.l d1,%0\n"
-               : "=g"(res)
-               : "m"(lock)
-               : "a0", "d0", "d1", "cc", "memory");
-*/
-   return res;
+   /* only a completely unlocked lock can be taken for writing */
+   if (__atomic_compare_exchange_n(&lock->status, &expected,
+                                   _ATOMIC_SLOCK_WRITER, 0,
+                                   __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+      return -1;
+
+   return 0;
 }
 
 static inline void _atomic_slock_unlockwrite(struct _atomic_slock* lock)
 {
-/*
-   asm volatile("   move.l %0,a0\n"
-                "1: bset.b #7,(a0)\n"
-                "   bne.b 1b\n"
-                "   move.l (a0),d0\n"
-                "   moveq #-1,d1\n"
-                "   cmp.l d0,d1\n"
-                "   bne.b 2f\n"
-                "   moveq #0,d0\n"
-                "   move.l d0,(a0)\n"
-                "2: bclr.b #7,(a0)\n"
-                : 
-                : "m"(lock)
-                : "a0", "d0", "d1", "cc", "memory");
-*/
+   uint32 expected = _ATOMIC_SLOCK_WRITER;
+
+   __atomic_compare_exchange_n(&lock->status, &expected, 0, 0,
+                               __ATOMIC_RELEASE, __ATOMIC_RELAXED);
 }
 
 static inline int32 _atomic_slock_tryread(struct _atomic_slock* lock)
 {
-   register int32 res;
-/*
+   uint32 status = __atomic_load_n(&lock->status, __ATOMIC_RELAXED);
 
-   asm volatile("   move.l %1,a0\n"
-                "1: bset.b #7,(a0)\n"
-                "   bne.b 1b\n"
-                "   move.l (a0),d0\n"
-                "   moveq.l #-1,d1\n"
-                "   cmp.l d0,d1\n"
-                "   beq.b 2f\n"
-                "   addq.l #1,(a0)\n"
-                "   bclr.b #31,d0\n"
-                "2: bclr.b #7,(a0)\n"
-                "   move.l d0,%0\n"
-               : "=g"(res)
-               : "m"(lock)
-               : "a0", "d0", "d1", "cc", "memory");
-*/
-   return res;
+   do
+   {
+      if (_ATOMIC_SLOCK_WRITER == status)
+         return -1;                     /* held for writing */
+   }
+   while (!__atomic_compare_exchange_n(&lock->status, &status, status + 1, 1,
+                                       __ATOMIC_ACQUIRE, __ATOMIC_RELAXED));
+
+   return (int32)status;                /* readers before this one */
 }
 
 static inline int32 _atomic_slock_unlockread(struct _atomic_slock* lock)
 {
-   register int32 res;
-/*
-
-   asm volatile("   move.l %1,a0\n"
-                "1: bset.b #7,(a0)\n"
-                "   bne.b 1b\n"
-                "   move.l (a0),d0\n"
-                "   moveq.l #-1,d0\n"
-                "   cmp.l d0,d1\n"
-                "   beq.b 2f\n"
-                "   subq.l #1,(a0)\n"
-                "   bclr.b #31,d0\n"
-                "   bclr.b #7,(a0)\n"
-                "2: move.l d0,%0\n"
-               : "=g"(res)
-               : "m"(lock)
-               : "a0", "d0", "d1", "cc", "memory");
-*/
-   return res;
+   return (int32)__atomic_sub_fetch(&lock->status, 1, __ATOMIC_RELEASE);
 }
 
 #endif

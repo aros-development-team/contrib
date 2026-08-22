@@ -102,13 +102,13 @@ public:
    }
 };
 
-class index
+class nrgindex
 {
    uint16            num;     // index number
    uint32            loc;     // boundary: start
    uint32            cnt;     // and count
 
-   index()
+   nrgindex()
    {
       num = 0;
       loc = 0;
@@ -116,9 +116,9 @@ class index
    }
 public:
 
-   static index *newIndex(uint16 number, uint32 location)
+   static nrgindex *newIndex(uint16 number, uint32 location)
    {
-      index *i = new index();
+      nrgindex *i = new nrgindex();
 
       i->num = (number >> 4) * 10 + (number & 15);
       i->loc = location;
@@ -173,7 +173,7 @@ class track
    uint16            pregap;        // in sectors
    String            isrc;          // ISRC number
    int16             number;        // track number
-   VectorT<index*>   indices;       // indices
+   VectorT<nrgindex *>   indices;       // indices
 
    String            arranger;      // CDText
    String            composer;
@@ -311,12 +311,12 @@ public:
       isrc = s;
    }
 
-   void addIndex(index *i)
+   void addIndex(nrgindex *i)
    {
       indices << i;
    }
 
-   index *getIndex(int32 i)
+   nrgindex *getIndex(int32 i)
    {
       return indices[i];
    }
@@ -713,7 +713,7 @@ bool                 rNRGSession::buildTrackList(nrg_cuex *cue, EDtError &rc)
    for (int i=0;; i++)
    {
       track *t = 0;
-      index *x = 0;
+      nrgindex *x = 0;
 
       _d(Lvl_Info, "%s: CUEX: type=%02lx track=%02lx adrctl=%02lx res=%02lx sector=%08lx", (int)__PRETTY_FUNCTION__, cue[i].adr_ctl, cue[i].track, cue[i].index, cue[i].res, cue[i].sector);
 
@@ -754,7 +754,7 @@ bool                 rNRGSession::buildTrackList(nrg_cuex *cue, EDtError &rc)
          }
       }
 
-      x = index::newIndex(cue[i].index, cue[i].sector);
+      x = nrgindex::newIndex(cue[i].index, cue[i].sector);
       t->addIndex(x);
 
    }

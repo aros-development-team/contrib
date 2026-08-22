@@ -59,8 +59,11 @@ namespace GenNS
       virtual void            InsertAt(void* ApObject, unsigned long APos);
       virtual void            Rem(void* ApObject);
       virtual void            Rem(unsigned long AItem);
-      virtual void           *Get(unsigned long AItem);
-      virtual void*           operator [] (unsigned long AItem);
+      /* Not virtual: TList<T> redeclares these with a T return, which is not
+         a covariant override of void*.  Nothing else derives from EList, so
+         the typed versions simply hide these.  */
+      void                   *Get(unsigned long AItem);
+      void*                   operator [] (unsigned long AItem);
       virtual unsigned long   GetCount();
       virtual Node           *GetNode(unsigned long AItem);
       virtual MinList        *GetList();
@@ -114,12 +117,14 @@ namespace GenNS
          EList::Rem(AItem);
       }
 
-      virtual T               operator [] (unsigned long AItem)
+      /* Not virtual: a T* return does not covariantly override the void*
+         of EList, so these hide the base versions instead.  */
+      T                       operator [] (unsigned long AItem)
       {
          return (T)EList::operator [] (AItem);
       }
 
-      virtual T               Get(unsigned long AItem)
+      T                       Get(unsigned long AItem)
       {
          return (T)EList::operator [] (AItem);
       }

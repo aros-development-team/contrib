@@ -104,7 +104,10 @@ enum TriState
 #include <utility/tagitem.h>
 
 #include <cstdint>
-#include <array>
+#include <utility>
+/* Deliberately not <array>: it drags in libc++'s <atomic> and threading
+   support, which needs POSIX functions that -noposixc builds do not have.
+   A plain array serves this helper just as well.  */
 
 //! Safer, cross-platform tag array initializers
 
@@ -113,37 +116,31 @@ struct ArrayImpl
 {
     template <typename... Ts>
     constexpr ArrayImpl(Ts&&... vs)
-        : array_(siptrarray(std::forward<Ts>(vs)...))
+        : array_{ (SIPTR)std::forward<Ts>(vs)... }
     {}
 
     operator SIPTR() const
     {
-        return (SIPTR)array_.data();
+        return (SIPTR)array_;
     }
 
     operator TagItem*() const
     {
-        return (TagItem*)(char*)array_.data();
+        return (TagItem*)(char*)array_;
     }
 
     operator Msg() const
     {
-        return (Msg)(char*)array_.data();
+        return (Msg)(char*)array_;
     }
 
     operator APTR() const
     {
-        return (APTR)(char*)array_.data();
+        return (APTR)(char*)array_;
     }
 
 private:
-    std::array<SIPTR, N> array_;
-
-    template <typename... Ts>
-    static auto siptrarray(Ts&&... vs) -> std::array<SIPTR, N>
-    {
-        return std::array<SIPTR, N>{ (SIPTR)std::forward<Ts>(vs)... };
-    }
+    SIPTR array_[N];
 };
 
 //! Factory function – call this as ARRAY(...)
@@ -158,7 +155,7 @@ struct SizeArrayImpl
 {
     template <typename... Ts>
     SizeArrayImpl(Ts&&... vs)
-        : array_(makeArray(std::forward<Ts>(vs)...))
+        : array_{ (SIPTR)N, (SIPTR)std::forward<Ts>(vs)... }
     {}
 
     operator IPTR () {
@@ -179,24 +176,10 @@ struct SizeArrayImpl
     }
 
 private:
-    std::array<SIPTR, N + 1> array_;
-
-    template <typename... Ts>
-    static std::array<SIPTR, N + 1> makeArray(Ts&&... vs)
-    {
-        // Store size in first element, rest in order
-        return makeArrayImpl<0, Ts...>(std::forward<Ts>(vs)...);
-    }
-
-    template <size_t Index, typename... Ts>
-    static std::array<SIPTR, N + 1> makeArrayImpl(SIPTR value, Ts&&... rest)
-    {
-        std::array<SIPTR, N + 1> arr = {{N}};
-        SIPTR values[] = { (SIPTR)std::forward<Ts>(rest)... };
-        for (size_t i = 0; i < N; ++i)
-            arr[i + 1] = values[i];
-        return arr;
-    }
+    /* element 0 holds the count, the values follow.  The previous builder
+       dropped its first argument and then read one element past the end of
+       its temporary; initialising directly avoids both.  */
+    SIPTR array_[N + 1];
 };
 
 //! Factory function – call this as SIZEARRAY(...)

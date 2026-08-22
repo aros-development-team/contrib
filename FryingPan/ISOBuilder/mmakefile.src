@@ -43,4 +43,4 @@ USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nostdlib $(CXXFLAGS_NOSTDLIBXX) -L$(GENDI
 
 %build_prog mmake=contrib-fryingpan-isobuilder \
  progname="isobuilder.module" targetdir=$(DESTDIR) files= \
- cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit" usestartup=no
+ cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit arossupport" usestartup=no

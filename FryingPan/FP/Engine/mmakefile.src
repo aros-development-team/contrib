@@ -41,9 +41,13 @@ CXXFILES := \
 USER_INCLUDES := $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../../framework \
         $(CFLAGS_ISYSTEM) $(SRCDIR)/$(CURDIR)/../..  $(CFLAGS_ISYSTEM_END) -I $(GENDIR)/$(CURDIR)/../../framework/include
 USER_CXXFLAGS += $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) $(CFLAGS_ALIGNED_NEW) -noposixc
-USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nostdlib $(CXXFLAGS_NOSTDLIBXX) -L$(GENDIR)/$(CURDIR)/../../framework  -Wl,--start-group -lGeneric -lLibrary -lC -Wl,--end-group
+# -nodefaultlibs (not -nostdlib): FryingPan supplies its own -lC/-lGeneric/
+# -lLibrary and must not pull in the default ones; startup files are already
+# excluded by usestartup=no.  Both flags also drop the toolchain's library
+# search paths, so -L$(AROS_LIB) is needed for uselibs= to resolve.
+USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nodefaultlibs $(CXXFLAGS_NOSTDLIBXX) -L$(AROS_LIB) -L$(GENDIR)/$(CURDIR)/../../framework  -Wl,--start-group -lGeneric -lLibrary -lC -Wl,--end-group
 #USER_CPPFLAGS := -DDEBUG
 
 %build_prog mmake=contrib-fryingpan-fp-engine \
  progname="fryingpan.engine" targetdir=$(DESTDIR) files= \
- cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit" usestartup=no
+ cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit arossupport" usestartup=no

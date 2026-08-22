@@ -59,7 +59,7 @@ static struct Resident GM_UNIQUENAME(ROMTag) __attribute__((used)) =            
 {                                                                            \
   RTC_MATCHWORD,                                                            \
   &GM_UNIQUENAME(ROMTag),                                                   \
-  (APTR)(IPTR)&GM_UNIQUENAME(ROMTag)+1,                                     \
+  (APTR)(&GM_UNIQUENAME(ROMTag) + 1),  /* rt_EndSkip: past the ROMTag */    \
   RESIDENTFLAGS,                                                            \
   version,                                                                  \
   NT_LIBRARY,                                                               \

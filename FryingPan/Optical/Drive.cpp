@@ -32,10 +32,6 @@
 #include "Humming.h"
 #include <libclass/utility.h>
  
- #ifndef COMPILER_BARRIER
-#  define COMPILER_BARRIER() __asm__ __volatile__ ("" ::: "memory")
-#endif
- 
 DriveSpool *DriveSpool::pInstance = 0;
  
 Drive  *Drive::OpenDrive(Drive *& pChain, char* pDevice, int lUnit)
@@ -66,7 +62,6 @@ Drive::Drive(char *drv, int unit)
    _ND("Drive");
 
    next_drive  = 0;
-   COMPILER_BARRIER();
    clients     = 0;
    current_disc.Assign(0);
    bLockInterOperations = false;
@@ -130,26 +125,16 @@ void Drive::RemClient(DriveClient* el)
 bool Drive::ProcInit()
 {
    driveio        =  0;
-   COMPILER_BARRIER();
    mode_io        =  0; // if anything fails
-   COMPILER_BARRIER();
-   inquiry        =  0;
-   COMPILER_BARRIER();
    tur            =  0; // we don't dispose illegal pointers.
-   COMPILER_BARRIER();
    features       =  0;
-   COMPILER_BARRIER();
-   discinfo       =  0;
-   COMPILER_BARRIER();
-   hwconfig       =  0;
-   COMPILER_BARRIER();
+   inquiry        =  0;
    pc             =  0;
-   COMPILER_BARRIER();
    pw             =  0;
-   
-   selected_read_speed  = 0xFFFF;
-   COMPILER_BARRIER();
-   selected_write_speed = 0xFFFF;
+   discinfo       =  0;
+   hwconfig       =  0;
+   selected_read_speed  = 0xffff;
+   selected_write_speed = 0xffff;
    current_disc.Assign(0);
 
    driveio = new DriveIO(DEBUG_ENGINE); 

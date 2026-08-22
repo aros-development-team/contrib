@@ -393,7 +393,7 @@ bool XMLDocument::ReadXML(const char *sName)
    pExpat->XML_SetUserData(pParser, this);
    pExpat->XML_SetElementHandler(pParser, &XMLDocument::fXMLStartHandler, &XMLDocument::fXMLEndHandler);
    pExpat->XML_SetCharacterDataHandler(pParser, &XMLDocument::fXMLContentHandler);
-   
+
    do
    {
       len = 0;
@@ -410,7 +410,7 @@ bool XMLDocument::ReadXML(const char *sName)
       }
    }
    while (0 != len);
-   
+
    DOS->Close(fh);
    pExpat->XML_ParserFree(pParser);
    pParser = 0;

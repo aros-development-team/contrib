@@ -24,57 +24,72 @@
 
 void free(void* pMem)
 {
-   void* pPool;
-   long  lSize;
+    struct FPMemPrivate *priv;
+    void* pPool;
+    size_t lSize;    /* use size_t to match stored allocsize */
 
-   if (NULL == pMem)
-      return;
+    if (NULL == pMem)
+        return;
 
-#ifndef DEBUG
-   pMem  = &((void**)pMem)[-2];
-   pPool = ((void**)pMem)[0];
-   lSize = ((IPTR *)pMem)[1];
+    ADB(kprintf("[fryingpan] %s: allocation @ 0x%p\n", __func__, pMem);)
+
+#ifndef MEMDEBUG
+    /* subtract bytes from the byte-address, then cast to the struct pointer */
+    priv = (struct FPMemPrivate *)((IPTR)pMem - (IPTR)sizeof(struct FPMemPrivate));
+    pPool = priv->allocpool;
+    lSize = priv->allocsize;
+    pMem  = priv->allocraw;
+
+    ADB(kprintf("[fryingpan] %s: pool @ 0x%p, raw = 0x%p (%u bytes)\n", __func__, pPool, pMem, lSize);)
+
 #else
-   pMem  = &((void**)pMem)[-(2+(128>>3))];
-   pPool = ((void**)pMem)[0];
-   lSize = ((IPTR *)pMem)[1];
+    IPTR *pMem1 = (IPTR *)pMem;
+    /* indices computed from MEMDEBUG_CANARY_SLOTS to avoid magic numbers */
+    const int META_POOL_INDEX = -(MEMDEBUG_CANARY_SLOTS + 1);   /* -17 */
+    const int META_SIZE_INDEX = -(MEMDEBUG_CANARY_SLOTS + 2);   /* -18 */
+    const int META_RAW_INDEX  = -(MEMDEBUG_CANARY_SLOTS + 3);   /* -19 */
 
-   {
-      IPTR *pMem1 = &((IPTR *)pMem)[2+(128>>3)];
-      IPTR *pMem2 = &((IPTR *)pMem)[lSize>>2];
-      uint32 i;
+    pPool = ((void**)pMem)[META_POOL_INDEX];
+    lSize = ((IPTR *)pMem)[META_SIZE_INDEX];
+    pMem  = (void*)((IPTR *)pMem)[META_RAW_INDEX];
 
-      for (i=1; i<=(128>>3); i++)
-      {
-         if ((pMem1[-i] != 0xC0DEDBAD) ||
-             (pMem2[-i] != 0xC0DEDBAD))
-         {
-            _error("Freeing corrupted memory block!\nSize: %ld bytes\nMEMORY WILL NOT BE FREED!\nPLEASE REPORT!", lSize-128-8);
-            return;
-         }
-      }
-   }
+    /* verify canaries */
+    {
+        IPTR *pMem2 = (IPTR *)((IPTR)pMem + (IPTR)lSize);
+        uint32 i;
+
+        for (i = 1; i <= (uint32)MEMDEBUG_CANARY_SLOTS; ++i)
+        {
+            if ((pMem1[-(int)i] != (IPTR)0xC0DEDBAD) ||
+                (pMem2[-(int)i] != (IPTR)0xC0DEDBAD))
+            {
+                _error("Freeing corrupted memory block!\nSize: %zu bytes\nMEMORY WILL NOT BE FREED!\nPLEASE REPORT!", lSize - (MEMDEBUG_CANARY_SLOTS * sizeof(IPTR)) - (IPTR)sizeof(void *));
+                return;
+            }
+        }
+    }
 #endif
 
-
-   if (0 != pPool)
-   {
+    /* Now free using either the block's pool or the internal pool */
+    if (NULL != pPool) {
 #ifndef __amigaos4__
-      FreePooled(pPool, pMem, lSize);
+        ObtainSemaphore(&__InternalSemaphore);
+        FreePooled(pPool, pMem, (IPTR)lSize);
+        ReleaseSemaphore(&__InternalSemaphore);
 #else
-      IExec->FreePooled(pPool, pMem, lSize);
+        IExec->ObtainSemaphore(&__InternalSemaphore);
+        IExec->FreePooled(pPool, pMem, (IPTR)lSize);
+        IExec->ReleaseSemaphore(&__InternalSemaphore);
 #endif
-   }
-   else
-   {
+    } else {
 #ifndef __amigaos4__
-      ObtainSemaphore(&__InternalSemaphore);
-      FreePooled(__InternalMemPool, pMem, lSize);
-      ReleaseSemaphore(&__InternalSemaphore);
+        ObtainSemaphore(&__InternalSemaphore);
+        FreePooled(__InternalMemPool, pMem, (IPTR)lSize);
+        ReleaseSemaphore(&__InternalSemaphore);
 #else
-      IExec->ObtainSemaphore(&__InternalSemaphore);
-      IExec->FreePooled(__InternalMemPool, pMem, lSize);
-      IExec->ReleaseSemaphore(&__InternalSemaphore);
+        IExec->ObtainSemaphore(&__InternalSemaphore);
+        IExec->FreePooled(__InternalMemPool, pMem, (IPTR)lSize);
+        IExec->ReleaseSemaphore(&__InternalSemaphore);
 #endif
-   }
+    }
 }

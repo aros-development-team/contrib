@@ -20,20 +20,33 @@
 #include "LibC.h"
 
 void operator delete(void* mem) {
-   Allocator** d = (Allocator**)mem;
-   --d;
-   (*d)->free(*d, d);
+    void *allocadr;
+    ADB(kprintf("[fryingpan] %s(0x%p)\n", __func__, mem));
+
+    Allocator** d = reinterpret_cast<Allocator**>(mem);
+    --d;
+#if defined(AROS_WORSTALIGN)
+    void** tmpmem = reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(mem) - sizeof(void *));
+    allocadr = tmpmem[-1];
+#else
+    allocadr = reinterpret_cast<void*>(d);
+#endif
+    ADB(kprintf("[fryingpan] %s: allocator @ 0x%p, freeing 0x%p\n", __func__, d, allocadr));
+    (*d)->free(*d, allocadr);
 }
 
 void operator delete[](void* mem) {
-   operator delete(mem);
+    ADB(kprintf("[fryingpan] %s(0x%p)\n", __func__, mem));
+    operator delete(mem);
 }
 
 void operator delete(void* mem, std::size_t sz) {
-   operator delete(mem);
+    ADB(kprintf("[fryingpan] %s(0x%p, %ubytes)\n", __func__, mem, sz));
+    operator delete(mem);
 }
 
-void operator delete(void* ptr, std::align_val_t) {
+void operator delete(void* ptr, std::align_val_t align) {
+    ADB(kprintf("[fryingpan] %s(0x%p, %u)\n", __func__, ptr, align));
     if (ptr) {
         void* raw = reinterpret_cast<void**>(ptr)[-1];
         Allocator* a = reinterpret_cast<Allocator**>(raw)[0]; // allocator is stored at raw
@@ -42,5 +55,6 @@ void operator delete(void* ptr, std::align_val_t) {
 }
 
 void operator delete[](void* ptr, std::align_val_t align) {
+    ADB(kprintf("[fryingpan] %s(0x%p, %u)\n", __func__, ptr, align));
     operator delete(ptr, align);
 }

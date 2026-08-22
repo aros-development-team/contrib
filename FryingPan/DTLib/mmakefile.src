@@ -44,4 +44,4 @@ USER_CXXFLAGS += $(CFLAGS_NO_RTTI) $(CFLAGS_NO_EXCEPTIONS) -noposixc
 USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nostdlib $(CXXFLAGS_NOSTDLIBXX) -L$(GENDIR)/$(CURDIR)/../framework -Wl,--start-group -lGeneric -lLibrary -lC -Wl,--end-group
 
 %build_prog mmake=contrib-fryingpan-dtlib progname="dtlibio.module" \
- targetdir=$(DESTDIR) files= cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit" usestartup=no
+ targetdir=$(DESTDIR) files= cxxfiles="$(CXXFILES)" uselibs="amiga libinit autoinit arossupport" usestartup=no

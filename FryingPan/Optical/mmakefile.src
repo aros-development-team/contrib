@@ -60,4 +60,4 @@ USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nostdlib $(CXXFLAGS_NOSTDLIBXX) -L$(GENDI
 
 %build_prog mmake=contrib-fryingpan-optical progname="Optical" \
  targetdir=$(DESTDIR) files= cxxfiles="$(CXXFILES)" \
- uselibs="amiga libinit autoinit" usestartup=no
+ uselibs="amiga libinit autoinit arossupport" usestartup=no

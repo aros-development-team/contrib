@@ -133,7 +133,7 @@ public:
    }
 };
 
-class index
+class cueindex
 {
    uint16            num;     // index number
    uint32            loc;     // boundary: start
@@ -145,7 +145,7 @@ class index
    uint32            currpos;
 
 
-   index()
+   cueindex()
    {
       num = 0;
       loc = 0;
@@ -154,9 +154,9 @@ class index
    }
 public:
 
-   static index *newIndex(uint16 number, uint32 location)
+   static cueindex *newIndex(uint16 number, uint32 location)
    {
-      index *i = new index();
+      cueindex *i = new cueindex();
 
       i->num = number;
       i->loc = location;
@@ -269,7 +269,7 @@ class track
    uint16            postgap;       // in sectors
    String            isrc;          // ISRC number
    int16             number;        // track number
-   VectorT<index*>   indices;       // indices
+   VectorT<cueindex *>   indices;       // indices
 
    int16             curridx;
 
@@ -402,12 +402,12 @@ public:
       isrc = s;
    }
 
-   void addIndex(index *i)
+   void addIndex(cueindex *i)
    {
       indices << i;
    }
 
-   index *getIndex(int32 i)
+   cueindex *getIndex(int32 i)
    {
       return indices[i];
    }
@@ -587,7 +587,7 @@ bool                 rCUESession::analyse(const char* name, EDtError &rc)
    bool              res = true;
    String            fileName;
    track            *nt = 0;           // new track
-   index            *idx = 0;
+   cueindex *idx = 0;
 
    rc = DT_UnableToOpenFile;
 
@@ -672,7 +672,7 @@ bool                 rCUESession::analyse(const char* name, EDtError &rc)
             else
                tn = v[1].ToLong();
             
-           idx = index::newIndex(tn, pos);
+           idx = cueindex::newIndex(tn, pos);
             nt->addIndex(idx);
          }
          else if (str == "FILE")
@@ -883,7 +883,7 @@ bool                 rCUESession::analyse(const char* name, EDtError &rc)
          for (int32 j=0; j<t->getIndexCount(); j++)
          {
             _d(Lvl_Info, "%s: Checking index %ld", (int)__PRETTY_FUNCTION__, j+1);
-            index *x = t->getIndex(j);
+            cueindex *x = t->getIndex(j);
 
             if ((x->getNumber() == 0) && (t->getPreGap() != 0))
             {

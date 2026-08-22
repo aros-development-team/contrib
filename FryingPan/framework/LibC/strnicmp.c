@@ -30,3 +30,14 @@ int strnicmp(const char* str1, const char* str2, size_t n)
    return __InternalUtilityIFace->Strnicmp((uint8*)str1, (uint8*)str2, n); 
 #endif
 }
+
+/* See the strcasecmp() note in stricmp.c. */
+int strncasecmp(const char* str1, const char* str2, size_t n)
+{
+#ifndef __AMIGAOS4__
+   register struct Library *UtilityBase = __InternalUtilityBase;
+   return Strnicmp(str1, str2, n);
+#else
+   return __InternalUtilityIFace->Strnicmp((uint8*)str1, (uint8*)str2, n);
+#endif
+}

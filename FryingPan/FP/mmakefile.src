@@ -28,4 +28,4 @@ USER_LDFLAGS := $(TARGET_CXX_LDFLAGS) -nostdlib $(CXXFLAGS_NOSTDLIBXX) -L$(GENDI
 #USER_CPPFLAGS := -DDEBUG
 
 %build_prog mmake=contrib-fryingpan-fp progname="FryingPan" \
- targetdir=$(DESTDIR) files="" cxxfiles="$(FILES)" uselibs="amiga" usestartup=no
+ targetdir=$(DESTDIR) files="" cxxfiles="$(FILES)" uselibs="amiga arossupport" usestartup=no

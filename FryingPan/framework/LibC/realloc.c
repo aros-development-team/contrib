@@ -28,14 +28,17 @@ void *realloc(void* mem, size_t len)
    // 8 extra bytes are included for memory block header (pool & len)
 
    if (0 == len)
-      return 0;
+      return NULL;
+
+   ADB(kprintf("[fryingpan] %s(0x%p, %u)\n", __func__, mem, len);)
 
    if (NULL == mem)
       return newmem;
 
 #ifndef DEBUG
-   if (len > oldmem[-1]-8)
-      len = oldmem[-1]-8;
+   struct FPMemPrivate *priv = (struct FPMemPrivate *)((IPTR)oldmem - (IPTR)sizeof(struct FPMemPrivate));
+   if (len > (priv->allocwanted))
+      len = (priv->allocwanted);
 #else
    if (len > oldmem[-(1+(128>>3))]-8)
       len = oldmem[-(1+(128>>3))]-8;
@@ -47,6 +50,7 @@ void *realloc(void* mem, size_t len)
    IExec->CopyMem(oldmem, newmem, len);
 #endif
    free(oldmem);
+
    return newmem;
 }
 

@@ -643,6 +643,27 @@ struct XML_ParserStruct {
 #define paramEntityParsing (parser->m_paramEntityParsing)
 #endif /* XML_DTD */
 
+static void *mymalloc(size_t allocsize) {
+    void *allocaddr;
+    ADB(kprintf("[fryingpan:expat] %s(%u)\n", __func__, allocsize);)
+    allocaddr = malloc(allocsize);
+    ADB(kprintf("[fryingpan:expat] %s: returning 0x%p\n", __func__, allocaddr);)
+    return allocaddr;
+}
+
+static void *myrealloc(void *addr, size_t len) {
+    void *allocaddr;
+    ADB(kprintf("[fryingpan:expat] %s(0x%p, len)\n", __func__, addr);)
+    allocaddr = realloc(addr, len);
+    ADB(kprintf("[fryingpan:expat] %s: returning 0x%p\n", __func__, allocaddr);)
+    return allocaddr;
+}
+
+static void myfree(void *addr) {
+    ADB(kprintf("[fryingpan:expat] %s(0x%p)\n", __func__, addr);)
+    free(addr);
+}
+
 XML_Parser XMLCALL
 XML_ParserCreate(const XML_Char *encodingName)
 {
@@ -706,9 +727,9 @@ parserCreate(const XML_Char *encodingName,
     parser = (XML_Parser)malloc(sizeof(struct XML_ParserStruct));
     if (parser != 0) {
       mtemp = (XML_Memory_Handling_Suite *)&(parser->m_mem);
-      mtemp->malloc_fcn = malloc;
-      mtemp->realloc_fcn = realloc;
-      mtemp->free_fcn = free;
+      mtemp->malloc_fcn = mymalloc;
+      mtemp->realloc_fcn = myrealloc;
+      mtemp->free_fcn = myfree;
     }
   }
 

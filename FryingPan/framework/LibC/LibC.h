@@ -42,9 +42,25 @@ extern struct Library              *__InternalIntuitionBase;
 extern struct Library              *__InternalUtilityBase;
 extern struct WBStartup            *__WBStartup;
 extern uint32                       StartupFlags;
+
+#ifdef FP_AROSDEBUG
+void kprintf(const char *formatString,...);
+#define ADB(x) x
+#else
+void kprintf(const char *formatString,...);
+#define ADB(x)
+#endif
+
 #ifdef __cplusplus
 }
 #endif
+
+struct FPMemPrivate {
+   APTR allocpool;
+   ULONG allocwanted;
+   ULONG allocsize;
+   APTR allocraw;
+};
 
 enum StartupFlag
 {
@@ -59,7 +75,12 @@ enum StartupFlag
 #endif
 
 #ifdef __cplusplus
-#if __cplusplus < 201703L
+/* <new> is where the standard library declares align_val_t when it has one:
+   libstdc++ does so whenever aligned new is enabled (which -faligned-new does
+   below C++17 too), libc++ for any non-C++03 mode.  Only declare it here when
+   neither applies.  */
+#include <new>
+#if !defined(__cpp_aligned_new) && !defined(_LIBCPP_VERSION)
 namespace std {
     enum class align_val_t : size_t {};
 }
@@ -115,8 +136,10 @@ extern "C"
    extern char*   strncat(char* dst, const char* src, size_t len);
    extern int     strcmp(const char* str1, const char* str2);
    extern int     stricmp(const char* str1, const char* str2);
+   extern int     strcasecmp(const char* str1, const char* str2);
    extern int     strncmp(const char* str1, const char* str2, size_t len);
    extern int     strnicmp(const char* str1, const char* str2, size_t len);
+   extern int     strncasecmp(const char* str1, const char* str2, size_t n);
    extern char*   strchr(const char* str, int chr);
    extern size_t  strlen(const char* str);
 

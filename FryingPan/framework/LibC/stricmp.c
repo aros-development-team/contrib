@@ -32,3 +32,19 @@ int stricmp(const char* str1, const char* str2)
 #endif
 }
 
+/*
+ * LLVM canonicalises stricmp() calls into strcasecmp(), and the default C
+ * library is not linked in (-nodefaultlibs), so provide the POSIX name here
+ * as well.  It calls Stricmp() directly rather than delegating to stricmp():
+ * that same canonicalisation would turn a delegating call into endless
+ * recursion.
+ */
+int strcasecmp(const char* str1, const char* str2)
+{
+#ifndef __amigaos4__
+   register struct Library *UtilityBase = __InternalUtilityBase;
+   return Stricmp(str1, str2);
+#else
+   return __InternalUtilityIFace->Stricmp((uint8*)str1, (uint8*)str2);
+#endif
+}
