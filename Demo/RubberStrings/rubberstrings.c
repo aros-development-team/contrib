@@ -252,7 +252,7 @@ static void initstuff(void)
     	ball[i - 1].dia = 2*W;
 	ball[i - 1].rand = (BYTE)(20.0+20.0*sin(i*pi/balls*13));
 	ball[i - 1].p = malloc(SQR(ball[i - 1].dia));
-	if (ball[i].p) cleanup("out of memory!");
+	if (!ball[i - 1].p) cleanup("out of memory!");
 	Calc_Ball(ball[i-1].dia, ball[i-1].dia, ball[i-1].p);
     }
 }
