@@ -8,11 +8,11 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 DESTDIR 	:= $(AROS_CONTRIB)/Demos/InfPlane
 
-ifneq (,$(findstring i386,$(AROS_TARGET_CPU)))
-INFPLANE_ASM += refresh-i386
-else
+# The i386 asm (refresh-i386.S) was written for a 16-bit framebuffer
+# (row stride 2*W, 16-bit pixel writes) but the demo uses an 8-bit
+# chunky buffer (W*(H+1) bytes).  That overflows the buffer on 32-bit,
+# so use the correct C function (refresh1) on all architectures.
 USER_CFLAGS += -DC_FUNCTION
-endif
 ifneq (,$(findstring x86_64,$(AROS_TARGET_CPU)))
 OPTIMIZATION_CFLAGS := -O3
 TARGET_ISA_CFLAGS += -msse
@@ -20,7 +20,7 @@ endif
 
 %build_prog mmake=demo-infplane-binary \
     progname=InfPlane targetdir=$(DESTDIR) \
-    files=infplane asmfiles=$(INFPLANE_ASM)
+    files=infplane
 
 DATAFILES	:= pattern.data pattern.pal
 

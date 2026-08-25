@@ -144,10 +144,42 @@ static void Calc_Ball(WORD hohe, WORD breite, APTR po)
 static void Do_Ball(WORD x, WORD y, WORD h, WORD b, APTR po)
 {
     WORD loopy, loopx;
-    UWORD destoffset = (y * W) + x;
     UWORD col;
+    LONG srcoff = 0;
+    WORD bsrc = b;
     UBYTE *src = (UBYTE *)po;
-    
+    UWORD destoffset;
+
+    /* Clip the ball to the visible area of the chunkybuffer.  Without this
+     * the 16-bit destoffset wraps and overflows past the buffer into the
+     * ball[] array and the library base variables when a ball moves off the
+     * bottom/right edge. */
+    if (y >= H || x >= W || y + h <= 0 || x + b <= 0)
+        return;
+
+    if (y < 0)
+    {
+        srcoff += (LONG)(-y) * bsrc;
+        h += y;
+        y = 0;
+    }
+    if (x < 0)
+    {
+        srcoff += -x;
+        b += x;
+        x = 0;
+    }
+    if (h <= 0 || b <= 0)
+        return;
+
+    if (y + h > H)
+        h = H - y;
+    if (x + b > W)
+        b = W - x;
+
+    src += srcoff;
+    destoffset = (UWORD)(y * W + x);
+
     for(loopy = 0; loopy < h; loopy++)
     {
     	for(loopx = 0; loopx < b; loopx++)
@@ -157,6 +189,7 @@ static void Do_Ball(WORD x, WORD y, WORD h, WORD b, APTR po)
 	    if (col > 255) col = 255;
 	    chunkybuffer[destoffset++] = col;
 	}
+	src += (bsrc - b);
 	destoffset += (W - b);
     }
 }
@@ -250,7 +283,7 @@ static void initstuff(void)
     	ball[i - 1].dia = 30 + abs(5 * (j-1));
 	ball[i - 1].rand = (BYTE)(20.0+20.0*sin(i*pi/balls*13));
 	ball[i - 1].p = malloc(SQR(ball[i - 1].dia));
-	if (ball[i].p) cleanup("out of memory!");
+	if (!ball[i - 1].p) cleanup("out of memory!");
 	Calc_Ball(ball[i-1].dia, ball[i-1].dia, ball[i-1].p);
     }
 }
