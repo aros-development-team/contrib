@@ -39,11 +39,11 @@ struct Stats
 {
   int  game_score;    /* current score */
   int  game_turns;    /* no stack turns */
-  long all_score;     /* score of all games */
+  LONG all_score;     /* score of all games */
   int  all_won;       /* no games won */
   int  all_lost;      /* no games lost */
-  long game_seconds;  /* time since game start */
-  long all_seconds;   /* time of all games */
+  LONG game_seconds;  /* time since game start */
+  LONG all_seconds;   /* time of all games */
   BOOL finished;      /* game finished */
 };
 

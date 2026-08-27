@@ -243,14 +243,12 @@ static struct Pile *PileNew(int num)
 {
   struct Pile *p;
 
-  if((p = (struct Pile *) AllocVec(sizeof(struct Pile)*num, MEMF_PUBLIC)))
+  if((p = (struct Pile *) AllocVec(sizeof(struct Pile)*num, MEMF_PUBLIC | MEMF_CLEAR)))
   {
     int i;
     for(i = 0; i < num; ++i)
     {
       p[i].maxSize = 60;
-      p[i].back = 0;
-      p[i].cardSize = 0;
     }
   }
   return p;
@@ -665,15 +663,12 @@ static int getRank(int nr, int *suit)
 {
   int r = 0;
 
-#if (1)
   *suit = 0;
-#else
+
   if (nr >= 2  && nr <= 14) {r = nr;      *suit = 0;}
-  else
-#endif
-      if (nr >= 15 && nr <= 27) {r = nr - 13; *suit = 1;}
-      else if (nr >= 28 && nr <= 40) {r = nr - 26; *suit = 2;}
-      else if (nr >= 41 && nr <= 53) {r = nr - 39; *suit = 3;}
+  else if (nr >= 15 && nr <= 27) {r = nr - 13; *suit = 1;}
+  else if (nr >= 28 && nr <= 40) {r = nr - 26; *suit = 2;}
+  else if (nr >= 41 && nr <= 53) {r = nr - 39; *suit = 3;}
 
   return r;
 }
@@ -775,8 +770,10 @@ static void drawCard(struct Cardgame_Data *data, struct RastPort *rp, int nr, in
       struct TextExtent te;
 
       rank = getRank(nr, &suit);
-      name[1] = name[2] = 0;
-      switch(rank)
+      name[0] = name[1] = name[2] = 0;
+      if(!rank)
+        name[0] = '?';
+      else switch(rank)
       {
         case  2: name[0] = '2';  break;
         case  3: name[0] = '3';  break;
@@ -1364,8 +1361,7 @@ static void ghostMove(struct Cardgame_Data *data, int x, int y)
     }
 
     /* redraw card */
-    ClipBlit(data->rp, data->left + data->ghostX, data->top + data->ghostY,
-             data->rp, data->left + x, data->top + y, data->ghostW, data->ghostH, 0xC0);
+    PileDraw(data->dragpile, data->rp, data->left + x, data->top + y);
 
     /* overwrite remaining parts of card with buffer */
     if(lap)
@@ -1931,17 +1927,17 @@ static IPTR _New(struct IClass *cl, Object *obj, struct opSet* msg)
 
   tmp = GetTagData(MUIA_Cardgame_RasterX, 0, msg->ops_AttrList);
   if(tmp)
-    data->rasterpartx = tmp;
+    data->rasterpartx = (LONG)tmp;
   else
     data->rasterpartx = 7;
 
   tmp = GetTagData(MUIA_Cardgame_RasterY, 0, msg->ops_AttrList);
   if(tmp)
-    data->rasterparty = tmp;
+    data->rasterparty = (LONG)tmp;
   else
     data->rasterparty = 7;
 
-  data->norekoback = GetTagData(MUIA_Cardgame_NoREKOBack, 0, msg->ops_AttrList);
+  data->norekoback = (BOOL)GetTagData(MUIA_Cardgame_NoREKOBack, 0, msg->ops_AttrList);
   data->animspeed = (int)GetTagData(MUIA_Cardgame_MoveSpeed, 0, msg->ops_AttrList);
 
   return (IPTR)obj;
@@ -2103,15 +2099,15 @@ static IPTR _Set(struct IClass* cl, Object* obj, struct opSet* msg)
       redraw = TRUE;
       break;
     case MUIA_Cardgame_RasterX:
-      data->rasterpartx = tag->ti_Data;
+      data->rasterpartx = (LONG)tag->ti_Data;
       redraw = TRUE;
       break;
     case MUIA_Cardgame_RasterY:
-      data->rasterparty = tag->ti_Data;
+      data->rasterparty = (LONG)tag->ti_Data;
       redraw = TRUE;
       break;
     case MUIA_Cardgame_NoREKOBack:
-      data->norekoback = tag->ti_Data;
+      data->norekoback = (BOOL)tag->ti_Data;
       redrawback = TRUE;
       break;
     }
