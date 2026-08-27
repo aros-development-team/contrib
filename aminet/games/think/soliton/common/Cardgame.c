@@ -1361,8 +1361,7 @@ static void ghostMove(struct Cardgame_Data *data, int x, int y)
     }
 
     /* redraw card */
-    ClipBlit(data->rp, data->left + data->ghostX, data->top + data->ghostY,
-             data->rp, data->left + x, data->top + y, data->ghostW, data->ghostH, 0xC0);
+    PileDraw(data->dragpile, data->rp, data->left + x, data->top + y);
 
     /* overwrite remaining parts of card with buffer */
     if(lap)
