@@ -29,12 +29,15 @@ else
 OPENSSL_TARGET := aros-$(AROS_TARGET_CPU)-buildsys
 endif
 
-OPENSSL_OPTIONS:=no-threads no-ssl3 no-asm no-shared
+# The test suite statically links a copy of libcrypto into every test
+# binary, which is far too large to ship - drop "no-tests" and add
+# contrib-openssl-installtests below to build them again.
+OPENSSL_OPTIONS:=no-threads no-ssl3 no-asm no-shared no-tests
 ifneq ($(AROS_TARGET_CPU),x86_64)
 OPENSSL_OPTIONS+=no-sse2
 endif
 
-#MM- contrib-openssl : contrib-openssl-install contrib-openssl-installtests
+#MM- contrib-openssl : contrib-openssl-install
 #MM contrib-openssl-setup : contrib-openssl-fetch 
 #MM contrib-openssl-configure : contrib-openssl-setup 
 #MM contrib-openssl-build : contrib-openssl-configure 
