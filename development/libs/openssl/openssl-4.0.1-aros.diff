@@ -8,7 +8,7 @@
 +        cflags           => add("-DNO_FORK -DOPENSSL_NO_SECURE_MEMORY -D_XOPEN_SOURCE=600 -D__BSD_VISIBLE=1"),
 +        ex_libs          => "-lmiami -lnet",
 +        perlasm_scheme   => "elf",
-+        thread_scheme    => "(unknown)",
++        thread_scheme    => "pthreads",
 +        perl_platform    => 'Unix',
 +    },
 +    "aros-buildsys" => {
