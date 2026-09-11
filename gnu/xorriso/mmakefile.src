@@ -1,0 +1,42 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-gnu : contrib-gnu-xorriso
+#MM- contrib-gnu-xorriso : development-xorriso
+#MM- development-xorriso : workbench-libs-z contrib-libiconv
+
+XORRISO_VERSION := 1.5.8
+
+#
+# libburn has no MMC transport for AROS, so libburn/os.h falls through to
+# its dummy adapter. That confines xorriso to ISO image files rather than
+# optical drives, which is what it is wanted for here - ask for it
+# explicitly rather than relying on the fallback.
+#
+XORRISO_CFLAGS := $(OPTIMIZATION_CFLAGS) -DLibburn_use_sg_dummY
+
+#
+# libisofs needs iconv() for filename charset conversion. AROS keeps
+# libiconv in the contrib SDK rather than the main developer tree,
+# because its presence there breaks the native gnu toolchain.
+#
+USER_CPPFLAGS := -I$(AROS_CONTRIB_INCLUDES)
+USER_LDFLAGS := -L$(AROS_CONTRIB_LIB)
+
+XORRISO_OPTIONS := --disable-shared
+# Cross building otherwise installs the binaries under a
+# <target>- prefix, which leaves xorriso's own symlinks dangling.
+XORRISO_OPTIONS += --program-prefix=
+# No line editing library on AROS.
+XORRISO_OPTIONS += --disable-libreadline --disable-libedit
+# No ACLs, extended attributes, chattr(1) flags or XFS project ids.
+XORRISO_OPTIONS += --disable-libacl --disable-xattr
+XORRISO_OPTIONS += --disable-lfa-flags --disable-projid
+# Both of these fork() a helper and talk to it over a pipe.
+XORRISO_OPTIONS += --disable-external-filters --disable-launch-frontend
+XORRISO_OPTIONS += --disable-libcdio
+
+%fetch_and_build_gnu_development package=xorriso version=$(XORRISO_VERSION) patch=yes \
+    suffixes="tar.gz" extraoptions="$(XORRISO_OPTIONS)" extracflags="$(XORRISO_CFLAGS)"

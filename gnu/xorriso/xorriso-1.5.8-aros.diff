@@ -1,0 +1,118 @@
+diff -ruN xorriso-1.5.8/libburn/cleanup.c xorriso-1.5.8.aros/libburn/cleanup.c
+--- xorriso-1.5.8/libburn/cleanup.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/libburn/cleanup.c	2026-09-11 14:35:26.000000000 +0100
+@@ -107,7 +107,10 @@
+    return(0);
+  }
+  cleanup_exiting= 1;
++#ifndef __AROS__
++  /* AROS has no alarm(), so there is none pending to cancel. */
+  alarm(0);
++#endif
+  if(!cleanup_perform_app_handler_first)
+    if(cleanup_app_handler!=NULL) {
+      ret= (*cleanup_app_handler)(cleanup_app_handle,signum,0); 
+diff -ruN xorriso-1.5.8/libburn/libdax_sigmgr.c xorriso-1.5.8.aros/libburn/libdax_sigmgr.c
+--- xorriso-1.5.8/libburn/libdax_sigmgr.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/libburn/libdax_sigmgr.c	2026-09-11 14:35:26.000000000 +0100
+@@ -116,7 +116,10 @@
+ /*
+  fprintf(stderr,"libdax_sigmgr: ABORT : %s\n", o->msg);
+ */
++#ifndef __AROS__
++  /* AROS has no alarm(), so there is none pending to cancel. */
+  alarm(0);
++#endif
+  ret= libdax_api_handle_abort(o->api_chain, o->msg, 0);
+  if(ret == -2)
+    return;
+diff -ruN xorriso-1.5.8/libisofs/filters/external.c xorriso-1.5.8.aros/libisofs/filters/external.c
+--- xorriso-1.5.8/libisofs/filters/external.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/libisofs/filters/external.c	2026-09-11 14:35:26.000000000 +0100
+@@ -172,6 +172,11 @@
+ static
+ int extf_stream_open_flag(IsoStream *stream, int flag)
+ {
++#ifdef __AROS__
++    /* AROS has no fork(): an external filter process cannot be run.
++       Report it the same way as a failed fork() below. */
++    return ISO_DATA_SOURCE_FATAL;
++#else
+     ExternalFilterStreamData *data;
+     ExternalFilterRuntime *running = NULL;
+     pid_t child_pid;
+@@ -319,6 +324,7 @@
+     if(recv_pipe[1] != -1)
+         close(recv_pipe[1]);
+     return ret;
++#endif /* ! __AROS__ */
+ }
+ 
+ 
+diff -ruN xorriso-1.5.8/xorriso/parse_exec.c xorriso-1.5.8.aros/xorriso/parse_exec.c
+--- xorriso-1.5.8/xorriso/parse_exec.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/xorriso/parse_exec.c	2026-09-11 14:35:26.000000000 +0100
+@@ -3093,6 +3093,15 @@
+ 
+  Xorriso_alloc_meM(prog, char, 5 * SfileadrL);
+ 
++#ifdef __AROS__
++ /* AROS has no fork(). Refuse to start the program rather than
++    failing in obscure ways. */
++ sprintf(xorriso->info_text,
++         "Cannot run external program: not supported on this system.");
++ Xorriso_msgs_submit(xorriso, 0, xorriso->info_text, 0, "FAILURE", 0);
++ ret= 0; goto ex;
++#else
++
+  waitpid(-1, NULL, WNOHANG); /* just to remove any old dead child */
+ 
+  if(flag & 2) {
+@@ -3191,6 +3200,8 @@
+  if(ret <= 0)
+    goto ex;
+  ret= 1;
++#endif /* ! __AROS__ */
++
+ ex:
+  Sfile_make_argv("", "", &argc, &argv, 2);
+  Sregex_string(&pathlist, NULL, 0);
+diff -ruN xorriso-1.5.8/xorriso/read_run.c xorriso-1.5.8.aros/xorriso/read_run.c
+--- xorriso-1.5.8/xorriso/read_run.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/xorriso/read_run.c	2026-09-11 14:35:26.000000000 +0100
+@@ -1507,9 +1507,14 @@
+ 
+  } else if(LIBISO_ISFIFO(node)) {
+    what= "named pipe";
++#ifdef __AROS__
++   /* AROS has no named pipes, so there is nothing to restore to. */
++   goto ignored;
++#else
+    mode= 0777;
+    ret= mkfifo(disk_path, mode);
+    l_errno= errno;
++#endif
+ 
+  } else if(LIBISO_ISSOCK(node)) {
+    what= "unix socket";
+diff -ruN xorriso-1.5.8/xorriso/text_io.c xorriso-1.5.8.aros/xorriso/text_io.c
+--- xorriso-1.5.8/xorriso/text_io.c	2026-03-06 00:00:00.000000000 +0000
++++ xorriso-1.5.8.aros/xorriso/text_io.c	2026-09-11 14:35:26.000000000 +0100
+@@ -4563,6 +4563,8 @@
+  if(is_banned)
+    {ret= 0; goto ex;}
+ 
++#ifdef Xorriso_allow_launch_frontenD
++
+  if(argc > 0) {
+    if(strchr(argv[0], '/') == NULL) {
+      sprintf(xorriso->info_text,
+@@ -4714,6 +4716,8 @@
+  perror("xorriso: -launch_frontend");
+  exit(1);
+  
++#endif /* Xorriso_allow_launch_frontenD */
++
+ ex:;
+  Xorriso_free_meM(exec_argv);
+  Xorriso_free_meM(sfe);
