@@ -32,7 +32,7 @@ endif
 # The test suite statically links a copy of libcrypto into every test
 # binary, which is far too large to ship - drop "no-tests" and add
 # contrib-openssl-installtests below to build them again.
-OPENSSL_OPTIONS:=no-threads no-ssl3 no-asm no-shared no-tests
+OPENSSL_OPTIONS:=threads no-ssl3 no-asm no-shared no-tests
 ifneq ($(AROS_TARGET_CPU),x86_64)
 OPENSSL_OPTIONS+=no-sse2
 endif
