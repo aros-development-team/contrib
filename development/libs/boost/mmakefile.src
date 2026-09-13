@@ -4,7 +4,7 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 BOOSTVERSION=1.89.0
-BOOSTVRS=1_88_0
+BOOSTVRS:=$(subst .,_,$(BOOSTVERSION))
 ARCHBASE     := boost_$(BOOSTVRS)
 ARCHSRCDIR := $(PORTSDIR)/boost/$(ARCHBASE)
 boostlib-buildflag := $(GENDIR)/$(CURDIR)/.buildflag-boostlib-$(BOOSTVERSION)-$(AROS_TARGET_CPU)
@@ -23,10 +23,10 @@ development-libs-boost:
 		cd "$(GENDIR)/$(CURDIR)" && \
 		$(ECHO) "Bootstrapping boost..." && \
 		chmod +x "$(ARCHSRCDIR)/bootstrap.sh" && \
-		$(ARCHSRCDIR)/bootstrap.sh --prefix=$(AROS_DEVELOPER) --with-libraries=system,filesystem,iostreams > $(GENDIR)/$(CURDIR)/bootstrap.log 2>&1 && \
+		$(ARCHSRCDIR)/bootstrap.sh --prefix=$(AROS_DEVELOPER) --with-libraries=system,filesystem,iostreams,program_options > $(GENDIR)/$(CURDIR)/bootstrap.log 2>&1 && \
 		$(ECHO) "Building boost libraries..." && \
-		$(ECHO) "using gcc : : \"$(AROS_CXX)\" : <compileflags>\"$(CXXFLAGS)\" <linkflags>\"$(LDFLAGS)\" ;\n" > $(GENDIR)/$(CURDIR)/user-config.jam && \
-		$(GENDIR)/$(CURDIR)/b2 --quiet -sBOOST_ROOT="$(GENDIR)/$(CURDIR)" toolset=gcc && \
+		$(ECHO) "using gcc : : $(SRCDIR)/$(CURDIR)/aros-b2-cxx.sh : <compileflags>\"$(CXXFLAGS)\" <linkflags>\"$(LDFLAGS)\" ;\n" > $(GENDIR)/$(CURDIR)/user-config.jam && \
+		AROS_B2_CXX="$(AROS_CXX)" $(GENDIR)/$(CURDIR)/b2 --quiet -sBOOST_ROOT="$(GENDIR)/$(CURDIR)" --user-config="$(GENDIR)/$(CURDIR)/user-config.jam" toolset=gcc link=static variant=release && \
 		$(TOUCH) $(boostlib-buildflag) ; \
 	fi
 	@$(IF) $(TEST) -f $(boostlib-buildflag) \
