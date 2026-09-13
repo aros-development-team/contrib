@@ -4382,8 +4382,8 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c
 --- SDL2-2.32.10/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c	2026-01-23 14:40:28.215465556 +0000
-@@ -0,0 +1,179 @@
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c	2025-08-12 14:18:26.729549553 +0000
+@@ -0,0 +1,180 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4438,8 +4438,10 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +//	__aros_setoffsettable(threadArgs->base);
 +//#endif
 +
-+    ObtainSemaphore(&thread->handle.tp_Sem);
-+    Signal(thread->handle.tp_Parent, (1 << thread->handle.tp_PSig));
++    if (thread->handle.tp_Parent)
++    {
++        D(bug("[SDL2:Thread] 0x%p:%s: Parent @ 0x%p\n", thisTask, __func__, thread->handle.tp_Parent));
++    }
 +
 +#if (0)
 +    BPTR lock = thread->status;
@@ -4455,7 +4457,8 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +    UnLock(CurrentDir(oldDir));
 +#endif
 +
-+    ReleaseSemaphore(&thread->handle.tp_Sem);
++    if ((thread->handle.tp_Parent) && (thread->handle.tp_PSig != -1))
++        Signal(thread->handle.tp_Parent, (1 << thread->handle.tp_PSig));
 +
 +    return(0);
 +
@@ -4467,7 +4470,6 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +{
 +    thread->handle.tp_Parent    = FindTask(NULL);
 +    thread->handle.tp_PSig      = AllocSignal(-1);
-+    InitSemaphore(&thread->handle.tp_Sem);
 +    if (thread->handle.tp_PSig == -1)
 +    {
 +        SDL_SetError(warn_NoResources);
@@ -4493,10 +4495,6 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +        SDL_SetError(warn_NoResources);
 +        return(-1);
 +    }
-+
-+    Wait(1 << thread->handle.tp_PSig);
-+    FreeSignal(thread->handle.tp_PSig);
-+    thread->handle.tp_PSig = -1;
 +
 +    return(0);
 +}
@@ -4550,9 +4548,12 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +{
 +    D(bug("[SDL2:Thread] %s()\n", __func__));
 +
-+    ObtainSemaphore(&thread->handle.tp_Sem);
-+    ReleaseSemaphore(&thread->handle.tp_Sem);
-+
++    if (thread->handle.tp_PSig != -1) {
++        int sigs = SetSignal(0L, SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C);
++        int newsigs = Wait(SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C | (1 << thread->handle.tp_PSig));
++        SetSignal((sigs | newsigs) & ~(1 << thread->handle.tp_PSig), 0);
++        FreeSignal(thread->handle.tp_PSig);
++    }
 +    D(bug("[SDL2:Thread] %s: wait done\n", __func__));
 +}
 +
@@ -4565,8 +4566,8 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h
 --- SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h	2026-01-23 14:19:45.142569240 +0000
-@@ -0,0 +1,34 @@
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h	2025-08-01 14:11:38.399659885 +0000
+@@ -0,0 +1,32 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4590,14 +4591,12 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h SDL2-2.32.10.aros/src/t
 +#include "../../SDL_internal.h"
 +
 +#include <exec/types.h>
-+#include <exec/semaphores.h>
 +
 +struct _AROS_ThreadPrivate
 +{
 +    struct Task *tp_Task;
 +    struct Task *tp_Parent;
 +    LONG        tp_PSig;
-+    struct SignalSemaphore tp_Sem;
 +};
 +
 +typedef struct _AROS_ThreadPrivate SYS_ThreadHandle;
@@ -5466,7 +5465,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.h SDL2-2.32.10.aros/src/
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.c
 --- SDL2-2.32.10/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.c	2025-08-12 16:40:41.421551044 +0000
-@@ -0,0 +1,846 @@
+@@ -0,0 +1,876 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -5530,6 +5529,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +#include <proto/exec.h>
 +#include <proto/intuition.h>
 +#include <proto/keymap.h>
++#include <devices/inputevent.h>
++
++extern struct Library *KeymapBase;
 +#include <proto/locale.h>
 +
 +#include <stdio.h>
@@ -5593,6 +5595,33 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +#if !defined(__AROS__)
 +    WCHAR keycode = getv(m, IMSGA_UCS4);
 +	length = UTF8_Encode(keycode, buffer);
++#else
++	/* Run the raw key through the active keymap (dead keys included) and
++	   hand SDL the printable result as UTF-8, so SDL_TEXTINPUT works.
++	   Keymaps produce ISO-8859-1; buffer holds at most 4 bytes + NUL. */
++	struct InputEvent ie;
++	UBYTE ansi[4];
++	WORD n, i;
++
++	ie.ie_NextEvent = NULL;
++	ie.ie_Class = IECLASS_RAWKEY;
++	ie.ie_SubClass = 0;
++	ie.ie_Code = m->Code;
++	ie.ie_Qualifier = m->Qualifier;
++	ie.ie_EventAddress = m->IAddress ? *((APTR *)m->IAddress) : NULL;
++
++	n = MapRawKey(&ie, (STRPTR)ansi, sizeof(ansi), NULL);
++	for (i = 0; i < n && length < 4; i++) {
++		UBYTE c = ansi[i];
++		if (c < 0x20 || c == 0x7f)
++			continue;
++		if (c < 0x80) {
++			buffer[length++] = c;
++		} else if (length < 3) {
++			buffer[length++] = 0xC0 | (c >> 6);
++			buffer[length++] = 0x80 | (c & 0x3F);
++		}
++	}
 +#endif
 +	return length;
 +}
@@ -6313,7 +6342,6 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +            AROS_CheckWBEvents(_this);
 +    }
 +}
-\ No newline at end of file
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.h SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.h
 --- SDL2-2.32.10/src/video/aros/SDL_arosevents.h	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.h	2025-07-28 18:19:36.534462256 +0000
@@ -7365,7 +7393,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.h SDL2-2.32.10.aros/src/vide
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.c
 --- SDL2-2.32.10/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.c	2025-08-11 17:38:43.709907834 +0000
-@@ -0,0 +1,375 @@
+@@ -0,0 +1,385 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -7393,6 +7421,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +#define __NOLIBBASE__
 +
 +#include "../../SDL_internal.h"
++#include "SDL_endian.h"
 +
 +#include "SDL_arosmouse.h"
 +#include "SDL_arosvideo.h"
@@ -7441,7 +7470,16 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +			rp.BitMap = bmp;
 +
 +			if (SDL_LockSurface(surface) == 0) {
++				/* SDL converts colour cursors to SDL_PIXELFORMAT_ARGB8888, i.e. native
++				   32-bit 0xAARRGGBB words: on little-endian hosts that is B,G,R,A in
++				   memory (cgfx RECTFMT_BGRA32), not RECTFMT_ARGB (A,R,G,B). Using the
++				   wrong one scrambles the colours and takes the alpha from the blue
++				   channel, giving an opaque box around the pointer image. */
++#if SDL_BYTEORDER == SDL_LIL_ENDIAN
++				WritePixelArray(surface->pixels, 0, 0, surface->pitch, &rp, 0, 0, surface->w, surface->h, RECTFMT_BGRA32);
++#else
 +				WritePixelArray(surface->pixels, 0, 0, surface->pitch, &rp, 0, 0, surface->w, surface->h, RECTFMT_ARGB);
++#endif
 +				Object *ptrclassobj = NewObject(NULL, POINTERCLASS,
 +								POINTERA_BitMap, bmp,
 +								POINTERA_XOffset, -hot_x,
@@ -7802,7 +7840,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.h SDL2-2.32.10.aros/src/vide
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/video/aros/SDL_arosopengl.c
 --- SDL2-2.32.10/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/video/aros/SDL_arosopengl.c	2025-08-12 07:44:11.764791809 +0000
-@@ -0,0 +1,267 @@
+@@ -0,0 +1,270 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -8006,9 +8044,12 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +AROS_GL_GetDrawableSize(_THIS, SDL_Window *window, int *width, int *height)
 +{
 +	SDL_WindowData *data = window->driverdata;
-+    int w = 0;
-+    int h = 0;
-+    if (data->win) {
++    /* The Intuition window only exists once the SDL window has been shown;
++       until then (and if it was closed) report the logical size, never 0x0,
++       as callers divide by the drawable size (e.g. OpenMW's HiDPI check). */
++    int w = window->w;
++    int h = window->h;
++    if (data && data->win) {
 +			w = data->win->Width - data->win->BorderLeft - data->win->BorderRight;
 +			h = data->win->Height - data->win->BorderTop - data->win->BorderBottom;
 +	}
@@ -8954,7 +8995,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.h SDL2-2.32.10.aros/src/vide
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.c
 --- SDL2-2.32.10/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.c	2025-11-27 14:09:42.802695756 +0000
-@@ -0,0 +1,1063 @@
+@@ -0,0 +1,1078 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -9010,6 +9051,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +#include <proto/intuition.h>
 +#include <proto/wb.h>
 +#include <proto/dos.h>
++#include "../../events/SDL_windowevents_c.h"
 +
 +extern struct Library *IntuitionBase;
 +extern struct Library *GadToolsBase;
@@ -9504,6 +9546,20 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +			data->curr_w = data->win->Width;
 +			data->curr_h = data->win->Height;
 +			data->first_deltamove = TRUE;
++
++			/* WA_AutoAdjust may have clamped the window to the screen; tell
++			   SDL the real inner size now (updates window->w/h synchronously)
++			   rather than waiting for the IDCMP_CHANGEWINDOW that arrives on
++			   the next event pump, so SDL_GetWindowSize() and
++			   SDL_GL_GetDrawableSize() agree right after SDL_CreateWindow(). */
++			{
++				int inner_w = data->win->Width - data->win->BorderLeft - data->win->BorderRight;
++				int inner_h = data->win->Height - data->win->BorderTop - data->win->BorderBottom;
++				if (inner_w != window->w || inner_h != window->h) {
++					D(bug("[SDL2:aroswindow] %s: window clamped to %d x %d (wanted %d x %d)\n", __func__, inner_w, inner_h, window->w, window->h));
++					SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, inner_w, inner_h);
++				}
++			}
 +            data->menuactive = FALSE;
 +            data->win->UserData = (APTR)data;
 +
@@ -10508,16 +10564,7 @@ diff -ruN SDL2-2.32.10/test/testshape.c SDL2-2.32.10.aros/test/testshape.c
  }
 diff -ruN SDL2-2.32.10/test/torturethread.c SDL2-2.32.10.aros/test/torturethread.c
 --- SDL2-2.32.10/test/torturethread.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/test/torturethread.c	2026-01-23 14:10:10.973617131 +0000
-@@ -19,7 +19,7 @@
- 
- #include "SDL.h"
- 
--#define NUMTHREADS 10
-+#define NUMTHREADS 20
- 
- static SDL_atomic_t time_for_threads_to_die[NUMTHREADS];
- 
++++ SDL2-2.32.10.aros/test/torturethread.c	2025-07-27 14:24:23.348841432 +0000
 @@ -88,7 +88,9 @@
          return 1;
      }
