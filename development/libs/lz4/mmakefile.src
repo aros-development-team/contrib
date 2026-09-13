@@ -1,0 +1,63 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+#
+#  lz4 (https://github.com/lz4/lz4), built as a static link library for the
+#  AROS SDK.  The upstream release builds unmodified; an AROS patch is only
+#  applied if <archive>-aros.diff exists next to this file.
+#
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+LZ4VERSION      := 1.10.0
+LZ4ARCHBASE     := lz4-$(LZ4VERSION)
+LZ4REPOSITORIES := github://lz4/lz4/releases/download/v$(LZ4VERSION)
+LZ4PATCHFILE    := $(LZ4ARCHBASE)-aros.diff
+# fetch fails on a missing patch, so only name it when it exists
+ifneq ($(wildcard $(SRCDIR)/$(CURDIR)/$(LZ4PATCHFILE)),)
+LZ4PATCHSPEC    := $(LZ4PATCHFILE):$(LZ4ARCHBASE):-p1
+else
+LZ4PATCHSPEC    := ::
+endif
+LZ4ARCHSRCDIR   := $(PORTSDIR)/lz4/$(LZ4ARCHBASE)
+
+#MM- contrib-development : contrib-development-libs-lz4
+#MM- contrib-development-libs-lz4 : linklibs-lz4
+#MM linklibs-lz4 : workbench-libs-lz4-fetch workbench-libs-lz4-includes workbench-libs-lz4-pkgc
+#MM workbench-libs-lz4-includes : workbench-libs-lz4-fetch
+#MM workbench-libs-lz4-pkgc : workbench-libs-lz4-fetch
+
+%fetch mmake=workbench-libs-lz4-fetch archive=$(LZ4ARCHBASE) \
+    destination=$(PORTSDIR)/lz4 location=$(PORTSSOURCEDIR)/lz4 \
+    archive_origins=$(LZ4REPOSITORIES) suffixes="tar.gz" \
+    patches_specs=$(LZ4PATCHSPEC)
+
+%create_patch mmake=workbench-libs-lz4-create-patch \
+    archive=$(LZ4ARCHBASE) suffixes="tar.gz" srcdir=$(LZ4ARCHBASE) \
+    location=$(PORTSSOURCEDIR)/lz4 destination=$(PORTSDIR)/lz4
+
+# The sources only exist after the fetch, so list them explicitly.
+FILES := $(addprefix $(LZ4ARCHSRCDIR)/lib/,lz4 lz4hc lz4frame lz4file xxhash)
+
+USER_CPPFLAGS := -DLZ4_NO_TRACE
+
+%build_linklib mmake=linklibs-lz4 libname=lz4 files="$(FILES)"
+
+INCLUDE_FILES := lz4.h lz4hc.h lz4frame.h lz4frame_static.h lz4file.h
+%copy_includes mmake=workbench-libs-lz4-includes dir=$(LZ4ARCHSRCDIR)/lib includes=$(INCLUDE_FILES)
+
+$(AROS_LIB)/pkgconfig/liblz4.pc : $(LZ4ARCHSRCDIR)/lib/liblz4.pc.in
+	@$(IF) $(TEST) ! -d $(AROS_LIB)/pkgconfig ; then $(MKDIR) $(AROS_LIB)/pkgconfig ; else $(NOP) ; fi
+	@$(SED) -e 's|@PREFIX@|/Developer|g' \
+	    -e 's|@LIBDIR@|$${prefix}/lib|g' \
+	    -e 's|@INCLUDEDIR@|$${prefix}/include|g' \
+	    -e 's|@VERSION@|$(LZ4VERSION)|g' \
+	    -e 's|@LIBS_MT@||g' \
+	    -e '/^Libs\.private/d' \
+	    -e 's|^exec_prefix=.*|exec_prefix=$${prefix}|' \
+	    $< > $@
+
+#MM
+workbench-libs-lz4-pkgc : $(AROS_LIB)/pkgconfig/liblz4.pc
+
+%common
