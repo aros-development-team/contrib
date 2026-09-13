@@ -77,9 +77,7 @@ static inline char *iperf_strsignal(int sig) {
 #define strsignal(s) iperf_strsignal(s)
 #endif
 
-/* pthread_sigmask is not declared on AROS — map to sigprocmask */
 #include <signal.h>
-#define pthread_sigmask(how, set, oset) sigprocmask((how), (set), (oset))
 
 /* getline is not available on AROS — provide a simple fallback */
 #include <stdio.h>
@@ -154,6 +152,12 @@ static inline int iperf_daemon(int nochdir, int noclose) {
 #endif // HAVE_SSL
 
 #include "iperf_pthread.h"
+
+/* AROS's pthread_sigmask is only a no-op stub (returns ENOSYS), so map it to
+ * the real sigprocmask. Defined AFTER iperf_pthread.h (which pulls in
+ * <pthread.h>) so the macro overrides call sites without clobbering pthread.h's
+ * own declaration of pthread_sigmask. */
+#define pthread_sigmask(how, set, oset) sigprocmask((how), (set), (oset))
 
 /*
  * Atomic types highly desired, but if not, we approximate what we need
