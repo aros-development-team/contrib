@@ -24,13 +24,16 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib : contrib-regina
 #MM- contrib : contrib-rexx
 #MM- contrib : contrib-scout
-#MM- contrib : contrib-sdl2
+#MM- contrib : SDL-aros-lib SDL2-aros-sharedlib SDL3-aros-sharedlib
 #MM- contrib : contrib-multimedia
 #MM- contrib : contrib-workbench
 
 #MM- contrib-complete : contrib
 #MM- contrib-complete : contrib-development-complete
 #MM- contrib-complete : contrib-sdl
+#MM- contrib-complete : contrib-sdl2
+#MM- contrib-complete : contrib-sdl3
+
 
 CONTRIB_SRC_DIR := $(AROSDIR)/contrib
 
