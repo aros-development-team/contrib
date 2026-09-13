@@ -21,6 +21,20 @@ OPENSSL_CPPFLAGS :=  \
         -DOPENSSL_NO_SECURE_MEMORY \
         -D_XOPEN_SOURCE=600 \
         -D__BSD_VISIBLE=1
+
+# OpenSSL's CRYPTO_atomic_*() helpers (crypto/threads_pthread.c) use the
+# __atomic_* builtins whenever the compiler defines __ATOMIC_ACQ_REL, even in
+# a no-threads build. On targets that cannot inline these - 64-bit atomics on
+# any 32-bit CPU (i386, arm, ppc, riscv), or a CPU with no atomic instructions
+# at all (68000) - GCC lowers them to libatomic calls (__atomic_*_4/_8,
+# __atomic_is_lock_free), which the AROS toolchains do not provide, giving
+# "undefined __atomic_*" at link. Defining BROKEN_CLANG_ATOMICS forces
+# OpenSSL's built-in lock-based fallback in those helpers. Only the 64-bit
+# CPUs whose GCC inlines these atomics keep the lock-free path.
+ifeq (,$(filter x86_64 aarch64 riscv64,$(AROS_TARGET_CPU)))
+OPENSSL_CPPFLAGS += -DBROKEN_CLANG_ATOMICS
+endif
+
 USER_CFLAGS=$(NOWARN_FLAGS) $(OPENSSL_CPPFLAGS)
 
 ifneq (,$(findstring arm,$(AROS_TARGET_CPU)))
@@ -32,7 +46,7 @@ endif
 # The test suite statically links a copy of libcrypto into every test
 # binary, which is far too large to ship - drop "no-tests" and add
 # contrib-openssl-installtests below to build them again.
-OPENSSL_OPTIONS:=threads no-ssl3 no-asm no-shared no-tests
+OPENSSL_OPTIONS:=no-threads no-ssl3 no-asm no-shared no-tests
 ifneq ($(AROS_TARGET_CPU),x86_64)
 OPENSSL_OPTIONS+=no-sse2
 endif
