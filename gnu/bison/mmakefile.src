@@ -9,4 +9,4 @@ include $(SRCDIR)/config/aros-contrib.cfg
 USER_CFLAGS := $(CFLAGS_GNU99) 
 
 %fetch_and_build_gnu_development package=bison version=3.8.2 patch=yes \
-    extraoptions="--libdir=$(AROS_LIB)"
+    extraoptions="--libdir=$(AROS_LIB)" suffixes="tar.xz tar.gz"
