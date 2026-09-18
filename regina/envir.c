@@ -662,7 +662,7 @@ streng *perform( tsd_t *TSD, const streng *command, const streng *envir, cnodept
  * temporarily created and reset to the new IO-redirections.
  */
 {
-   int rc=0, io_flag=0, clearq=0, tempenvir=0;
+   int rc=0, io_flag=0, clearq=0, tempenvir=0, amiga_port=0;
    struct envir *eptr;
    streng *retstr=NULL ;
    streng *rxqueue=NULL;
@@ -746,6 +746,7 @@ streng *perform( tsd_t *TSD, const streng *command, const streng *envir, cnodept
 #if defined(_AMIGA) || defined(__AROS__)
          case ENVIR_AMIGA:
 	    retstr = AmigaSubCom( TSD, cmd, eptr, &rc);
+	    amiga_port = 1;
 	    break;
 #endif
 
@@ -761,7 +762,22 @@ streng *perform( tsd_t *TSD, const streng *command, const streng *envir, cnodept
    if (tempenvir)
       del_envir( TSD, envir ) ;
 
-   post_process_system_call( TSD, cmd, rc, retstr, thisptr );
+   if ( amiga_port )
+   {
+      /*
+       * ARexx semantics: RC is the host's numeric rm_Result1 and RESULT is its
+       * rm_Result2 string. Passing retstr, the RESULT string, as the RC value
+       * made RC the command's output, so a successful command read as a
+       * failure to every script that tests RC.
+       */
+      streng *num = int_to_streng( TSD, rc ) ;
+      post_process_system_call( TSD, cmd, rc, num, thisptr );
+      Free_stringTSD( num ) ;
+      if ( rc == 0 && get_options_flag( TSD->currlevel, EXT_RESULTS ) )
+         set_reserved_value( TSD, POOL0_RESULT, Str_dupTSD( retstr ), 0, VFLAG_STR );
+   }
+   else
+      post_process_system_call( TSD, cmd, rc, retstr, thisptr );
 
    Free_stringTSD( cmd ) ;
    return retstr ;
