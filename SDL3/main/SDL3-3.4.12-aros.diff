@@ -1718,8 +1718,8 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c SDL
 +#endif /* SDL_FSOPS_AROS */
 diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c
 --- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c	2026-07-28 13:08:21.766765593 +0100
-@@ -0,0 +1,477 @@
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c	2026-09-27 20:05:55.521904821 +0100
+@@ -0,0 +1,1044 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -1744,14 +1744,35 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +
 +#ifdef SDL_JOYSTICK_AROS
 +
++/*
++ * AROS joystick backend.
++ *
++ * Two sources feed one device list:
++ *
++ *  - controller.hidd devices (the game controller subsystem): identity,
++ *    control tables, normalised readings, the standard layout bindings
++ *    (turned into the SDL gamepad mapping here), rumble, LEDs, player
++ *    index, battery state and hotplug events.
++ *  - lowlevel.library joyports 0..3, as before controller.hidd existed.
++ *
++ * The two are reconciled per joyport: a controller.hidd device that is
++ * mapped to a joyport replaces the lowlevel entry of that port, and a port
++ * that has data but no controller.hidd device behind it is exposed as a
++ * lowlevel device. The list is rebuilt when the subsystem reports a device
++ * or port change and, for the lowlevel ports, every couple of seconds.
++ * Setting SDL_JOYSTICK_AROS_HIDD=0 disables the controller.hidd path.
++ */
++
 +#include "../SDL_sysjoystick.h"
++#include "../SDL_joystick_c.h"
++#include "../../SDL_utils_c.h"
 +
 +#include <aros/debug.h>
 +
 +#include "SDL_sysjoystick_c.h"
-+#include "../SDL_joystick_c.h"
 +
 +#include <exec/execbase.h>
++#include <exec/ports.h>
 +#include <libraries/lowlevel.h>
 +#ifndef NO_LOWLEVEL_EXT
 +#include <libraries/lowlevel_ext.h>
@@ -1759,19 +1780,58 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +#include <proto/exec.h>
 +#include <proto/lowlevel.h>
 +
++/* the OOP stubs use this name; keep our own base so the static build works too */
++static struct Library *SDL_AROS_OOPBase = NULL;
++#define OOPBase SDL_AROS_OOPBase
++/* the video backend owns the shared IID_Hidd attribute base; keep a private one here */
++#define __Hidd_NOATTRBASE__
++#include <oop/oop.h>
++#include <proto/oop.h>
++#include <hidd/hidd.h>
++#include <hidd/controller.h>
++
++static OOP_AttrBase SDL_AROS_HiddAttrBase;
++#undef HiddAttrBase
++#define HiddAttrBase SDL_AROS_HiddAttrBase
++OOP_AttrBase HiddControllerAB;
++OOP_AttrBase HWControllerAB;
++
 +#define SDL_AROS_VENDORID   0xFFFF
 +#define SDL_AROS_PRODUCTID  0x0001
 +
-+static int joystick_count = 0;
++#define SDL_AROS_RESCAN_MS      2000    /* lowlevel port poll interval */
++#define SDL_AROS_POWER_MS       5000    /* battery state poll interval */
++#define SDL_AROS_MAX_HIDD_DEVS  16
++
 +struct Library *LowLevelBase = NULL;
 +
-+struct SDL_AROS_GAMEINPUT
++typedef struct SDL_AROS_Device
 +{
-+    char *gi_name;
-+    SDL_GUID gi_guid;
-+};
++    SDL_JoystickID instance_id;
++    bool hidd;                  /* controller.hidd device or lowlevel port */
++    UWORD device_id;            /* controller.hidd */
++    LONG port;                  /* hidd: legacy port or -1; lowlevel: the port */
++    char *name;
++    char *path;
++    char *serial;
++    SDL_GUID guid;
++    Uint16 vendor, product, version;
++    int nbuttons, naxes, nhats;
++    Uint32 caps;
++    UBYTE connection;
++    ULONG unipolar;             /* bit n: raw axis n is unipolar */
++} SDL_AROS_Device;
 +
-+static struct SDL_AROS_GAMEINPUT *aros_gameinput_devices = NULL;
++static SDL_AROS_Device *aros_devices = NULL;
++static int aros_device_count = 0;
++
++/* controller.hidd state */
++static bool hidd_enabled = false;
++static struct Library *ControllerHiddBase = NULL;
++static OOP_Object *hidd_hw = NULL;
++static OOP_Object *hidd_consumer = NULL;
++static struct MsgPort *hidd_port = NULL;
++static Uint64 next_rescan = 0;
 +
 +static const unsigned long joybut[] =
 +{
@@ -1784,116 +1844,401 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +    JPF_BUTTON_REVERSE
 +};
 +
-+/* lowlevel portNumber 0 <-> 1 */
-+static int LowLevel_PortFromIndex(int index)
++/* Amiga convention: the first pad is on port 1, then 0, 2, 3 */
++static const int port_order[MAX_JOYSTICKS] = { 1, 0, 2, 3 };
++
++/*****************************************************************************************
++    controller.hidd access
++*****************************************************************************************/
++
++static bool AROS_HiddOpen(void)
 +{
-+    switch (index) {
-+    case 0:
-+        return 1;
-+    case 1:
-+        return 0;
-+    default:
-+        break;
++    struct OOP_ABDescr attrbases[] =
++    {
++        { IID_Hidd,            &HiddAttrBase     },
++        { IID_Hidd_Controller, &HiddControllerAB },
++        { IID_HW_Controller,   &HWControllerAB   },
++        { NULL,                NULL              }
++    };
++
++    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_AROS_HIDD, true)) {
++        return false;
++    }
++    SDL_AROS_OOPBase = OpenLibrary("oop.library", 0);
++    if (!SDL_AROS_OOPBase) {
++        return false;
++    }
++    ControllerHiddBase = OpenLibrary("controller.hidd", 0);
++    if (!ControllerHiddBase) {
++        D(bug("[SDL3:Joystick] controller.hidd not available, lowlevel.library only\n"));
++        CloseLibrary(SDL_AROS_OOPBase);
++        SDL_AROS_OOPBase = NULL;
++        return false;
++    }
++    if (!OOP_ObtainAttrBases(attrbases)) {
++        CloseLibrary(ControllerHiddBase);
++        ControllerHiddBase = NULL;
++        CloseLibrary(SDL_AROS_OOPBase);
++        SDL_AROS_OOPBase = NULL;
++        return false;
++    }
++    hidd_hw = OOP_NewObject(NULL, CLID_HW_Controller, NULL);
++    hidd_port = CreateMsgPort();
++    if (hidd_hw && hidd_port) {
++        struct TagItem tags[] =
++        {
++            { aHidd_Controller_NotifyPort, (IPTR)hidd_port },
++            { aHidd_Controller_EventMask,  vHidd_Controller_EventMask(vHidd_Controller_DeviceAdded) |
++                                           vHidd_Controller_EventMask(vHidd_Controller_DeviceRemoved) |
++                                           vHidd_Controller_EventMask(vHidd_Controller_PortChanged) |
++                                           vHidd_Controller_EventMask(vHidd_Controller_ConnectionChanged) },
++            { aHidd_Controller_QueueDepth, 64 },
++            { TAG_DONE,                    0  }
++        };
++        hidd_consumer = OOP_NewObject(NULL, CLID_Hidd_Controller, tags);
++    }
++    if (!hidd_hw || !hidd_consumer) {
++        D(bug("[SDL3:Joystick] controller.hidd subsystem not usable\n"));
++        if (hidd_consumer) {
++            OOP_DisposeObject(hidd_consumer);
++            hidd_consumer = NULL;
++        }
++        if (hidd_port) {
++            DeleteMsgPort(hidd_port);
++            hidd_port = NULL;
++        }
++        hidd_hw = NULL;
++        OOP_ReleaseAttrBases(attrbases);
++        CloseLibrary(ControllerHiddBase);
++        ControllerHiddBase = NULL;
++        CloseLibrary(SDL_AROS_OOPBase);
++        SDL_AROS_OOPBase = NULL;
++        return false;
++    }
++    D(bug("[SDL3:Joystick] controller.hidd path enabled\n"));
++    return true;
++}
++
++static void AROS_HiddClose(void)
++{
++    struct OOP_ABDescr attrbases[] =
++    {
++        { IID_Hidd,            &HiddAttrBase     },
++        { IID_Hidd_Controller, &HiddControllerAB },
++        { IID_HW_Controller,   &HWControllerAB   },
++        { NULL,                NULL              }
++    };
++
++    if (!hidd_enabled) {
++        return;
++    }
++    if (hidd_consumer) {
++        OOP_DisposeObject(hidd_consumer);
++        hidd_consumer = NULL;
++    }
++    if (hidd_port) {
++        struct Message *m;
++        while ((m = GetMsg(hidd_port))) {
++            ReplyMsg(m);
++        }
++        DeleteMsgPort(hidd_port);
++        hidd_port = NULL;
++    }
++    hidd_hw = NULL;
++    OOP_ReleaseAttrBases(attrbases);
++    CloseLibrary(ControllerHiddBase);
++    ControllerHiddBase = NULL;
++    CloseLibrary(SDL_AROS_OOPBase);
++    SDL_AROS_OOPBase = NULL;
++    hidd_enabled = false;
++}
++
++/* Drain the subsystem events; returns true when the device list may have changed */
++static bool AROS_HiddDrainEvents(void)
++{
++    struct Hidd_Controller_EventMsg *m;
++    bool changed = false;
++
++    if (!hidd_port) {
++        return false;
++    }
++    while ((m = (struct Hidd_Controller_EventMsg *)GetMsg(hidd_port))) {
++        changed = true;
++        ReplyMsg(&m->msg);
++    }
++    return changed;
++}
++
++/* The device object of a controller.hidd device, looked up every time so a removed device is never touched */
++static OOP_Object *AROS_HiddDevice(UWORD device_id)
++{
++    if (!hidd_hw) {
++        return NULL;
++    }
++    return HW_Controller_FindDevice(hidd_hw, device_id);
++}
++
++static Uint16 AROS_BusToSDL(IPTR bus)
++{
++    switch (bus) {
++    case vHidd_Controller_Bus_USB:       return SDL_HARDWARE_BUS_USB;
++    case vHidd_Controller_Bus_Bluetooth: return SDL_HARDWARE_BUS_BLUETOOTH;
++    case vHidd_Controller_Bus_Virtual:   return SDL_HARDWARE_BUS_VIRTUAL;
++    default:                             return SDL_HARDWARE_BUS_UNKNOWN;
++    }
++}
++
++/* Describe one controller.hidd device; returns false if it is gone */
++static bool AROS_HiddDescribe(UWORD device_id, SDL_AROS_Device *d)
++{
++    OOP_Object *dev = AROS_HiddDevice(device_id);
++    IPTR vendor = 0, product = 0, version = 0, manufacturer = 0, name = 0, serial = 0, path = 0;
++    IPTR bus = 0, port = 0, caps = 0, nb = 0, na = 0, nh = 0, conn = 0;
++    UWORD i;
++
++    if (!dev) {
++        return false;
++    }
++    OOP_GetAttr(dev, aHidd_Controller_VendorID, &vendor);
++    OOP_GetAttr(dev, aHidd_Controller_ProductID, &product);
++    OOP_GetAttr(dev, aHidd_Controller_Version, &version);
++    OOP_GetAttr(dev, aHidd_Controller_Manufacturer, &manufacturer);
++    OOP_GetAttr(dev, aHidd_HardwareName, &name);
++    OOP_GetAttr(dev, aHidd_Controller_Serial, &serial);
++    OOP_GetAttr(dev, aHidd_Controller_Path, &path);
++    OOP_GetAttr(dev, aHidd_Controller_Bus, &bus);
++    OOP_GetAttr(dev, aHidd_Controller_LegacyPort, &port);
++    OOP_GetAttr(dev, aHidd_Controller_Capabilities, &caps);
++    OOP_GetAttr(dev, aHidd_Controller_ButtonCount, &nb);
++    OOP_GetAttr(dev, aHidd_Controller_AxisCount, &na);
++    OOP_GetAttr(dev, aHidd_Controller_HatCount, &nh);
++    OOP_GetAttr(dev, aHidd_Controller_Connection, &conn);
++
++    SDL_zerop(d);
++    d->hidd = true;
++    d->device_id = device_id;
++    d->port = (LONG)(WORD)port;
++    d->vendor = (Uint16)vendor;
++    d->product = (Uint16)product;
++    d->version = (Uint16)version;
++    d->nbuttons = (int)nb;
++    d->naxes = (int)na;
++    d->nhats = (int)nh;
++    d->caps = (Uint32)caps;
++    d->connection = (UBYTE)conn;
++    d->name = SDL_CreateJoystickName(d->vendor, d->product, (const char *)manufacturer, (const char *)name);
++    d->path = path ? SDL_strdup((const char *)path) : NULL;
++    d->serial = serial ? SDL_strdup((const char *)serial) : NULL;
++    d->guid = SDL_CreateJoystickGUID(AROS_BusToSDL(bus), d->vendor, d->product, d->version,
++                                     (const char *)manufacturer, (const char *)name, 0, 0);
++    for (i = 0; i < d->naxes && i < 32; i++) {
++        struct Hidd_Controller_ControlDesc cd;
++        if (HIDD_Controller_GetControlInfo(dev, vHidd_Controller_Ctl_Axis, i, &cd) &&
++            (cd.flags & vHidd_Controller_CF_Unipolar)) {
++            d->unipolar |= 1UL << i;
++        }
++    }
++    return d->name != NULL;
++}
++
++/*****************************************************************************************
++    lowlevel.library ports
++*****************************************************************************************/
++
++static bool AROS_LowLevelDescribe(int port, SDL_AROS_Device *d)
++{
++    ULONG joyflag;
++    char buf[32];
++
++    if (!LowLevelBase) {
++        return false;
++    }
++    joyflag = ReadJoyPort(port);
++    if ((joyflag & JP_TYPE_MASK) == JP_TYPE_NOTAVAIL) {
++        return false;
 +    }
 +
-+    return index;
++    SDL_zerop(d);
++    d->hidd = false;
++    d->port = port;
++    d->naxes = 2;
++    switch (joyflag & JP_TYPE_MASK) {
++    case JP_TYPE_GAMECTLR:
++        SDL_snprintf(buf, sizeof(buf), "Game Controller @ Port %d", port);
++        d->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, SDL_AROS_VENDORID, SDL_AROS_PRODUCTID, 0x0001,
++                                         "AROS", "Game Controller", 0, 0);
++        d->nbuttons = 7;
++        d->nhats = 1;
++        break;
++    case JP_TYPE_MOUSE:
++        SDL_snprintf(buf, sizeof(buf), "Mouse @ Port %d", port);
++        d->guid = SDL_CreateJoystickGUIDForName(buf);
++        d->nbuttons = 3;
++        d->nhats = 0;
++        break;
++    case JP_TYPE_JOYSTK:
++        SDL_snprintf(buf, sizeof(buf), "Joystick @ Port %d", port);
++        d->guid = SDL_CreateJoystickGUIDForName(buf);
++        d->nbuttons = 3;
++        d->nhats = 1;
++        break;
++    default:
++        SDL_snprintf(buf, sizeof(buf), "unknown device @ Port %d", port);
++        d->guid = SDL_CreateJoystickGUIDForName(buf);
++        d->nbuttons = 3;
++        d->nhats = 1;
++        break;
++    }
++    d->name = SDL_strdup(buf);
++    return d->name != NULL;
 +}
++
++/*****************************************************************************************
++    the device list
++*****************************************************************************************/
++
++static void AROS_FreeDevice(SDL_AROS_Device *d)
++{
++    SDL_free(d->name);
++    SDL_free(d->path);
++    SDL_free(d->serial);
++    d->name = d->path = d->serial = NULL;
++}
++
++static SDL_AROS_Device *AROS_FindSame(SDL_AROS_Device *list, int count, const SDL_AROS_Device *d)
++{
++    int i;
++
++    for (i = 0; i < count; i++) {
++        if (list[i].hidd == d->hidd &&
++            (d->hidd ? list[i].device_id == d->device_id : list[i].port == d->port)) {
++            return &list[i];
++        }
++    }
++    return NULL;
++}
++
++/*
++ * Rebuild the list: controller.hidd devices first, then the lowlevel ports
++ * that no controller.hidd device is mapped to. Devices that stay keep their
++ * instance id; the rest is announced as added or removed.
++ */
++static void AROS_Rescan(void)
++{
++    SDL_AROS_Device newlist[SDL_AROS_MAX_HIDD_DEVS + MAX_JOYSTICKS];
++    int newcount = 0;
++    int i;
++
++    if (hidd_enabled && hidd_hw) {
++        UWORD ids[SDL_AROS_MAX_HIDD_DEVS];
++        ULONG n = HW_Controller_GetDeviceIDs(hidd_hw, ids, SDL_AROS_MAX_HIDD_DEVS);
++        ULONG k;
++
++        for (k = 0; k < n && k < SDL_AROS_MAX_HIDD_DEVS; k++) {
++            if (AROS_HiddDescribe(ids[k], &newlist[newcount])) {
++                newcount++;
++            }
++        }
++    }
++
++    for (i = 0; i < MAX_JOYSTICKS; i++) {
++        int port = port_order[i];
++        int k;
++        bool claimed = false;
++
++        for (k = 0; k < newcount; k++) {
++            if (newlist[k].hidd && newlist[k].port == port) {
++                claimed = true;
++                break;
++            }
++        }
++        if (claimed) {
++            continue;
++        }
++        if (AROS_LowLevelDescribe(port, &newlist[newcount])) {
++            newcount++;
++        }
++    }
++
++    /* carry the instance ids over, free what is gone */
++    for (i = 0; i < newcount; i++) {
++        SDL_AROS_Device *old = AROS_FindSame(aros_devices, aros_device_count, &newlist[i]);
++        newlist[i].instance_id = old ? old->instance_id : 0;
++    }
++    for (i = 0; i < aros_device_count; i++) {
++        SDL_AROS_Device *keep = AROS_FindSame(newlist, newcount, &aros_devices[i]);
++        if (!keep) {
++            D(bug("[SDL3:Joystick] removed '%s' (instance %d)\n", aros_devices[i].name, (int)aros_devices[i].instance_id));
++            SDL_PrivateJoystickRemoved(aros_devices[i].instance_id);
++        }
++        AROS_FreeDevice(&aros_devices[i]);
++    }
++
++    SDL_free(aros_devices);
++    aros_devices = NULL;
++    aros_device_count = 0;
++    if (newcount) {
++        aros_devices = (SDL_AROS_Device *)SDL_calloc(newcount, sizeof(SDL_AROS_Device));
++        if (!aros_devices) {
++            for (i = 0; i < newcount; i++) {
++                AROS_FreeDevice(&newlist[i]);
++            }
++            return;
++        }
++        SDL_memcpy(aros_devices, newlist, newcount * sizeof(SDL_AROS_Device));
++        aros_device_count = newcount;
++    }
++
++    for (i = 0; i < aros_device_count; i++) {
++        if (!aros_devices[i].instance_id) {
++            aros_devices[i].instance_id = SDL_GetNextObjectID();
++            D(bug("[SDL3:Joystick] added '%s' (%s, instance %d)\n", aros_devices[i].name,
++                  aros_devices[i].hidd ? "controller.hidd" : "lowlevel.library", (int)aros_devices[i].instance_id));
++            SDL_PrivateJoystickAdded(aros_devices[i].instance_id);
++        }
++    }
++}
++
++static SDL_AROS_Device *AROS_DeviceForIndex(int device_index)
++{
++    if (device_index < 0 || device_index >= aros_device_count) {
++        return NULL;
++    }
++    return &aros_devices[device_index];
++}
++
++/*****************************************************************************************
++    driver entry points
++*****************************************************************************************/
 +
 +static bool AROS_JoystickInit(void)
 +{
 +    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +
 +    LowLevelBase = OpenLibrary("lowlevel.library", 37);
-+    if (LowLevelBase) {
-+        ULONG joyflag = 0L;
-+        joystick_count = 0;
-+
-+        D(bug("[SDL3:Joystick] %s: lowlevel.library @ 0x%p\n", __func__, LowLevelBase));
-+
-+        aros_gameinput_devices = AllocVec(MAX_JOYSTICKS * sizeof(struct SDL_AROS_GAMEINPUT), MEMF_CLEAR);
-+        if (!aros_gameinput_devices) {
-+            CloseLibrary(LowLevelBase);
-+            LowLevelBase = NULL;
-+            return SDL_OutOfMemory();
-+        }
-+
-+        D(bug("[SDL3:Joystick] %s: allocated SDL_AROS_GAMEINPUT @ 0x%p (for %d units)\n", __func__, aros_gameinput_devices, MAX_JOYSTICKS));
-+        while (joystick_count < MAX_JOYSTICKS) {
-+            int port = LowLevel_PortFromIndex(joystick_count);
-+            char *dev_name = NULL;
-+            SDL_GUID guid;
-+
-+            SDL_zero(guid);
-+            joyflag = ReadJoyPort(port);
-+            if ((joyflag & JP_TYPE_MASK) == JP_TYPE_NOTAVAIL) {
-+                break;
-+            }
-+
-+            if ((joyflag & JP_TYPE_MASK) == JP_TYPE_GAMECTLR) {
-+                dev_name = AllocVec(26, MEMF_ANY);
-+                if (dev_name) {
-+                    SDL_snprintf(dev_name, 26, "Game Controller @ Port %d", port);
-+                }
-+                guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL,
-+                                              SDL_AROS_VENDORID,
-+                                              SDL_AROS_PRODUCTID,
-+                                              0x0001,
-+                                              "AROS",
-+                                              "Game Controller",
-+                                              0,
-+                                              0);
-+            }
-+
-+            if ((joyflag & JP_TYPE_MASK) == JP_TYPE_MOUSE) {
-+                dev_name = AllocVec(16, MEMF_ANY);
-+                if (dev_name) {
-+                    SDL_snprintf(dev_name, 16, "Mouse @ Port %d", port);
-+                    guid = SDL_CreateJoystickGUIDForName(dev_name);
-+                }
-+            }
-+
-+            if ((joyflag & JP_TYPE_MASK) == JP_TYPE_JOYSTK) {
-+                dev_name = AllocVec(19, MEMF_ANY);
-+                if (dev_name) {
-+                    SDL_snprintf(dev_name, 19, "Joystick @ Port %d", port);
-+                    guid = SDL_CreateJoystickGUIDForName(dev_name);
-+                }
-+            }
-+
-+            if ((joyflag & JP_TYPE_MASK) == JP_TYPE_UNKNOWN) {
-+                dev_name = AllocVec(25, MEMF_ANY);
-+                if (dev_name) {
-+                    SDL_snprintf(dev_name, 25, "unknown device @ Port %d", port);
-+                    guid = SDL_CreateJoystickGUIDForName(dev_name);
-+                }
-+            }
-+
-+            if (!dev_name) {
-+                break;
-+            }
-+
-+            D(bug("[SDL3:Joystick] %s: #%d '%s'\n", __func__, joystick_count, dev_name));
-+            aros_gameinput_devices[port].gi_name = dev_name;
-+            aros_gameinput_devices[port].gi_guid = guid;
-+            joystick_count++;
-+            SDL_PrivateJoystickAdded(joystick_count); /* instance IDs are device_index + 1 */
-+        }
-+        return true;
++    hidd_enabled = AROS_HiddOpen();
++    if (!LowLevelBase && !hidd_enabled) {
++        return SDL_SetError("Unable to open lowlevel.library or controller.hidd");
 +    }
-+
-+    SDL_SetError("Unable to open lowlevel.library");
-+    return false;
++    AROS_Rescan();
++    next_rescan = SDL_GetTicks() + SDL_AROS_RESCAN_MS;
++    return true;
 +}
 +
 +static int AROS_JoystickGetCount(void)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
-+    return joystick_count;
++    return aros_device_count;
 +}
 +
 +static void AROS_JoystickDetect(void)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
++    Uint64 now = SDL_GetTicks();
++    bool changed = AROS_HiddDrainEvents();
++
++    if (changed || now >= next_rescan) {
++        AROS_Rescan();
++        next_rescan = now + SDL_AROS_RESCAN_MS;
++    }
 +}
 +
 +static bool AROS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -1903,241 +2248,387 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +
 +static const char *AROS_JoystickGetDeviceName(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
-+    return aros_gameinput_devices[LowLevel_PortFromIndex(device_index)].gi_name;
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    return d ? d->name : NULL;
 +}
 +
 +static const char *AROS_JoystickGetDevicePath(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
-+    return NULL;
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    return d ? d->path : NULL;
 +}
 +
 +static int AROS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
 +    return -1;
 +}
 +
 +static int AROS_JoystickGetDevicePlayerIndex(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
-+    return device_index;
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++
++    if (d && d->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(d->device_id);
++        IPTR idx = (IPTR)-1;
++        if (dev) {
++            OOP_GetAttr(dev, aHidd_Controller_PlayerIndex, &idx);
++        }
++        return (int)(WORD)idx;
++    }
++    return -1;
 +}
 +
 +static void AROS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d, %d)\n", __func__, device_index, player_index));
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++
++    if (d && d->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(d->device_id);
++        if (dev) {
++            HIDD_Controller_SetPlayerIndex(dev, (WORD)player_index);
++        }
++    }
 +}
 +
 +static SDL_GUID AROS_JoystickGetDeviceGUID(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
-+    return aros_gameinput_devices[LowLevel_PortFromIndex(device_index)].gi_guid;
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    SDL_GUID guid;
++
++    if (d) {
++        return d->guid;
++    }
++    SDL_zero(guid);
++    return guid;
 +}
 +
 +static SDL_JoystickID AROS_JoystickGetDeviceInstanceID(int device_index)
 +{
-+    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
-+    return device_index + 1;
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    return d ? d->instance_id : 0;
 +}
 +
 +static bool AROS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 +{
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    struct joystick_hwdata *hwdata;
++
 +    D(bug("[SDL3:Joystick] %s(0x%p, %d)\n", __func__, joystick, device_index));
 +
-+    if (LowLevelBase) {
-+        ULONG temp;
-+        struct joystick_hwdata *hwdata = SDL_calloc(1, sizeof(*hwdata));
-+        if (!hwdata) {
-+            return SDL_OutOfMemory();
-+        }
++    if (!d) {
++        return SDL_SetError("No such device");
++    }
++    hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));
++    if (!hwdata) {
++        return false;
++    }
++    hwdata->hidd = d->hidd;
++    hwdata->device_id = d->device_id;
++    hwdata->port = (ULONG)d->port;
++    hwdata->unipolar = d->unipolar;
 +
-+        hwdata->port = LowLevel_PortFromIndex(device_index);
-+        SetJoyPortAttrs(hwdata->port, SJA_Type, SJA_TYPE_GAMECTLR, TAG_END);
-+        temp = ReadJoyPort(hwdata->port);
-+        if ((temp & JP_TYPE_MASK) == JP_TYPE_GAMECTLR) {
-+            joystick->nbuttons = 7;
-+            joystick->nhats = 1;
-+        } else if ((temp & JP_TYPE_MASK) == JP_TYPE_JOYSTK) {
-+            joystick->nbuttons = 3;
-+            joystick->nhats = 1;
-+        } else if ((temp & JP_TYPE_MASK) == JP_TYPE_MOUSE) {
-+            joystick->nbuttons = 3;
-+            joystick->nhats = 0;
-+        } else if ((temp & JP_TYPE_MASK) == JP_TYPE_UNKNOWN) {
-+            joystick->nbuttons = 3;
-+            joystick->nhats = 1;
-+        } else if ((temp & JP_TYPE_MASK) == JP_TYPE_NOTAVAIL) {
-+            joystick->nbuttons = 0;
-+            joystick->nhats = 0;
++    if (d->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(d->device_id);
++        if (!dev) {
++            SDL_free(hwdata);
++            return SDL_SetError("Device is gone");
++        }
++        joystick->nbuttons = d->nbuttons;
++        joystick->naxes = d->naxes;
++        joystick->nhats = d->nhats;
++        joystick->connection_state = (d->connection == vHidd_Controller_Conn_Wireless) ? SDL_JOYSTICK_CONNECTION_WIRELESS
++                                   : (d->connection == vHidd_Controller_Conn_Wired)    ? SDL_JOYSTICK_CONNECTION_WIRED
++                                                                                        : SDL_JOYSTICK_CONNECTION_UNKNOWN;
++        if (d->serial) {
++            joystick->serial = SDL_strdup(d->serial);
 +        }
 +        joystick->hwdata = hwdata;
-+        joystick->name = aros_gameinput_devices[hwdata->port].gi_name;
-+        joystick->naxes = 2;
-+#ifndef NO_LOWLEVEL_EXT
-+        joystick->hwdata->joystate_ext = 0L;
-+        if (LowLevelBase->lib_Version > 50 || (LowLevelBase->lib_Version >= 50 && LowLevelBase->lib_Revision >= 17)) {
-+            joystick->hwdata->supports_analog = 1;
-+        }
-+#endif
 +        return true;
 +    }
 +
-+    return SDL_SetError("Failed to open device");
++    if (!LowLevelBase) {
++        SDL_free(hwdata);
++        return SDL_SetError("lowlevel.library not available");
++    }
++    SetJoyPortAttrs(hwdata->port, SJA_Type, SJA_TYPE_GAMECTLR, TAG_END);
++    joystick->nbuttons = d->nbuttons;
++    joystick->nhats = d->nhats;
++    joystick->naxes = 2;
++#ifndef NO_LOWLEVEL_EXT
++    hwdata->joystate_ext = 0L;
++    if (LowLevelBase->lib_Version > 50 || (LowLevelBase->lib_Version >= 50 && LowLevelBase->lib_Revision >= 17)) {
++        hwdata->supports_analog = 1;
++    }
++#endif
++    joystick->hwdata = hwdata;
++    return true;
 +}
 +
 +static bool AROS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
++    struct joystick_hwdata *hwdata = joystick->hwdata;
++
++    if (hwdata && hwdata->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(hwdata->device_id);
++        struct pHidd_Controller_Rumble r;
++
++        if (!dev) {
++            return SDL_SetError("Device is gone");
++        }
++        SDL_zero(r);
++        r.low = low_frequency_rumble;
++        r.high = high_frequency_rumble;
++        if (HIDD_Controller_SetRumble(dev, &r)) {
++            return true;
++        }
++    }
 +    return SDL_Unsupported();
 +}
 +
 +static bool AROS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
++    struct joystick_hwdata *hwdata = joystick->hwdata;
++
++    if (hwdata && hwdata->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(hwdata->device_id);
++        IPTR caps = 0;
++        struct pHidd_Controller_Rumble r;
++
++        if (!dev) {
++            return SDL_SetError("Device is gone");
++        }
++        OOP_GetAttr(dev, aHidd_Controller_Capabilities, &caps);
++        if (caps & vHidd_Controller_Cap_TriggerRumble) {
++            SDL_zero(r);
++            r.low = joystick->low_frequency_rumble;
++            r.high = joystick->high_frequency_rumble;
++            r.left_trigger = left_rumble;
++            r.right_trigger = right_rumble;
++            if (HIDD_Controller_SetRumble(dev, &r)) {
++                return true;
++            }
++        }
++    }
 +    return SDL_Unsupported();
 +}
 +
 +static bool AROS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
++    struct joystick_hwdata *hwdata = joystick->hwdata;
++
++    if (hwdata && hwdata->hidd) {
++        OOP_Object *dev = AROS_HiddDevice(hwdata->device_id);
++        if (!dev) {
++            return SDL_SetError("Device is gone");
++        }
++        if (HIDD_Controller_SetLED(dev, red, green, blue)) {
++            return true;
++        }
++    }
 +    return SDL_Unsupported();
 +}
 +
 +static bool AROS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +    return SDL_Unsupported();
 +}
 +
 +static bool AROS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +    return SDL_Unsupported();
++}
++
++static SDL_PowerState AROS_PowerState(UBYTE state)
++{
++    switch (state) {
++    case vHidd_Controller_Power_NoBattery:   return SDL_POWERSTATE_NO_BATTERY;
++    case vHidd_Controller_Power_Discharging: return SDL_POWERSTATE_ON_BATTERY;
++    case vHidd_Controller_Power_Charging:    return SDL_POWERSTATE_CHARGING;
++    case vHidd_Controller_Power_Charged:     return SDL_POWERSTATE_CHARGED;
++    default:                                 return SDL_POWERSTATE_UNKNOWN;
++    }
++}
++
++static void AROS_HiddUpdate(SDL_Joystick *joystick, struct joystick_hwdata *hwdata)
++{
++    OOP_Object *dev = AROS_HiddDevice(hwdata->device_id);
++    struct pHidd_Controller_Reading rd;
++    const Uint64 timestamp = SDL_GetTicksNS();
++    int i;
++
++    if (!dev) {
++        return;
++    }
++    rd.size = sizeof(rd);
++    if (!HIDD_Controller_GetReading(dev, &rd)) {
++        return;
++    }
++    if (hwdata->have_reading && rd.sequence == hwdata->last_sequence) {
++        return;
++    }
++    hwdata->have_reading = true;
++    hwdata->last_sequence = rd.sequence;
++
++    for (i = 0; i < joystick->nbuttons && i < 64; i++) {
++        bool down = (rd.buttons[i >> 5] & (1UL << (i & 31))) != 0;
++        SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, down);
++    }
++    for (i = 0; i < joystick->naxes && i < HIDD_CONTROLLER_MAX_AXES; i++) {
++        Sint16 value = rd.axes[i];
++        /* unipolar axes come as 0..32767; SDL expects the full range with rest at -32768 */
++        if (i < 32 && (hwdata->unipolar & (1UL << i))) {
++            value = (Sint16)((int)value * 2 - 32768);
++        }
++        SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, value);
++    }
++    for (i = 0; i < joystick->nhats && i < HIDD_CONTROLLER_MAX_HATS; i++) {
++        /* the subsystem's direction bits equal SDL_HAT_UP/RIGHT/DOWN/LEFT */
++        SDL_SendJoystickHat(timestamp, joystick, (Uint8)i, rd.hats[i] & 0x0F);
++    }
++
++    if (SDL_GetTicks() >= hwdata->next_power_check) {
++        struct pHidd_Controller_PowerInfo pi;
++        hwdata->next_power_check = SDL_GetTicks() + SDL_AROS_POWER_MS;
++        if (HIDD_Controller_GetPowerInfo(dev, &pi) && pi.state != vHidd_Controller_Power_Unknown) {
++            SDL_SendJoystickPowerInfo(joystick, AROS_PowerState(pi.state), pi.percent);
++        }
++    }
++}
++
++static void AROS_LowLevelUpdate(SDL_Joystick *joystick, struct joystick_hwdata *hwdata)
++{
++    ULONG data;
++#ifndef NO_LOWLEVEL_EXT
++    ULONG data_ext = 0;
++#endif
++    int i;
++    const Uint64 timestamp = SDL_GetTicksNS();
++
++    data = ReadJoyPort(hwdata->port);
++#ifndef NO_LOWLEVEL_EXT
++    if (hwdata->supports_analog) {
++        data_ext = ReadJoyPort(hwdata->port + JP_ANALOGUE_PORT_MAGIC);
++    }
++#endif
++
++    /* only send an event when something changed */
++
++    /* hats */
++    if ((hwdata->joystate & JP_DIRECTION_MASK) != (data & JP_DIRECTION_MASK)) {
++        if (joystick->nhats) {
++            Uint8 value_hat = SDL_HAT_CENTERED;
++
++            if (data & JPF_JOY_DOWN) {
++                value_hat |= SDL_HAT_DOWN;
++            } else if (data & JPF_JOY_UP) {
++                value_hat |= SDL_HAT_UP;
++            }
++
++            if (data & JPF_JOY_LEFT) {
++                value_hat |= SDL_HAT_LEFT;
++            } else if (data & JPF_JOY_RIGHT) {
++                value_hat |= SDL_HAT_RIGHT;
++            }
++
++            SDL_SendJoystickHat(timestamp, joystick, 0, value_hat);
++        }
++    }
++
++    /* axes */
++#ifndef NO_LOWLEVEL_EXT
++    if (hwdata->supports_analog && data_ext & JP_TYPE_ANALOGUE) {
++        if ((hwdata->joystate_ext & JP_XAXIS_MASK) != (data_ext & JP_XAXIS_MASK)) {
++            Sint16 value;
++
++            value = (data_ext & JP_XAXIS_MASK) * 2 * 32767 / 255 - 32767;
++            SDL_SendJoystickAxis(timestamp, joystick, 0, value);
++        }
++
++        if ((hwdata->joystate_ext & JP_YAXIS_MASK) != (data_ext & JP_YAXIS_MASK)) {
++            Sint16 value;
++
++            value = ((data_ext & JP_YAXIS_MASK) >> 8) * 2 * 32767 / 255 - 32767;
++            SDL_SendJoystickAxis(timestamp, joystick, 1, value);
++        }
++    } else
++#endif
++    {
++        if ((hwdata->joystate & (JPF_JOY_DOWN | JPF_JOY_UP)) != (data & (JPF_JOY_DOWN | JPF_JOY_UP))) {
++            Sint16 value;
++
++            /* UP and DOWN direction */
++            if (data & JPF_JOY_DOWN) {
++                value = LOWLEVEL_JOY_PLUS;
++            } else if (data & JPF_JOY_UP) {
++                value = LOWLEVEL_JOY_MINUS;
++            } else {
++                value = 0;
++            }
++
++            SDL_SendJoystickAxis(timestamp, joystick, 1, value);
++        }
++
++        if ((hwdata->joystate & (JPF_JOY_LEFT | JPF_JOY_RIGHT)) != (data & (JPF_JOY_LEFT | JPF_JOY_RIGHT))) {
++            Sint16 value;
++
++            /* LEFT and RIGHT direction */
++            if (data & JPF_JOY_LEFT) {
++                value = LOWLEVEL_JOY_MINUS;
++            } else if (data & JPF_JOY_RIGHT) {
++                value = LOWLEVEL_JOY_PLUS;
++            } else {
++                value = 0;
++            }
++
++            SDL_SendJoystickAxis(timestamp, joystick, 0, value);
++        }
++    }
++
++    /* Joy buttons */
++    for (i = 0; i < joystick->nbuttons; i++) {
++        if (data & joybut[i]) {
++            if (i == 1) {
++                /* FIXME: WTF? */
++                data &= ~(joybut[2]);
++            }
++
++            if (!(hwdata->joystate & joybut[i])) {
++                SDL_SendJoystickButton(timestamp, joystick, i, true);
++            }
++        } else if (hwdata->joystate & joybut[i]) {
++            SDL_SendJoystickButton(timestamp, joystick, i, false);
++        }
++    }
++
++    hwdata->joystate = data;
++#ifndef NO_LOWLEVEL_EXT
++    hwdata->joystate_ext = data_ext;
++#endif
 +}
 +
 +static void AROS_JoystickUpdate(SDL_Joystick *joystick)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +    struct joystick_hwdata *hwdata = joystick->hwdata;
-+    if (hwdata) {
-+        ULONG data;
-+#ifndef NO_LOWLEVEL_EXT
-+        ULONG data_ext = 0;
-+#endif
-+        int i;
-+        const Uint64 timestamp = SDL_GetTicksNS();
 +
-+        data = ReadJoyPort(hwdata->port);
-+#ifndef NO_LOWLEVEL_EXT
-+        if (joystick->hwdata->supports_analog) {
-+            data_ext = ReadJoyPort(hwdata->port + JP_ANALOGUE_PORT_MAGIC);
-+        }
-+#endif
-+
-+        /* only send an event when something changed */
-+
-+        /* hats */
-+        if ((joystick->hwdata->joystate & JP_DIRECTION_MASK) != (data & JP_DIRECTION_MASK)) {
-+            if (joystick->nhats) {
-+                Uint8 value_hat = SDL_HAT_CENTERED;
-+
-+                if (data & JPF_JOY_DOWN) {
-+                    value_hat |= SDL_HAT_DOWN;
-+                } else if (data & JPF_JOY_UP) {
-+                    value_hat |= SDL_HAT_UP;
-+                }
-+
-+                if (data & JPF_JOY_LEFT) {
-+                    value_hat |= SDL_HAT_LEFT;
-+                } else if (data & JPF_JOY_RIGHT) {
-+                    value_hat |= SDL_HAT_RIGHT;
-+                }
-+
-+                SDL_SendJoystickHat(timestamp, joystick, 0, value_hat);
-+            }
-+        }
-+
-+        /* axes */
-+#ifndef NO_LOWLEVEL_EXT
-+        if (joystick->hwdata->supports_analog && data_ext & JP_TYPE_ANALOGUE) {
-+            if ((joystick->hwdata->joystate_ext & JP_XAXIS_MASK) != (data_ext & JP_XAXIS_MASK)) {
-+                Sint16 value;
-+
-+                value = (data_ext & JP_XAXIS_MASK) * 2 * 32767 / 255 - 32767;
-+                SDL_SendJoystickAxis(timestamp, joystick, 0, value);
-+            }
-+
-+            if ((joystick->hwdata->joystate_ext & JP_YAXIS_MASK) != (data_ext & JP_YAXIS_MASK)) {
-+                Sint16 value;
-+
-+                value = ((data_ext & JP_YAXIS_MASK) >> 8) * 2 * 32767 / 255 - 32767;
-+                SDL_SendJoystickAxis(timestamp, joystick, 1, value);
-+            }
-+        } else
-+#endif
-+        {
-+            if ((joystick->hwdata->joystate & (JPF_JOY_DOWN | JPF_JOY_UP)) != (data & (JPF_JOY_DOWN | JPF_JOY_UP))) {
-+                Sint16 value;
-+
-+                /* UP and DOWN direction */
-+                if (data & JPF_JOY_DOWN) {
-+                    value = LOWLEVEL_JOY_PLUS;
-+                } else if (data & JPF_JOY_UP) {
-+                    value = LOWLEVEL_JOY_MINUS;
-+                } else {
-+                    value = 0;
-+                }
-+
-+                SDL_SendJoystickAxis(timestamp, joystick, 1, value);
-+            }
-+
-+            if ((joystick->hwdata->joystate & (JPF_JOY_LEFT | JPF_JOY_RIGHT)) != (data & (JPF_JOY_LEFT | JPF_JOY_RIGHT))) {
-+                Sint16 value;
-+
-+                /* LEFT and RIGHT direction */
-+                if (data & JPF_JOY_LEFT) {
-+                    value = LOWLEVEL_JOY_MINUS;
-+                } else if (data & JPF_JOY_RIGHT) {
-+                    value = LOWLEVEL_JOY_PLUS;
-+                } else {
-+                    value = 0;
-+                }
-+
-+                SDL_SendJoystickAxis(timestamp, joystick, 0, value);
-+            }
-+        }
-+
-+        /* Joy buttons */
-+        for (i = 0; i < joystick->nbuttons; i++) {
-+            if (data & joybut[i]) {
-+                if (i == 1) {
-+                    /* FIXME: WTF? */
-+                    data &= ~(joybut[2]);
-+                }
-+
-+                if (!(joystick->hwdata->joystate & joybut[i])) {
-+                    SDL_SendJoystickButton(timestamp, joystick, i, true);
-+                }
-+            } else if (joystick->hwdata->joystate & joybut[i]) {
-+                SDL_SendJoystickButton(timestamp, joystick, i, false);
-+            }
-+        }
-+
-+        joystick->hwdata->joystate = data;
-+#ifndef NO_LOWLEVEL_EXT
-+        joystick->hwdata->joystate_ext = data_ext;
-+#endif
++    if (!hwdata) {
++        return;
++    }
++    if (hwdata->hidd) {
++        AROS_HiddUpdate(joystick, hwdata);
++    } else {
++        AROS_LowLevelUpdate(joystick, hwdata);
 +    }
 +}
 +
 +static void AROS_JoystickClose(SDL_Joystick *joystick)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +    struct joystick_hwdata *hwdata = joystick->hwdata;
++
++    D(bug("[SDL3:Joystick] %s()\n", __func__));
 +    if (hwdata) {
-+        SetJoyPortAttrs(hwdata->port, SJA_Type, SJA_TYPE_AUTOSENSE, TAG_END);
++        if (!hwdata->hidd && LowLevelBase) {
++            SetJoyPortAttrs(hwdata->port, SJA_Type, SJA_TYPE_AUTOSENSE, TAG_END);
++        }
 +        SDL_free(hwdata);
 +        joystick->hwdata = NULL;
 +    }
@@ -2145,30 +2636,106 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +
 +static void AROS_JoystickQuit(void)
 +{
++    int i;
++
 +    D(bug("[SDL3:Joystick] %s()\n", __func__));
-+    if (aros_gameinput_devices) {
-+        int i;
-+        for (i = 0; i < joystick_count; i++) {
-+            int port = LowLevel_PortFromIndex(i);
-+            if (aros_gameinput_devices[port].gi_name) {
-+                FreeVec(aros_gameinput_devices[port].gi_name);
-+                aros_gameinput_devices[port].gi_name = NULL;
-+            }
-+        }
-+        FreeVec(aros_gameinput_devices);
-+        aros_gameinput_devices = NULL;
++    for (i = 0; i < aros_device_count; i++) {
++        AROS_FreeDevice(&aros_devices[i]);
 +    }
++    SDL_free(aros_devices);
++    aros_devices = NULL;
++    aros_device_count = 0;
++    AROS_HiddClose();
 +    if (LowLevelBase) {
 +        CloseLibrary(LowLevelBase);
 +        LowLevelBase = NULL;
 +    }
-+    joystick_count = 0;
++}
++
++/* Translate a subsystem binding into an SDL input mapping */
++static void AROS_MapBinding(const struct Hidd_Controller_Binding *b, SDL_InputMapping *out)
++{
++    switch (b->in_kind) {
++    case vHidd_Controller_Ctl_Button:
++        out->kind = EMappingKind_Button;
++        out->target = b->in_index;
++        break;
++    case vHidd_Controller_Ctl_Axis:
++        out->kind = EMappingKind_Axis;
++        out->target = b->in_index;
++        out->axis_reversed = (b->flags & vHidd_Controller_BF_Invert) || (b->in_min > b->in_max);
++        out->half_axis_positive = (b->flags & vHidd_Controller_BF_HalfPos) != 0;
++        out->half_axis_negative = (b->flags & vHidd_Controller_BF_HalfNeg) != 0;
++        break;
++    case vHidd_Controller_Ctl_Hat:
++        out->kind = EMappingKind_Hat;
++        out->target = (Uint8)((b->in_index << 4) | (b->hat_mask & 0x0F));
++        break;
++    default:
++        break;
++    }
 +}
 +
 +static bool AROS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 +{
-+    D(bug("[SDL3:Joystick] %s()\n", __func__));
-+    return false;
++    static const struct { UWORD std; size_t offset; } table[] =
++    {
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_South),         offsetof(SDL_GamepadMapping, a)             },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_East),          offsetof(SDL_GamepadMapping, b)             },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_West),          offsetof(SDL_GamepadMapping, x)             },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_North),         offsetof(SDL_GamepadMapping, y)             },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Back),          offsetof(SDL_GamepadMapping, back)          },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Guide),         offsetof(SDL_GamepadMapping, guide)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Start),         offsetof(SDL_GamepadMapping, start)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_LeftStick),     offsetof(SDL_GamepadMapping, leftstick)     },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_RightStick),    offsetof(SDL_GamepadMapping, rightstick)    },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_LeftShoulder),  offsetof(SDL_GamepadMapping, leftshoulder)  },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_RightShoulder), offsetof(SDL_GamepadMapping, rightshoulder) },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_DpadUp),        offsetof(SDL_GamepadMapping, dpup)          },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_DpadDown),      offsetof(SDL_GamepadMapping, dpdown)        },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_DpadLeft),      offsetof(SDL_GamepadMapping, dpleft)        },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_DpadRight),     offsetof(SDL_GamepadMapping, dpright)       },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc1),         offsetof(SDL_GamepadMapping, misc1)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_RightPaddle1),  offsetof(SDL_GamepadMapping, right_paddle1) },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_LeftPaddle1),   offsetof(SDL_GamepadMapping, left_paddle1)  },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_RightPaddle2),  offsetof(SDL_GamepadMapping, right_paddle2) },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_LeftPaddle2),   offsetof(SDL_GamepadMapping, left_paddle2)  },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Touchpad),      offsetof(SDL_GamepadMapping, touchpad)      },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc2),         offsetof(SDL_GamepadMapping, misc2)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc3),         offsetof(SDL_GamepadMapping, misc3)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc4),         offsetof(SDL_GamepadMapping, misc4)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc5),         offsetof(SDL_GamepadMapping, misc5)         },
++        { vHidd_Controller_Std_Button(vHidd_Controller_GP_Misc6),         offsetof(SDL_GamepadMapping, misc6)         },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_LeftX),          offsetof(SDL_GamepadMapping, leftx)         },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_LeftY),          offsetof(SDL_GamepadMapping, lefty)         },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_RightX),         offsetof(SDL_GamepadMapping, rightx)        },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_RightY),         offsetof(SDL_GamepadMapping, righty)        },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_LeftTrigger),    offsetof(SDL_GamepadMapping, lefttrigger)   },
++        { vHidd_Controller_Std_Axis(vHidd_Controller_GPA_RightTrigger),   offsetof(SDL_GamepadMapping, righttrigger)  },
++    };
++    SDL_AROS_Device *d = AROS_DeviceForIndex(device_index);
++    OOP_Object *dev;
++    size_t i;
++    bool any = false;
++
++    D(bug("[SDL3:Joystick] %s(%d)\n", __func__, device_index));
++
++    if (!d || !d->hidd || !(d->caps & vHidd_Controller_Cap_StandardMapping)) {
++        return false;
++    }
++    dev = AROS_HiddDevice(d->device_id);
++    if (!dev) {
++        return false;
++    }
++    SDL_zerop(out);
++    for (i = 0; i < SDL_arraysize(table); i++) {
++        struct Hidd_Controller_Binding b;
++        if (HIDD_Controller_GetBinding(dev, table[i].std, &b) && (b.flags & vHidd_Controller_BF_Valid)) {
++            AROS_MapBinding(&b, (SDL_InputMapping *)((char *)out + table[i].offset));
++            any = true;
++        }
++    }
++    return any;
 +}
 +
 +SDL_JoystickDriver SDL_AROS_JoystickDriver =
@@ -2199,8 +2766,8 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +#endif /* SDL_JOYSTICK_AROS */
 diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h
 --- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-07-28 13:08:21.766929593 +0100
-@@ -0,0 +1,42 @@
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-09-27 20:05:55.522925421 +0100
+@@ -0,0 +1,56 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -2232,9 +2799,23 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h 
 +#define LOWLEVEL_JOY_PLUS   32767 /* was 127, changed by Henes (20040801) */
 +#define LOWLEVEL_JOY_MINUS -32768 /* was -127 */
 +
++/*
++ * Set this hint to "0" to ignore controller.hidd and use lowlevel.library
++ * joyports only (the pre controller.hidd behaviour).
++ */
++#define SDL_HINT_JOYSTICK_AROS_HIDD "SDL_JOYSTICK_AROS_HIDD"
++
 +struct joystick_hwdata
 +{
-+    ULONG port;
++    bool  hidd;             /* controller.hidd device (else a lowlevel.library port) */
++    UWORD device_id;        /* controller.hidd device id */
++    ULONG port;             /* lowlevel.library port */
++    ULONG last_sequence;    /* last reading sequence delivered */
++    bool  have_reading;
++    ULONG unipolar;         /* bit n: raw axis n is unipolar (trigger like) */
++    Uint64 next_power_check;
++
++    /* lowlevel.library path */
 +    ULONG joystate;
 +#ifndef NO_LOWLEVEL_EXT
 +    ULONG joystate_ext;

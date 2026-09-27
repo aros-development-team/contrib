@@ -6,7 +6,8 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- contrib-sdl3 : SDL3-aros
 #MM- SDL3-aros-lib : SDL3-aros-sharedlib-linklib
 #MM- SDL3-aros : SDL3-aros-sharedlib SDL3-aros-genfiles SDL3-aros-tests
-#MM- SDL3-aros-tests : SDL3-aros-tests-main SDL3-aros-tests-utils SDL3-aros-tests-aut SDL3-aros-tests-copyfiles
+#MM- SDL3-aros-tests : SDL3-aros-tests-main SDL3-aros-tests-utils SDL3-aros-tests-aut SDL3-aros-tests-native SDL3-aros-tests-copyfiles
+#MM SDL3-aros-tests-native : includes linklibs contrib-sdl3-fetch development-sdl3
 #MM SDL3-aros-tests-main : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib
 #MM SDL3-aros-tests-utils : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib SDL3-aros-test-utillib
 #MM SDL3-aros-tests-aut : includes linklibs contrib-sdl3-fetch development-sdl3 SDL3-aros-test-commonlib
@@ -15,9 +16,10 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM- development-sdl3 : SDL3-aros-copy-includes SDL3-aros-genfiles SDL3-aros-sharedlib-includes SDL3-aros-sharedlib-linklib
 
 #MM SDL3-aros-sharedlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI workbench-libs-mesa-linklib \
-#MM  development-libiconv
+#MM  development-libiconv workbench-hidds-controller-includes kernel-hidd-input-includes
 
-#MM SDL3-aros-staticlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI
+#MM SDL3-aros-staticlib : includes linklibs  contrib-sdl3-fetch SDL3-aros-copy-includes workbench-devs-AHI \
+#MM  workbench-hidds-controller-includes kernel-hidd-input-includes
 
 REPOSITORIES := http://www.libsdl.org/release/
 ARCHVER      := 3.4.12
@@ -436,6 +438,11 @@ USER_LDFLAGS := -L$(SDL3TESTLIBDIR)
 %build_prog mmake=SDL3-aros-tests-aut progname=testautomation \
     files="$(SDL3AUTTESTSFILES)" targetdir=$(TESTEXEDIR) \
     uselibs="testcommon SDL3"
+
+# AROS specific tests (sources next to this makefile)
+%build_prog mmake=SDL3-aros-tests-native progname=testaroscontroller \
+    files="testaroscontroller" targetdir=$(TESTEXEDIR) \
+    uselibs="SDL3"
 
 SDL3TESTDATAFILES := \
     moose.dat \
