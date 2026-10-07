@@ -1,4 +1,4 @@
-# Copyright © 2009-2026, The AROS Development Team. All rights reserved.
+# Copyright ï¿½ 2009-2026, The AROS Development Team. All rights reserved.
 # $Id$
 
 include $(SRCDIR)/config/aros-contrib.cfg
@@ -8,11 +8,17 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 FONTCONFIG_VERS = 2.16.0
 
+# fonts.conf, conf.d and the cache live in Fonts:fontconfig. The dirs are
+# given relative to prefix, which install replaces with the host path; the
+# diff turns /Developer/../Fonts/... into Fonts:... for the library.
 FONTCONFIG_OPTIONS = \
     --without-expat \
     --without-expat-lib \
     --enable-libxml2 \
     --with-default-fonts=Fonts:TrueType \
+    --with-baseconfigdir='$${prefix}/../Fonts/fontconfig' \
+    --with-configdir='$${prefix}/../Fonts/fontconfig/conf.d' \
+    --with-cache-dir='$${prefix}/../Fonts/fontconfig/cache' \
     --disable-shared \
     --disable-docs \
     --with-arch=$(AROS_TARGET_CPU)-aros \
