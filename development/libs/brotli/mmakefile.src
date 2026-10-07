@@ -1,0 +1,35 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+BROTLI_VERSION := 1.1.0
+ARCHBASE := v$(BROTLI_VERSION)
+REPOSITORIES := https://github.com/google/brotli/archive/refs/tags
+# The github tag tarball unpacks to brotli-<version>, not <tag>
+BROTLI_SRCSUBDIR := brotli-$(BROTLI_VERSION)
+
+# Static libraries (brotlicommon, brotlidec, brotlienc) plus pkg-config files;
+# WebKit's WOFF2 font support decodes through it.
+BROTLI_OPTIONS := \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DBROTLI_BUILD_TOOLS=OFF \
+    -DBROTLI_DISABLE_TESTS=ON
+
+#MM- contrib-development : contrib-brotli
+#MM- contrib-brotli : development-brotli
+
+#MM development-brotli : includes-copy linklibs development-brotli-fetch
+
+%fetch mmake=development-brotli-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/brotli \
+       location=$(PORTSSOURCEDIR)/brotli archive_origins=$(REPOSITORIES) suffixes="tar.gz"
+
+%create_patch mmake=development-brotli-create-patch \
+       archive=$(ARCHBASE) srcdir=$(BROTLI_SRCSUBDIR) destination=$(PORTSDIR)/brotli
+
+%build_with_cmake mmake=development-brotli \
+       srcdir="$(PORTSDIR)/brotli/$(BROTLI_SRCSUBDIR)" prefix="$(AROS_DEVELOPER)" \
+       extraoptions="$(BROTLI_OPTIONS)"
+
+%common
