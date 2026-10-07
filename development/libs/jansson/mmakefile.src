@@ -1,0 +1,19 @@
+# Copyright © 2026, The AROS Development Team. All rights reserved.
+# $Id$
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-development : development-jansson
+
+JANSSON_VERSION := 2.14.1
+
+REPOSITORIES := https://github.com/akheron/jansson/releases/download/v$(JANSSON_VERSION)
+
+JANSSON_OPTIONS = \
+    --disable-shared \
+    --libdir=$(AROS_LIB) \
+    --includedir=$(AROS_INCLUDES)
+
+%fetch_and_build_gnu_development package=jansson version=$(JANSSON_VERSION) patch=no \
+    package_repo="$(REPOSITORIES)" suffixes="tar.bz2 tar.gz" \
+    extraoptions="$(JANSSON_OPTIONS)" nlsflag=no xflag=no
