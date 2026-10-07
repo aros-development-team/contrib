@@ -1,0 +1,40 @@
+diff -ruN cairo-1.18.4/meson.build cairo-1.18.4.aros/meson.build
+--- cairo-1.18.4/meson.build
++++ cairo-1.18.4.aros/meson.build
+@@ -713,7 +713,8 @@
+ pthread_c_args = []
+ pthread_link_args = []
+ 
+-foreach thread_flags : check_thread_flags
++# AROS: no mutexes (CAIRO_NO_MUTEX), so keep -lpthread out of cairo's users
++foreach thread_flags : (host_machine.system() == 'aros' ? [] : check_thread_flags)
+   if not conf.has('CAIRO_HAS_PTHREAD')
+     cflags = thread_flags[0]
+     lflags = thread_flags[1]
+diff -ruN cairo-1.18.4/src/cairo-mutex-impl-private.h cairo-1.18.4.aros/src/cairo-mutex-impl-private.h
+--- cairo-1.18.4/src/cairo-mutex-impl-private.h
++++ cairo-1.18.4.aros/src/cairo-mutex-impl-private.h
+@@ -157,6 +157,10 @@
+  *   poke around cairo-mutex-private.h for possible solutions.
+  */
+ 
++#if defined(__AROS__)
++#define CAIRO_NO_MUTEX 1
++#endif
++
+ #if CAIRO_NO_MUTEX
+ 
+ /* No mutexes */
+diff -ruN cairo-1.18.4/util/meson.build cairo-1.18.4.aros/util/meson.build
+--- cairo-1.18.4/util/meson.build
++++ cairo-1.18.4.aros/util/meson.build
+@@ -6,7 +6,8 @@
+   subdir('cairo-gobject')
+ endif
+ 
+-if conf.get('CAIRO_HAS_INTERPRETER', 0) == 1
++# AROS: the script interpreter only serves cairo's own tools, which are not built
++if conf.get('CAIRO_HAS_INTERPRETER', 0) == 1 and host_machine.system() != 'aros'
+   subdir('cairo-script')
+ else
+   libcairoscript_dep = dependency('', required: false)
