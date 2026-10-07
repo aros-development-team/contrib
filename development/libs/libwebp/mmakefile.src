@@ -1,0 +1,40 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+LIBWEBP_VERSION := 1.6.0
+ARCHBASE := libwebp-$(LIBWEBP_VERSION)
+REPOSITORIES := https://storage.googleapis.com/downloads.webmproject.org/releases/webp
+
+# Libraries only (webp, webpdemux, webpmux, sharpyuv) plus the CMake package
+# config; the core webp datatype builds its own private copy.
+LIBWEBP_OPTIONS := \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DWEBP_BUILD_ANIM_UTILS=OFF \
+    -DWEBP_BUILD_CWEBP=OFF \
+    -DWEBP_BUILD_DWEBP=OFF \
+    -DWEBP_BUILD_GIF2WEBP=OFF \
+    -DWEBP_BUILD_IMG2WEBP=OFF \
+    -DWEBP_BUILD_VWEBP=OFF \
+    -DWEBP_BUILD_WEBPINFO=OFF \
+    -DWEBP_BUILD_WEBPMUX=OFF \
+    -DWEBP_BUILD_EXTRAS=OFF
+
+#MM- contrib-development : contrib-libwebp
+#MM- contrib-libwebp : development-libwebp
+
+#MM development-libwebp : includes-copy linklibs development-libwebp-fetch
+
+%fetch mmake=development-libwebp-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/libwebp \
+       location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.gz"
+
+%create_patch mmake=development-libwebp-create-patch \
+       archive=$(ARCHBASE) destination=$(PORTSDIR)/libwebp
+
+%build_with_cmake mmake=development-libwebp \
+       srcdir="$(PORTSDIR)/libwebp/$(ARCHBASE)" prefix="$(AROS_DEVELOPER)" \
+       extraoptions="$(LIBWEBP_OPTIONS)"
+
+%common
