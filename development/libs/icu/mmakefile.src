@@ -5,7 +5,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-development : contrib-icu4c
 
-#MM- contrib-icu4c : contrib-icu4c-complete
+#MM- contrib-icu4c : contrib-icu4c-complete contrib-icu4c-files
 
 #MM- contrib-icu4c-complete : crosstools-icu
 
@@ -82,3 +82,16 @@ endif
 	package_repo="$(REPOSITORIES)" suffixes="tgz" \
 	patch=yes srcdir=icu builddir=source prefix=$(AROS_DEVELOPER) aros_prefix=/$(AROS_DIR_DEVELOPER) nix=yes \
 	extraoptions="$(ICU_EXTRA_OPTS)" nlsflag=no xflag=no
+
+# For programs that read the data as files, loading only the items they use,
+# instead of linking the whole libicudata: the stub data library and the
+# unpacked data tree (icudt<major><endianness>) from the data build.
+ICU_GENDIR := $(GENDIR)/$(CURDIR)/$(ICU_PKGNAME)
+ICU_FILESDIR := $(AROS_DEVELOPER)/share/icu/data
+
+#MM
+contrib-icu4c-files : contrib-icu4c-complete
+	$(Q)$(CP) $(ICU_GENDIR)/stubdata/libicudata.a $(AROS_LIB)/libicudata_stub.a
+	$(Q)$(RM) -r $(ICU_FILESDIR)
+	$(Q)$(MKDIR) $(ICU_FILESDIR)
+	$(Q)$(CP) -R $(ICU_GENDIR)/data/out/build/. $(ICU_FILESDIR)/
