@@ -25,21 +25,172 @@ diff -ruN --strip-trailing-cr curl-8.21.0/configure.ac curl-8.21.0.aros/configur
            *)
              CFLAGS="$CFLAGS -pthread"
              ;;
+diff -ruN --strip-trailing-cr curl-8.21.0/lib/amigaos.c curl-8.21.0.aros/lib/amigaos.c
+--- curl-8.21.0/lib/amigaos.c
++++ curl-8.21.0.aros/lib/amigaos.c
+@@ -237,3 +237,78 @@
+ #endif /* HAVE_PROTO_BSDSOCKET_H */
+ 
+ #endif /* __AMIGA__ */
++
++#ifdef __AROS__
++/*
++ * Per-thread bsdsocket.library base (see curl_setup.h). Opened on a thread's
++ * first socket call and closed when the thread exits.
++ */
++#include <proto/exec.h>
++#include <bsdsocket/socketbasetags.h>
++#include <pthread.h>
++
++static pthread_key_t aros_socketbase_key;
++static pthread_once_t aros_socketbase_once = PTHREAD_ONCE_INIT;
++
++/* errno is shared by all threads (it lives in StdCBase), so each thread's
++   base reports socket errors into its own slot; see SOCKERRNO in
++   curl_setup.h. */
++struct aros_socket {
++  struct Library *base;
++  int err;
++};
++
++static void aros_socket_free(void *p)
++{
++  struct aros_socket *s = p;
++
++  if(s->base)
++    CloseLibrary(s->base);
++  free(s);
++}
++
++static void aros_socketbase_init(void)
++{
++  pthread_key_create(&aros_socketbase_key, aros_socket_free);
++}
++
++static struct aros_socket *aros_socket_get(void)
++{
++  struct aros_socket *s;
++
++  pthread_once(&aros_socketbase_once, aros_socketbase_init);
++  s = pthread_getspecific(aros_socketbase_key);
++  if(!s) {
++    s = calloc(1, sizeof(*s));
++    pthread_setspecific(aros_socketbase_key, s);
++  }
++  return s;
++}
++
++int *Curl_aros_sockerrno(void)
++{
++  return &aros_socket_get()->err;
++}
++
++struct Library *Curl_aros_SocketBase(void)
++{
++  struct aros_socket *s = aros_socket_get();
++
++  if(!s->base) {
++    s->base = OpenLibrary((CONST_STRPTR)"bsdsocket.library", 4);
++    /* after storing it: SocketBaseTags() itself goes through SocketBase */
++    if(s->base)
++      SocketBaseTags(SBTM_SETVAL(SBTC_ERRNOPTR(sizeof(int))),
++                     (IPTR)&s->err, TAG_DONE);
++  }
++  return s->base;
++}
++
++/* select() on sockets curl created in this thread, for callers outside
++   curl (e.g. WebKit's WebSocket thread) that must use the same base. */
++int Curl_aros_select(int nfds, fd_set *readfds, fd_set *writefds,
++                     fd_set *errorfds, struct timeval *timeout)
++{
++  return WaitSelect(nfds, readfds, writefds, errorfds, timeout, NULL);
++}
++#endif /* __AROS__ */
 diff -ruN --strip-trailing-cr curl-8.21.0/lib/curl_setup.h curl-8.21.0.aros/lib/curl_setup.h
---- curl-8.21.0/lib/curl_setup.h	2026-06-24 06:53:29.000000000 +0100
-+++ curl-8.21.0.aros/lib/curl_setup.h	2026-07-28 21:25:53.111632248 +0100
-@@ -671,6 +671,14 @@
+--- curl-8.21.0/lib/curl_setup.h
++++ curl-8.21.0.aros/lib/curl_setup.h
+@@ -671,6 +671,30 @@
  
  #  endif /* MSDOS */
  
 +#  ifdef __AROS__
 +     /* bsdsocket.library API - declares gethostname(), CloseSocket(),
 +        IoctlSocket() etc. as library vector calls */
++     /* A bsdsocket base belongs to the task that opened it (AROSTCP fails
++        calls from any other task), so each thread gets its own; see
++        amigaos.c.  <proto/bsdsocket.h> honours a SocketBase macro. */
++     struct Library *Curl_aros_SocketBase(void);
++#    define SocketBase Curl_aros_SocketBase()
 +#    include <proto/bsdsocket.h>
 +#    undef HAVE_ALARM
 +#    undef HAVE_SIGACTION
++     /* AROSTCP rejects SOCK_CLOEXEC/SOCK_NONBLOCK in the socket() type
++        (EPROTONOSUPPORT), and libc fcntl() must not be used on
++        bsdsocket.library sockfds - use IoctlSocket() instead. */
++#    include <sys/socket.h>
++#    undef SOCK_CLOEXEC
++#    undef SOCK_NONBLOCK
++#    undef HAVE_FCNTL
++#    undef HAVE_FCNTL_O_NONBLOCK
++#    ifndef HAVE_IOCTLSOCKET_CAMEL_FIONBIO
++#      define HAVE_IOCTLSOCKET_CAMEL_FIONBIO 1
++#    endif
 +#  endif
 +
  #  ifdef __minix
       /* Minix 3 versions up to at least 3.1.3 are missing these prototypes */
       extern struct tm *gmtime_r(const time_t * const timep, struct tm *tmp);
+@@ -1091,6 +1115,11 @@
+ #ifdef USE_WINSOCK
+ #define SOCKERRNO         ((int)WSAGetLastError())
+ #define SET_SOCKERRNO(x)  WSASetLastError((int)(x))
++#elif defined(__AROS__)
++/* Per-thread socket errno, see amigaos.c */
++int *Curl_aros_sockerrno(void);
++#define SOCKERRNO         (*Curl_aros_sockerrno())
++#define SET_SOCKERRNO(x)  (*Curl_aros_sockerrno() = (x))
+ #else
+ #define SOCKERRNO         errno
+ #define SET_SOCKERRNO(x)  (errno = (x))
+diff -ruN --strip-trailing-cr curl-8.21.0/lib/curlx/wait.c curl-8.21.0.aros/lib/curlx/wait.c
+--- curl-8.21.0/lib/curlx/wait.c
++++ curl-8.21.0.aros/lib/curlx/wait.c
+@@ -33,6 +33,10 @@
+ #include <unistd.h>
+ #endif
+ 
++#ifdef __AROS__
++#include <unistd.h>  /* usleep() */
++#endif
++
+ #ifdef MSDOS
+ #include <dos.h>  /* delay() */
+ #endif
+@@ -75,6 +79,10 @@
+     /* do not use ULONG_MAX, because that is equal to INFINITE */
+ #endif
+   Sleep((DWORD)timeout_ms);
++#elif defined(__AROS__)
++  /* select() goes through this thread's bsdsocket base, which may not
++     even open (no TCP/IP stack); nothing to wait for here anyway */
++  r = usleep((useconds_t)(timeout_ms * 1000));
+ #else
+   /* avoid using poll() for this since it behaves incorrectly with no sockets
+      on Apple operating systems */
+diff -ruN --strip-trailing-cr curl-8.21.0/lib/hostip4.c curl-8.21.0.aros/lib/hostip4.c
+--- curl-8.21.0/lib/hostip4.c
++++ curl-8.21.0.aros/lib/hostip4.c
+@@ -110,6 +110,12 @@
+   struct hostent *buf = NULL;
+ #endif
+ 
++#ifdef __AROS__
++  /* no TCP/IP stack: the resolver calls would go through a NULL base */
++  if(!SocketBase)
++    return NULL;
++#endif
++
+ #if defined(HAVE_GETADDRINFO) && defined(HAVE_GETADDRINFO_THREADSAFE)
+   struct addrinfo hints;
+   char sbuf[12];
