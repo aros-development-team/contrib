@@ -1,6 +1,6 @@
 diff -ruN cairo-1.18.4/meson.build cairo-1.18.4.aros/meson.build
---- cairo-1.18.4/meson.build
-+++ cairo-1.18.4.aros/meson.build
+--- cairo-1.18.4/meson.build	2025-03-08 12:35:35.000000000 +0000
++++ cairo-1.18.4.aros/meson.build	2026-10-07 21:05:40.013478157 +0000
 @@ -713,7 +713,8 @@
  pthread_c_args = []
  pthread_link_args = []
@@ -11,9 +11,35 @@ diff -ruN cairo-1.18.4/meson.build cairo-1.18.4.aros/meson.build
    if not conf.has('CAIRO_HAS_PTHREAD')
      cflags = thread_flags[0]
      lflags = thread_flags[1]
+diff -ruN cairo-1.18.4/src/cairo-atomic-private.h cairo-1.18.4.aros/src/cairo-atomic-private.h
+--- cairo-1.18.4/src/cairo-atomic-private.h	2025-03-08 12:35:35.000000000 +0000
++++ cairo-1.18.4.aros/src/cairo-atomic-private.h	2026-10-07 21:42:14.214467167 +0000
+@@ -117,8 +117,12 @@
+     return atomic_compare_exchange_strong_explicit (x, &expected, newv, memory_order_seq_cst, memory_order_seq_cst);
+ }
+ 
++/* AROS: the callers pass T**, while this C11 implementation takes
++ * _Atomic(void *)*. The cast keeps that implicit conversion from being
++ * an error, which it is from gcc 14 on (-Wincompatible-pointer-types).
++ */
+ #define _cairo_atomic_ptr_cmpxchg(x, oldv, newv) \
+-  _cairo_atomic_ptr_cmpxchg_impl(x, oldv, newv)
++  _cairo_atomic_ptr_cmpxchg_impl((cairo_atomic_intptr_t *)(x), oldv, newv)
+ 
+ static cairo_always_inline void *
+ _cairo_atomic_ptr_cmpxchg_return_old_impl(cairo_atomic_intptr_t *x, void *oldv, void *newv)
+@@ -129,7 +133,7 @@
+ }
+ 
+ #define _cairo_atomic_ptr_cmpxchg_return_old(x, oldv, newv) \
+-  _cairo_atomic_ptr_cmpxchg_return_old_impl(x, oldv, newv)
++  _cairo_atomic_ptr_cmpxchg_return_old_impl((cairo_atomic_intptr_t *)(x), oldv, newv)
+ 
+ #endif /* HAVE_C11_ATOMIC_PRIMITIVES */
+ 
 diff -ruN cairo-1.18.4/src/cairo-mutex-impl-private.h cairo-1.18.4.aros/src/cairo-mutex-impl-private.h
---- cairo-1.18.4/src/cairo-mutex-impl-private.h
-+++ cairo-1.18.4.aros/src/cairo-mutex-impl-private.h
+--- cairo-1.18.4/src/cairo-mutex-impl-private.h	2025-03-08 12:35:35.000000000 +0000
++++ cairo-1.18.4.aros/src/cairo-mutex-impl-private.h	2026-10-07 21:05:40.013651457 +0000
 @@ -157,6 +157,10 @@
   *   poke around cairo-mutex-private.h for possible solutions.
   */
@@ -26,8 +52,8 @@ diff -ruN cairo-1.18.4/src/cairo-mutex-impl-private.h cairo-1.18.4.aros/src/cair
  
  /* No mutexes */
 diff -ruN cairo-1.18.4/util/meson.build cairo-1.18.4.aros/util/meson.build
---- cairo-1.18.4/util/meson.build
-+++ cairo-1.18.4.aros/util/meson.build
+--- cairo-1.18.4/util/meson.build	2025-03-08 12:35:35.000000000 +0000
++++ cairo-1.18.4.aros/util/meson.build	2026-10-07 21:05:40.013772357 +0000
 @@ -6,7 +6,8 @@
    subdir('cairo-gobject')
  endif

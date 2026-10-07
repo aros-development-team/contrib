@@ -10,7 +10,16 @@ REPOSITORIES := https://cairographics.org/releases \
 # Static library with the FreeType/fontconfig, PNG and PDF/PS/SVG backends;
 # no X11, tests or tools. Meson finds pixman-1, freetype2, fontconfig, libpng
 # and zlib through pkg-config.
+#
+# --wrap-mode=nofallback is deliberate: cairo ships wraps for freetype,
+# fontconfig and pixman, and without this a dependency we failed to publish
+# is replaced by a bundled copy instead of being reported. Those copies are
+# not built for AROS and fail obscurely (fontconfig's asks meson for the
+# threads dependency, which adds -pthread, which the target gcc rejects).
+# Better to fail at configure time naming the dependency that is missing.
+#
 CAIRO_OPTIONS := \
+    --wrap-mode=nofallback \
     -Dfreetype=enabled -Dfontconfig=enabled -Dpng=enabled -Dzlib=enabled \
     -Dxlib=disabled -Dxcb=disabled -Dquartz=disabled -Ddwrite=disabled \
     -Dtee=disabled -Dglib=disabled -Dspectre=disabled -Dlzo=disabled \

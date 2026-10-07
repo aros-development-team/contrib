@@ -2,7 +2,8 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-gfx-libs : contrib-gfx-libs-pixman contrib-gfx-libs-pixman-includes
+#MM- contrib-gfx-libs : contrib-gfx-libs-pixman contrib-gfx-libs-pixman-includes \
+#MM    contrib-gfx-libs-pixman-pkgconfig
 
 PIXMANVERSION := 0.46.4
 # version components for pixman/pixman-version.h
@@ -103,6 +104,35 @@ contrib-gfx-libs-pixman-genfiles : $(PIXMANINCDIR)/pixman-version.h $(PIXMANINCD
 # includes-copy stages headers that only exist after the fetch, so order it
 # behind genfiles (which itself depends on the fetch).
 #MM includes-copy : contrib-gfx-libs-pixman-genfiles
+
+#
+# pkg-config file. pixman generates this from its own meson build, which
+# this port does not use, so write it here: the meson ports (cairo among
+# them) look pixman up through pkg-config and silently fall back to a
+# bundled copy when it is missing.
+#
+#MM
+contrib-gfx-libs-pixman-pkgconfig : $(AROS_LIB)/pkgconfig/pixman-1.pc
+
+$(AROS_LIB)/pkgconfig/pixman-1.pc :
+	@$(ECHO) "Generating /Developer/lib/pkgconfig/pixman-1.pc ..."
+	%mkdir_q dir=$(AROS_LIB)/pkgconfig
+	@printf '%s\n' \
+	    'prefix=/Developer' \
+	    'exec_prefix=$${prefix}' \
+	    'libdir=$${prefix}/lib' \
+	    'includedir=$${prefix}/include' \
+	    '' \
+	    'Name: Pixman' \
+	    'Description: The pixman library (version 1)' \
+	    'Version: $(PIXMANVERSION)' \
+	    'Requires:' \
+	    'Libs: -L$${libdir} -lpixman' \
+	    'Cflags: -I$${includedir}/pixman-1' > $@
+
+# Anything that asks for the headers is about to compile against pixman,
+# so it wants the pkg-config file too.
+#MM contrib-gfx-libs-pixman-includes : contrib-gfx-libs-pixman-pkgconfig
 
 #MM contrib-gfx-libs-pixman-includes : includes-copy contrib-gfx-libs-pixman-genfiles
 
