@@ -30,7 +30,10 @@ ifeq ($(AROS_TARGET_CPU),m68k)
 USER_CFLAGS += $(CFLAGS_NO_JUMP_TABLES)
 endif
 
-CURL_OPTIONS=--disable-shared --without-libpsl --disable-threaded-resolver --disable-ipv6 --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet $(CURL_ATOMIC_LIBS)"
+# curl_multi_init() now treats a failing wakeup pipe/socketpair as fatal.  On
+# AROS the wakeup pipe cannot be made non-blocking (PIPE: has no
+# ACTION_CHANGE_MODE), so every transfer would die as CURLE_OUT_OF_MEMORY.
+CURL_OPTIONS=--disable-shared --without-libpsl --disable-ipv6 --disable-socketpair --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet $(CURL_ATOMIC_LIBS)"
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
     patch=yes package_repo="$(REPOSITORIES)" \
