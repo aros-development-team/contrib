@@ -1,0 +1,48 @@
+# Copyright (C) 2026, The AROS Development Team. All rights reserved.
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+HARFBUZZ_VERSION := 14.5.0
+ARCHBASE := harfbuzz-$(HARFBUZZ_VERSION)
+REPOSITORIES := https://github.com/harfbuzz/harfbuzz/releases/download/$(HARFBUZZ_VERSION)
+
+# CMake is community-maintained upstream (Meson is primary), but it is what the
+# rest of contrib builds with. AROS's CMake platform defines no system search
+# prefixes and names the freetype linklib "freetype2", so point the find
+# modules at the SDK explicitly. Only libharfbuzz and libharfbuzz-icu are built.
+# freetype2.library does not export several functions HarfBuzz uses (FT_Get_Paint,
+# FT_Reference_Face, FT_Sfnt_Table_Info, ...), so users must link freetype2.static;
+# probe against it too so the FT_* feature checks match.
+HARFBUZZ_OPTIONS := \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DHB_HAVE_FREETYPE=ON \
+    -DHB_HAVE_ICU=ON \
+    -DHB_BUILD_SUBSET=OFF \
+    -DHB_BUILD_RASTER=OFF \
+    -DHB_BUILD_VECTOR=OFF \
+    -DHB_BUILD_GPU=OFF \
+    -DHB_BUILD_UTILS=OFF \
+    -DFREETYPE_INCLUDE_DIR_ft2build=$(AROS_INCLUDES) \
+    -DFREETYPE_INCLUDE_DIR_freetype2=$(AROS_INCLUDES) \
+    -DFREETYPE_LIBRARY_RELEASE="$(AROS_LIB)/libfreetype2.static.a;$(AROS_LIB)/libpng.a;$(AROS_LIB)/libz.a" \
+    -DICU_INCLUDE_DIR=$(AROS_INCLUDES) \
+    -DICU_UC_LIBRARY_RELEASE=$(AROS_LIB)/libicuuc.a
+
+#MM- contrib-development : contrib-harfbuzz
+#MM- contrib-harfbuzz : development-harfbuzz
+
+#MM development-harfbuzz : includes-copy workbench-libs-freetype-complete contrib-icu4c development-harfbuzz-fetch
+
+%fetch mmake=development-harfbuzz-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/harfbuzz \
+       location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.xz"
+
+%create_patch mmake=development-harfbuzz-create-patch \
+       archive=$(ARCHBASE) destination=$(PORTSDIR)/harfbuzz
+
+%build_with_cmake mmake=development-harfbuzz \
+       srcdir="$(PORTSDIR)/harfbuzz/$(ARCHBASE)" prefix="$(AROS_DEVELOPER)" \
+       extraoptions="$(HARFBUZZ_OPTIONS)"
+
+%common
