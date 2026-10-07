@@ -1,59 +1,84 @@
-diff -ruN fontconfig-2.16.0/fc-cache/Makefile.am fontconfig-2.16.0.aros/fc-cache/Makefile.am
---- fontconfig-2.16.0/fc-cache/Makefile.am	2025-01-17 15:15:05.000000000 +0000
-+++ fontconfig-2.16.0.aros/fc-cache/Makefile.am	2025-01-17 15:18:06.205389000 +0000
-@@ -30,10 +30,10 @@
- if OS_WIN32
- else
- install-data-local:
--	-$(mkinstalldirs) "$(DESTDIR)$(fc_cachedir)"
-+	-$(mkinstalldirs) "$(DESTDIR)$(prefix)$(fc_cachedir)"
+diff -ruN fontconfig-2.16.0/conf.d/60-latin.conf fontconfig-2.16.0.aros/conf.d/60-latin.conf
+--- fontconfig-2.16.0/conf.d/60-latin.conf
++++ fontconfig-2.16.0.aros/conf.d/60-latin.conf
+@@ -7,6 +7,7 @@
+ 		<prefer>
+ 			<family>Noto Serif</family>
+ 			<family>DejaVu Serif</family>
++			<family>Bitstream Vera Serif</family>
+ 			<family>Times New Roman</family>
+ 			<family>Thorndale AMT</family>
+ 			<family>Luxi Serif</family>
+@@ -20,6 +21,7 @@
+ 		<prefer>
+ 			<family>Noto Sans</family>
+ 			<family>DejaVu Sans</family>
++			<family>Bitstream Vera Sans</family>
+ 			<family>Verdana</family>
+ 			<family>Arial</family>
+ 			<family>Albany AMT</family>
+@@ -37,6 +39,7 @@
+ 		<prefer>
+ 			<family>Noto Sans Mono</family>
+ 			<family>DejaVu Sans Mono</family>
++			<family>Bitstream Vera Sans Mono</family>
+ 			<family>Inconsolata</family>
+ 			<family>Andale Mono</family>
+ 			<family>Courier New</family>
+diff -ruN fontconfig-2.16.0/conf.d/Makefile.am fontconfig-2.16.0.aros/conf.d/Makefile.am
+--- fontconfig-2.16.0/conf.d/Makefile.am
++++ fontconfig-2.16.0.aros/conf.d/Makefile.am
+@@ -111,7 +111,10 @@
+ 	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) $(top_builddir)/conf.d/35-lang-normalize.conf
  
+ install-data-hook:
+-	$(PYTHON) $(srcdir)/link_confs.py $(templatedir) $(configdir) $(CONF_LINKS)
++	$(MKDIR_P) "$(DESTDIR)$(configdir)"
++	for i in $(CONF_LINKS); do \
++	  cp "$(DESTDIR)$(templatedir)/$$i" "$(DESTDIR)$(configdir)/$$i" || exit 1; \
++	done
  uninstall-local:
--	-$(RM) -rf "$(DESTDIR)$(fc_cachedir)"
-+	-$(RM) -rf "$(DESTDIR)$(prefix)$(fc_cachedir)"
- endif
+ 	@(echo cd $(DESTDIR)$(configdir);			\
+ 	  cd $(DESTDIR)$(configdir);				\
+diff -ruN fontconfig-2.16.0/conf.d/Makefile.in fontconfig-2.16.0.aros/conf.d/Makefile.in
+--- fontconfig-2.16.0/conf.d/Makefile.in
++++ fontconfig-2.16.0.aros/conf.d/Makefile.in
+@@ -720,7 +720,10 @@
+ 	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) $(top_builddir)/conf.d/35-lang-normalize.conf
  
- AM_CPPFLAGS=-I${top_srcdir} -I${top_srcdir}/src $(WARN_CFLAGS)
-diff -ruN fontconfig-2.16.0/fc-cache/Makefile.in fontconfig-2.16.0.aros/fc-cache/Makefile.in
---- fontconfig-2.16.0/fc-cache/Makefile.in	2025-01-17 15:18:06.711398100 +0000
-+++ fontconfig-2.16.0.aros/fc-cache/Makefile.in	2025-01-17 15:18:06.205389000 +0000
-@@ -826,10 +826,10 @@
- 
- 
- @OS_WIN32_FALSE@install-data-local:
--@OS_WIN32_FALSE@	-$(mkinstalldirs) "$(DESTDIR)$(fc_cachedir)"
-+@OS_WIN32_FALSE@	-$(mkinstalldirs) "$(DESTDIR)$(prefix)$(fc_cachedir)"
- 
- @OS_WIN32_FALSE@uninstall-local:
--@OS_WIN32_FALSE@	-$(RM) -rf "$(DESTDIR)$(fc_cachedir)"
-+@OS_WIN32_FALSE@	-$(RM) -rf "$(DESTDIR)$(prefix)$(fc_cachedir)"
- 
- @USEDOCBOOK_TRUE@${man_MANS}: ${SGML}	
- @USEDOCBOOK_TRUE@	$(AM_V_GEN) $(RM) $@; \
+ install-data-hook:
+-	$(PYTHON) $(srcdir)/link_confs.py $(templatedir) $(configdir) $(CONF_LINKS)
++	$(MKDIR_P) "$(DESTDIR)$(configdir)"
++	for i in $(CONF_LINKS); do \
++	  cp "$(DESTDIR)$(templatedir)/$$i" "$(DESTDIR)$(configdir)/$$i" || exit 1; \
++	done
+ uninstall-local:
+ 	@(echo cd $(DESTDIR)$(configdir);			\
+ 	  cd $(DESTDIR)$(configdir);				\
 diff -ruN fontconfig-2.16.0/Makefile.am fontconfig-2.16.0.aros/Makefile.am
---- fontconfig-2.16.0/Makefile.am	2025-01-17 15:15:05.000000000 +0000
-+++ fontconfig-2.16.0.aros/Makefile.am	2025-01-17 15:18:06.205389000 +0000
-@@ -123,7 +123,7 @@
- 	mv $@.tmp $@
+--- fontconfig-2.16.0/Makefile.am
++++ fontconfig-2.16.0.aros/Makefile.am
+@@ -113,7 +113,7 @@
  
- install-data-local: fonts.conf
--	$(mkinstalldirs) $(DESTDIR)$(baseconfigdir) $(DESTDIR)$(fc_cachedir)
-+	$(mkinstalldirs) $(DESTDIR)$(baseconfigdir) $(DESTDIR)$(prefix)$(fc_cachedir)
- 	if [ -f $(DESTDIR)$(baseconfigdir)/fonts.conf ]; then \
- 	  echo "backing up existing $(DESTDIR)$(baseconfigdir)/fonts.conf"; \
- 	  mv $(DESTDIR)$(baseconfigdir)/fonts.conf $(DESTDIR)$(baseconfigdir)/fonts.conf.bak; \
+ fonts.conf: fonts.conf.in Makefile
+ 	sed \
+-		-e 's,@FC_CACHEDIR\@,$(FC_CACHEDIR),g' \
++		-e 's,@FC_CACHEDIR\@,$(shell echo $(FC_CACHEDIR)|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%'),g' \
+ 		-e 's,@FC_DEFAULT_FONTS\@,	$(FC_DEFAULT_FONTS),g' \
+ 		-e 's,@FC_FONTPATH\@,$(FC_FONTPATH),g' \
+ 		-e 's,@CONFIGDIR\@,$(FC_CONFIGDIR),g' \
 diff -ruN fontconfig-2.16.0/Makefile.in fontconfig-2.16.0.aros/Makefile.in
---- fontconfig-2.16.0/Makefile.in	2025-01-17 15:18:06.655397200 +0000
-+++ fontconfig-2.16.0.aros/Makefile.in	2025-01-17 15:18:06.205389000 +0000
-@@ -1089,7 +1089,7 @@
- 	mv $@.tmp $@
+--- fontconfig-2.16.0/Makefile.in
++++ fontconfig-2.16.0.aros/Makefile.in
+@@ -1079,7 +1079,7 @@
  
- install-data-local: fonts.conf
--	$(mkinstalldirs) $(DESTDIR)$(baseconfigdir) $(DESTDIR)$(fc_cachedir)
-+	$(mkinstalldirs) $(DESTDIR)$(baseconfigdir) $(DESTDIR)$(prefix)$(fc_cachedir)
- 	if [ -f $(DESTDIR)$(baseconfigdir)/fonts.conf ]; then \
- 	  echo "backing up existing $(DESTDIR)$(baseconfigdir)/fonts.conf"; \
- 	  mv $(DESTDIR)$(baseconfigdir)/fonts.conf $(DESTDIR)$(baseconfigdir)/fonts.conf.bak; \
+ fonts.conf: fonts.conf.in Makefile
+ 	sed \
+-		-e 's,@FC_CACHEDIR\@,$(FC_CACHEDIR),g' \
++		-e 's,@FC_CACHEDIR\@,$(shell echo $(FC_CACHEDIR)|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%'),g' \
+ 		-e 's,@FC_DEFAULT_FONTS\@,	$(FC_DEFAULT_FONTS),g' \
+ 		-e 's,@FC_FONTPATH\@,$(FC_FONTPATH),g' \
+ 		-e 's,@CONFIGDIR\@,$(FC_CONFIGDIR),g' \
 diff -ruN fontconfig-2.16.0/src/fcatomic.c fontconfig-2.16.0.aros/src/fcatomic.c
 --- fontconfig-2.16.0/src/fcatomic.c	2025-01-17 15:15:05.000000000 +0000
 +++ fontconfig-2.16.0.aros/src/fcatomic.c	2025-01-17 15:18:06.205389000 +0000
@@ -84,6 +109,93 @@ diff -ruN fontconfig-2.16.0/src/fcatomic.c fontconfig-2.16.0.aros/src/fcatomic.c
      if (unlink ((char *) atomic->lck) == -1)
  	rmdir ((char *) atomic->lck);
  #else
+diff -ruN fontconfig-2.16.0/src/fccfg.c fontconfig-2.16.0.aros/src/fccfg.c
+--- fontconfig-2.16.0/src/fccfg.c
++++ fontconfig-2.16.0.aros/src/fccfg.c
+@@ -2459,6 +2459,13 @@
+ 	  file[0] == '\\' ||
+ 	  (isalpha (file[0]) && file[1] == ':' && (file[2] == '/' || file[2] == '\\'))))
+ 	strcat ((char *) path, "\\");
++#elif defined(__AROS__)
++    /* A leading '/' means the parent dir, so never prefix an absolute VOL: file */
++    if (path[0] && path[strlen((char *) path)-1] != '/' &&
++	path[strlen((char *) path)-1] != ':' && file[0] != '/')
++	strcat ((char *) path, "/");
++    else
++	osize--;
+ #else
+     if ((!path[0] || path[strlen((char *) path)-1] != '/') && file[0] != '/')
+ 	strcat ((char *) path, "/");
+@@ -2589,6 +2596,13 @@
+     {
+ 	const FcChar8 *home = FcConfigHome ();
+ 	size_t len = home ? strlen ((const char *)home) : 0;
++
++#ifdef __AROS__
++	/* Without HOME the result would be "/.config" and friends, which
++	   -nix programs resolve to non-existent volumes (".config:"). */
++	if (!home || !home[0])
++	    return NULL;
++#endif
+ 
+ 	ret = malloc (len + 7 + 1);
+ 	if (ret)
+@@ -2617,6 +2631,13 @@
+     {
+ 	const FcChar8 *home = FcConfigHome ();
+ 	size_t len = home ? strlen ((const char *)home) : 0;
++
++#ifdef __AROS__
++	/* Without HOME the result would be "/.config" and friends, which
++	   -nix programs resolve to non-existent volumes (".config:"). */
++	if (!home || !home[0])
++	    return NULL;
++#endif
+ 
+ 	ret = malloc (len + 8 + 1);
+ 	if (ret)
+@@ -2646,6 +2667,13 @@
+ 	const FcChar8 *home = FcConfigHome ();
+ 	size_t len = home ? strlen ((const char *)home) : 0;
+ 
++#ifdef __AROS__
++	/* Without HOME the result would be "/.config" and friends, which
++	   -nix programs resolve to non-existent volumes (".config:"). */
++	if (!home || !home[0])
++	    return NULL;
++#endif
++
+ 	ret = malloc (len + 13 + 1);
+ 	if (ret)
+ 	{
+diff -ruN fontconfig-2.16.0/src/fcdefault.c fontconfig-2.16.0.aros/src/fcdefault.c
+--- fontconfig-2.16.0/src/fcdefault.c
++++ fontconfig-2.16.0.aros/src/fcdefault.c
+@@ -25,6 +25,9 @@
+ #include "fcint.h"
+ #include <limits.h>
+ #include <string.h>
++#ifdef __AROS__
++#include <proto/dos.h>
++#endif
+ 
+ /* MT-safe */
+ 
+@@ -151,6 +154,14 @@
+ 
+ 	    prgname = FcStrdup (p);
+ 	}
++#elif defined (__AROS__)
++	/* No /proc/self/exe; -nix would turn it into a "proc:" requester. */
++	char buf[256];
++
++	if (GetProgramName (buf, sizeof (buf)))
++	    prgname = FcStrdup (FilePart (buf));
++	else
++	    prgname = FcStrdup ("");
+ #elif defined (HAVE_GETPROGNAME)
+ 	const char *q = getprogname ();
+ 	if (q)
 diff -ruN fontconfig-2.16.0/src/fcint.h fontconfig-2.16.0.aros/src/fcint.h
 --- fontconfig-2.16.0/src/fcint.h	2025-01-17 15:15:05.000000000 +0000
 +++ fontconfig-2.16.0.aros/src/fcint.h	2025-06-07 17:02:51.750347391 +0000
@@ -201,14 +313,20 @@ diff -ruN fontconfig-2.16.0/src/fcstr.c fontconfig-2.16.0.aros/src/fcstr.c
      else
      {
 diff -ruN fontconfig-2.16.0/src/Makefile.in fontconfig-2.16.0.aros/src/Makefile.in
---- fontconfig-2.16.0/src/Makefile.in	2025-01-17 15:18:06.890401400 +0000
-+++ fontconfig-2.16.0.aros/src/Makefile.in	2025-01-17 15:18:06.205389000 +0000
-@@ -279,7 +279,7 @@
+--- fontconfig-2.16.0/src/Makefile.in
++++ fontconfig-2.16.0.aros/src/Makefile.in
+@@ -274,12 +274,12 @@
+ AUTOHEADER = @AUTOHEADER@
+ AUTOMAKE = @AUTOMAKE@
+ AWK = @AWK@
+-BASECONFIGDIR = @BASECONFIGDIR@
++BASECONFIGDIR = $(shell echo @BASECONFIGDIR@|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%')
+ CC = @CC@
  CCDEPMODE = @CCDEPMODE@
  CC_FOR_BUILD = @CC_FOR_BUILD@
  CFLAGS = @CFLAGS@
 -CONFIGDIR = @CONFIGDIR@
-+CONFIGDIR = $(shell echo @CONFIGDIR@|sed 's%/%%; s%/%:%')
++CONFIGDIR = $(shell echo @CONFIGDIR@|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%')
  CPP = @CPP@
  CPPFLAGS = @CPPFLAGS@
  CSCOPE = @CSCOPE@
@@ -218,8 +336,19 @@ diff -ruN fontconfig-2.16.0/src/Makefile.in fontconfig-2.16.0.aros/src/Makefile.
  FC_ADD_FONTS = @FC_ADD_FONTS@
 -FC_CACHEDIR = @FC_CACHEDIR@
 -FC_DEFAULT_FONTS = @FC_DEFAULT_FONTS@
-+FC_CACHEDIR = $(shell echo @FC_CACHEDIR@|sed 's%/%%; s%/%:%')
-+FC_DEFAULT_FONTS = $(shell echo @FC_DEFAULT_FONTS@|sed 's%/%%; s%/%:%')
++FC_CACHEDIR = $(shell echo @FC_CACHEDIR@|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%')
++FC_DEFAULT_FONTS = $(shell echo @FC_DEFAULT_FONTS@|sed 's%^.*/\.\./%/%; s%/%%; s%/%:%')
  FC_FONTDATE = @FC_FONTDATE@
  FC_FONTPATH = @FC_FONTPATH@
  FGREP = @FGREP@
+diff -ruN fontconfig-2.16.0/fonts.conf.in fontconfig-2.16.0.aros/fonts.conf.in
+--- fontconfig-2.16.0/fonts.conf.in
++++ fontconfig-2.16.0.aros/fonts.conf.in
+@@ -85,6 +85,7 @@
+ <!-- Font cache directory list -->
+ 
+ 	<cachedir>@FC_CACHEDIR@</cachedir>
++	<cachedir>T:fontconfig</cachedir>
+ 	<cachedir prefix="xdg">fontconfig</cachedir>
+ 	<!-- the following element will be removed in the future -->
+ 	<cachedir>~/.fontconfig</cachedir>
