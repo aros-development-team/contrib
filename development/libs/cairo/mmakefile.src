@@ -1,34 +1,38 @@
-# Copyright © 2012-2025, The AROS Development Team. All rights reserved.
-# $Id$
+# Copyright (C) 2012-2026, The AROS Development Team. All rights reserved.
 
 include $(SRCDIR)/config/aros-contrib.cfg
+
+CAIRO_VERSION := 1.18.4
+ARCHBASE := cairo-$(CAIRO_VERSION)
+REPOSITORIES := https://cairographics.org/releases \
+ https://ftp.osuosl.org/pub/blfs/conglomeration/cairo
+
+# Static library with the FreeType/fontconfig, PNG and PDF/PS/SVG backends;
+# no X11, tests or tools. Meson finds pixman-1, freetype2, fontconfig, libpng
+# and zlib through pkg-config.
+CAIRO_OPTIONS := \
+    -Dfreetype=enabled -Dfontconfig=enabled -Dpng=enabled -Dzlib=enabled \
+    -Dxlib=disabled -Dxcb=disabled -Dquartz=disabled -Ddwrite=disabled \
+    -Dtee=disabled -Dglib=disabled -Dspectre=disabled -Dlzo=disabled \
+    -Dsymbol-lookup=disabled -Dtests=disabled -Dgtk2-utils=disabled \
+    -Dgtk_doc=false
 
 #MM- contrib-development : contrib-cairo
 #MM- contrib-cairo : development-cairo
 
 #MM- development-cairo : workbench-libs-freetype-complete contrib-fontconfig contrib-gfx-libs-pixman-includes
 
-CAIRO_OPTIONS= \
-    --enable-ft \
-    --enable-fc \
-    --disable-lto \
-    --disable-shared \
-    --disable-xlib \
-    --disable-xcb png_CFLAGS=' ' \
-    --libdir=$(AROS_LIB) \
-    png_LIBS='-lpng' \
-    pixman_CFLAGS='-I$(AROS_INCLUDES)/pixman-1' \
-    pixman_LIBS='-lpixman' \
-    FREETYPE_CFLAGS='-I$(AROS_INCLUDES)/freetype' \
-    FONTCONFIG_CFLAGS='-I$(AROS_INCLUDES)/fontconfig' \
-    FREETYPE_LIBS='-lfreetype2' \
-    FONTCONFIG_LIBS='-lfontconfig'
+#MM development-cairo-meson : development-cairo-fetch
 
-REPOSITORIES := https://cairographics.org/releases \
- https://ftp.osuosl.org/pub/blfs/conglomeration/cairo \
- https://releases.linaro.org/archive/13.05/openembedded/sources \
- http://bbgentoo.ilb.ru/distfiles
+%fetch mmake=development-cairo-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/cairo \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.xz" \
+    patches_specs=$(ARCHBASE)-aros.diff:$(ARCHBASE):-f,-p1
 
-%fetch_and_build_gnu_development package=cairo version=1.16.0 patch=yes \
-    package_repo="$(REPOSITORIES)" suffixes="tar.xz" \
-    extraoptions="$(CAIRO_OPTIONS)" config_env_extra="$(CAIRO_ENV)" nlsflag=no
+%create_patch mmake=development-cairo-create-patch \
+    archive=$(ARCHBASE) suffixes="tar.xz" destination=$(PORTSDIR)/cairo
+
+%build_with_meson mmake=development-cairo \
+    srcdir=$(PORTSDIR)/cairo/$(ARCHBASE) prefix=$(AROS_DEVELOPER) \
+    extraoptions="$(CAIRO_OPTIONS)"
+
+%common
