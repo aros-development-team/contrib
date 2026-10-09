@@ -39,7 +39,10 @@ FFMPEG_OPTIONS := \
         --enable-cross-compile \
         --arch=$(FFMPEG_ARCH) \
         --target-os=aros \
-        --cc="$(CC)" \
+        --cc="$(strip $(CC) $(TARGET_SYSROOT))" \
+        --ar="$(AR_PLAIN)" \
+        --ranlib="$(RANLIB)" \
+        --nm="$(NM_PLAIN)" \
         --extra-libs="$(FFMPEG_LIBS)" \
         --enable-static \
         --disable-pic \
