@@ -88,10 +88,27 @@ endif
 # unpacked data tree (icudt<major><endianness>) from the data build.
 ICU_GENDIR := $(GENDIR)/$(CURDIR)/$(ICU_PKGNAME)
 ICU_FILESDIR := $(AROS_DEVELOPER)/share/icu/data
+ICU_PKG := $(TOOLDIR)/$(ICU_PKGNAME)/bin/icupkg
+ICU_DATA_ARCHIVE := $(PORTSDIR)/$(ICU_PKGNAME)/icu/source/data/in/icudt$(ICU_MAJOR)l.dat
 
 #MM
 contrib-icu4c-files : contrib-icu4c-complete
 	$(Q)$(CP) $(ICU_GENDIR)/stubdata/libicudata.a $(AROS_LIB)/libicudata_stub.a
 	$(Q)$(RM) -r $(ICU_FILESDIR)
 	$(Q)$(MKDIR) $(ICU_FILESDIR)
+ifeq ($(ICU_LEGACY),yes)
+# ICU 61 only builds its data directory together with its tools, which the
+# non-x86 targets disable, so data/out/build never exists there. Unpack the
+# prebuilt archive ICU ships instead, with the host icupkg, converted to the
+# byte order configure picked (ICUDATA_CHAR) - what the data build does.
+	$(Q)c=`$(SED) -n 's/^ICUDATA_CHAR *= *//p' $(ICU_GENDIR)/icudefs.mk` && \
+	    d=$(ICU_FILESDIR)/icudt$(ICU_MAJOR)$$c && \
+	    $(ICU_PKG) -t$$c $(ICU_DATA_ARCHIVE) $(ICU_GENDIR)/icudt$(ICU_MAJOR)$$c.dat && \
+	    $(MKDIR) $$d && \
+	    for sub in `$(ICU_PKG) -l $(ICU_GENDIR)/icudt$(ICU_MAJOR)$$c.dat | $(SED) -n 's#/[^/]*$$##p' | sort -u` ; do \
+	        $(MKDIR) $$d/$$sub ; \
+	    done && \
+	    $(ICU_PKG) -d $$d -x '*' $(ICU_GENDIR)/icudt$(ICU_MAJOR)$$c.dat
+else
 	$(Q)$(CP) -R $(ICU_GENDIR)/data/out/build/. $(ICU_FILESDIR)/
+endif
