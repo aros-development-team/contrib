@@ -1,0 +1,10 @@
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+#MM- contrib-networking-services-arosvncserver : contrib-networking-services-arosvncserver-svccfg
+
+# Install the default service config into the AROSTCP service-manager dir
+# (db/services.d/), so the stack's service manager can run AROSVNCServer.
+%copy_files_q mmake=contrib-networking-services-arosvncserver-svccfg \
+    files="$(filter-out mmakefile.src mmakefile, $(call WILDCARD, *))" \
+    dst=$(AROS_SYSTEM)/Network/AROSTCP/db/services.d

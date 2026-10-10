@@ -39,9 +39,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define KeySym RFBKeySym
 
 #include <dos/dos.h>
+#include <dos/var.h>
 #include <proto/exec.h>
 #include <proto/bsdsocket.h>
 #include <proto/dos.h>
+#include <proto/netservice.h>
+#include <libraries/netservice.h>
+#include <utility/tagitem.h>
 #include <proto/graphics.h>
 #include <proto/cybergraphics.h>
 #include <proto/intuition.h>
@@ -145,6 +149,15 @@ ULONG shutDownServer 	= (ULONG)FALSE;
 ULONG shutDownRequest	= (ULONG)FALSE;
 ULONG ScreenChange 		= (ULONG)FALSE;
 int  Clients    = 0;
+
+/* netservices.library: set when launched as a managed service (the stack's
+ * service manager runs db/services.d/arosvnc).  Optional - started by hand it
+ * simply does not register, and CTRL-C still stops it. */
+struct Library *NetServicesBase = NULL;
+static APTR  nsHandle    = NULL;
+static BYTE  nsStop = -1, nsBegin = -1, nsEnd = -1;
+static ULONG nsMaskStop = 0, nsMaskBegin = 0, nsMaskEnd = 0;
+static BOOL  reconfigPaused = FALSE;
 
 int tiles_high;  							/* how many tiles high the framebuffer is */
 int tiles_wide;  							/* how many tiles wide the framebuffer is */
@@ -522,7 +535,14 @@ void cleanup(char *msg)
 		rfbLog("%s\n",msg);
 	}
 
-	/* Close connection */		
+	/* Release the managed-service registration, if we took one. */
+	if (nsHandle)        { UnregisterNetService(nsHandle); nsHandle = NULL; }
+	if (NetServicesBase) { CloseLibrary(NetServicesBase);  NetServicesBase = NULL; }
+	if (nsStop  >= 0)    { FreeSignal(nsStop);  nsStop  = -1; }
+	if (nsBegin >= 0)    { FreeSignal(nsBegin); nsBegin = -1; }
+	if (nsEnd   >= 0)    { FreeSignal(nsEnd);   nsEnd   = -1; }
+
+	/* Close connection */
 	/* Freeing the Image structs */
 	FreeMyImage(&LocalFB);
 	
@@ -852,7 +872,53 @@ void InitScreen(void)
 }
 
 /* ---------------- The Main Program ---------------- */
-int main(int argc, char** argv) 
+/* Register with netservices.library so the AROSTCP service manager can run and
+ * supervise us.  On success we switch to headless-service behaviour (run
+ * forever, no GUI window) and honour the AROSVNC/AutoAccept opt-in for unknown
+ * clients, matching the old boot-time Package-Startup.  Optional: if the
+ * library is absent (started by hand) we carry on as a normal GUI app. */
+static void ns_register(void)
+{
+	nsStop  = AllocSignal(-1);
+	nsBegin = AllocSignal(-1);
+	nsEnd   = AllocSignal(-1);
+	nsMaskStop  = (nsStop  >= 0) ? (1UL << nsStop)  : 0;
+	nsMaskBegin = (nsBegin >= 0) ? (1UL << nsBegin) : 0;
+	nsMaskEnd   = (nsEnd   >= 0) ? (1UL << nsEnd)   : 0;
+
+	NetServicesBase = OpenLibrary(NETSERVICESNAME, 0);
+	if (NetServicesBase)
+	{
+		struct TagItem nstags[] = {
+			{ NETSERVICE_Name,             (IPTR)"arosvnc" },
+			{ NETSERVICE_Order,            (IPTR)NSPRI_RCDAEMONS },
+			{ NETSERVICE_ReconfigBeginSig, (IPTR)nsBegin },
+			{ NETSERVICE_ReconfigEndSig,   (IPTR)nsEnd },
+			{ NETSERVICE_StopSig,          (IPTR)nsStop },
+			{ TAG_DONE, 0 }
+		};
+		nsHandle = RegisterNetService(nstags);
+	}
+
+	if (nsHandle)
+	{
+		UBYTE aa[8];
+
+		/* Managed service: run headless and persistent. */
+		RunForever  = TRUE;
+		StartHidden = TRUE;
+
+		/* Auto-accept unknown clients only when the user opted in, so an
+		 * unattended server does not pop an unanswerable requester per client. */
+		if (GetVar((STRPTR)"AROSVNC/AutoAccept", aa, sizeof(aa), GVF_GLOBAL_ONLY) > 0 &&
+		    (aa[0] == 'T' || aa[0] == 't' || aa[0] == 'Y' || aa[0] == 'y' || aa[0] == '1'))
+			UnknownIP = ACCEPT;
+
+		rfbLog("Registered as a network service (headless, run-forever)\n");
+	}
+}
+
+int main(int argc, char** argv)
 {
 	int Events = 0,  NbTilesSent = 0;
     int MaxEventsPerCycle = 16;
@@ -885,7 +951,12 @@ int main(int argc, char** argv)
 	/* start GUI */
 	if (!MakeMUIApp())
 		cleanup("could not create window");
-	
+
+	/* If launched by the AROSTCP service manager, register with
+	 * netservices.library and switch to headless-service behaviour BEFORE the
+	 * window-open decision below. */
+	ns_register();
+
 	/* Display window if requested */
 	if ((!StartHidden) || (rfbEnableLogging))
     {
@@ -932,9 +1003,28 @@ int main(int argc, char** argv)
 			static ULONG Signals;
 
 			DoMethod(MuiApp, MUIM_Application_NewInput, (IPTR)&Signals);
-			if (rfbPause)
+
+			/* Managed-service signals: reconfigure-begin pauses us (we must not
+			 * touch the stack while it holds its reload fence), reconfigure-end
+			 * resumes, and stop - or CTRL-C, which the service manager sends to
+			 * stop us - ends the server.  Polled each pass so we stay responsive
+			 * during the busy client loop. */
 			{
-				if ((!shutDownServer) && Signals) Wait(Signals);
+				ULONG stopm = nsMaskStop | SIGBREAKF_CTRL_C;
+				ULONG nsall = stopm | nsMaskBegin | nsMaskEnd;
+				ULONG ns    = SetSignal(0L, nsall) & nsall;
+
+				if (ns & stopm)       { shutDownServer = (ULONG)TRUE; continue; }
+				if (ns & nsMaskBegin) reconfigPaused = TRUE;
+				if (ns & nsMaskEnd)   reconfigPaused = FALSE;
+			}
+
+			if (rfbPause || reconfigPaused)
+			{
+				/* Quiesced (GUI pause, or a stack reconfigure in progress):
+				 * wait on GUI + service signals and touch nothing. */
+				ULONG w = Signals | nsMaskStop | nsMaskBegin | nsMaskEnd | SIGBREAKF_CTRL_C;
+				if ((!shutDownServer) && w) Wait(w);
 			}
 			else
 			{

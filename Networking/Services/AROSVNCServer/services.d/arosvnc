@@ -1,0 +1,22 @@
+#
+# AROSTCP network service: AROS VNC server (remote desktop).
+#
+# One file per service under db/services.d/ (the file name is the service name).
+#   Path    - the daemon executable
+#   Order   - bring-up priority hint (higher starts earlier)
+#   StopSig - signal bit sent to stop it (12 = CTRL-C)
+#   Policy  - reload policy: signal (survive a reload, quiesce/resume) so a
+#             network reconfigure does not drop active VNC sessions
+#   Enabled - yes or no.  DISABLED BY DEFAULT: a VNC server exposes the desktop
+#             to the network, so enable it deliberately.  Set Enabled=yes and
+#             reboot or reload the stack to turn it on; set it back to no to
+#             turn it off without deleting this script.  Auto-accepting unknown
+#             clients is a separate opt-in: set ENV var AROSVNC/AutoAccept=True
+#             (otherwise each new client needs confirmation on the local
+#             display, which an unattended server cannot give).
+#
+Path=SYS:System/Network/Services/AROSVNCServer
+Order=20
+StopSig=12
+Policy=signal
+Enabled=no

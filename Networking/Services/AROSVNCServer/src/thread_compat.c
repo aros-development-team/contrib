@@ -85,14 +85,26 @@ static void *threadtrampoline(void *arg)
 uint32_t CreateThread(void (*entry)(void *), void *data)
 {
     pthread_t thread;
+    pthread_attr_t attr;
     struct threadstart *start = malloc(sizeof(struct threadstart));
+    int ret;
 
     if (!start)
         return 0;
 
     start->entry = entry;
     start->data  = data;
-    if (pthread_create(&thread, NULL, threadtrampoline, start) != 0)
+
+    /*
+     * The default pthread stack (PTHREAD_STACK_MIN, 40KB) is too small for
+     * the framebuffer/encoder threads once the captured screen gets large:
+     * a 3840-wide screen overran it and took the whole machine down.
+     */
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 512 * 1024);
+    ret = pthread_create(&thread, &attr, threadtrampoline, start);
+    pthread_attr_destroy(&attr);
+    if (ret != 0)
     {
         free(start);
         return 0;
