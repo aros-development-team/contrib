@@ -35,7 +35,7 @@ UPDATER_ATOMIC_LIBS := atomic
 endif
 
 %build_prog mmake=contrib-scalos-modules-updater progname=Updater.module \
-    files=$(FILES) targetdir=$(TARGETDIR) uselibs="curl ssl crypto z zstd $(UPDATER_ATOMIC_LIBS)"
+    files=$(FILES) targetdir=$(TARGETDIR) uselibs="curl ssl crypto z zstd brotlidec brotlicommon $(UPDATER_ATOMIC_LIBS)"
 
 
 #MM
