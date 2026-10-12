@@ -11,9 +11,9 @@ diff -ruN SDL2-2.32.10/include/begin_code.h SDL2-2.32.10.aros/include/begin_code
  #  else
  #   define DECLSPEC
 diff -ruN SDL2-2.32.10/include/SDL_config_aros.h SDL2-2.32.10.aros/include/SDL_config_aros.h
---- SDL2-2.32.10/include/SDL_config_aros.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/include/SDL_config_aros.h	2025-12-08 05:27:13.152122789 +0000
-@@ -0,0 +1,481 @@
+--- SDL2-2.32.10/include/SDL_config_aros.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/include/SDL_config_aros.h	2026-10-07 09:44:40
+@@ -0,0 +1,493 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
@@ -83,10 +83,22 @@ diff -ruN SDL2-2.32.10/include/SDL_config_aros.h SDL2-2.32.10.aros/include/SDL_c
 +/* #undef HAVE_LIBUNWIND_H */
 +
 +/* C library functions */
-+#define HAVE_MALLOC 1
-+#define HAVE_CALLOC 1
-+#define HAVE_REALLOC    1
-+#define HAVE_FREE   1
++
++/* SDL owns its heap on AROS: src/stdlib/aros/SDL_arosmem.c serves
++ * SDL_malloc() and friends from one exec pool belonging to SDL2.library.
++ *
++ * stdc.library hands out a pool PER OPENER, so with HAVE_MALLOC the block a
++ * second task allocated could be freed against the first task's pool - the
++ * corruption the posixc/stdcio base refresh in SDL_arosvideo.c exists to
++ * paper over. Owning the pool removes the problem instead of hiding it.
++ *
++ * dlmalloc in SDL_malloc.c is not the alternative: it wants mmap() or
++ * sbrk(), and AROS has neither. */
++#define SDL_MEMORY_AROS 1
++/* #undef HAVE_MALLOC */
++/* #undef HAVE_CALLOC */
++/* #undef HAVE_REALLOC */
++/* #undef HAVE_FREE */
 +#define HAVE_ALLOCA 1
 +//#ifndef __WIN32__ /* Don't use C runtime versions of these on Windows */
 +//#define HAVE_GETENV 1
@@ -756,9 +768,9 @@ diff -ruN SDL2-2.32.10/sdl2-config SDL2-2.32.10.aros/sdl2-config
 +  shift
 +done
 diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio/ahi/SDL_ahi_audio.c
---- SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/audio/ahi/SDL_ahi_audio.c	2025-08-13 04:18:25.693441335 +0000
-@@ -0,0 +1,591 @@
+--- SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/audio/ahi/SDL_ahi_audio.c	2026-10-07 09:44:40
+@@ -0,0 +1,663 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
@@ -781,8 +793,9 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +*/
 +
 +#if defined(__AROS__)
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
++
 +#endif
 +
 +#include "../../SDL_internal.h"
@@ -895,10 +908,14 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +				devspec.channels += 6; // 7.1 = 8 channels.
 +		}
 +		sdlDevName = AllocVec(strlen(devbase) + modetype_len + 12 + strlen(desc) + 3 + 1, MEMF_PUBLIC);
++		if (!sdlDevName)
++			continue;
 +		sprintf(sdlDevName, AHI_SDL_DEVICE_FMT, devbase, modetype, desc);
 +		devspec.format = AHI_GenerateSDLFormat(bits);
 +		for (freq = 0; freq < freqmax; freq ++) {
 +			AHI_SDLIntDevice *sdlDevPrivate = (AHI_SDLIntDevice *)AllocVec(sizeof(AHI_SDLIntDevice) + strlen(sdlDevName) + 1, MEMF_ANY);
++			if (!sdlDevPrivate)
++				break;
 +			sdlDevPrivate->id_Name = (char *)((IPTR)sdlDevPrivate + sizeof(AHI_SDLIntDevice));
 +			IPTR curfreq = 0;
 +			AHI_GetAudioAttrs(modeid, NULL,
@@ -992,11 +1009,13 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +	struct AHIRequest *req = &hidden->req[hidden->current_buffer];
 +
 +	if (req->ahir_Std.io_Data) {
++		/* WaitIO() already removed the reply from the port. Calling GetMsg()
++		 * here would steal the other request's reply whenever both writes
++		 * have completed, leaving the next WaitIO() to Remove() a node that
++		 * is no longer queued. */
 +		WaitIO((struct IORequest *)req);
 +
 +		req->ahir_Std.io_Data = NULL;
-+
-+		GetMsg(&hidden->ahiport);
 +	}
 +}
 +
@@ -1012,11 +1031,15 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +	current2 = current ^ 1;
 +	req = &hidden->req[current];
 +
++	/* Re-arm ln_Type every send: ReplyMsg set it to NT_REPLYMSG when the
++	 * previous write completed, and WaitIO() needs NT_MESSAGE to block
++	 * correctly on a queued request. */
++	req->ahir_Std.io_Message.mn_Node.ln_Type = NT_MESSAGE;
 +	req->ahir_Std.io_Data    = (APTR)hidden->buffers[current];
 +	req->ahir_Std.io_Length  = hidden->audioBufferSize;
 +	req->ahir_Std.io_Offset  = 0;
 +	req->ahir_Frequency      = this->spec.freq;
-+	req->ahir_Volume         = AHI_Volume; 
++	req->ahir_Volume         = AHI_Volume;
 +	req->ahir_Type           = hidden->sample_format;
 +	req->ahir_Position       = 0x8000;
 +	req->ahir_Link           = (hidden->playing ? &hidden->req[current2] : NULL);
@@ -1039,8 +1062,30 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +static void AHI_CloseDevice(_THIS)
 +{
 +	AHIAudioData *hidden = this->hidden;
++	int i;
 +
 +	D(bug("[SDL2:AHI] %s()\n", __func__));
++
++	/* Retire anything still queued before CloseDevice(): closing
++	 * ahi.device with an outstanding CMD_WRITE/CMD_READ leaves the device
++	 * reading from buffers we are about to free. io_Data is the same
++	 * "sent but not yet waited" marker AHI_WaitDevice() uses. */
++	for (i = 0; i < 2; i++) {
++		struct AHIRequest *req = &hidden->req[i];
++
++		if (req->ahir_Std.io_Data) {
++			AbortIO((struct IORequest *)req);
++			WaitIO((struct IORequest *)req);
++			req->ahir_Std.io_Data = NULL;
++		}
++	}
++	hidden->playing = 0;
++
++	if (hidden->requestSent) {
++		AbortIO((struct IORequest *)&hidden->req[0]);
++		WaitIO((struct IORequest *)&hidden->req[0]);
++		hidden->requestSent = SDL_FALSE;
++	}
 +
 +	if (hidden->buffers[0]) {
 +		SDL_free(hidden->buffers[0]);
@@ -1064,6 +1109,13 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +
 +	D(bug("[SDL2:AHI] %s()\n", __func__));
 +
++	/* The SDL audio thread produces the samples the AHI mixer consumes;
++	 * SDL creates it at priority 10, below the game/render tasks. Run it
++	 * at the same realtime priority (50) as the AHI hardware slave so it
++	 * cannot be starved under load. */
++	SetTaskPri(FindTask(NULL), 50);
++
++	memset(&hidden->ahiport, 0, sizeof(hidden->ahiport));
 +	hidden->ahiport.mp_Node.ln_Pri = 60;
 +	hidden->ahiport.mp_Flags = PA_SIGNAL;
 +	hidden->ahiport.mp_SigBit = AllocSignal(-1);
@@ -1165,14 +1217,35 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +		this->spec.samples = (this->spec.samples + 7) & ~7;
 +	}
 +
++	/* AHI's software mixer pulls a whole PlayerFreq period per slave IRQ
++	 * (~882 frames = freq/50 at 44100). A smaller SDL buffer (e.g.
++	 * eduke32's 512) can't cover one pull, so with only two buffers the
++	 * mixer periodically runs dry and emits silence -> steady crackle,
++	 * regardless of audio-thread priority. Floor the buffer at one mixer
++	 * period so each queued buffer satisfies a pull. */
++	{
++		ULONG floor_samples = this->spec.freq / 50;
++		if (this->spec.samples < floor_samples) {
++			this->spec.samples = (floor_samples + 7) & ~7;
++			D(bug("[SDL2:AHI] %s: buffer floored to %u frames\n",
++			      __func__, (unsigned)this->spec.samples));
++		}
++	}
++
 +	/* Update the fragment size as size in bytes */
 +	SDL_CalculateAudioSpec(&this->spec);
 +
-+	hidden = SDL_malloc(sizeof(AHIAudioData));
++	/* Zeroed alloc: the request is built by hand (not CreateIORequest),
++	 * so every untouched field — critically mn_Node.ln_Type — must be
++	 * clean. Garbage ln_Type makes WaitIO() on the async CMD_WRITEs
++	 * either return instantly (audio thread busy-spins, starving the
++	 * app) or never return (app freezes in the next audio call). */
++	hidden = SDL_calloc(1, sizeof(AHIAudioData));
 +
 +	if (hidden == NULL)
 +		return SDL_OutOfMemory();
 +
++	hidden->req[0].ahir_Std.io_Message.mn_Node.ln_Type = NT_MESSAGE;
 +	hidden->req[0].ahir_Std.io_Message.mn_ReplyPort = &hidden->ahiport;
 +	hidden->req[0].ahir_Std.io_Message.mn_Length = sizeof(struct AHIRequest);
 +	hidden->req[0].ahir_Std.io_Command = CMD_WRITE;
@@ -1183,8 +1256,10 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +	hidden->buffers[0] = (Uint8 *) SDL_malloc(hidden->audioBufferSize);
 +	hidden->buffers[1] = (Uint8 *) SDL_malloc(hidden->audioBufferSize);
 +	if (hidden->buffers[0] == NULL || hidden->buffers[1] == NULL) {
-+		SDL_SetError("No memory for audio buffer");
-+		return -1;
++		SDL_free(hidden->buffers[0]);
++		SDL_free(hidden->buffers[1]);
++		SDL_free(hidden);
++		return SDL_OutOfMemory();
 +	}
 +
 +	SDL_memset(hidden->buffers[0], this->spec.silence, hidden->audioBufferSize);
@@ -1196,17 +1271,26 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +	hidden->playing = 0;
 +	hidden->requestSent = SDL_FALSE;
 +
-+	this->hidden = hidden;
-+	
 +	if (OpenDevice(AHINAME, 0, (struct IORequest *)&hidden->req[0].ahir_Std, 0) != 0) {
 +		SDL_SetError("Unable to open ahi.device unit 0! Error code %d.\n", hidden->req[0].ahir_Std.io_Error);
++		SDL_free(hidden->buffers[0]);
++		SDL_free(hidden->buffers[1]);
++		SDL_free(hidden);
 +		return -1;
 +	}
++
++	/* Hand the state to SDL only once ahi.device is actually open: SDL
++	 * calls CloseDevice() on any non-NULL this->hidden after a failed
++	 * open, and AHI_CloseDevice() would then CloseDevice() an IORequest
++	 * that was never opened. */
++	this->hidden = hidden;
++
 +	return 0;
 +}
 +
 +static void AHI_FillCaptureRequest(struct AHIRequest *request, void *buffer, int length, int frequency, int type)
 +{
++	request->ahir_Std.io_Message.mn_Node.ln_Type = NT_MESSAGE;
 +	request->ahir_Std.io_Message.mn_Node.ln_Pri = 60;
 +	request->ahir_Std.io_Data    = buffer,
 +	request->ahir_Std.io_Length  = length;
@@ -1292,7 +1376,7 @@ diff -ruN SDL2-2.32.10/src/audio/ahi/SDL_ahi_audio.c SDL2-2.32.10.aros/src/audio
 +	if (iscapture) {
 +		if (AHI_SDLInputDefault) {
 +			target = AHI_SDLInputDefault->id_Name;
-+			tgtfreq = AHI_SDLOutputDefault->id_Freq;
++			tgtfreq = AHI_SDLInputDefault->id_Freq;
 +		}
 +	} else {
 +		if (AHI_SDLOutputDefault) {
@@ -1522,8 +1606,8 @@ diff -ruN SDL2-2.32.10/src/core/morphos/SDL_mosversion.h SDL2-2.32.10.aros/src/c
 +#define	REVISION	21
 +#define	VERSTAG	"\0$VER: sdl2.library " xstr(VERSION) "." xstr(REVISION) " (" __AMIGADATE__ ") © Bruno Peloille, Szilard Biro, Ilkka Lehtoranta"
 diff -ruN SDL2-2.32.10/src/cpuinfo/SDL_cpuinfo.c SDL2-2.32.10.aros/src/cpuinfo/SDL_cpuinfo.c
---- SDL2-2.32.10/src/cpuinfo/SDL_cpuinfo.c	2025-05-08 20:10:28.000000000 +0000
-+++ SDL2-2.32.10.aros/src/cpuinfo/SDL_cpuinfo.c	2025-07-29 13:06:27.701401441 +0000
+--- SDL2-2.32.10/src/cpuinfo/SDL_cpuinfo.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/cpuinfo/SDL_cpuinfo.c	2026-10-07 09:44:40
 @@ -62,6 +62,16 @@
  #include <setjmp.h>
  #endif
@@ -1550,34 +1634,47 @@ diff -ruN SDL2-2.32.10/src/cpuinfo/SDL_cpuinfo.c SDL2-2.32.10.aros/src/cpuinfo/S
  /* This is the brute force way of detecting instruction sets...
     the idea is borrowed from the libmpeg2 library - thanks!
   */
-@@ -355,6 +365,13 @@
+@@ -354,6 +364,13 @@
+     int error = sysctl(selectors, 2, &hasVectorUnit, &length, NULL, 0);
      if (0 == error) {
          altivec = (hasVectorUnit != 0);
-     }
++    }
 +#elif defined(__MORPHOS__)
 +    ULONG has_altivec;
 +    if (NewGetSystemAttrs(&has_altivec, sizeof(has_altivec), SYSTEMINFOTYPE_PPC_ALTIVEC, TAG_DONE))
 +    {
 +      if (has_altivec)
 +        altivec = 1;
-+    }
+     }
  #elif defined(__FreeBSD__) && defined(__powerpc__)
      unsigned long cpufeatures = 0;
-     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
-@@ -699,6 +716,12 @@
+@@ -487,6 +504,11 @@
+     return 1; /* all Apple ARMv7 chips and later have NEON. */
+ #elif defined(__APPLE__)
+     return 0; /* assume anything else from Apple doesn't have NEON. */
++#elif defined(__AROS__) && defined(__arm__) && (defined(__ARM_NEON__) || defined(__ARM_NEON))
++    /* On AROS-arm the binary is built with NEON support enabled; the CPU must have NEON. */
++    return 1;
++#elif defined(__AROS__) && defined(__arm__)
++    return 0;
+ #elif !defined(__arm__)
+     return 0; /* not an ARM CPU at all. */
+ #elif defined(__OpenBSD__)
+@@ -699,7 +721,13 @@
                              &SDL_CPUCount, sizeof(SDL_CPUCount) );
          }
  #endif
 +#ifdef __MORPHOS__
 +	NewGetSystemAttrs(&SDL_CPUCount, sizeof(SDL_CPUCount), SYSTEMINFOTYPE_CPUCOUNT, TAG_DONE);
-+#endif
+ #endif
 +#ifdef __AROS__
 + // TODO:
 +#endif
- #endif
++#endif
          /* There has to be at least 1, right? :) */
          if (SDL_CPUCount <= 0) {
-@@ -934,6 +957,9 @@
+             SDL_CPUCount = 1;
+@@ -934,6 +962,9 @@
          }
  #elif defined(__FreeBSD__) && defined(CACHE_LINE_SIZE)
          cacheline_size = CACHE_LINE_SIZE;
@@ -1587,7 +1684,7 @@ diff -ruN SDL2-2.32.10/src/cpuinfo/SDL_cpuinfo.c SDL2-2.32.10.aros/src/cpuinfo/S
  #endif
      }
      return cacheline_size;
-@@ -1156,6 +1182,11 @@
+@@ -1156,6 +1187,11 @@
              }
          }
  #endif
@@ -1760,30 +1857,46 @@ diff -ruN SDL2-2.32.10/src/events/scancodes_amigaos.h SDL2-2.32.10.aros/src/even
 +};
 +/* *INDENT-ON* */
 diff -ruN SDL2-2.32.10/src/events/SDL_events.c SDL2-2.32.10.aros/src/events/SDL_events.c
---- SDL2-2.32.10/src/events/SDL_events.c	2025-05-19 21:24:41.000000000 +0000
-+++ SDL2-2.32.10.aros/src/events/SDL_events.c	2025-08-12 16:47:42.873549765 +0000
-@@ -916,6 +916,12 @@
+--- SDL2-2.32.10/src/events/SDL_events.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/events/SDL_events.c	2026-10-07 09:44:40
+@@ -34,6 +34,12 @@
+ #include "../video/SDL_sysvideo.h"
+ #include "SDL_syswm.h"
+ 
++#ifdef SDL_VIDEO_DRIVER_AROS
++/* Declared here rather than by including SDL_arosevents.h, which also needs
++ * the Intuition types this file has no reason to pull in. */
++extern void AROS_PumpEvents(SDL_VideoDevice *_this);
++#endif
++
+ /* An arbitrary limit so we don't have unbounded growth */
+ #define SDL_MAX_QUEUED_EVENTS 65535
+ 
+@@ -915,7 +921,15 @@
+     /* Get events from the video subsystem */
      if (_this) {
          _this->PumpEvents(_this);
-     }
-+#if defined(SDL_THREAD_AROS)
-+    else {
-+extern void AROS_PumpEvents(void *);
-+        AROS_PumpEvents(_this);
 +    }
++#ifdef SDL_VIDEO_DRIVER_AROS
++    else {
++        /* With no video device there is still a console to watch: this picks
++         * up SIGBREAKF_CTRL_C and turns it into SDL_QUIT. AROS_PumpEvents()
++         * handles a NULL device for exactly that reason. */
++        AROS_PumpEvents(NULL);
+     }
 +#endif
  
  #ifndef SDL_JOYSTICK_DISABLED
      /* Check for joystick state change */
 diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops.c
---- SDL2-2.32.10/src/file/SDL_rwops.c	2025-01-28 07:47:10.000000000 +0000
-+++ SDL2-2.32.10.aros/src/file/SDL_rwops.c	2025-08-05 16:37:40.256632360 +0000
+--- SDL2-2.32.10/src/file/SDL_rwops.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/file/SDL_rwops.c	2026-10-07 09:44:40
 @@ -67,6 +67,35 @@
  #include "nacl_io/nacl_io.h"
  #endif
  
 +#ifdef __AROS__
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +#include "../misc/aros/SDL_misc.h"
 +#include <proto/dos.h>
@@ -1814,7 +1927,7 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
  #if defined(__WIN32__) || defined(__GDK__)
  
  /* Functions to read/write Win32 API file pointers */
-@@ -311,7 +340,226 @@
+@@ -311,8 +340,231 @@
  }
  #endif /* defined(__WIN32__) || defined(__GDK__) */
  
@@ -1825,7 +1938,7 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
 +{
 +    int flag_r, flag_w, flag_p, flag_a;
 +    int rc = -1;
-+
+ 
 +    /* "r" = reading, file must exist */
 +    /* "w" = writing, truncate existing, file may not exist */
 +    /* "r+"= reading or writing, file must exist            */
@@ -1948,55 +2061,59 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
 +static size_t SDLCALL
 +amigaos_file_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 +{
-+    size_t rsize = size * maxnum, result;
++    LONG result;
 +
-+    if (context->hidden.amigaosio.Readable)
++    if (!context->hidden.amigaosio.Readable || size == 0 || maxnum == 0)
++        return 0;
++
++    result = Read(context->hidden.amigaosio.AMIGAOSIO_BPTR, ptr, size * maxnum);
++
++    /* Read() answers -1 on error. Letting that reach the size_t division
++     * below reported ~SIZE_MAX/size objects read. */
++    if (result < 0)
 +    {
-+        if ((result = Read(context->hidden.amigaosio.AMIGAOSIO_BPTR, ptr, rsize)) != rsize)
-+        {
-+            SDL_Error(SDL_EFWRITE);
-+        }
-+    }
-+    else
-+    {
-+        result = 0;
++        SDL_Error(SDL_EFREAD);
++        return 0;
 +    }
 +
-+    return result / size;
++    /* A short read is EOF, not a failure: SDL_RWread() is specified to
++     * return however many complete objects it got. */
++    return (size_t)result / size;
 +}
 +
 +static size_t SDLCALL
 +amigaos_file_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 +{
-+    size_t wnum = 0;
++    LONG result;
 +    //D(bug("[SDL2:rwops] %s()\n", __func__));
 +
-+    if (context->hidden.amigaosio.Writable)
++    if (!context->hidden.amigaosio.Writable || size == 0 || num == 0)
++        return 0;
++
++    if (context->hidden.amigaosio.AppendMode && !context->hidden.amigaosio.IsAtEnd)
 +    {
-+        size_t wsize, result;
-+
-+        if (context->hidden.amigaosio.AppendMode && !context->hidden.amigaosio.IsAtEnd)
-+        {
-+            if (Seek(context->hidden.amigaosio.AMIGAOSIO_BPTR, 0, OFFSET_END) == -1)
-+            {
-+                SDL_Error(SDL_EFWRITE);
-+                return 0;
-+            }
-+
-+            context->hidden.amigaosio.IsAtEnd = 1;
-+        }
-+
-+        wsize = size * num;
-+
-+        if ((result = Write(context->hidden.amigaosio.AMIGAOSIO_BPTR, (APTR)ptr, wsize)) != wsize)
++        if (Seek(context->hidden.amigaosio.AMIGAOSIO_BPTR, 0, OFFSET_END) == -1)
 +        {
 +            SDL_Error(SDL_EFWRITE);
++            return 0;
 +        }
 +
-+        wnum = result / size;
++        context->hidden.amigaosio.IsAtEnd = 1;
 +    }
 +
-+    return wnum;
++    result = Write(context->hidden.amigaosio.AMIGAOSIO_BPTR, (APTR)ptr, size * num);
++
++    /* Write() answers -1 on error; see amigaos_file_read(). */
++    if (result < 0)
++    {
++        SDL_Error(SDL_EFWRITE);
++        return 0;
++    }
++
++    if ((size_t)result != size * num)
++        SDL_Error(SDL_EFWRITE);
++
++    return (size_t)result / size;
 +}
 +
 +static int SDLCALL
@@ -2039,10 +2156,11 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
 +    return(rwops);
 +}
 +#elif defined(HAVE_STDIO_H)
- 
++
  #ifdef HAVE_FOPEN64
  #define fopen fopen64
-@@ -528,7 +776,8 @@
+ #endif
+@@ -528,7 +780,8 @@
  
  /* Functions to create SDL_RWops structures from various data sources */
  
@@ -2052,7 +2170,7 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
  static SDL_bool IsRegularFileOrPipe(FILE *f)
  {
      #ifdef __WINRT__
-@@ -624,6 +873,38 @@
+@@ -624,6 +877,46 @@
      rwops->write = windows_file_write;
      rwops->close = windows_file_close;
      rwops->type = SDL_RWOPS_WINFILE;
@@ -2079,19 +2197,27 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
 +
 +    if (mpath)
 +    {
-+        rc = amigaos_file_open(rwops,file,mode);
++        /* Open the CONVERTED path — passing `file` here made the conversion
++         * above pure overhead and left POSIX-style paths unresolved. */
++        rc = amigaos_file_open(rwops,mpath,mode);
 +        SDL_free(mpath);
++    }
++    else
++    {
++        SDL_OutOfMemory();
 +    }
 +
 +    if (rc < 0)
 +    {
++        if (mpath)
++            SDL_SetError("Couldn't open %s", file);
 +        SDL_FreeRW(rwops);
 +        return NULL;
 +    }
  #elif defined(HAVE_STDIO_H)
      {
  #if defined(__APPLE__) && !defined(SDL_FILE_DISABLED) // TODO: add dummy?
-@@ -653,7 +934,7 @@
+@@ -653,7 +946,7 @@
      return rwops;
  }
  
@@ -2100,7 +2226,7 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
  SDL_RWops *SDL_RWFromFP(FILE * fp, SDL_bool autoclose)
  {
      SDL_RWops *rwops = NULL;
-@@ -741,6 +1022,10 @@
+@@ -741,6 +1034,10 @@
      if (!area) {
          SDL_OutOfMemory();
      } else {
@@ -2112,9 +2238,9 @@ diff -ruN SDL2-2.32.10/src/file/SDL_rwops.c SDL2-2.32.10.aros/src/file/SDL_rwops
      }
      return area;
 diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros/src/filesystem/aros/SDL_sysfilesystem.c
---- SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/filesystem/aros/SDL_sysfilesystem.c	2025-08-05 16:29:56.128628931 +0000
-@@ -0,0 +1,148 @@
+--- SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/filesystem/aros/SDL_sysfilesystem.c	2026-10-07 09:44:40
+@@ -0,0 +1,180 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
@@ -2150,6 +2276,22 @@ diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros
 +#include <aros/debug.h>
 +#include <proto/dos.h>
 +
++/* SDL_GetBasePath()/SDL_GetPrefPath() both guarantee a trailing path
++ * separator, so that callers can just concatenate a filename. A volume or
++ * assign root already ends in ':' and must not get a '/' as well. Assumes
++ * two spare bytes in the buffer. */
++static void
++AROS_AppendSeparator(char *path)
++{
++	size_t n = SDL_strlen(path);
++
++	if (n > 0 && path[n - 1] != ':' && path[n - 1] != '/')
++	{
++		path[n++] = '/';
++		path[n] = '\0';
++	}
++}
++
 +char *
 +SDL_GetBasePath(void)
 +{
@@ -2164,11 +2306,21 @@ diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros
 +
 +		for (;;)
 +		{
-+			char *tmp = SDL_malloc(len);
++			/* +2: room for the trailing separator and its terminator. */
++			char *tmp = SDL_malloc(len + 2);
++
++			if (!tmp)
++			{
++				SDL_OutOfMemory();
++				break;
++			}
 +
 +			if (NameFromLock(lock, tmp, len))
 +			{
-+				path = AROS_ConvertUTF8Text(tmp);
++				AROS_AppendSeparator(tmp);
++				/* tmp is an AROS path, i.e. Latin-1; SDL_GetBasePath() is
++				 * specified to hand back UTF-8. */
++				path = AROS_ConvertTextUTF8(tmp);
 +
 +				SDL_free(tmp);
 +				break;
@@ -2221,16 +2373,17 @@ diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros
 +	char *path = NULL;
 +	char *p2 = SDL_RemoveInvalidChars(app);
 +
-+	int len = sizeof("ENVARC:");
++	/* +1 for the trailing separator AROS_AppendSeparator() may add. */
++	size_t len = sizeof("ENVARC:") + 1;
 +	if (p1) len += SDL_strlen(p1) + 1;
 +	if (p2) len += SDL_strlen(p2) + 1;
 +	char *tmp = SDL_malloc(len);
-+	
++
 +	if (tmp)
 +	{
 +		BPTR lock;
 +
-+		strcpy(tmp, "ENVARC:");
++		SDL_strlcpy(tmp, "ENVARC:", len);
 +		if (p1) {
 +			AddPart(tmp, p1, len);
 +			if ((lock = CreateDir(tmp)))
@@ -2243,13 +2396,18 @@ diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros
 +			if ((lock = CreateDir(tmp)))
 +				UnLock(lock);
 +		}
-+		
-+		path = AROS_ConvertUTF8Text(tmp);
++
++		AROS_AppendSeparator(tmp);
++
++		/* AROS paths are Latin-1; SDL's API is UTF-8. */
++		path = AROS_ConvertTextUTF8(tmp);
 +
 +		SDL_free(tmp);
-+		
++
 +	} else {
-+		
++
++		SDL_free(p2);
++		SDL_free(p1);
 +		SDL_OutOfMemory();
 +		return NULL;
 +	}
@@ -2264,9 +2422,9 @@ diff -ruN SDL2-2.32.10/src/filesystem/aros/SDL_sysfilesystem.c SDL2-2.32.10.aros
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c SDL2-2.32.10.aros/src/joystick/aros/SDL_sysjoystick.c
---- SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/joystick/aros/SDL_sysjoystick.c	2025-11-25 17:29:32.754532822 +0000
-@@ -0,0 +1,527 @@
+--- SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/joystick/aros/SDL_sysjoystick.c	2026-10-07 09:44:40
+@@ -0,0 +1,546 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -2387,14 +2545,20 @@ diff -ruN SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c SDL2-2.32.10.aros/src
 +				int port = LowLevel_PortFromIndex(joystick_count);
 +				char *dev_name = NULL;
 +
++				/* Must be reset per iteration: it used to keep whatever the
++				 * PREVIOUS port produced (or stack garbage on the first
++				 * pass) whenever the type below matched nothing. */
++				SDL_zero(guid);
++
 +				joyflag = ReadJoyPort(port);
 +				if ((joyflag & JP_TYPE_MASK) == JP_TYPE_NOTAVAIL) {
 +					break;
 +				}
 +
 +				if ((joyflag & JP_TYPE_MASK) == JP_TYPE_GAMECTLR) {
-+					dev_name = AllocVec(26, MEMF_ANY);
-+					sprintf(dev_name, "Game Controller @ Port %d", port);
++					dev_name = AllocVec(40, MEMF_ANY);
++					if (dev_name)
++						snprintf(dev_name, 40, "Game Controller @ Port %d", port);
 +#if (1)
 +					guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL,
 +							SDL_AROS_VENDORID,
@@ -2411,21 +2575,32 @@ diff -ruN SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c SDL2-2.32.10.aros/src
 +				}
 +
 +				if ((joyflag & JP_TYPE_MASK) == JP_TYPE_MOUSE) {
-+					dev_name = AllocVec(16, MEMF_ANY);
-+					sprintf(dev_name, "Mouse @ Port %d", port);
-+					guid = SDL_CreateJoystickGUIDForName(dev_name);
++					dev_name = AllocVec(32, MEMF_ANY);
++					if (dev_name)
++						snprintf(dev_name, 32, "Mouse @ Port %d", port);
 +				}
 +
 +				if ((joyflag & JP_TYPE_MASK) == JP_TYPE_JOYSTK) {
-+					dev_name = AllocVec(19, MEMF_ANY);
-+					sprintf(dev_name, "Joystick @ Port %d", port);
-+					guid = SDL_CreateJoystickGUIDForName(dev_name);
++					dev_name = AllocVec(32, MEMF_ANY);
++					if (dev_name)
++						snprintf(dev_name, 32, "Joystick @ Port %d", port);
 +				}
 +
 +				if ((joyflag & JP_TYPE_MASK) == JP_TYPE_UNKNOWN) {
-+					dev_name = AllocVec(25, MEMF_ANY);
-+					sprintf(dev_name, "unknown device @ Port %d", port);
++					dev_name = AllocVec(40, MEMF_ANY);
++					if (dev_name)
++						snprintf(dev_name, 40, "unknown device @ Port %d", port);
++				}
++
++				/* Everything except the game controller derives its GUID
++				 * from the name, so it has to happen after the name exists
++				 * — and only if the allocation succeeded. */
++				if (dev_name && (joyflag & JP_TYPE_MASK) != JP_TYPE_GAMECTLR)
 +					guid = SDL_CreateJoystickGUIDForName(dev_name);
++
++				if (!dev_name) {
++					D(bug("[SDL2:Joystick] %s: no name for port %d, skipping\n", __func__, port));
++					break;
 +				}
 +
 +				D(bug("[SDL2:Joystick] %s: #%d '%s'\n", __func__, joystick_count, dev_name));
@@ -2604,6 +2779,14 @@ diff -ruN SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c SDL2-2.32.10.aros/src
 +			data_ext = ReadJoyPort(hwdata->port + JP_ANALOGUE_PORT_MAGIC);
 +#endif
 +
++		/* Blue and yellow read together on some pads, so yellow is
++		 * suppressed while blue is down. Applied ONCE here, before both the
++		 * button scan and the saved state below: masking inside the scan
++		 * loop left joystate holding the masked value, so a yellow release
++		 * that happened while blue was held never generated an event. */
++		if (data & joybut[1])
++			data &= ~joybut[2];
++
 +		/* only send an event when something changed */
 +
 +		/* hats */
@@ -2706,12 +2889,6 @@ diff -ruN SDL2-2.32.10/src/joystick/aros/SDL_sysjoystick.c SDL2-2.32.10.aros/src
 +		{
 +			if( (data & joybut[i]) )
 +			{
-+				if(i == 1)
-+				{
-+					// FIXME: WTF?
-+					data &= ~(joybut[2]);
-+				}
-+
 +				if(!(joystick->hwdata->joystate & joybut[i]))
 +				{
 +					SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
@@ -2939,9 +3116,9 @@ diff -ruN SDL2-2.32.10/src/joystick/SDL_sysjoystick.h SDL2-2.32.10.aros/src/joys
  #ifdef __cplusplus
  }
 diff -ruN SDL2-2.32.10/src/locale/aros/SDL_syslocale.c SDL2-2.32.10.aros/src/locale/aros/SDL_syslocale.c
---- SDL2-2.32.10/src/locale/aros/SDL_syslocale.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/locale/aros/SDL_syslocale.c	2025-08-04 16:32:11.280791557 +0000
-@@ -0,0 +1,98 @@
+--- SDL2-2.32.10/src/locale/aros/SDL_syslocale.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/locale/aros/SDL_syslocale.c	2026-10-07 09:44:40
+@@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -2963,7 +3140,7 @@ diff -ruN SDL2-2.32.10/src/locale/aros/SDL_syslocale.c SDL2-2.32.10.aros/src/loc
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#include "../../SDL_internal.h"
@@ -2972,8 +3149,6 @@ diff -ruN SDL2-2.32.10/src/locale/aros/SDL_syslocale.c SDL2-2.32.10.aros/src/loc
 +#include <proto/dos.h>
 +#include <proto/utility.h>
 +#include <libraries/iffparse.h>
-+
-+#include <stdio.h>
 +
 +struct loc
 +{
@@ -2998,7 +3173,7 @@ diff -ruN SDL2-2.32.10/src/locale/aros/SDL_syslocale.c SDL2-2.32.10.aros/src/loc
 +	{ "norsk",		"nn_NO" },
 +	{ "polski",		"pl_PL" },
 +	{ "portugu�s",	"pt_PT" },
-+	{ "shqipja"		"sq_AL" },
++	{ "shqipja",	"sq_AL" },
 +	{ "suomi",		"fi_FI" },
 +	{ "svenska",	"sv_SE" },
 +	{ "t�rk�e",		"tr_TR" },
@@ -3020,25 +3195,25 @@ diff -ruN SDL2-2.32.10/src/locale/aros/SDL_syslocale.c SDL2-2.32.10.aros/src/loc
 +	if (GetVar("LANGUAGE", language, sizeof(language), 0) > 0)
 +	{
 +		int i;
-+		const struct loc *curLoc = NULL;
 +
-+		for(i=0;;i++)
++		/* Stop at the sentinel. The old loop had no termination condition at
++		 * all, so any language not in the table walked off the end of the
++		 * array and eventually compared against a NULL name. */
++		for (i = 0; locs[i].name; i++)
 +		{
-+			curLoc = &locs[i];
-+
-+			if(Strnicmp(language, curLoc->name, sizeof(curLoc->name)) == 0)
++			/* Stricmp(), not Strnicmp() with sizeof(name): name is a
++			 * pointer, so that only ever compared 4-8 bytes. */
++			if (Stricmp(language, locs[i].name) == 0)
 +			{
-+			  D("[%s] found language name for '%s'\n", __FUNCTION__, curLoc->codeLang);
-+			  snprintf(buf, buflen, curLoc->codeLang);
-+			  found = SDL_TRUE;
-+			  break;
++				D(bug("[SDL2] %s: '%s' -> '%s'\n", __func__, language, locs[i].codeLang));
++				SDL_strlcpy(buf, locs[i].codeLang, buflen);
++				found = SDL_TRUE;
++				break;
 +			}
 +		}
-+
 +	}
 +	if (!found)
-+		snprintf(buf, buflen, "en_GB");  
-+
++		SDL_strlcpy(buf, "en_GB", buflen);
 +}
 diff -ruN SDL2-2.32.10/src/misc/amigaos/SDL_sysurl.c SDL2-2.32.10.aros/src/misc/amigaos/SDL_sysurl.c
 --- SDL2-2.32.10/src/misc/amigaos/SDL_sysurl.c	1970-01-01 00:00:00.000000000 +0000
@@ -3093,9 +3268,9 @@ diff -ruN SDL2-2.32.10/src/misc/amigaos/SDL_sysurl.c SDL2-2.32.10.aros/src/misc/
 +}
 +
 diff -ruN SDL2-2.32.10/src/misc/aros/SDL_getenv.c SDL2-2.32.10.aros/src/misc/aros/SDL_getenv.c
---- SDL2-2.32.10/src/misc/aros/SDL_getenv.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/misc/aros/SDL_getenv.c	2025-08-04 18:43:16.964792808 +0000
-@@ -0,0 +1,77 @@
+--- SDL2-2.32.10/src/misc/aros/SDL_getenv.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/misc/aros/SDL_getenv.c	2026-10-07 09:44:40
+@@ -0,0 +1,163 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
@@ -3119,6 +3294,7 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_getenv.c SDL2-2.32.10.aros/src/misc/aro
 +#include "../../SDL_internal.h"
 +
 +#include "SDL_stdinc.h"
++#include "SDL_atomic.h"
 +
 +#include <proto/dos.h>
 +
@@ -3127,31 +3303,115 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_getenv.c SDL2-2.32.10.aros/src/misc/aro
 +#endif
 +#include <sys/types.h>
 +
++/* getenv()'s contract is that the environment owns the returned string and
++ * the caller never frees it - SDL relies on that throughout (hints, driver
++ * selection). Returning fresh SDL_malloc()'d memory therefore leaked on every
++ * single call. Cache one entry per name instead, so the pointer is stable and
++ * the total is bounded by the number of distinct variables ever queried. The
++ * cache is deliberately never torn down: callers are allowed to hold the
++ * pointer indefinitely, exactly as with a real environ. */
++struct env_entry
++{
++	struct env_entry *next;
++	char             *name;   /* as passed in, without the "SDL2/" prefix */
++	char             *value;
++};
++
++static struct env_entry *env_cache;
++static SDL_SpinLock env_lock;
++
++/* Caller must hold env_lock. */
++static struct env_entry *env_find(const char *name)
++{
++	struct env_entry *e;
++
++	for (e = env_cache; e; e = e->next)
++	{
++		if (SDL_strcmp(e->name, name) == 0)
++			return e;
++	}
++
++	return NULL;
++}
++
++/* Caller must hold env_lock. Takes ownership of value on success. */
++static char *env_store(const char *name, char *value)
++{
++	struct env_entry *e = env_find(name);
++
++	if (e)
++	{
++		/* Only swap the buffer if the value actually changed, so that a
++		 * pointer handed out earlier stays valid across repeated lookups
++		 * of an unchanged variable - which is what callers expect. */
++		if (SDL_strcmp(e->value, value) == 0)
++		{
++			SDL_free(value);
++			return e->value;
++		}
++
++		SDL_free(e->value);
++		e->value = value;
++		return e->value;
++	}
++
++	e = (struct env_entry *)SDL_malloc(sizeof(*e));
++	if (!e)
++	{
++		SDL_free(value);
++		return NULL;
++	}
++
++	e->name = SDL_strdup(name);
++	if (!e->name)
++	{
++		SDL_free(e);
++		SDL_free(value);
++		return NULL;
++	}
++
++	e->value = value;
++	e->next = env_cache;
++	env_cache = e;
++
++	return e->value;
++}
++
 +char *SDL_getenv(const char *name)
 +{
-+	if (!name)
-+		return NULL;
-+
 +	char *value = NULL;
 +	char varname[128];
 +	char dummy[32];
 +	size_t len;
 +
++	if (!name)
++		return NULL;
++
 +	SDL_snprintf(varname, sizeof(varname), "SDL2/%s", name);
 +
-+	if (GetVar(varname, dummy, sizeof(dummy), GVF_BINARY_VAR) == -1)
++	/* Probe and read with the same flags. The probe used to search local
++	 * variables too while the read was GVF_GLOBAL_ONLY, so a local ENV var
++	 * was found and then failed to read. */
++	if (GetVar(varname, dummy, sizeof(dummy), GVF_GLOBAL_ONLY) == -1)
 +		return NULL;
-+	
-+	len = IoErr() + 1;
-+	
-+	if ((value = SDL_malloc(len)))
++
++	/* GetVar() leaves the variable's full size in IoErr(). */
++	len = (size_t)IoErr() + 1;
++
++	value = (char *)SDL_malloc(len);
++	if (!value)
++		return NULL;
++
++	if (GetVar(varname, value, len, GVF_GLOBAL_ONLY) == -1)
 +	{
-+		if (GetVar(varname, value, len, GVF_GLOBAL_ONLY) == -1)
-+		{
-+			SDL_free(value);
-+			value = NULL;
-+		}
++		SDL_free(value);
++		return NULL;
 +	}
++
++	SDL_AtomicLock(&env_lock);
++	value = env_store(name, value);
++	SDL_AtomicUnlock(&env_lock);
++
 +	return value;
 +}
 +
@@ -3166,7 +3426,8 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_getenv.c SDL2-2.32.10.aros/src/misc/aro
 +
 +	SDL_snprintf(varname, sizeof(varname), "SDL2/%s", name);
 +
-+	if (GetVar(varname, dummy, sizeof(dummy), GVF_BINARY_VAR) != -1)
++	/* Same flags as the write below, and as SDL_getenv() uses. */
++	if (GetVar(varname, dummy, sizeof(dummy), GVF_GLOBAL_ONLY) != -1)
 +			exist = TRUE;
 +	if (!exist || overwrite)
 +		if (SetVar(varname, value, -1, GVF_GLOBAL_ONLY))
@@ -3174,9 +3435,9 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_getenv.c SDL2-2.32.10.aros/src/misc/aro
 +	return -1;
 +}
 diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.c SDL2-2.32.10.aros/src/misc/aros/SDL_misc.c
---- SDL2-2.32.10/src/misc/aros/SDL_misc.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/misc/aros/SDL_misc.c	2025-08-04 18:19:55.948791136 +0000
-@@ -0,0 +1,140 @@
+--- SDL2-2.32.10/src/misc/aros/SDL_misc.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/misc/aros/SDL_misc.c	2026-10-07 09:44:40
+@@ -0,0 +1,197 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
@@ -3214,10 +3475,8 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.c SDL2-2.32.10.aros/src/misc/aros/
 +{
 +    if (!src) return NULL;
 +
-+    // Worst-case: every byte becomes one ASCII char + null terminator
-+    size_t len = 0;
-+    const char *p = src;
-+    while (*p) len++, p++;
++    /* Every sequence collapses to at most one output byte. */
++    size_t len = SDL_strlen(src);
 +
 +    char *dst = SDL_malloc(len + 1);
 +    if (!dst) return NULL;
@@ -3225,17 +3484,40 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.c SDL2-2.32.10.aros/src/misc/aros/
 +    size_t out = 0;
 +    while (*src) {
 +        unsigned char c = (unsigned char)*src;
++        Uint32 cp;
++        int extra;
++
 +        if (c < 0x80) {
-+            // ASCII
-+            dst[out++] = *src++;
-+        } else {
-+            // Multibyte UTF-8 sequence
-+            if ((c & 0xE0) == 0xC0) src += 2;		// 2-byte
-+            else if ((c & 0xF0) == 0xE0) src += 3;	// 3-byte
-+            else if ((c & 0xF8) == 0xF0) src += 4;	// 4-byte
-+            else src++;								// Invalid
-+            dst[out++] = '?';
++            dst[out++] = (char)c;
++            src++;
++            continue;
 +        }
++
++        if ((c & 0xE0) == 0xC0)      { cp = c & 0x1F; extra = 1; }
++        else if ((c & 0xF0) == 0xE0) { cp = c & 0x0F; extra = 2; }
++        else if ((c & 0xF8) == 0xF0) { cp = c & 0x07; extra = 3; }
++        else {
++            /* Stray continuation or invalid lead byte. */
++            dst[out++] = '?';
++            src++;
++            continue;
++        }
++
++        src++;
++
++        /* Stop at the terminator: a truncated sequence must not walk off
++         * the end of the string (the old code advanced blindly by 2/3/4). */
++        while (extra-- > 0) {
++            if (((unsigned char)*src & 0xC0) != 0x80) {
++                cp = 0xFFFFFFFF;
++                break;
++            }
++            cp = (cp << 6) | ((unsigned char)*src++ & 0x3F);
++        }
++
++        /* ISO-8859-1 covers U+0000..U+00FF one-to-one, so only what falls
++         * outside it needs to degrade to '?'. */
++        dst[out++] = (cp <= 0xFF) ? (char)cp : '?';
 +    }
 +
 +    dst[out] = '\0';
@@ -3249,72 +3531,108 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.c SDL2-2.32.10.aros/src/misc/aros/
 +    if (!src) return NULL;
 +
 +    size_t len = SDL_strlen(src);
-+    char *dst = SDL_malloc(len + 1);
++
++    /* Every byte >= 0x80 expands to two UTF-8 bytes. The old code was a
++     * straight memcpy, which handed back raw Latin-1 as if it were UTF-8. */
++    char *dst = SDL_malloc(len * 2 + 1);
 +    if (!dst) return NULL;
 +
-+    /* Copy directly (including null terminator) 
-+	 * - ASCII bytes are valid UTF-8 bytes
-+	 */
-+    SDL_memcpy(dst, src, len + 1);
++    size_t out = 0;
++    while (*src) {
++        unsigned char c = (unsigned char)*src++;
++
++        if (c < 0x80) {
++            dst[out++] = (char)c;
++        } else {
++            dst[out++] = (char)(0xc0 | (c >> 6));
++            dst[out++] = (char)(0x80 | (c & 0x3f));
++        }
++    }
++
++    dst[out] = '\0';
 +    return dst;
 +}
 +
++/* Convert a POSIX-style path to AROS syntax:
++ *
++ *   /Volume/dir/file -> Volume:dir/file   (leading '/' names a volume/assign)
++ *   ./dir            -> dir
++ *   ../dir           -> /dir              (on AROS a leading '/' IS "parent")
++ *   ../../dir        -> //dir
++ *   dir/file         -> dir/file          (unchanged)
++ *
++ * Repeated slashes collapse. Returns SDL_malloc'd memory, or NULL.
++ */
 +char *
 +AROS_ConvertPath(const char *fn)
 +{
-+	CONST_STRPTR src = fn;
-+	ULONG flen = SDL_strlen(fn);
-+	BOOL colon = FALSE;
-+	char *dst, *path = SDL_malloc(flen + 2 + 128);
++	const char *src;
++	char *dst, *path;
++	size_t flen;
++	BOOL need_colon = FALSE;
++
++	if (!fn)
++		return NULL;
++
++	flen = SDL_strlen(fn);
++
++	/* The result is never longer than the input: the ':' we may add is paid
++	 * for by the leading '/' we consume, and every other rule shrinks. */
++	path = SDL_malloc(flen + 2);
++	if (!path)
++		return NULL;
 +
 +	dst = path;
++	src = fn;
 +
 +	if (*src == '/')
 +	{
-+		/* really depends on filesystem layout, hope for the best */
-+		colon	= 1;
++		/* Absolute: the first component names a volume or assign. */
++		need_colon = TRUE;
 +		src++;
 +	}
 +
-+	while ((size_t)src < (size_t)(fn + flen))
++	while (*src)
 +	{
 +		const char *end = SDL_strchr(src, '/');
-+		int len;
++		size_t len;
 +
-+		if(!end)
-+			end = fn + flen; /* last component */
++		if (!end)
++			end = src + SDL_strlen(src); /* last component */
 +
-+		len = (size_t)end - (size_t)src;
++		len = (size_t)(end - src);
 +
-+		if(len == 0 || (len == 1 && src[0] == '.'))
++		if (len == 0 || (len == 1 && src[0] == '.'))
 +		{
-+			/* remove repeated slashes and . */
++			/* repeated slash, or "." — drop it */
++		}
++		else if (len == 2 && src[0] == '.' && src[1] == '.')
++		{
++			/* Parent directory. AROS spells that as a bare '/', which
++			 * doubles as the separator for whatever follows. */
++			*dst++ = '/';
 +		}
 +		else
 +		{
-+			if (len == 1 && colon)
++			/* Separate from the previous component unless we are at the
++			 * start or already sitting on a separator (':' or '/'). */
++			if (dst != path && dst[-1] != '/' && dst[-1] != ':')
++				*dst++ = '/';
++
++			SDL_memcpy(dst, src, len);
++			dst += len;
++
++			if (need_colon)
 +			{
 +				*dst++ = ':';
-+				colon  = FALSE;
++				need_colon = FALSE;
 +			}
-+			else if (len == 2 && src[0] == '.' && src[1] == '.')
-+			{
-+				/* replace .. with the empty string */
-+			}
-+			else
-+			{
-+				SDL_memmove((void *)dst, (void *)src, len);
-+				dst += len;
-+			}
-+
-+			if(end < fn + flen)
-+				*dst++ = '/';
 +		}
 +
-+		src = end + 1;
++		src = (*end == '/') ? end + 1 : end;
 +	}
 +
-+	*dst++ = '\0';
++	*dst = '\0';
 +	return path;
 +}
 diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.h SDL2-2.32.10.aros/src/misc/aros/SDL_misc.h
@@ -3357,9 +3675,9 @@ diff -ruN SDL2-2.32.10/src/misc/aros/SDL_misc.h SDL2-2.32.10.aros/src/misc/aros/
 +
 +#endif /* SDL_MISC_AROS_MISC_H */
 diff -ruN SDL2-2.32.10/src/power/aros/SDL_syspower.c SDL2-2.32.10.aros/src/power/aros/SDL_syspower.c
---- SDL2-2.32.10/src/power/aros/SDL_syspower.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/power/aros/SDL_syspower.c	2025-07-29 12:46:22.777400298 +0000
-@@ -0,0 +1,36 @@
+--- SDL2-2.32.10/src/power/aros/SDL_syspower.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/power/aros/SDL_syspower.c	2026-10-07 09:44:40
+@@ -0,0 +1,39 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -3390,7 +3708,10 @@ diff -ruN SDL2-2.32.10/src/power/aros/SDL_syspower.c SDL2-2.32.10.aros/src/power
 +SDL_bool
 +SDL_GetPowerInfo_AROS(SDL_PowerState *state, int *seconds, int *percent)
 +{
-+	return SDL_TRUE;
++	/* Not implemented. Returning SDL_TRUE claimed to have answered and
++	 * short-circuited the rest of the implementation chain (including
++	 * SDL_POWER_HARDWIRED) while leaving the outputs untouched. */
++	return SDL_FALSE;
 +}
 +
 +#endif /* SDL_POWER_AROS */
@@ -3430,14 +3751,14 @@ diff -ruN SDL2-2.32.10/src/power/SDL_syspower.h SDL2-2.32.10.aros/src/power/SDL_
  /* this one is static in SDL_power.c */
  /* SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
 diff -ruN SDL2-2.32.10/src/render/opengl/SDL_render_gl.c SDL2-2.32.10.aros/src/render/opengl/SDL_render_gl.c
---- SDL2-2.32.10/src/render/opengl/SDL_render_gl.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/render/opengl/SDL_render_gl.c	2025-08-05 16:37:28.748631871 +0000
+--- SDL2-2.32.10/src/render/opengl/SDL_render_gl.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/render/opengl/SDL_render_gl.c	2026-10-07 09:44:40
 @@ -21,7 +21,15 @@
  #include "../../SDL_internal.h"
  
  #if SDL_VIDEO_RENDER_OGL
 +#if defined(__AROS__)
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +#define DV(...)
 +#endif
@@ -3448,21 +3769,22 @@ diff -ruN SDL2-2.32.10/src/render/opengl/SDL_render_gl.c SDL2-2.32.10.aros/src/r
  #include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
  #include "SDL_opengl.h"
  #include "../SDL_sysrender.h"
-@@ -1678,6 +1686,10 @@
+@@ -1677,6 +1685,10 @@
+ {
      /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
      const char *renderer = (const char *)data->glGetString(GL_RENDERER);
- 
++
 +    if (renderer == NULL) {
 +        return SDL_TRUE;
 +    }
-+
+ 
  #if defined(__WINDOWS__) || defined(__WINGDK__)
      if (SDL_strcmp(renderer, "GDI Generic") == 0) {
-         return SDL_FALSE; /* Microsoft's fallback software renderer. Fix your system! */
-@@ -1709,6 +1721,16 @@
+@@ -1708,6 +1720,16 @@
+     SDL_bool changed_window = SDL_FALSE;
      const char *hint;
      SDL_bool non_power_of_two_supported = SDL_FALSE;
- 
++
 +#ifdef SDL_VIDEO_DRIVER_AROS
 +    window_flags = SDL_GetWindowFlags(window);
 +    if (!(window_flags & SDL_WINDOW_OPENGL)) {
@@ -3472,10 +3794,9 @@ diff -ruN SDL2-2.32.10/src/render/opengl/SDL_render_gl.c SDL2-2.32.10.aros/src/r
 +            goto error;
 +    }
 +#endif
-+
+ 
      SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
      SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 @@ -1860,6 +1882,12 @@
          renderer->info.max_texture_height = value;
      }
@@ -3536,27 +3857,39 @@ diff -ruN SDL2-2.32.10/src/render/opengl/SDL_shaders_gl.c SDL2-2.32.10.aros/src/
  #include "SDL_video.h"
  #include "SDL_shaders_gl.h"
 diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
---- SDL2-2.32.10/src/SDL.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/SDL.c	2025-07-28 20:45:10.753574555 +0000
-@@ -49,7 +49,6 @@
- #include "haptic/SDL_haptic_c.h"
- #include "joystick/SDL_joystick_c.h"
- #include "sensor/SDL_sensor_c.h"
--#include "thread/SDL_thread_c.h"
- 
- /* Initialization/Cleanup routines */
- #ifndef SDL_TIMERS_DISABLED
-@@ -101,6 +100,9 @@
+--- SDL2-2.32.10/src/SDL.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/SDL.c	2026-10-07 09:44:40
+@@ -24,6 +24,11 @@
+ #include "core/windows/SDL_windows.h"
+ #elif defined(__OS2__)
+ #include <stdlib.h> /* _exit() */
++#elif defined(__AROS__)
++/* Deliberately NOT unistd.h: _exit() lives in posixc, and this is the last
++ * place in the library that would pull it in. dos.library serves instead. */
++#include <proto/dos.h>
++#include <proto/exec.h>
+ #elif !defined(__WINRT__)
+ #include <unistd.h> /* _exit(), etc. */
+ #endif
+@@ -101,6 +106,17 @@
      exit(exitcode);
  #elif defined(__HAIKU__)  /* Haiku has _Exit, but it's not marked noreturn. */
      _exit(exitcode);
 +#elif defined(__MORPHOS__)
 +    extern void (*morphos_exit)(int exitcode);
 +    morphos_exit(exitcode);
++#elif defined(__AROS__)
++    /* dos.library's Exit() is the native equivalent of _exit() and keeps the
++     * library free of posixc. RemTask() is unreachable in practice - it is
++     * there because Exit() is not declared noreturn, so without it the
++     * SDL_NORETURN contract would rest on an assumption the compiler cannot
++     * check. */
++    Exit(exitcode);
++    RemTask(NULL);
  #elif defined(HAVE__EXIT) /* Upper case _Exit() */
      _Exit(exitcode);
  #else
-@@ -114,7 +116,6 @@
+@@ -114,7 +130,6 @@
  #else
  static SDL_bool SDL_MainIsReady = SDL_TRUE;
  #endif
@@ -3564,10 +3897,12 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  static SDL_bool SDL_bInMainQuit = SDL_FALSE;
  static Uint8 SDL_SubsystemRefCount[32];
  
-@@ -180,36 +181,6 @@
+@@ -178,36 +193,6 @@
+ void SDL_SetMainReady(void)
+ {
      SDL_MainIsReady = SDL_TRUE;
- }
- 
+-}
+-
 -void SDL_InitMainThread(void)
 -{
 -    if (SDL_main_thread_initialized) {
@@ -3596,12 +3931,10 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
 -    SDL_QuitTLSData();
 -
 -    SDL_main_thread_initialized = SDL_FALSE;
--}
--
+ }
+ 
  int SDL_InitSubSystem(Uint32 flags)
- {
-     Uint32 flags_initialized = 0;
-@@ -218,6 +189,8 @@
+@@ -218,6 +203,8 @@
          return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
      }
  
@@ -3610,18 +3943,18 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
      /* Clear the error message */
      SDL_ClearError();
  
-@@ -233,6 +206,10 @@
+@@ -231,6 +218,10 @@
+             goto quit_and_error;
+         }
      }
- #endif
- 
-+#ifndef SDL_TIMERS_DISABLED
-+    SDL_TicksInit();
 +#endif
 +
++#ifndef SDL_TIMERS_DISABLED
++    SDL_TicksInit();
+ #endif
+ 
      /* Initialize the event subsystem */
-     if (flags & SDL_INIT_EVENTS) {
- #ifndef SDL_EVENTS_DISABLED
-@@ -374,7 +351,7 @@
+@@ -374,7 +365,7 @@
          }
          SDL_PrivateSubsystemRefCountIncr(SDL_INIT_SENSOR);
          flags_initialized |= SDL_INIT_SENSOR;
@@ -3630,7 +3963,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
          SDL_SetError("SDL not built with sensor support");
          goto quit_and_error;
  #endif
-@@ -520,6 +497,10 @@
+@@ -520,6 +511,10 @@
  #endif
      SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
  
@@ -3641,7 +3974,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  #ifdef SDL_USE_LIBDBUS
      SDL_DBus_Quit();
  #endif
-@@ -527,12 +508,14 @@
+@@ -527,12 +522,17 @@
      SDL_ClearHints();
      SDL_AssertionsQuit();
  
@@ -3653,11 +3986,14 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
      SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
  
 -    SDL_QuitMainThread();
-+    SDL_TLSCleanup();
++    /* SDL_TLSCleanup() only reclaims the calling thread's slots; the mutex
++     * and any entries left by threads that exited without it need the full
++     * teardown, or they survive into the next SDL_Init(). */
++    SDL_QuitTLSData();
  
      SDL_bInMainQuit = SDL_FALSE;
  }
-@@ -580,6 +563,8 @@
+@@ -580,6 +580,8 @@
      return "AIX";
  #elif defined(__ANDROID__)
      return "Android";
@@ -3666,7 +4002,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  #elif defined(__BSDI__)
      return "BSDI";
  #elif defined(__DREAMCAST__)
-@@ -636,6 +621,8 @@
+@@ -636,6 +638,8 @@
      return "PlayStation 2";
  #elif defined(__PSP__)
      return "PlayStation Portable";
@@ -3730,20 +4066,23 @@ diff -ruN SDL2-2.32.10/src/SDL_error.c SDL2-2.32.10.aros/src/SDL_error.c
 +
  /* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
---- SDL2-2.32.10/src/SDL_log.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/SDL_log.c	2025-07-30 18:47:19.000000000 +0000
-@@ -40,6 +40,10 @@
- #include <android/log.h>
- #endif
+--- SDL2-2.32.10/src/SDL_log.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/SDL_log.c	2026-10-07 09:44:40
+@@ -38,6 +38,13 @@
  
+ #if defined(__ANDROID__)
+ #include <android/log.h>
++#endif
++
 +#if defined(__MORPHOS__) || defined(__AROS__)
 +#include <proto/exec.h>
 +#endif
-+
- #include "stdlib/SDL_vacopy.h"
++#ifdef __AROS__
++#include <proto/dos.h>
+ #endif
  
- /* The size of the stack buffer to use for rendering log messages. */
-@@ -47,6 +51,7 @@
+ #include "stdlib/SDL_vacopy.h"
+@@ -47,6 +54,7 @@
  
  #define DEFAULT_CATEGORY -1
  
@@ -3751,7 +4090,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  typedef struct SDL_LogLevel
  {
      int category;
-@@ -296,6 +301,7 @@
+@@ -296,6 +304,7 @@
      }
      SDL_forced_priority = SDL_FALSE;
  }
@@ -3759,7 +4098,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  
  void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
  {
-@@ -369,6 +375,7 @@
+@@ -369,6 +378,7 @@
      va_end(ap);
  }
  
@@ -3767,7 +4106,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  #ifdef __ANDROID__
  static const char *GetCategoryPrefix(int category)
  {
-@@ -573,6 +580,10 @@
+@@ -573,6 +583,32 @@
              (void)fclose(pFile);
          }
      }
@@ -3775,10 +4114,45 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
 +	{
 +    	NewRawDoFmt("%s: %s\n", (APTR)1, NULL, SDL_priority_prefixes[priority], message);
 +	}
++#ifdef __AROS__
++	{
++		/* NewRawDoFmt() above goes to the raw debug console, which someone
++		 * running the app from a Shell never sees. Echo it there too, through
++		 * dos.library rather than stdio - reaching for fprintf() here is what
++		 * made the library depend on stdcio.library.
++		 *
++		 * Output() is NULL when the app was started from Workbench, and
++		 * Write() takes raw bytes, so a '%' in the message cannot be mistaken
++		 * for a format specifier. */
++		BPTR out = Output();
++
++		if (out) {
++			const char *prefix = SDL_priority_prefixes[priority];
++
++			Write(out, (APTR)prefix, SDL_strlen(prefix));
++			Write(out, (APTR)": ", 2);
++			Write(out, (APTR)message, SDL_strlen(message));
++			Write(out, (APTR)"\n", 1);
++		}
++	}
++#endif
  #elif defined(__3DS__)
      {
          FILE *pFile;
-@@ -607,5 +618,6 @@
+@@ -583,7 +619,11 @@
+         }
+     }
+ #endif
+-#if defined(HAVE_STDIO_H) && \
++/* AROS/MorphOS already emitted the line through NewRawDoFmt() above; this
++ * block is not part of that #elif chain, so without the exclusion every
++ * SDL_Log() went out twice - and the second copy is the only reason the
++ * library needs stdcio.library at all. */
++#if defined(HAVE_STDIO_H) && !defined(__AROS__) && !defined(__MORPHOS__) && \
+     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
+     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+ #ifdef __NACL__
+@@ -607,5 +647,6 @@
      SDL_log_function = callback;
      SDL_log_userdata = userdata;
  }
@@ -3971,9 +4345,9 @@ diff -ruN SDL2-2.32.10/src/stdlib/SDL_string.c SDL2-2.32.10.aros/src/stdlib/SDL_
  }
 +#endif
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thread/aros/SDL_sysmutex.c
---- SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_sysmutex.c	2025-07-28 10:23:45.073287295 +0000
-@@ -0,0 +1,104 @@
+--- SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_sysmutex.c	2026-10-07 09:44:40
+@@ -0,0 +1,134 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4007,6 +4381,11 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thre
 +struct SDL_mutex
 +{
 +    struct SignalSemaphore sem;
++#if SDL_AROS_SEM_DEBUG
++    struct Task *dbg_lastlock;  /* task that most recently locked it */
++    int dbg_locks;
++    int dbg_unlocks;
++#endif
 +};
 +
 +/* Create a mutex */
@@ -4019,8 +4398,12 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thre
 +    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
 +    if (mutex) {
 +        /* Create the mutex semaphore, with initial value 1 */
-+        memset(&mutex->sem, 0, sizeof(mutex->sem));
++        memset(mutex, 0, sizeof(*mutex));
 +        InitSemaphore(&mutex->sem);
++#if SDL_AROS_SEM_DEBUG
++        bug("[SDL2:sem] SDL_CreateMutex -> 0x%p (task 0x%p '%s')\n",
++            mutex, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name);
++#endif
 +    } else {
 +        SDL_OutOfMemory();
 +    }
@@ -4045,7 +4428,11 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thre
 +    if (mutex == NULL)
 +        return SDL_SetError("Passed a NULL mutex");
 +
-+    ObtainSemaphore(&mutex->sem);
++    SDL_AROS_OBTAIN(&mutex->sem, "SDL_LockMutex");
++#if SDL_AROS_SEM_DEBUG
++    mutex->dbg_lastlock = FindTask(NULL);
++    mutex->dbg_locks++;
++#endif
 +    return 0;
 +#endif /* SDL_THREADS_DISABLED */
 +}
@@ -4060,7 +4447,13 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thre
 +    if (mutex == NULL)
 +        return SDL_SetError("Passed a NULL mutex");
 +
-+    return AttemptSemaphore(&mutex->sem) ? 0 : SDL_MUTEX_TIMEDOUT;
++    if (!AttemptSemaphore(&mutex->sem))
++        return SDL_MUTEX_TIMEDOUT;
++#if SDL_AROS_SEM_DEBUG
++    mutex->dbg_lastlock = FindTask(NULL);
++    mutex->dbg_locks++;
++#endif
++    return 0;
 +#endif /* SDL_THREADS_DISABLED */
 +}
 +
@@ -4074,6 +4467,17 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex.c SDL2-2.32.10.aros/src/thre
 +    if (mutex == NULL)
 +        return SDL_SetError("Passed a NULL mutex");
 +
++#if SDL_AROS_SEM_DEBUG
++    if (mutex->sem.ss_NestCount <= 0)
++        bug("[SDL2:sem] SDL_UnlockMutex: UNBALANCED RELEASE mutex 0x%p nest %ld queue %ld"
++            " owner 0x%p - locks %d unlocks %d lastlock 0x%p '%s' - this task 0x%p '%s'\n",
++            mutex, (long)mutex->sem.ss_NestCount, (long)mutex->sem.ss_QueueCount,
++            mutex->sem.ss_Owner, mutex->dbg_locks, mutex->dbg_unlocks,
++            mutex->dbg_lastlock,
++            mutex->dbg_lastlock ? mutex->dbg_lastlock->tc_Node.ln_Name : "-",
++            FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name);
++    mutex->dbg_unlocks++;
++#endif
 +    ReleaseSemaphore(&mutex->sem);
 +    return 0;
 +#endif /* SDL_THREADS_DISABLED */
@@ -4105,9 +4509,9 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_sysmutex_c.h SDL2-2.32.10.aros/src/th
 +#include "../../SDL_internal.h"
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread/aros/SDL_syssem.c
---- SDL2-2.32.10/src/thread/aros/SDL_syssem.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_syssem.c	2025-07-27 14:24:17.420841400 +0000
-@@ -0,0 +1,272 @@
+--- SDL2-2.32.10/src/thread/aros/SDL_syssem.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_syssem.c	2026-10-07 09:44:40
+@@ -0,0 +1,313 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4203,13 +4607,21 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +
 +extern void InitQPort(struct MsgPort *port);
 +
++extern struct timerequest GlobalTimeReq;
++extern SDL_bool AROS_TimerOpen(void);
++
 +static
-+void mywaitinit(struct timerequest *r, Uint32 timeout, struct waitnode *wn)
++void mywaitinit(struct timerequest *r, struct waitnode *wn)
 +{
-+    extern struct timerequest GlobalTimeReq;
 +    struct timerequest *req = &GlobalTimeReq;
 +
++    /* r lives on the caller's stack: clear it so io_Flags/io_Error and the
++     * rest of the message header are not garbage when SendIO()/AbortIO()
++     * look at them. */
++    SDL_memset(r, 0, sizeof(*r));
++
 +    r->tr_node.io_Message.mn_Node.ln_Type = NT_REPLYMSG;
++    r->tr_node.io_Message.mn_Length       = sizeof(*r);
 +    r->tr_node.io_Message.mn_ReplyPort    = &wn->port;
 +    r->tr_node.io_Device                  = req->tr_node.io_Device;
 +    r->tr_node.io_Unit                    = req->tr_node.io_Unit;
@@ -4242,19 +4654,17 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +SDL_DestroySemaphore(SDL_sem * sem)
 +{
 +    if (sem) {
++        struct waitnode *wn;
++
 +        ObtainSemaphore(&sem->sem);
 +
-+        sem->sem_value = (Uint32)-1;
-+
-+        while (!IsListEmpty((struct List *) &sem->waitlist)) {
-+            struct waitnode *wn;
-+
-+            for (wn = (struct waitnode *) sem->waitlist.mlh_Head; wn->msg.mn_Node.ln_Succ; wn = (struct waitnode *) wn->msg.mn_Node.ln_Succ)
-+                ReplyMsg(&wn->msg);
-+
-+            if (SDL_SemWaitTimeout(sem, 10) < 0)
-+                break;
-+        }
++        /* Drain the waitlist with REMHEAD, exactly as SDL_SemPost() does.
++         * The old loop replied without unlinking, so IsListEmpty() never
++         * became true (endless loop), it kept walking nodes that live on
++         * woken tasks' stacks, and it called SDL_SemWaitTimeout() - which
++         * queues a node of its OWN - while holding sem->sem. */
++        while ((wn = (APTR)REMHEAD(&sem->waitlist)))
++            ReplyMsg(&wn->msg);
 +
 +        ReleaseSemaphore(&sem->sem);
 +
@@ -4289,12 +4699,18 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +{
 +    int retval = SDL_MUTEX_TIMEDOUT;
 +    struct waitnode wn;
++    BYTE sigbit = -1;
 +
 +    if (!sem)
 +        return SDL_SetError("Passed a NULL semaphore");
 +
++    /* The timeout path arms a timer.device request built from GlobalTimeReq,
++     * so make sure that has been opened before we commit to blocking. */
++    if (timeout > 0 && !AROS_TimerOpen())
++        timeout = 0;
++
 +    /* Try semaphore */
-+    ObtainSemaphore(&sem->sem);
++    SDL_AROS_OBTAIN(&sem->sem, "SDL_SemWaitTimeout");
 +
 +    if (sem->sem_value > 0) {
 +        --sem->sem_value;
@@ -4302,6 +4718,19 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +    }
 +    else if (timeout > 0) {
 +        InitQPort(&wn.port);
++        /* InitQPort() parks the port on SIGB_SINGLE, which exec reserves for
++         * itself: InternalObtainSemaphore() clears SIGF_SINGLE and then
++         * Wait(SIGF_SINGLE) with a SemaphoreRequest on ITS stack linked into
++         * ss_WaitQueue. A ReplyMsg() from SDL_SemPost()/the timer therefore
++         * either gets eaten by that clear (this wait hangs forever), or wakes
++         * a blocked ObtainSemaphore() early - which returns without owning
++         * the semaphore and leaves a dangling stack node in ss_WaitQueue.
++         * The next Obtain/Release then trips CheckSemaphore() ->
++         * AN_SemCorrupt, "Semaphore in an illegal state". Use a private
++         * signal; SIGB_SINGLE only as a last resort, as SDL_Delay() does. */
++        sigbit = AllocSignal(-1);
++        if (sigbit != -1)
++            wn.port.mp_SigBit = sigbit;
 +        wn.msg.mn_Node.ln_Type = NT_MESSAGE;
 +        wn.msg.mn_ReplyPort = &wn.port;
 +        ADDTAIL(&sem->waitlist, &wn);
@@ -4314,7 +4743,7 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +        struct timerequest req;
 +        struct Message *msg;
 +
-+        mywaitinit(&req, timeout, &wn);
++        mywaitinit(&req, &wn);
 +
 +        req.tr_node.io_Command = TR_ADDREQUEST;
 +        req.tr_time.tv_secs  = timeout / 1000;
@@ -4325,15 +4754,31 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +        retval = 0;
 +
 +        if (msg != &wn.msg) {
-+            ObtainSemaphore(&sem->sem);
-+            REMOVE(&wn);
-+            retval = wn.msg.mn_Node.ln_Type == NT_REPLYMSG ?  0 : SDL_MUTEX_TIMEDOUT;
++            SDL_AROS_OBTAIN(&sem->sem, "SDL_SemWaitTimeout/unlink");
++
++            /* SDL_SemPost() may have REMHEAD'd our node and replied it
++             * between WaitPort() handing us the timer message and us
++             * taking the lock. Only unlink a node that is STILL queued:
++             * REMOVE() on an already-removed node splices stale
++             * neighbours and corrupts the waitlist. */
++            if (wn.msg.mn_Node.ln_Type == NT_REPLYMSG) {
++                retval = 0;
++            } else {
++                REMOVE(&wn);
++                retval = SDL_MUTEX_TIMEDOUT;
++            }
++
 +            ReleaseSemaphore(&sem->sem);
 +        }
 +
 +        AbortIO((struct IORequest *) &req);
 +        WaitIO((struct IORequest *) &req);
 +    }
++
++    /* Both senders (SDL_SemPost() and timer.device) are done with the port
++     * by now, so the signal can go back to the pool. */
++    if (sigbit != -1)
++        FreeSignal(sigbit);
 +
 +    return retval;
 +}
@@ -4381,9 +4826,9 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_syssem.c SDL2-2.32.10.aros/src/thread
 +#endif /* SDL_THREADS_DISABLED */
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c
---- SDL2-2.32.10/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c	2025-08-12 14:18:26.729549553 +0000
-@@ -0,0 +1,180 @@
+--- SDL2-2.32.10/src/thread/aros/SDL_systhread.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread.c	2026-10-07 09:44:40
+@@ -0,0 +1,258 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4405,7 +4850,7 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#include "../../SDL_internal.h"
@@ -4421,6 +4866,16 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +
 +const char *warn_NoResources = "Not enough resources to create thread";
 +
++void
++AROS_DropThreadSync(struct AROS_ThreadSync *sync)
++{
++    if (SDL_AtomicDecRef(&sync->ts_Refs)) {
++        D(bug("[SDL2:Thread] %s: freeing sync block 0x%p\n", __func__, sync));
++        SDL_free(sync->ts_Name);
++        SDL_free(sync);
++    }
++}
++
 +static AROS_UFH3(Uint32, RunThread,
 +    AROS_UFHA(char *,              args, A0),
 +    AROS_UFHA(ULONG,               argSize, D0),
@@ -4428,8 +4883,11 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +{
 +    AROS_USERFUNC_INIT
 +
-+    struct Task *Parent, *thisTask = FindTask(NULL);
++    struct Task *thisTask = FindTask(NULL);
 +    SDL_Thread *thread = (SDL_Thread *)thisTask->tc_UserData;
++    /* Cache the sync block: SDL_RunThread() frees *thread if the thread was
++     * detached while it ran, so nothing past that call may reach through it. */
++    struct AROS_ThreadSync *sync = thread->handle.tp_Sync;
 +
 +    D(bug("[SDL2:Thread] 0x%p:%s: Entered Thread (0x%p)\n", thisTask, __func__, thread));
 +
@@ -4438,40 +4896,55 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +//	__aros_setoffsettable(threadArgs->base);
 +//#endif
 +
-+    if (thread->handle.tp_Parent)
-+    {
-+        D(bug("[SDL2:Thread] 0x%p:%s: Parent @ 0x%p\n", thisTask, __func__, thread->handle.tp_Parent));
-+    }
-+
-+#if (0)
-+    BPTR lock = thread->status;
-+    thread->status = 0;
-+    BPTR oldDir = CurrentDir(lock);
-+#endif
++    ObtainSemaphore(&sync->ts_Sem);
++    Signal(thread->handle.tp_Parent, (1 << thread->handle.tp_PSig));
 +
 +    SDL_RunThread(thread);
 +
 +    D(bug("[SDL2:Thread] 0x%p:%s: Thread returned\n", thisTask, __func__));
 +
-+#if (0)
-+    UnLock(CurrentDir(oldDir));
-+#endif
++    /* ln_Name points into the sync block, which the release below may make
++     * the last reference to. Anything reading task names (Scout, exec's own
++     * alerts) must not be handed freed memory. */
++    thisTask->tc_Node.ln_Name = (STRPTR)"SDL thread (exited)";
 +
-+    if ((thread->handle.tp_Parent) && (thread->handle.tp_PSig != -1))
-+        Signal(thread->handle.tp_Parent, (1 << thread->handle.tp_PSig));
++    ReleaseSemaphore(&sync->ts_Sem);
++    AROS_DropThreadSync(sync);
 +
 +    return(0);
 +
 +    AROS_USERFUNC_EXIT
 +}
 +
++/* CreateNewProc() will happily accept a tiny stack and then blow it inside
++ * SDL itself, so floor whatever the app asked for. */
++#define AROS_MIN_STACKSIZE (64 * 1024)
++
 +int
 +SDL_SYS_CreateThread(SDL_Thread * thread)
 +{
++    struct AROS_ThreadSync *sync;
++    size_t stacksize;
++
++    sync = (struct AROS_ThreadSync *)SDL_calloc(1, sizeof(*sync));
++    if (!sync)
++    {
++        return SDL_OutOfMemory();
++    }
++
++    InitSemaphore(&sync->ts_Sem);
++    /* One reference for the child, one for the eventual join or detach. */
++    SDL_AtomicSet(&sync->ts_Refs, 2);
++
++    thread->handle.tp_Sync      = sync;
 +    thread->handle.tp_Parent    = FindTask(NULL);
 +    thread->handle.tp_PSig      = AllocSignal(-1);
++
 +    if (thread->handle.tp_PSig == -1)
 +    {
++        /* No child exists yet, so we own the block outright. */
++        thread->handle.tp_Sync = NULL;
++        SDL_free(sync);
 +        SDL_SetError(warn_NoResources);
 +        return(-1);
 +    }
@@ -4482,9 +4955,19 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +        bug("[SDL2:Thread] %s:        psig   = %08x\n", __func__, thread->handle.tp_PSig);
 +    )
 +
++    /* SDL_CreateThreadWithStackSize() was being ignored: the parent's own
++     * stack span was used for every thread regardless. Honour the request
++     * when there is one, and keep the old behaviour as the default. */
++    stacksize = thread->stacksize;
++    if (stacksize == 0)
++        stacksize = (size_t)(thread->handle.tp_Parent->tc_SPUpper
++                             - thread->handle.tp_Parent->tc_SPLower);
++    if (stacksize < AROS_MIN_STACKSIZE)
++        stacksize = AROS_MIN_STACKSIZE;
++
 +    /* launch it. .. */
 +    thread->handle.tp_Task = (struct Task *)CreateNewProcTags(NP_Output, Output(),
-+                                    NP_StackSize, 	(IPTR)(thread->handle.tp_Parent->tc_SPUpper - thread->handle.tp_Parent->tc_SPLower),
++                                    NP_StackSize, 	(IPTR)stacksize,
 +                                    NP_Entry, 		(IPTR)RunThread,
 +                                    NP_UserData, 	thread,
 +                                    NP_CloseOutput,	FALSE,
@@ -4492,9 +4975,18 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +
 +    if(!thread->handle.tp_Task)
 +    {
++        /* No child was born, so nothing will ever drop its reference. */
++        FreeSignal(thread->handle.tp_PSig);
++        thread->handle.tp_PSig = -1;
++        thread->handle.tp_Sync = NULL;
++        SDL_free(sync);
 +        SDL_SetError(warn_NoResources);
 +        return(-1);
 +    }
++
++    Wait(1 << thread->handle.tp_PSig);
++    FreeSignal(thread->handle.tp_PSig);
++    thread->handle.tp_PSig = -1;
 +
 +    return(0);
 +}
@@ -4503,8 +4995,22 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +SDL_SYS_SetupThread(const char *name)
 +{
 +    struct Task *t = FindTask(NULL);
++    SDL_Thread *thread = (SDL_Thread *)t->tc_UserData;
++
 +    D(bug("[SDL2:Thread] %s('%s')\n", __func__, name));
-+    t->tc_Node.ln_Name = (STRPTR)name;
++
++    /* exec keeps ln_Name for as long as the task lives, but SDL frees
++     * thread->name together with the SDL_Thread. Point at our own copy in
++     * the sync block, which outlives both. */
++    if (name && thread && thread->handle.tp_Sync)
++    {
++        thread->handle.tp_Sync->ts_Name = SDL_strdup(name);
++        t->tc_Node.ln_Name = thread->handle.tp_Sync->ts_Name;
++    }
++
++    if (!t->tc_Node.ln_Name)
++        t->tc_Node.ln_Name = (STRPTR)"SDL thread";
++
 +    D(bug("[SDL2:Thread] %s: name set for thread @ 0x%p\n", __func__, t));
 +}
 +
@@ -4546,28 +5052,45 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread.c SDL2-2.32.10.aros/src/thr
 +void
 +SDL_SYS_WaitThread(SDL_Thread * thread)
 +{
++    struct AROS_ThreadSync *sync = thread->handle.tp_Sync;
++
 +    D(bug("[SDL2:Thread] %s()\n", __func__));
 +
-+    if (thread->handle.tp_PSig != -1) {
-+        int sigs = SetSignal(0L, SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C);
-+        int newsigs = Wait(SIGBREAKF_CTRL_F | SIGBREAKF_CTRL_C | (1 << thread->handle.tp_PSig));
-+        SetSignal((sigs | newsigs) & ~(1 << thread->handle.tp_PSig), 0);
-+        FreeSignal(thread->handle.tp_PSig);
-+    }
++    if (!sync)
++        return;
++
++    /* The child holds ts_Sem from before it signalled us until after its
++     * body has returned, so obtaining it means the thread is done. */
++    ObtainSemaphore(&sync->ts_Sem);
++    ReleaseSemaphore(&sync->ts_Sem);
++
++    thread->handle.tp_Sync = NULL;
++    AROS_DropThreadSync(sync);
++
 +    D(bug("[SDL2:Thread] %s: wait done\n", __func__));
 +}
 +
 +void
 +SDL_SYS_DetachThread(SDL_Thread * thread)
 +{
++    /* NOTE: SDL_DetachThread() has already CAS'd the state to DETACHED, so
++     * the child is free to SDL_free(thread) from this instant. Reading the
++     * handle here is the same narrow window every SDL backend has (pthread
++     * dereferences it for pthread_detach) - not something this port can
++     * close on its own. */
++    struct AROS_ThreadSync *sync = thread->handle.tp_Sync;
++
 +    D(bug("[SDL2:Thread] %s()\n", __func__));
++
++    if (sync)
++        AROS_DropThreadSync(sync);
 +}
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h
---- SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h	2025-08-01 14:11:38.399659885 +0000
-@@ -0,0 +1,32 @@
+--- SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/thread/aros/SDL_systhread_c.h	2026-10-07 09:44:40
+@@ -0,0 +1,89 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
@@ -4590,19 +5113,76 @@ diff -ruN SDL2-2.32.10/src/thread/aros/SDL_systhread_c.h SDL2-2.32.10.aros/src/t
 +*/
 +#include "../../SDL_internal.h"
 +
++#include "SDL_atomic.h"
++
 +#include <exec/types.h>
++#include <exec/semaphores.h>
++
++/* Diagnostic: exec grants an exclusive SignalSemaphore by setting ss_Owner
++ * from ReleaseSemaphore(). If ObtainSemaphore() returns without us being the
++ * owner, we were woken by a stray SIGF_SINGLE (exec's Wait(SIGF_SINGLE) in
++ * InternalObtainSemaphore() cannot tell a semaphore hand-off from any other
++ * sender), our stack SemaphoreRequest is still linked in ss_WaitQueue, and
++ * the matching ReleaseSemaphore() will drive ss_NestCount negative ->
++ * Alert(AN_SemCorrupt), "Semaphore in an illegal state", far from the cause.
++ * Set to 0 once the port is stable. */
++#define SDL_AROS_SEM_DEBUG 0
++
++#if SDL_AROS_SEM_DEBUG
++#include <aros/debug.h>
++#define SDL_AROS_OBTAIN(s, what)                                              \
++    do {                                                                      \
++        ObtainSemaphore(s);                                                   \
++        if ((s)->ss_Owner != FindTask(NULL))                                  \
++            bug("[SDL2:sem] %s: STRAY WAKEUP sem 0x%p owner 0x%p nest %ld"    \
++                " queue %ld - task 0x%p '%s'\n", what, (s), (s)->ss_Owner,    \
++                (long)(s)->ss_NestCount, (long)(s)->ss_QueueCount,            \
++                FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name);             \
++    } while (0)
++/* The other way ss_NestCount goes negative: a genuine release without a
++ * matching obtain (or an unlock from a task that never locked). */
++#define SDL_AROS_RELEASE(s, what)                                             \
++    do {                                                                      \
++        if ((s)->ss_NestCount <= 0)                                           \
++            bug("[SDL2:sem] %s: UNBALANCED RELEASE sem 0x%p owner 0x%p"       \
++                " nest %ld queue %ld - task 0x%p '%s'\n", what, (s),          \
++                (s)->ss_Owner, (long)(s)->ss_NestCount,                       \
++                (long)(s)->ss_QueueCount, FindTask(NULL),                     \
++                FindTask(NULL)->tc_Node.ln_Name);                             \
++        ReleaseSemaphore(s);                                                  \
++    } while (0)
++#else
++#define SDL_AROS_OBTAIN(s, what) ObtainSemaphore(s)
++#define SDL_AROS_RELEASE(s, what) ReleaseSemaphore(s)
++#endif
++
++/* The exit semaphore cannot live in SDL_Thread: SDL_RunThread() frees that
++ * struct itself if the thread was detached while it ran, and the child still
++ * has to release the semaphore afterwards. Keep it in a refcounted block
++ * instead - one reference for the child, one for whoever joins or detaches -
++ * so the last one out frees it. tp_Name is the tc_Node.ln_Name copy, which
++ * has the same lifetime problem (SDL owns thread->name). */
++struct AROS_ThreadSync
++{
++    struct SignalSemaphore ts_Sem;
++    SDL_atomic_t           ts_Refs;
++    char                  *ts_Name;
++};
++
++extern void AROS_DropThreadSync(struct AROS_ThreadSync *sync);
 +
 +struct _AROS_ThreadPrivate
 +{
 +    struct Task *tp_Task;
 +    struct Task *tp_Parent;
 +    LONG        tp_PSig;
++    struct AROS_ThreadSync *tp_Sync;
 +};
 +
 +typedef struct _AROS_ThreadPrivate SYS_ThreadHandle;
 diff -ruN SDL2-2.32.10/src/thread/generic/SDL_systls.c SDL2-2.32.10.aros/src/thread/generic/SDL_systls.c
---- SDL2-2.32.10/src/thread/generic/SDL_systls.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/generic/SDL_systls.c	2025-07-27 14:24:17.384841346 +0000
+--- SDL2-2.32.10/src/thread/generic/SDL_systls.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/thread/generic/SDL_systls.c	2026-10-07 09:44:40
 @@ -22,11 +22,6 @@
  #include "../../SDL_internal.h"
  #include "../SDL_thread_c.h"
@@ -4615,16 +5195,6 @@ diff -ruN SDL2-2.32.10/src/thread/generic/SDL_systls.c SDL2-2.32.10.aros/src/thr
  SDL_TLSData *SDL_SYS_GetTLSData(void)
  {
      return SDL_Generic_GetTLSData();
-@@ -37,9 +32,4 @@
-     return SDL_Generic_SetTLSData(data);
- }
- 
--void SDL_SYS_QuitTLSData(void)
--{
--    SDL_Generic_QuitTLSData();
--}
--
- /* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/n3ds/SDL_syscond.c SDL2-2.32.10.aros/src/thread/n3ds/SDL_syscond.c
 --- SDL2-2.32.10/src/thread/n3ds/SDL_syscond.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL2-2.32.10.aros/src/thread/n3ds/SDL_syscond.c	2025-07-27 14:24:17.452841347 +0000
@@ -4757,9 +5327,9 @@ diff -ruN SDL2-2.32.10/src/thread/n3ds/SDL_syscond.c SDL2-2.32.10.aros/src/threa
 +
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/SDL_systhread.h SDL2-2.32.10.aros/src/thread/SDL_systhread.h
---- SDL2-2.32.10/src/thread/SDL_systhread.h	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/SDL_systhread.h	2025-07-27 14:24:17.824841353 +0000
-@@ -59,18 +59,12 @@
+--- SDL2-2.32.10/src/thread/SDL_systhread.h	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/thread/SDL_systhread.h	2026-10-07 09:44:40
+@@ -59,16 +59,13 @@
  /* Mark thread as cleaned up as soon as it exits, without joining. */
  extern void SDL_SYS_DetachThread(SDL_Thread *thread);
  
@@ -4773,14 +5343,13 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_systhread.h SDL2-2.32.10.aros/src/thread/S
  extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
  
 -/* Quit the global TLS data */
--extern void SDL_SYS_QuitTLSData(void);
--
++/* Release the global TLS data */
+ extern void SDL_SYS_QuitTLSData(void);
+ 
  /* This is for internal SDL use, so we don't need #ifdefs everywhere. */
- extern SDL_Thread *
- SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
 diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_thread.c
---- SDL2-2.32.10/src/thread/SDL_thread.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/SDL_thread.c	2025-07-31 14:39:34.385811973 +0000
+--- SDL2-2.32.10/src/thread/SDL_thread.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/thread/SDL_thread.c	2026-10-07 09:44:40
 @@ -28,15 +28,7 @@
  #include "SDL_hints.h"
  #include "../SDL_error_c.h"
@@ -4831,14 +5400,14 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
      storage = SDL_SYS_GetTLSData();
      if (storage) {
          unsigned int i;
-@@ -111,18 +93,6 @@
+@@ -111,21 +93,9 @@
          }
          SDL_SYS_SetTLSData(NULL);
          SDL_free(storage);
 -        (void)SDL_AtomicDecRef(&SDL_tls_allocated);
--    }
--}
--
+     }
+ }
+ 
 -void SDL_QuitTLSData(void)
 -{
 -    SDL_TLSCleanup();
@@ -4847,8 +5416,11 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
 -        SDL_SYS_QuitTLSData();
 -    } else {
 -        /* Some thread hasn't called SDL_CleanupTLS() */
-     }
- }
+-    }
+-}
+-
+ /* This is a generic implementation of thread-local storage which doesn't
+    require additional OS support.
  
 @@ -144,27 +114,40 @@
  static SDL_mutex *SDL_generic_TLS_mutex;
@@ -4908,7 +5480,7 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
      SDL_LockMutex(SDL_generic_TLS_mutex);
      prev = NULL;
      for (entry = SDL_generic_TLS; entry; entry = entry->next) {
-@@ -193,46 +176,25 @@
+@@ -193,46 +176,60 @@
          }
          prev = entry;
      }
@@ -4927,16 +5499,25 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
      SDL_UnlockMutex(SDL_generic_TLS_mutex);
  
 -    return retval;
--}
--
--void SDL_Generic_QuitTLSData(void)
--{
--    SDL_TLSEntry *entry;
--
++    if (!entry) {
++        return SDL_OutOfMemory();
++    }
++    return 0;
+ }
+ 
+ void SDL_Generic_QuitTLSData(void)
+ {
+     SDL_TLSEntry *entry;
+ 
 -    /* This should have been cleaned up by the time we get here */
 -    SDL_assert(!SDL_generic_TLS);
 -    if (SDL_generic_TLS) {
--        SDL_LockMutex(SDL_generic_TLS_mutex);
++    /* Threads that exited without SDL_TLSCleanup() still have entries here,
++     * and on AROS the key is a task pointer, which exec recycles - so a
++     * stale entry can be handed to an unrelated future thread. Drop the lot.
++     */
++    if (SDL_generic_TLS_mutex) {
+         SDL_LockMutex(SDL_generic_TLS_mutex);
 -        for (entry = SDL_generic_TLS; entry; ) {
 -            SDL_TLSEntry *next = entry->next;
 -            SDL_free(entry->storage);
@@ -4945,15 +5526,31 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
 -        }
 -        SDL_generic_TLS = NULL;
 -        SDL_UnlockMutex(SDL_generic_TLS_mutex);
--    }
--
+     }
+ 
 -    if (SDL_generic_TLS_mutex) {
 -        SDL_DestroyMutex(SDL_generic_TLS_mutex);
--        SDL_generic_TLS_mutex = NULL;
-+    if (!entry) {
-+        return SDL_OutOfMemory();
++    for (entry = SDL_generic_TLS; entry;) {
++        SDL_TLSEntry *next = entry->next;
++        SDL_free(entry->storage);
++        SDL_free(entry);
++        entry = next;
++    }
++    SDL_generic_TLS = NULL;
++
++    if (SDL_generic_TLS_mutex) {
++        SDL_mutex *mutex = SDL_generic_TLS_mutex;
+         SDL_generic_TLS_mutex = NULL;
++        SDL_UnlockMutex(mutex);
++        SDL_DestroyMutex(mutex);
      }
-+    return 0;
++}
++
++void SDL_QuitTLSData(void)
++{
++    /* Run destructors for this thread, then reclaim whatever is left. */
++    SDL_TLSCleanup();
++    SDL_SYS_QuitTLSData();
  }
  
 +#endif /* !__AROS__*/
@@ -4961,7 +5558,7 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
  /* Non-thread-safe global error variable */
  static SDL_error *SDL_GetStaticErrBuf(void)
  {
-@@ -243,6 +205,13 @@
+@@ -243,6 +240,13 @@
      return &SDL_global_error;
  }
  
@@ -4975,16 +5572,16 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
  #ifndef SDL_THREADS_DISABLED
  static void SDLCALL SDL_FreeErrBuf(void *data)
  {
-@@ -369,8 +338,6 @@
+@@ -368,8 +372,6 @@
+ {
      SDL_Thread *thread;
      int ret;
- 
--    SDL_InitMainThread();
 -
+-    SDL_InitMainThread();
+ 
      /* Allocate memory for the thread info structure */
      thread = (SDL_Thread *)SDL_calloc(1, sizeof(*thread));
-     if (!thread) {
-@@ -515,4 +482,6 @@
+@@ -515,4 +517,6 @@
      }
  }
  
@@ -4992,8 +5589,8 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread.c SDL2-2.32.10.aros/src/thread/SDL_
 +
  /* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/thread/SDL_thread_c.h SDL2-2.32.10.aros/src/thread/SDL_thread_c.h
---- SDL2-2.32.10/src/thread/SDL_thread_c.h	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/thread/SDL_thread_c.h	2025-08-01 13:05:57.897960957 +0000
+--- SDL2-2.32.10/src/thread/SDL_thread_c.h	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/thread/SDL_thread_c.h	2026-10-07 09:44:40
 @@ -42,6 +42,10 @@
  #include "n3ds/SDL_systhread_c.h"
  #elif defined(SDL_THREAD_STDCPP)
@@ -5005,7 +5602,7 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread_c.h SDL2-2.32.10.aros/src/thread/SD
  #elif defined(SDL_THREAD_OS2)
  #include "os2/SDL_systhread_c.h"
  #elif defined(SDL_THREAD_NGAGE)
-@@ -93,17 +97,17 @@
+@@ -93,18 +97,25 @@
  /* This is how many TLS entries we allocate at once */
  #define TLS_ALLOC_CHUNKSIZE 4
  
@@ -5025,14 +5622,21 @@ diff -ruN SDL2-2.32.10/src/thread/SDL_thread_c.h SDL2-2.32.10.aros/src/thread/SD
 +   storage fails or isn't supported on this platform.
 + */
  extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
--extern void SDL_Generic_QuitTLSData(void);
++
++/* Release the cross-platform thread local storage bookkeeping. */
+ extern void SDL_Generic_QuitTLSData(void);
  
++/* Clean up this thread's TLS and then release the global TLS bookkeeping.
++   Called from SDL_Quit(). */
++extern void SDL_QuitTLSData(void);
++
  #endif /* SDL_thread_c_h_ */
  
+ /* vi: set ts=4 sw=4 expandtab: */
 diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer/aros/SDL_systimer.c
---- SDL2-2.32.10/src/timer/aros/SDL_systimer.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/timer/aros/SDL_systimer.c	2025-07-30 18:12:50.000000000 +0000
-@@ -0,0 +1,114 @@
+--- SDL2-2.32.10/src/timer/aros/SDL_systimer.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/timer/aros/SDL_systimer.c	2026-10-07 09:44:40
+@@ -0,0 +1,177 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -5059,20 +5663,40 @@ diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer
 +
 +#include "SDL_timer.h"
 +
++#include <devices/timer.h>
 +#include <exec/execbase.h>
 +#include <proto/exec.h>
 +#include <proto/timer.h>
++#include <aros/debug.h>
 +
++/* timer.device is opened once by the library glue, not here:
++ * SDL2_library.c's init_libs() for the shared build, SDL2_static.c's
++ * init_sdl2() for the static one. Both own GlobalTimeReq and TimerBase and
++ * close the device again at expunge/exit, so this file must neither define
++ * those symbols nor close the device. */
 +extern struct timerequest GlobalTimeReq;
 +
 +static SDL_bool ticks_started = SDL_FALSE;
 +static struct timeval basetime;
++
++/* SDL_Delay() and the semaphore timeouts copy io_Device/io_Unit out of
++ * GlobalTimeReq, and GetSysTime()/ReadEClock() resolve through TimerBase.
++ * The glue runs before any SDL entry point can, so this only guards against
++ * the device having failed to open at all. */
++SDL_bool
++AROS_TimerOpen(void)
++{
++	return GlobalTimeReq.tr_node.io_Device != NULL;
++}
 +
 +void
 +SDL_TicksInit(void)
 +{
 +	if (ticks_started)
 +		return;
++
++	if (!AROS_TimerOpen())
++		return; /* retried on the next call rather than latched as started */
 +
 +	ticks_started = SDL_TRUE;
 +	GetSysTime(&basetime);
@@ -5092,6 +5716,11 @@ diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer
 +	if (!ticks_started)
 +		SDL_TicksInit();
 +
++	/* GetSysTime() resolves through TimerBase, which is only valid once the
++	 * device is open. */
++	if (!ticks_started)
++		return 0;
++
 +	GetSysTime(&tv);
 +
 +	if (basetime.tv_micro > tv.tv_micro) {
@@ -5099,28 +5728,45 @@ diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer
 +		tv.tv_micro += 1000000;
 +	}
 +
-+	return (Uint64)((tv.tv_secs - basetime.tv_secs) * 1000) + ((tv.tv_micro - basetime.tv_micro)/1000);
++	/* Cast before the multiply: tv_secs is a 32-bit ULONG, so the product
++	 * wrapped after ~49 days of uptime and the cast came too late. */
++	return ((Uint64)(tv.tv_secs - basetime.tv_secs) * 1000) + ((tv.tv_micro - basetime.tv_micro)/1000);
 +}
 +
 +Uint64
 +SDL_GetPerformanceCounter(void)
 +{
 +	struct EClockVal val;
-+	ULONG ec;
-+	ec = ReadEClock(&val);
-+	return (Uint64)ec;
++
++	if (!AROS_TimerOpen())
++		return 0;
++
++	/* ReadEClock() RETURNS the E-clock frequency and FILLS IN the counter.
++	 * Returning its result here handed out a constant, so every
++	 * SDL_GetPerformanceCounter() delta was 0. */
++	ReadEClock(&val);
++
++	return ((Uint64)val.ev_hi << 32) | (Uint64)val.ev_lo;
 +}
 +
 +Uint64
 +SDL_GetPerformanceFrequency(void)
 +{
 +	struct EClockVal val;
++
++	if (!AROS_TimerOpen())
++		return 1000000; /* must never be 0: callers divide by this */
++
 +	return (Uint64)ReadEClock(&val);
 +}
 +
 +void
 +InitQPort(struct MsgPort *port)
 +{
++	/* Zero the whole struct: on SMP AROS a MsgPort has an mp_SpinLock that
++	 * InternalPutMsg() locks. Leaving it as uninitialised stack garbage makes
++	 * the timer reply spin forever on a bogus lock and hangs the system. */
++	SDL_memset(port, 0, sizeof(*port));
 +	port->mp_SigBit = SIGB_SINGLE;
 +	port->mp_Flags = PA_SIGNAL;
 +	port->mp_SigTask = FindTask(NULL);
@@ -5132,10 +5778,28 @@ diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer
 +{
 +	struct timerequest req;
 +	struct MsgPort port;
++	BYTE sigbit;
 +
-+	InitQPort(&port);
++	if (!AROS_TimerOpen())
++		return;
 +
-+	req.tr_node.io_Message.mn_Node.ln_Type = 0;
++	sigbit = AllocSignal(-1);
++
++	/* Zero the whole port so mp_SpinLock (used by InternalPutMsg on SMP) is
++	 * initialised to the unlocked state; otherwise the timer reply spins
++	 * forever on stack garbage and hangs the system. */
++	SDL_memset(&port, 0, sizeof(port));
++	/* Fall back to SIGB_SINGLE if no signal is free; only free one we got. */
++	port.mp_SigBit = (sigbit != -1) ? sigbit : SIGB_SINGLE;
++	port.mp_Flags = PA_SIGNAL;
++	port.mp_SigTask = FindTask(NULL);
++	NEWLIST(&port.mp_MsgList);
++
++	/* Zero the request too: io_Flags/io_Error and mn_Length were stack
++	 * garbage, which DoIO() and the device both look at. */
++	SDL_memset(&req, 0, sizeof(req));
++	req.tr_node.io_Message.mn_Node.ln_Type = NT_MESSAGE;
++	req.tr_node.io_Message.mn_Length = sizeof(req);
 +	req.tr_node.io_Message.mn_ReplyPort = &port;
 +	req.tr_node.io_Device = GlobalTimeReq.tr_node.io_Device;
 +	req.tr_node.io_Unit = GlobalTimeReq.tr_node.io_Unit;
@@ -5144,13 +5808,16 @@ diff -ruN SDL2-2.32.10/src/timer/aros/SDL_systimer.c SDL2-2.32.10.aros/src/timer
 +	req.tr_time.tv_micro = (ms % 1000) * 1000;
 +
 +	DoIO((struct IORequest *)&req);
++
++	if (sigbit != -1)
++		FreeSignal(sigbit);
 +}
 +
 +#endif /* SDL_TIMER_AROS || SDL_TIMERS_DISABLED */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c SDL2-2.32.10.aros/src/video/aros/SDL_arosclipboard.c
---- SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosclipboard.c	2025-08-04 17:04:05.304791353 +0000
-@@ -0,0 +1,277 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosclipboard.c	2026-10-07 09:44:40
+@@ -0,0 +1,292 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -5172,7 +5839,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c SDL2-2.32.10.aros/src/
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -5330,15 +5997,19 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c SDL2-2.32.10.aros/src/
 +		stext = AROS_ConvertUTF8Text(text);
 +
 +		if (stext) {
-+			int ulen = strlen(text);
++			int ulen = SDL_strlen(text);
 +
-+			if (clipboard_write_header_and_text(ctx, stext, strlen(stext), ulen)) {
++			if (clipboard_write_header_and_text(ctx, stext, SDL_strlen(stext), ulen)) {
 +				if (clipboard_write_utf8(ctx, text, ulen))
 +					rc = 0;
 +			}
 +
 +			SDL_free(stext);
-+			clipboard_finalize(ctx);
++
++			/* Only commit a complete IFF: CMD_UPDATE after a failed write
++			 * published a truncated FORM to the clipboard. */
++			if (rc == 0)
++				clipboard_finalize(ctx);
 +		}
 +		
 +		clipboard_close(ctx);
@@ -5374,23 +6045,34 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.c SDL2-2.32.10.aros/src/
 +									char *tmp = SDL_malloc(size + 1);
 +
 +									if (tmp) {
-+										ReadChunkBytes(clip, tmp, size);
-+										tmp[size] = '\0';
++										/* A short read leaves the rest of
++										 * the buffer uninitialised — clamp
++										 * the terminator to what we got. */
++										LONG got = ReadChunkBytes(clip, tmp, size);
 +
-+										text = AROS_ConvertTextUTF8(tmp);
++										if (got > 0) {
++											tmp[got] = '\0';
++											text = AROS_ConvertTextUTF8(tmp);
++										}
 +
 +										SDL_free(tmp);
 +									}
 +								}
 +								else if (cn->cn_ID == ID_UTF8) {
-+									if (text)
-+										SDL_free(text);
++									char *tmp = SDL_malloc(size + 1);
 +
-+									if ((text = SDL_malloc(size + 1))) {
-+										ReadChunkBytes(clip, text, size);
-+										text[size] = '\0';
-+										done = TRUE;
-+										break;
++									if (tmp) {
++										LONG got = ReadChunkBytes(clip, tmp, size);
++
++										if (got > 0) {
++											tmp[got] = '\0';
++											SDL_free(text);
++											text = tmp;
++											done = TRUE;
++											break;
++										}
++
++										SDL_free(tmp);
 +									}
 +								}
 +							}
@@ -5463,9 +6145,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosclipboard.h SDL2-2.32.10.aros/src/
 +
 +#endif /* _SDL_arosclipboard_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.c
---- SDL2-2.32.10/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.c	2025-08-12 16:40:41.421551044 +0000
-@@ -0,0 +1,876 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosevents.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosevents.c	2026-10-07 09:44:40
+@@ -0,0 +1,911 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -5487,7 +6169,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -5509,6 +6191,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +#include "SDL_syswm.h"
 +#include "SDL.h"
 +
++#include <exec/memory.h>
++#include <exec/tasks.h>
++#include <proto/exec.h>
 +#include <devices/rawkeycodes.h>
 +#include <intuition/extensions.h>
 +#include <rexx/errors.h>
@@ -5583,6 +6268,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +
 +        globalMouseState.buttonPressed[button] = state;
 +
++        D(bug("[SDL2:arosevt] %s: button %d %s (code 0x%04x) at (%ld,%ld)\n", __func__, button, state == SDL_PRESSED ? "DOWN" : "UP", m->Code, (long)globalMouseState.x, (long)globalMouseState.y));
 +        SDL_SendMouseButton(data->window, 0, state, button);
 +    }
 +
@@ -5682,7 +6368,11 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +static void
 +AROS_MouseMove(_THIS, struct IntuiMessage *m, SDL_WindowData *data)
 +{
-+    struct Screen *s = data->win->WScreen;
++    struct Screen *s;
++
++    if (!data->win)
++        return;
++    s = data->win->WScreen;
 +
 +    //D(bug("[SDL2:arosevt] %s: X:%d Y:%d, ScreenX: %d ScreenY: %d\n", __func__, m->MouseX, m->MouseY, s->MouseX, s->MouseY);
 +    globalMouseState.x = s->MouseX;
@@ -5736,7 +6426,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +
 +	D(bug("[SDL2:arosevt] %s()\n", __func__));
 +
-+	if (data->curr_x != w->LeftEdge || data->curr_h != w->TopEdge) {
++	if (data->curr_x != w->LeftEdge || data->curr_y != w->TopEdge) {
 +		data->curr_x = w->LeftEdge;
 +		data->curr_y = w->TopEdge;
 +		SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED, data->curr_x, data->curr_y);
@@ -5850,11 +6540,11 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +			snprintf(text, sizeof(text), "%d: %s (guid %s, VID 0x%.4x, PID 0x%.4x, player index = %d)\n",
 +				i, name ? name : "Unknown", guid,
 +			SDL_JoystickGetDeviceVendor(i), SDL_JoystickGetDeviceProduct(i), SDL_JoystickGetDevicePlayerIndex(i));
-+			strcat(text1, text);
++			SDL_strlcat(text1, text, sizeof(text1));
 +			snprintf(text, sizeof(text),"    Joystick has %d axes, %d hats, %d balls, and %d buttons\n",
 +			SDL_JoystickNumAxes(joystick), SDL_JoystickNumHats(joystick),
 +			SDL_JoystickNumBalls(joystick), SDL_JoystickNumButtons(joystick));
-+			strcat(text1, text);
++			SDL_strlcat(text1, text, sizeof(text1));
 +			SDL_JoystickClose(joystick);
 +		}
 +	}
@@ -5868,6 +6558,10 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +	es.es_GadgetFormat = "Ok";
 +
 +	EasyRequest(window, &es, NULL, SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL, (IPTR)text2, (IPTR)text1);
++
++	/* Balance the SDL_InitSubSystem() above; without this the menu item
++	 * leaks a joystick/gamecontroller refcount on every invocation. */
++	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 +}
 +
 +static int 
@@ -5919,7 +6613,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +AROS_HandleMenu(_THIS, struct IntuiMessage *m)
 +{
 +    SDL_WindowData *data = (SDL_WindowData *)m->IDCMPWindow->UserData;
-+    if (data->win) {
++    if (data && data->win) {
 +        if (data->menu) {
 +            struct MenuItem *item = ItemAddress(data->menu, m->Code);
 +            if (item) {
@@ -6080,6 +6774,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +                    break;
 +                case MID_ABOUTSYS:
 +                    AROS_AboutSystem(data->win);
++                    break;
 +                default:
 +                    break;
 +                }
@@ -6094,6 +6789,12 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +{
 +    //D(bug("[SDL2:arosevt] %s: \n", __func__));
 +    SDL_WindowData *data = (SDL_WindowData *)m->IDCMPWindow->UserData;
++
++    /* UserData is NULL for windows we do not own, and for messages that were
++     * still queued when the window went away. Several handlers below
++     * dereference it unconditionally. */
++    if (!data)
++        return;
 +
 +    switch (m->Class) {
 +    case IDCMP_MENUPICK:
@@ -6221,14 +6922,13 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +				    SDL_Window *window = (SDL_Window *)msg->am_UserData;
 +					char filename[1024];
 +					struct WBArg *argptr = msg->am_ArgList;
-+				    for (int i = 0; i < msg->am_NumArgs; i++) {
++				    for (int i = 0; i < msg->am_NumArgs; i++, argptr++) {
 +						if (argptr->wa_Lock) {
 +							NameFromLock(argptr->wa_Lock, filename, 1024);
 +							AddPart(filename, argptr->wa_Name, 1024);
 +
 +							D(bug("[SDL2:arosevt] %s: SDL_SendDropfile : '%s'\n", __func__, filename));
 +							SDL_SendDropFile(window, filename);
-+							argptr++;
 +						}
 +					}
 +					SDL_SendDropComplete(window);
@@ -6243,6 +6943,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +				break;
 +		}
 +
++		ReplyMsg((struct Message *)msg);
 +	}
 +}
 +
@@ -6265,6 +6966,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +    
 +    sigs = SetSignal(0, signals);
 +    D(bug("[SDL2:arosevt] %s: signals = %08x\n", __func__, sigs));
++
 +    if (sigs & SIGBREAKF_CTRL_C)
 +    {
 +        D(bug("[SDL2:arosevt] %s: got SIGBREAKF_CTRL_C\n", __func__));
@@ -6273,6 +6975,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +    else if (_this) {
 +        if (sigs & data->WinSig) {
 +            SDL_WindowData *wdata = NULL;
++            D(bug("[SDL2:arosevt] %s: --- pump: draining WinPort ---\n", __func__));
 +            while ((m = (struct IntuiMessage *)GetMsg(&data->WinPort))) {
 +                wdata = (SDL_WindowData *)m->IDCMPWindow->UserData;
 +                if (m->Class == IDCMP_MOUSEMOVE && !SDL_GetRelativeMouseMode())
@@ -6323,10 +7026,24 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.c SDL2-2.32.10.aros/src/vid
 +                                winPtrTags[0].ti_Data = (IPTR)data->BlankPtrObj;
 +                            }
 +                        }
-+                        SetWindowPointerA(w, winPtrTags);
++                        {
++                            /* Only touch the Intuition pointer when it actually
++                             * changes. Calling SetWindowPointer/ClearPointer on
++                             * every mouse move (~100+/s) thrashes Intuition and
++                             * eventually chokes system-wide input delivery. */
++                            IPTR desired = (winPtrTags[1].ti_Tag == WA_BusyPointer)
++                                           ? (IPTR) -2 : (IPTR) winPtrTags[0].ti_Data;
++                            if (desired != wdata->ptr_state) {
++                                SetWindowPointerA(w, winPtrTags);
++                                wdata->ptr_state = desired;
++                            }
++                        }
 +                    } else {
-+                        w->Flags &= ~WFLG_RMBTRAP;
-+                        ClearPointer(w);
++                        if (wdata->ptr_state != (IPTR) -1) {
++                            w->Flags &= ~WFLG_RMBTRAP;
++                            ClearPointer(w);
++                            wdata->ptr_state = (IPTR) -1;
++                        }
 +                    }
 +                }
 +            }
@@ -6376,9 +7093,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosevents.h SDL2-2.32.10.aros/src/vid
 +
 +#endif /* _SDL_arosevents_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/src/video/aros/SDL_arosframebuffer.c
---- SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosframebuffer.c	2025-08-04 17:26:42.572790303 +0000
-@@ -0,0 +1,156 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosframebuffer.c	2026-10-07 09:44:40
+@@ -0,0 +1,129 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -6400,7 +7117,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -6412,14 +7129,11 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +#include <cybergraphx/cybergraphics.h>
 +#include <intuition/intuition.h>
 +#include <proto/cybergraphics.h>
-+#include <graphics/rpattr.h>
-+#include <proto/graphics.h>
 +
 +#ifndef MIN
 +#   define MIN(x,y) ((x)<(y)?(x):(y))
 +#endif
 +
-+extern struct Library *GfxBase;
 +extern struct Library *CyberGfxBase;
 +
 +void
@@ -6428,10 +7142,6 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +	D(bug("[SDL2:arosfb] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+	if (data->bitmap) {
-+        FreeBitMap(data->bitmap);
-+        data->bitmap = NULL;
-+    }
 +    if (data->memfb) {
 +        FreeVec(data->memfb);
 +        data->memfb = NULL;
@@ -6442,64 +7152,41 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +AROS_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
 +                            void ** pixels, int *pitch)
 +{
++	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
++
 +	D(bug("[SDL2:arosfb] %s()\n", __func__));
 +
-+	APTR lock;
-+    APTR base_address;
-+    Uint32 bytes_per_row;
++	if (data->memfb) {
++		FreeVec(data->memfb);
++		data->memfb = NULL;
++	}
 +
-+	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+    if (data->bitmap) {
-+		D(bug("[SDL2:arosfb] %s: freeing existing bitmap @ 0x%p\n", __func__, data->bitmap));
-+        FreeBitMap(data->bitmap);
-+    }
-+    if (data->memfb) {
-+        FreeVec(data->memfb);
-+        data->memfb = NULL;
-+    }
++	/* Always a plain memory buffer, blitted with WritePixelArray().
++	 *
++	 * This used to borrow a bitmap from the window's RastPort with
++	 * AllocBitMap(..., friend_bitmap), read its base address under
++	 * LockBitMapTags(), and hand that pointer to SDL after UnLockBitMap().
++	 * A friend of a displayed bitmap may well live in VRAM, where the
++	 * graphics driver is under no obligation to keep the mapping valid -
++	 * let alone coherent with the card - once the lock is dropped. That is
++	 * exactly the window in which SDL does all of its drawing.
++	 *
++	 * A window that has not been shown yet has no RastPort to borrow from
++	 * anyway, so this path was already the one in use at startup. */
++	data->memfb = AllocVec(window->w * window->h * 4, MEMF_CLEAR);
++	if (!data->memfb)
++		return SDL_SetError("Failed to allocate framebuffer");
 +
-+	if (!data->win) {
-+		D(bug("[SDL2:arosfb] %s: ERROR: no window ptr\n", __func__));
-+        return SDL_SetError("No system window");
-+    }
-+	
++	/* Blitted as RECTFMT_BGRA32, i.e. B,G,R,A in memory order: name the SDL
++	 * format that has that byte order on this endianness, or SDL hands us
++	 * the channels the wrong way round. */
 +#if AROS_BIG_ENDIAN
-+    *format = SDL_PIXELFORMAT_BGRA8888;
++	*format = SDL_PIXELFORMAT_BGRA8888;
 +#else
-+    *format = SDL_PIXELFORMAT_ARGB8888;
++	*format = SDL_PIXELFORMAT_ARGB8888;
 +#endif
-+	struct BitMap * friend_bitmap = data->win->RPort->BitMap;
-+	Uint32 depth =  GetBitMapAttr(friend_bitmap, BMA_DEPTH);
-+	data->bitmap = AllocBitMap(window->w, window->h, depth, BMF_MINPLANES|BMF_CLEAR, friend_bitmap);
-+	if (!data->bitmap) {
-+		D(bug("[SDL2:arosfb] %s: ERROR: failed to allocate a bitmap\n", __func__));
-+		return SDL_SetError("Failed to allocate bitmap for framebuffer");
-+	} 
-+		
-+	D("[SDL2:arosfb] %s: Allocate bitmap %d x %d x %d for framebuffer\n", __func__, window->w, window->h, depth);
-+	lock = LockBitMapTags(
-+        data->bitmap,
-+        LBMI_BASEADDRESS, &base_address,
-+        LBMI_BYTESPERROW, &bytes_per_row,
-+        TAG_DONE);
-+
-+    if (lock) {
-+        *pixels = base_address;
-+        *pitch = bytes_per_row;
-+
-+        UnLockBitMap(lock);
-+    } else {
-+		D(bug("[SDL2:arosfb] %s: ERROR: failed to lock the bitmap\n", __func__));
-+
-+        FreeBitMap(data->bitmap);
-+        data->bitmap = NULL;
-+        data->memfb = AllocVec(window->w * window->h * 4, MEMF_CLEAR);
-+        *pixels = data->memfb;
-+        *pitch = window->w * 4;
-+        if (*pixels == NULL)
-+            return SDL_SetError("Failed to lock framebuffer bitmap");
-+        return 0;
-+    }
++	*pixels = data->memfb;
++	*pitch = window->w * 4;
 +
 +	D(bug("[SDL2:arosfb] %s: done\n", __func__));
 +
@@ -6513,7 +7200,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 +	if (!data->__AGLCtx)
-+		if ((data->bitmap || data->memfb) && data->win) {
++		if (data->memfb && data->win) {
 +			
 +			const struct IBox windowBox = {
 +					data->win->BorderLeft,
@@ -6525,12 +7212,15 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.c SDL2-2.32.10.aros/sr
 +				const SDL_Rect * r = &rects[i];
 +				int dx = r->x + windowBox.Left;
 +				int dy = r->y + windowBox.Top;
-+				int w =  MIN(r->w, windowBox.Width);
-+				int h = MIN(r->h, windowBox.Height);
-+				if (data->bitmap)
-+					BltBitMapRastPort(data->bitmap,  r->x, r->y, data->win->RPort, dx, dy, w, h, 0xc0);
-+				else if (data->memfb)
-+					WritePixelArray(data->memfb, r->x, r->y, window->w * 4, data->win->RPort, dx, dy, w, h, RECTFMT_BGRA32);
++				/* Clip against what is LEFT of the client area from this
++				 * rect's origin, not against its full width/height —
++				 * otherwise a rect near the right/bottom edge draws over
++				 * the window border. */
++				int w = MIN(r->w, windowBox.Width  - r->x);
++				int h = MIN(r->h, windowBox.Height - r->y);
++				if (w <= 0 || h <= 0)
++					continue;
++				WritePixelArray(data->memfb, r->x, r->y, window->w * 4, data->win->RPort, dx, dy, w, h, RECTFMT_BGRA32);
 +			}
 +		}
 +	return 0;
@@ -6570,8 +7260,8 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosframebuffer.h SDL2-2.32.10.aros/sr
 +
 +#endif /* _SDL_arosframebuffer_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroskeyboard.c SDL2-2.32.10.aros/src/video/aros/SDL_aroskeyboard.c
---- SDL2-2.32.10/src/video/aros/SDL_aroskeyboard.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_aroskeyboard.c	2025-07-29 12:10:00.333399776 +0000
+--- SDL2-2.32.10/src/video/aros/SDL_aroskeyboard.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_aroskeyboard.c	2026-10-07 09:44:40
 @@ -0,0 +1,92 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6594,7 +7284,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroskeyboard.c SDL2-2.32.10.aros/src/v
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -6698,8 +7388,8 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroskeyboard.h SDL2-2.32.10.aros/src/v
 +
 +#endif /* _SDL_aroskeyboard_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmessagebox.c SDL2-2.32.10.aros/src/video/aros/SDL_arosmessagebox.c
---- SDL2-2.32.10/src/video/aros/SDL_arosmessagebox.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmessagebox.c	2025-08-04 17:11:26.948791539 +0000
+--- SDL2-2.32.10/src/video/aros/SDL_arosmessagebox.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmessagebox.c	2026-10-07 09:44:40
 @@ -0,0 +1,97 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6722,7 +7412,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmessagebox.c SDL2-2.32.10.aros/src
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -6831,9 +7521,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmessagebox.h SDL2-2.32.10.aros/src
 +
 +#endif /* _SDL_arosmessagebox_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.c
---- SDL2-2.32.10/src/video/aros/SDL_arosmodes.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.c	2025-11-29 17:45:44.322581548 +0000
-@@ -0,0 +1,509 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosmodes.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.c	2026-10-07 09:44:40
+@@ -0,0 +1,521 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -6855,7 +7545,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -6879,12 +7569,17 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +extern struct Library *GfxBase;
 +extern struct Library *IntuitionBase;
 +
++/* Returns the vertical refresh rate in MILLIHERTZ (callers divide by
++ * 1000). The MonitorInfo timing formula is an Amiga-ism: on gfx hidds
++ * that don't model TotalColorClocks/TotalRows (e.g. vc4gfx HDMI modes)
++ * it computes nonsense like 14 Hz -- and eduke32 & friends lock their
++ * frame limiter to it. Sanity-check the result and fall back to 60 Hz. */
 +static int
 +AROS_GetRefreshRate(struct Screen *s)
 +{
 +	D(bug("[SDL2:arosmodes] %s()\n", __func__));
 +
-+    ULONG freq = 60;
++    ULONG freq = 60000;
 +
 +    if (s) {
 +
@@ -6894,8 +7589,12 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +            struct MonitorInfo mi;
 +
 +            if (GetDisplayInfoData(handle, (UBYTE *)&mi, sizeof(mi), DTAG_MNTR, 0) >= sizeof(mi))
-+                if (mi.TotalRows)
-+                    freq = (ULONG)(1000000000L / ((FLOAT)mi.TotalColorClocks * 280.0 * (FLOAT)mi.TotalRows / 1000.0) + 5.0);
++                if (mi.TotalRows) {
++                    ULONG f = (ULONG)(1000000000L / ((FLOAT)mi.TotalColorClocks * 280.0 * (FLOAT)mi.TotalRows / 1000.0) + 5.0);
++
++                    if (f >= 23000 && f <= 240000)
++                        freq = f;
++                }
 +        }
 +    }
 +	D(bug("[SDL2:arosmodes] %s: returning %u\n", __func__, freq));
@@ -6929,7 +7628,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +	}
 +}
 +
-+static Uint32
++Uint32
 +AROS_GetSDLPixelFormat(Uint32 pixfmt, Uint32 default_pixfmt)
 +{
 +	switch (pixfmt) {
@@ -7106,7 +7805,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +				if (modedata) {
 +					ULONG *fmt = (ULONG *)getv(m, MA_PixelFormats);
 +
-+					for (j = MAX_SDL_PIXEL_FORMATS - 1; j >= 0; j--) {
++					for (j = fmt ? MAX_SDL_PIXEL_FORMATS - 1 : -1; j >= 0; j--) {
 +						pixfmt = pixelformats[j].PixFmt;
 +
 +						if (fmt[pixfmt]) {
@@ -7248,8 +7947,10 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +				SA_ErrorCode, (IPTR)&openError,
 +				TAG_DONE);
 +
-+		if (screen)
-+			data->CustomScreen = screen;
++		/* Must be cleared on failure too: leaving the previous (already
++		 * closed) screen here makes AROS_CloseDisplay() CloseScreen() a
++		 * dead pointer. */
++		data->CustomScreen = screen;
 +	}
 +
 +	if (screen == NULL) {
@@ -7310,7 +8011,8 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +{
 +	SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 +
-+	D(bug("[SDL2:arosmodes] %s()\n", __func__));
++	D(bug("[SDL2:winlife] %s: ENTER mode %dx%d fmt 0x%x (closing all windows + display)\n",
++	    __func__, mode->w, mode->h, (unsigned)mode->format));
 +
 +	AROS_CloseWindows(_this);
 +	AROS_CloseDisplay(_this);
@@ -7344,9 +8046,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.c SDL2-2.32.10.aros/src/vide
 +    return 0;
 +}
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.h SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.h
---- SDL2-2.32.10/src/video/aros/SDL_arosmodes.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.h	2025-07-28 17:58:38.549756245 +0000
-@@ -0,0 +1,43 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosmodes.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmodes.h	2026-10-07 09:44:40
+@@ -0,0 +1,44 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -7388,12 +8090,13 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmodes.h SDL2-2.32.10.aros/src/vide
 +extern int AROS_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 +extern int AROS_GetScreen(_THIS, BYTE FullScreen, SDL_bool support3d);
 +extern int AROS_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
++extern Uint32 AROS_GetSDLPixelFormat(Uint32 pixfmt, Uint32 default_pixfmt);
 +
 +#endif /* _SDL_arosmodes_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.c
---- SDL2-2.32.10/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.c	2025-08-11 17:38:43.709907834 +0000
-@@ -0,0 +1,385 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosmouse.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.c	2026-10-07 09:44:40
+@@ -0,0 +1,391 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -7415,7 +8118,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -7454,7 +8157,6 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +
 +	cursor = SDL_malloc(sizeof(*cursor));
 +	if (cursor) {
-+		SDL_AROSCursor *ac = SDL_malloc(sizeof(*ac));
 +		struct BitMap *bmp;
 +
 +		cursor->Cursor.next = NULL;
@@ -7487,12 +8189,15 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +								TAG_DONE);
 +
 +				cursor->Pointer.ptrclassobj = ptrclassobj;
++				cursor->Pointer.bitmap = bmp;
 +				D(bug("[SDL2:arosmouse] %s: allocated pointerobject @ 0x%p\n", __func__, cursor->Pointer.ptrclassobj));
 +				SDL_UnlockSurface(surface);
 +			} else {
 +				bug("[SDL2:arosmouse] %s: failed to lock surface\n", __func__);
++				FreeBitMap(bmp);
++				SDL_free(cursor);
++				return NULL;
 +			}
-+			FreeBitMap(bmp);
 +		} else {
 +			bug("[SDL2:arosmouse] %s: failed to allocate bitmap\n", __func__);
 +			SDL_free(cursor);
@@ -7553,11 +8258,15 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +	if (!IS_SYSTEM_CURSOR(cursor))
 +	{
 +		SDL_AROSCursor *ac = (SDL_AROSCursor *)cursor;
-+		bug("[SDL2:arosmouse] %s: custom cursor (ptr object @ 0x%p)\n", __func__, ac->Pointer.ptrclassobj);
++		D(bug("[SDL2:arosmouse] %s: custom cursor (ptr object @ 0x%p)\n", __func__, ac->Pointer.ptrclassobj));
 +		if (ac->Pointer.ptrclassobj)
 +		{
 +			DisposeObject(ac->Pointer.ptrclassobj);
 +			ac->Pointer.ptrclassobj = NULL;
++		}
++		if (ac->Pointer.bitmap) {
++			FreeBitMap(ac->Pointer.bitmap);
++			ac->Pointer.bitmap = NULL;
 +		}
 +	}
 +
@@ -7780,9 +8489,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.c SDL2-2.32.10.aros/src/vide
 +	}
 +}
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.h SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.h
---- SDL2-2.32.10/src/video/aros/SDL_arosmouse.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.h	2025-08-11 16:08:35.165908881 +0000
-@@ -0,0 +1,54 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosmouse.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosmouse.h	2026-10-07 09:44:40
+@@ -0,0 +1,55 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -7817,6 +8526,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.h SDL2-2.32.10.aros/src/vide
 +typedef struct
 +{
 +	Object                      *ptrclassobj;
++	struct BitMap               *bitmap;
 +	int                         offx, offy;
 +} SDL_AROSPointerData;
 +
@@ -7838,9 +8548,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosmouse.h SDL2-2.32.10.aros/src/vide
 +
 +#endif /* _SDL_arosmouse_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/video/aros/SDL_arosopengl.c
---- SDL2-2.32.10/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosopengl.c	2025-08-12 07:44:11.764791809 +0000
-@@ -0,0 +1,270 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosopengl.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosopengl.c	2026-10-07 09:44:40
+@@ -0,0 +1,353 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -7867,7 +8577,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +#if SDL_VIDEO_OPENGL_AGL
 +#define SDL_VIDEO_OPENGL_AGL_INTERN
 +#define __NOLIBBASE__
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#include "SDL_error.h"
@@ -7882,9 +8592,11 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +
 +#include <proto/intuition.h>
 +#include <proto/graphics.h>
++#include <graphics/clip.h>
 +
 +extern struct ExecBase *SysBase;
 +extern struct Library *GfxBase;
++extern struct Library *IntuitionBase;
 +#define GLBase (_this->gl_data->gldd_GLBase)
 +
 +int
@@ -7954,27 +8666,51 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +int
 +AROS_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 +{
++	SDL_WindowData *data;
++
 +    D(bug("[SDL2:arosgl] %s(0x%p)\n", __func__, context));
 +
-+    if (window)
++	/* SDL_GL_MakeCurrent() sets window to NULL whenever context is NULL, so
++	 * this is the unbind path - and it is the one SDL_DestroyWindow() takes.
++	 * The old `if (window)` guard made it a complete no-op, leaving both
++	 * gldd_GLACtx and the window's __AGLCtx pointing at a context the app is
++	 * then free to delete. */
++	if (!window || !context)
 +	{
-+		if (_this->gl_data->gldd_GLACtx != context)
++		D(bug("[SDL2:arosgl] %s: releasing current context\n", __func__));
++
++		if (window)
 +		{
-+			struct TagItem tags[2];
-+			SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+			D(bug("[SDL2:arosgl] %s: attaching ctx to window @ 0x%p\n", __func__, data->win));
-+			if ((_this->gl_data->gldd_GLACtx = context) != NULL)
-+			{
-+				tags[0].ti_Tag = GLA_Window;
-+				tags[0].ti_Data = (IPTR)data->win;
-+				tags[1].ti_Tag = TAG_DONE;
-+				glASetRast(context, tags);
-+			}
++			data = (SDL_WindowData *) window->driverdata;
++			if (data)
++				data->__AGLCtx = NULL;
 +		}
-+		SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+		data->__AGLCtx = context;
-+		glAMakeCurrent(context);
-+    }
++
++		_this->gl_data->gldd_GLACtx = NULL;
++		glAMakeCurrent(NULL);
++
++		return 0;
++	}
++
++	data = (SDL_WindowData *) window->driverdata;
++
++	if (_this->gl_data->gldd_GLACtx != context)
++	{
++		struct TagItem tags[2];
++
++		D(bug("[SDL2:arosgl] %s: attaching ctx to window @ 0x%p\n", __func__, data->win));
++
++		_this->gl_data->gldd_GLACtx = context;
++
++		tags[0].ti_Tag = GLA_Window;
++		tags[0].ti_Data = (IPTR)data->win;
++		tags[1].ti_Tag = TAG_DONE;
++		glASetRast(context, tags);
++	}
++
++	data->__AGLCtx = context;
++	glAMakeCurrent(context);
++
 +	return 0;
 +}
 +
@@ -8093,6 +8829,18 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +	if (!data->win || !_this->gl_data->gldd_GLACtx)
 +		return 0;
 +
++	/* AROS_ShowWindow() could not rebind the context straight away because
++	 * ShowWindow() is asynchronous and the layer was not on screen yet. Do it
++	 * on the first frame after it is, instead of having made ShowWindow()
++	 * block waiting for Intuition. */
++	if (data->winflags & SDL_AROS_WINDOW_GLREBIND) {
++		if (IsWindowVisible(data->win)) {
++			D(bug("[SDL2:arosgl] %s: window now visible, rebinding ctx\n", __func__));
++			data->winflags &= ~SDL_AROS_WINDOW_GLREBIND;
++			AROS_GL_ResizeContext(_this, window);
++		}
++	}
++
 +	glASwapBuffers(_this->gl_data->gldd_GLACtx);
 +
 +	return 0;
@@ -8104,10 +8852,55 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.c SDL2-2.32.10.aros/src/vid
 +    D(bug("[SDL2:arosgl] %s(0x%p)\n", __func__, context));
 +
 +	if ((GLBase) && (context)) {
++		SDL_Window *w;
++
++		/* __AGLCtx is per window, set by AROS_GL_MakeCurrent(). Clearing only
++		 * gldd_GLACtx left every window this context had been made current on
++		 * holding a pointer into freed memory - which
++		 * AROS_UpdateWindowFramebuffer() tests to decide whether to blit (so
++		 * the framebuffer stayed permanently disabled), and which
++		 * AROS_ShowWindow() compares against gldd_GLACtx. */
++		for (w = _this->windows; w; w = w->next) {
++			SDL_WindowData *data = (SDL_WindowData *) w->driverdata;
++
++			if (data && data->__AGLCtx == context)
++				data->__AGLCtx = NULL;
++		}
++
 +		if (_this->gl_data->gldd_GLACtx == context)
 +			_this->gl_data->gldd_GLACtx = NULL;
++
 +		glADestroyContext(context);
 +	}
++}
++
++/* Re-point the current GL context at this window's CURRENT rastport.
++ * AROS_RecreateWindow (fullscreen toggle, resizable/bordered change)
++ * closes and reopens the Intuition window, giving it a fresh rastport
++ * and layer; the old ones are freed. glACreateContext bound the context
++ * to the old rastport (and mesa3dgl cloned it), so without this rebind
++ * the context keeps rendering/clipping to the freed old layer — which
++ * reads as ~1px, so everything is clipped away (grey screen). glASetRast
++ * re-runs the mesa3dgl rastport selection + framebuffer recalc against
++ * the new window. */
++int
++AROS_GL_ResizeContext(_THIS, SDL_Window *window)
++{
++	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
++	SDL_GLContext context = _this->gl_data->gldd_GLACtx;
++
++	D(bug("[SDL2:arosgl] %s: ctx 0x%p win 0x%p visible=%ld\n", __func__,
++	      context, data ? data->win : NULL,
++	      (data && data->win) ? (long)IsWindowVisible(data->win) : -1));
++
++	if (context && data && data->win) {
++		struct TagItem tags[2];
++		tags[0].ti_Tag = GLA_Window;
++		tags[0].ti_Data = (IPTR)data->win;
++		tags[1].ti_Tag = TAG_DONE;
++		glASetRast(context, tags);
++	}
++	return 0;
 +}
 +
 +#endif /* SDL_VIDEO_OPENGL_AGL */
@@ -8177,9 +8970,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosopengl.h SDL2-2.32.10.aros/src/vid
 +
 +#endif /* _SDL_arosopengl_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosshape.c SDL2-2.32.10.aros/src/video/aros/SDL_arosshape.c
---- SDL2-2.32.10/src/video/aros/SDL_arosshape.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosshape.c	2025-07-29 12:13:48.561399854 +0000
-@@ -0,0 +1,196 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosshape.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosshape.c	2026-10-07 09:44:40
+@@ -0,0 +1,204 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -8201,7 +8994,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosshape.c SDL2-2.32.10.aros/src/vide
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -8291,7 +9084,15 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosshape.c SDL2-2.32.10.aros/src/vide
 +					break;
 +
 +				case 3:
-+					pixel_value = *(Uint32*)pixel & (~shape->format->Amask);
++					/* Assemble from bytes: reading a Uint32 out of a 3-byte
++					 * pixel runs one byte past the last pixel of the surface
++					 * (and is unaligned). */
++#if AROS_BIG_ENDIAN
++					pixel_value = ((Uint32)pixel[0] << 16) | ((Uint32)pixel[1] << 8) | pixel[2];
++#else
++					pixel_value = ((Uint32)pixel[2] << 16) | ((Uint32)pixel[1] << 8) | pixel[0];
++#endif
++					pixel_value &= ~shape->format->Amask;
 +					break;
 +
 +				case 4:
@@ -8415,9 +9216,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosshape.h SDL2-2.32.10.aros/src/vide
 +
 +#endif /* _SDL_arosshape_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/video/aros/SDL_arosvideo.c
---- SDL2-2.32.10/src/video/aros/SDL_arosvideo.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_arosvideo.c	2025-08-11 19:06:50.477908700 +0000
-@@ -0,0 +1,472 @@
+--- SDL2-2.32.10/src/video/aros/SDL_arosvideo.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_arosvideo.c	2026-10-07 09:44:40
+@@ -0,0 +1,486 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -8439,7 +9240,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -8636,20 +9437,24 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +	D(bug("[SDL2:arosvideo] %s()\n", __func__));
 +	SDL_VideoData *data = (SDL_VideoData *) device->driverdata;
 +
++
 +	if (data->BlankPtrObj) {
 +		DisposeObject(data->BlankPtrObj);
 +	}
 +
-+	FreeSignal(data->ScreenNotifyPort.mp_SigBit);
-+	FreeSignal(data->BrokerPort.mp_SigBit);
-+	FreeSignal(data->WBPort.mp_SigBit);
-+	FreeSignal(data->WinPort.mp_SigBit);
++	if (data->ScreenNotifyPort.mp_SigBit != (BYTE)-1) FreeSignal(data->ScreenNotifyPort.mp_SigBit);
++	if (data->BrokerPort.mp_SigBit       != (BYTE)-1) FreeSignal(data->BrokerPort.mp_SigBit);
++	if (data->WBPort.mp_SigBit           != (BYTE)-1) FreeSignal(data->WBPort.mp_SigBit);
++	if (data->WinPort.mp_SigBit          != (BYTE)-1) FreeSignal(data->WinPort.mp_SigBit);
 +
 +	if (data->BrokerRef)
 +		DeleteCxObjAll(data->BrokerRef);
 +
 +	if (data->AppIcon)
 +		FreeDiskObject(data->AppIcon);
++
++	if (data->FullAppName)
++		SDL_free((APTR)data->FullAppName);
 +
 +	SDL_free(data);
 +	SDL_free(device);
@@ -8676,7 +9481,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +AROS_GetTaskName()
 +{
 +	struct Process *task = (struct Process *)FindTask(NULL);
-+	STRPTR name = "SDL";
++	STRPTR name = NULL;
 +
 +	if (task->pr_Task.tc_Node.ln_Type == NT_PROCESS || task->pr_Task.tc_Node.ln_Type == NT_TASK) {
 +		if (task->pr_Task.tc_Node.ln_Type == NT_PROCESS && task->pr_CLI) {
@@ -8687,7 +9492,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +				size_t len = AROS_BSTR_strlen(cli->cli_CommandName) + 1;
 +
 +				if (len > 1) {
-+					if (src[1] == '"' && src[len] == '"')
++					if (len > 2 && src[0] == '"' && src[len - 2] == '"')
 +					{
 +						len -= 2;
 +						src++;
@@ -8713,6 +9518,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +		}
 +	}
 +
++	if (!name)
++		name = SDL_strdup("SDL");
++
 +	D(bug("[SDL2:arosvideo] %s: '%s'\n", __func__, name));
 +
 +	return name;
@@ -8721,6 +9529,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +static void
 +AROS_InitPort(struct MsgPort *port)
 +{
++	memset(port, 0, sizeof(*port));
 +	port->mp_Node.ln_Name = "SDL";
 +	port->mp_Flags = PA_SIGNAL;
 +	port->mp_SigTask = FindTask(NULL);
@@ -8772,6 +9581,12 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.c SDL2-2.32.10.aros/src/vide
 +	/* Initialize all variables that we clean on shutdown */
 +	SDL_VideoDevice *device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice) + sizeof(struct SDL_GLDriverData));
 +	D(bug("[SDL2:arosvideo] %s()\n", __func__));
++
++	/* The posixc/stdcio base refresh that used to live here is gone: the
++	 * library no longer calls either. SDL_malloc() comes from SDL's own
++	 * exec pool (src/stdlib/aros/SDL_arosmem.c) and the two stdio call
++	 * sites (SDL_log.c's second fprintf, SDL_assert.c's stdin prompt) are
++	 * compiled out on AROS, so there is no per-task base left to track. */
 +
 +	if (device) {
 +		SDL_VideoData *data = (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
@@ -8993,9 +9808,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_arosvideo.h SDL2-2.32.10.aros/src/vide
 +
 +#endif /* _SDL_arosvideo_h */
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.c
---- SDL2-2.32.10/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.c	2025-11-27 14:09:42.802695756 +0000
-@@ -0,0 +1,1078 @@
+--- SDL2-2.32.10/src/video/aros/SDL_aroswindow.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.c	2026-10-07 09:44:40
+@@ -0,0 +1,1326 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -9017,7 +9832,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
 +
-+//#define DEBUG 1
++#define DEBUG 0
 +#include <aros/debug.h>
 +
 +#define __NOLIBBASE__
@@ -9025,6 +9840,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +#include "../../SDL_internal.h"
 +
 +#include "SDL_hints.h"
++#include "SDL_log.h"
 +#include "SDL_syswm.h"
 +#include "SDL_timer.h"
 +#include "SDL_version.h"
@@ -9121,30 +9937,64 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +		
 +    if ((sdlwin->flags & SDL_WINDOW_FOREIGN) == 0) {
 +        struct IntuiMessage *msg, *tmp;
++        SDL_WindowData *wd = (SDL_WindowData *) sdlwin->driverdata;
++        struct MsgPort *shared = (wd && wd->videodata) ? &wd->videodata->WinPort : NULL;
++
++        /* Every window we open gets UserPort = &videodata->WinPort right
++         * after OpenWindowTags(). A window carrying a DIFFERENT port is not
++         * (or is no longer) our Intuition window - the memory has been
++         * recycled under a stale data->win. Hand THAT to ModifyIDCMP() or
++         * CloseWindow() and Intuition faults inside ROM, so give up.
++         *
++         * Reported through SDL_Log rather than bug(): if this ever fires it
++         * means a window lifetime bug elsewhere, and the app developer needs
++         * to see it, not just whoever is watching the serial console. */
++        if (shared && win->UserPort != shared) {
++            SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
++                         "AROS: not closing window %p - UserPort %p is not SDL's"
++                         " shared port %p, so this is a stale window pointer",
++                         win, win->UserPort, shared);
++            return;
++        }
++
++        /* Missing driverdata is a different failure from a stale window: the
++         * window itself is real, we just cannot prove which port is ours.
++         * Bailing out here closed nothing and leaked it, so carry on and
++         * drain whatever port it does carry. */
++        if (!shared) {
++            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
++                        "AROS: closing window %p without SDL's shared port"
++                        " (driverdata %p)", win, wd);
++        }
 +
 +        Forbid();
 +
-+        ForeachNodeSafe(&win->UserPort->mp_MsgList, msg, tmp)
-+        {
-+            if (msg->IDCMPWindow == win) {
-+                REMOVE(&msg->ExecMessage.mn_Node);
-+                ReplyMsg(&msg->ExecMessage);
++        if (win->UserPort) {
++            ForeachNodeSafe(&win->UserPort->mp_MsgList, msg, tmp)
++            {
++                if (msg->IDCMPWindow == win) {
++                    REMOVE(&msg->ExecMessage.mn_Node);
++                    ReplyMsg(&msg->ExecMessage);
++                }
 +            }
++
++            /* Must be cleared before ModifyIDCMP(0), or Intuition frees the
++             * port we share between every window. */
++            win->UserPort = NULL;
 +        }
 +
-+		win->UserPort = NULL;
-+		ModifyIDCMP(win, 0);
++        ModifyIDCMP(win, 0);
 +
-+		SDL_WindowData *data = (SDL_WindowData *) sdlwin->driverdata;
-+		if (data->menuactive == TRUE) {
++        if (wd && wd->menuactive == TRUE) {
 +            ClearMenuStrip(win);
-+            FreeMenus(data->menu);
-+            data->menu = NULL;
-+            FreeVisualInfo(data->menuvisualinfo);
-+            data->menuvisualinfo = NULL;
-+            data->menuactive = FALSE;
++            FreeMenus(wd->menu);
++            wd->menu = NULL;
++            FreeVisualInfo(wd->menuvisualinfo);
++            wd->menuvisualinfo = NULL;
++            wd->menuactive = FALSE;
 +        }
 +
++        D(bug("[SDL2:winlife] %s: CloseWindow(0x%p) sdlwin 0x%p\n", __func__, win, sdlwin));
 +        CloseWindow(win);
 +
 +        Permit();
@@ -9164,6 +10014,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +        struct Window *win = wd->win;
 +
 +        if (win) {
++            D(bug("[SDL2:winlife] %s: sdlwin 0x%p win 0x%p -> NULL\n", __func__, wd->window, win));
 +            wd->win = NULL;
 +            AROS_CloseWindowSafely(wd->window, win);
 +        }
@@ -9180,7 +10031,26 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +
 +    ForeachNode(&data->windowlist, wd)
 +    {
-+        if (!(wd->window->flags & SDL_WINDOW_FOREIGN) && (wd->winflags & SDL_AROS_WINDOW_SHOWN)) {
++        if (wd->window->flags & SDL_WINDOW_FOREIGN)
++            continue;
++
++        if (!(wd->winflags & SDL_AROS_WINDOW_SHOWN)) {
++            /* A hidden window still has to have a valid data->win, but the
++             * screen went away under it and AROS_CloseWindows() had no choice
++             * but to close it. Reopen on the new screen and hide it again. */
++            if (wd->win == NULL) {
++                AROS_ShowWindow_Internal(_this, wd->window);
++                if (wd->win) {
++                    D(bug("[SDL2:winlife] %s: sdlwin 0x%p reopened hidden, HideWindow(0x%p)\n",
++                        __func__, wd->window, wd->win));
++                    HideWindow(wd->win);
++                    wd->winflags &= ~SDL_AROS_WINDOW_SHOWN;
++                }
++            }
++            continue;
++        }
++
++        {
 +            if (wd->win == NULL) {
 +                AROS_ShowWindow_Internal(_this, wd->window);
 +            } else {
@@ -9207,11 +10077,12 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +	if (wd) {
 +		window->driverdata = wd;
 +		ADDHEAD(&data->windowlist, wd);
-+		wd->bitmap = NULL;
 +		wd->region = NULL;
 +		wd->fb = NULL;
 +		wd->window = window;
 +		wd->win = win;
++		D(bug("[SDL2:winlife] %s: sdlwin 0x%p wd 0x%p init win 0x%p%s\n", __func__,
++		    window, wd, win, (window->flags & SDL_WINDOW_FOREIGN) ? " FOREIGN" : ""));
 +		wd->grabbed = -1;
 +		wd->sdlflags = 0;
 +		wd->window_title = NULL;
@@ -9219,9 +10090,10 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +		wd->first_deltamove = 0;
 +		wd->winflags = 0;
 +		wd->appmsg = NULL;
-+		wd->menu = NULL;     
++		wd->menu = NULL;
 +	    wd->menuvisualinfo = NULL;
 +        wd->menuactive = FALSE;
++		wd->ptr_state = (IPTR)-3;
 +		if (win)
 +			win->UserData = (APTR)wd;
 +		else {
@@ -9239,7 +10111,41 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +int
 +AROS_CreateWindow(_THIS, SDL_Window * window)
 +{
-+	return AROS_SetupWindowData(_this, window, NULL);
++	SDL_WindowData *data;
++
++	if (AROS_SetupWindowData(_this, window, NULL) < 0)
++		return -1;
++
++	/* Open the Intuition window now, even when SDL asked for a hidden one.
++	 *
++	 * SDL's contract is that a window exists as soon as SDL_CreateWindow()
++	 * returns, hidden or not, and applications rely on it: creating the window
++	 * hidden, setting it up, and showing it last is the standard way to avoid a
++	 * visible flash at startup. Deferring OpenWindowTags() to SDL_ShowWindow()
++	 * left data->win NULL in that gap, and everything that needs the real
++	 * window then had to cope - or fail. ioq3 asks for a GL context there and
++	 * got "glACreateContext: ERROR - failed to select visible rastport",
++	 * because GLA_Window was NULL.
++	 *
++	 * HideWindow() only does ChangeLayerVisibility(..., FALSE), so the layer,
++	 * its RastPort and its BitMap all survive - verified on hardware: a hidden
++	 * window is a working GL render target. */
++	AROS_ShowWindow_Internal(_this, window);
++
++	data = (SDL_WindowData *) window->driverdata;
++
++	D(bug("[SDL2:aroswindow] %s: sdlflags 0x%08x win 0x%p scr 0x%p %dx%d\n", __func__,
++	      (unsigned)window->flags, data->win,
++	      data->win ? data->win->WScreen : NULL, window->w, window->h));
++
++	if ((window->flags & SDL_WINDOW_HIDDEN) && data->win) {
++		HideWindow(data->win);
++		data->winflags &= ~SDL_AROS_WINDOW_SHOWN;
++		D(bug("[SDL2:aroswindow] %s: created hidden, HideWindow -> visible=%ld\n",
++		      __func__, (long)IsWindowVisible(data->win)));
++	}
++
++	return 0;
 +}
 +
 +int
@@ -9266,11 +10172,16 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +		flags &= ~SDL_WINDOW_BORDERLESS;
 +
 +	if (win->Flags & WFLG_WINDOWACTIVE) {
-+		flags |= SDL_WINDOW_INPUT_FOCUS;
++		/* Assign with the focus bit CLEAR, then hand the focus over:
++		 * SDL_SendWindowEvent() drops FOCUS_GAINED outright when
++		 * SDL_WINDOW_INPUT_FOCUS is already set, and sets it itself
++		 * otherwise (events/SDL_windowevents.c:171-174). `flags` inherits
++		 * window->flags, so the bit may well be set here already. */
++		window->flags = flags & ~SDL_WINDOW_INPUT_FOCUS;
 +		SDL_SetKeyboardFocus(window);
 +	}
-+
-+	window->flags = flags;
++	else
++		window->flags = flags;
 +
 +	return AROS_SetupWindowData(_this, window, win);
 +}
@@ -9368,7 +10279,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +
 +	if (data->win) {
 +		SDL_VideoData *vd = data->videodata;
-+		size_t h = window->h, w = window->w; 
++		size_t h = window->h, w = window->w;
 +
 +		if ((window->flags & SDL_WINDOW_BORDERLESS) == 0) {
 +			w += data->win->BorderLeft + data->win->BorderRight;
@@ -9376,6 +10287,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +		}
 +
 +		h = MIN(vd->WScreen->Height - (vd->CustomScreen == NULL ? vd->WScreen->BarHeight + 1 : 0), h);
++
++		D(bug("[SDL2:aroswindow] %s: win=%p sdl %ldx%ld -> box %ldx%ld\n", __func__,
++		    data->win, (LONG)window->w, (LONG)window->h, (LONG)w, (LONG)h));
 +
 +		ChangeWindowBox(data->win, data->win->LeftEdge, data->win->TopEdge, w, h);
 +	}
@@ -9415,9 +10329,16 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +		
 +		if (vd->WScreen == NULL)
 +			AROS_GetScreen(vd->VideoDevice, vd->FullScreen, (window->flags & SDL_WINDOW_OPENGL) != 0);
-+		
++
 +		scr = vd->WScreen;
-+		
++
++		/* AROS_GetScreen() leaves WScreen NULL on every failure path, and
++		 * the sizing below dereferences it immediately. */
++		if (scr == NULL) {
++			D(bug("[SDL2:aroswindow] %s: no screen, cannot open window\n", __func__));
++			return;
++		}
++
 +		size_t max_w = window->max_w ? window->max_w : (win_resizable ? scr->Width : w);
 +		size_t max_h = window->max_h ? window->max_h : (win_resizable ? scr->Height : h);
 +	
@@ -9512,6 +10433,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +			vd->CustomScreen ? TAG_IGNORE : WA_ExtraTitlebarGadgets, ETG_ICONIFY,
 +			TAG_DONE);
 +
++		D(bug("[SDL2:winlife] %s: sdlwin 0x%p wd 0x%p opened win 0x%p (scr 0x%p fs %ld)\n",
++		    __func__, window, data, data->win, scr, (LONG)fullscreen));
++
 +		if (data->win) {
 +			D(bug("[SDL2:aroswindow] %s: current cursor = 0x%p\n", __func__, vd->CurrentPointer));
 +			if (IS_SYSTEM_CURSOR(vd->CurrentPointer)) {
@@ -9525,7 +10449,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +						SetWindowPointer(data->win, WA_Pointer, 0, WA_BusyPointer, TRUE, TAG_DONE);
 +					} else {
 +						if ((IPTR)vd->CurrentPointer->driverdata != SDL_SYSTEM_CURSOR_ARROW) {
-+							bug("[SDL2:aroswindow] %s: unhandled cursor type %u\n", __func__, ((IPTR)vd->CurrentPointer->driverdata));
++							D(bug("[SDL2:aroswindow] %s: unhandled cursor type %u\n", __func__, ((IPTR)vd->CurrentPointer->driverdata)));
 +						}
 +						SetWindowPointer(data->win, WA_Pointer, 0, TAG_DONE);
 +					}
@@ -9540,6 +10464,11 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +
 +			data->win->UserPort = &vd->WinPort;
 +			ModifyIDCMP(data->win, IDCMP_CLOSEWINDOW | IDCMP_RAWKEY | IDCMP_MOUSEMOVE | IDCMP_DELTAMOVE | IDCMP_MOUSEBUTTONS | IDCMP_REFRESHWINDOW | IDCMP_ACTIVEWINDOW | IDCMP_INACTIVEWINDOW | IDCMP_CHANGEWINDOW | IDCMP_GADGETUP | IDCMP_MENUPICK);
++
++			D(bug("[SDL2:aroswindow] %s: win=%p %ldx%ld at %ld,%ld fs=%ld\n", __func__,
++			    data->win, (LONG)data->win->Width, (LONG)data->win->Height,
++			    (LONG)data->win->LeftEdge, (LONG)data->win->TopEdge,
++			    (LONG)fullscreen));
 +
 +			data->curr_x = data->win->LeftEdge;
 +			data->curr_y = data->win->TopEdge;
@@ -9561,6 +10490,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +				}
 +			}
 +            data->menuactive = FALSE;
++            /* Fresh Intuition window: whatever pointer the old one carried
++             * says nothing about this one. */
++            data->ptr_state = (IPTR)-3;
 +            data->win->UserData = (APTR)data;
 +
 +			/* Menu */
@@ -9570,15 +10502,17 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +                    data->menu = CreateMenusA(SDL_NewMenu, NULL);
 +                    if (data->menu) {
 +                        if (!LayoutMenusA(data->menu, data->menuvisualinfo, NULL)) {
-+                            ClearMenuStrip(data->win);
 +                            FreeMenus(data->menu);
++                            data->menu = NULL;
 +                            FreeVisualInfo(data->menuvisualinfo);
++                            data->menuvisualinfo = NULL;
 +                            data->menuactive = FALSE;
 +                        } else {
 +                            data->menuactive = TRUE;
 +                        }
 +                    } else {
 +                        FreeVisualInfo(data->menuvisualinfo);
++                        data->menuvisualinfo = NULL;
 +                        data->menuactive = FALSE;
 +                    }
 +                }
@@ -9655,21 +10589,64 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +					D(bug("[SDL2:aroswindow] %s: ERROR AddAppWindow \n", __func__));
 +				}
 +			}
-+			
++
 +#if !defined(__AROS__)
 +			if (data->grabbed > 0)
 +				DoMethod((Object *)data->win, WM_ObtainEvents);
 +#endif
++
++			/* The (re)open gave this window a fresh rastport/layer. If
++			 * the live GL context belongs to this SDL window, rebind it
++			 * now — EVERY close/reopen path (hide/show, iconify/restore,
++			 * recreate, always-on-top) otherwise leaves the context
++			 * rendering into the freed old layer, which reads as
++			 * invisible/1x1 and collapses the framebuffer (grey window). */
++			if (_this->gl_data && _this->gl_data->gldd_GLACtx
++			    && data->__AGLCtx == _this->gl_data->gldd_GLACtx)
++				AROS_GL_ResizeContext(_this, window);
 +		}
-+		
++
 +	} else if (data->win) {
 +		AROS_WindowToFront(data->win);
 +	}
 +
 +#if defined(__AROS__)
-+	if (data->win->Flags & WFLG_WINDOWACTIVE) {
-+		window->flags |= SDL_WINDOW_INPUT_FOCUS;
-+		SDL_SetKeyboardFocus(window);
++	/* data->win is still NULL when OpenWindowTags() failed above, and when
++	 * the whole open block was skipped because the window is minimized. */
++	if (data->win) {
++
++		SDL_bool active = (data->win->Flags & WFLG_WINDOWACTIVE) ? SDL_TRUE : SDL_FALSE;
++
++		/* OpenWindowTags() above passes no WA_Activate, so a freshly opened
++		 * window is inactive - and Intuition sends no IDCMP_ACTIVEWINDOW for
++		 * a window nothing ever activates, so AROS_HandleActivation() never
++		 * runs either. On a close/reopen (fullscreen switch, mode set,
++		 * recreate) AROS_CloseWindowSafely() has just dropped the focus with
++		 * SDL_SetKeyboardFocus(NULL), and without this nothing ever restores
++		 * it: the app sees FOCUS_LOST and never a matching FOCUS_GAINED.
++		 * yquake2 mutes its mixer on FOCUS_LOST and stays silent for the
++		 * rest of the session because of exactly that.
++		 *
++		 * Only claim the focus when no window holds it, so this cannot steal
++		 * it from another window in a multi-window app. */
++		if (!active && SDL_GetKeyboardFocus() == NULL) {
++			ActivateWindow(data->win);
++			active = SDL_TRUE;
++		}
++
++
++		if (active) {
++			/* Do NOT set SDL_WINDOW_INPUT_FOCUS by hand here.
++			 * SDL_SendWindowEvent() drops a FOCUS_GAINED outright when the
++			 * flag is already set (events/SDL_windowevents.c:171-174) and
++			 * sets it itself otherwise, so pre-setting it silently swallows
++			 * the very event we are trying to deliver: SDL's own state ends
++			 * up correct while the application never learns it regained
++			 * focus. yquake2 then sits at s_active == false and stays mute.
++			 * Just hand the focus over and let SDL do the bookkeeping. */
++			if (SDL_GetKeyboardFocus() != window)
++				SDL_SetKeyboardFocus(window);
++		}
 +	}
 +#endif
 +}
@@ -9677,9 +10654,53 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +void
 +AROS_ShowWindow(_THIS, SDL_Window *window)
 +{
++	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
++
 +	D(bug("[SDL2:aroswindow] %s()\n", __func__));
 +
-+	AROS_ShowWindow_Internal(_this, window);
++	if (data->win) {
++		D(bug("[SDL2:aroswindow] %s: win 0x%p visible-before=%ld\n", __func__,
++		      data->win, (long)IsWindowVisible(data->win)));
++
++		ShowWindow(data->win, NULL);
++		data->winflags |= SDL_AROS_WINDOW_SHOWN;
++
++		/* ShowWindow() is asynchronous (DoASyncAction), and a GL context bound
++		 * while the window was hidden is bound to a layer that was clipped
++		 * away. It has to be rebound - but not before the layer is actually
++		 * visible, or glASetRast() just re-latches the hidden state.
++		 *
++		 * Without the rebind a window created hidden (SDL_WINDOW_HIDDEN),
++		 * given a GL context, then shown - which is exactly what ioq3 does -
++		 * came up empty: AROS_ShowWindow_Internal() only rebinds inside its
++		 * open-the-window branch, which no longer runs now that showing does
++		 * not reopen the window.
++		 *
++		 * Rather than block here waiting for Intuition's input handler, flag
++		 * the rebind as pending and let AROS_GL_SwapWindow() do it on the
++		 * first frame after the window really is on screen. */
++		data->winflags &= ~SDL_AROS_WINDOW_GLREBIND;
++
++		if (_this->gl_data && _this->gl_data->gldd_GLACtx
++		    && data->__AGLCtx == _this->gl_data->gldd_GLACtx) {
++			if (IsWindowVisible(data->win))
++				AROS_GL_ResizeContext(_this, window);
++			else
++				data->winflags |= SDL_AROS_WINDOW_GLREBIND;
++		}
++
++		D(bug("[SDL2:aroswindow] %s: visible-after=%ld glactx 0x%p winctx 0x%p"
++		      " rebind-pending=%d\n", __func__,
++		      (long)IsWindowVisible(data->win),
++		      _this->gl_data ? _this->gl_data->gldd_GLACtx : NULL, data->__AGLCtx,
++		      (data->winflags & SDL_AROS_WINDOW_GLREBIND) ? 1 : 0));
++
++		AROS_ShowWindow_Internal(_this, window);
++	} else {
++		/* No window to unhide: either OpenWindowTags() failed at create time,
++		 * or the screen was torn down by a fullscreen transition. Open it. */
++		AROS_ShowWindow_Internal(_this, window);
++	}
 +}
 +
 +void
@@ -9688,13 +10709,18 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +	D(bug("[SDL2:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+	
++
 +	if (data->win) {
++		/* Hide, don't close. The Intuition window stays alive so that
++		 * data->win, its RastPort and any GL context bound to it remain valid
++		 * while SDL considers the window hidden - CloseWindow() here used to
++		 * pull all of that out from under the application. Only
++		 * AROS_DestroyWindow() closes now. */
++		D(bug("[SDL2:winlife] %s: sdlwin 0x%p HideWindow(0x%p)\n", __func__, window, data->win));
 +		data->winflags &= ~SDL_AROS_WINDOW_SHOWN;
-+		AROS_CloseWindowSafely(window, data->win);
-+		data->win = NULL;
++		HideWindow(data->win);
 +	}
-+	
++
 +}
 +
 +void
@@ -9714,9 +10740,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 +	SDL_VideoData *vd = (SDL_VideoData *) data->videodata;
 +
-+	D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx - w=%d, h=%d\n", __func__, data->win, data->win->MaxWidth, data->win->MaxHeight));
-+	
 +	if (data->win && window->flags & SDL_WINDOW_RESIZABLE) {
++		D(bug("[SDL2:aroswindow] %s: wnd 0x%08lx - w=%d, h=%d\n", __func__, data->win, data->win->MaxWidth, data->win->MaxHeight));
++
 +		
 +		data->sdlflags |=  SDL_WINDOW_MAXIMIZED;
 +		data->sdlflags &= ~SDL_WINDOW_MINIMIZED;
@@ -9759,11 +10785,21 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 +	SDL_VideoData *vd = data->videodata;
 +
++	D(bug("[SDL2:winlife] %s: ENTER sdlwin 0x%p wd 0x%p win 0x%p fullscreen %d\n",
++	    __func__, window, data, data->win, (int)fullscreen));
++
 +	if (fullscreen) {
 +		data->winflags |= SDL_AROS_WINDOW_FULLSCREEN;
 +		if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
 +			data->winflags |= SDL_AROS_WINDOW_FULLSCREEN_DESKTOP;
-+		}	
++		}
++		/* A fullscreen window is by definition shown, not minimized. SDL's
++		 * exclusive-fullscreen mode switch runs AROS_MinimizeWindow (which
++		 * sets the sticky MINIMIZED sdlflag and hides the window) as part of
++		 * the SetDisplayMode dance; clear it so the reopen below in
++		 * AROS_OpenWindows -> ShowWindow_Internal isn't blocked by the stale
++		 * flag (which leaves data->win NULL and breaks GL context creation). */
++		data->sdlflags &= ~SDL_WINDOW_MINIMIZED;
 +		int ww, hh;
 +		SDL_GetWindowSize(window, &ww, &hh);
 +		
@@ -9844,18 +10880,32 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +	D(bug("[SDL2:aroswindow] %s()\n", __func__));
 +
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+	
-+	window->driverdata = NULL;
 +
 +	if (data) {
 +		SDL_VideoData *videodata = (SDL_VideoData *) data->videodata;
 +
 +		REMOVE(&data->node);
 +
++		/* Not inside the data->win check: the window may have been closed
++		 * already by a fullscreen transition, and the AppWindow registration
++		 * must be dropped either way — workbench would otherwise keep a
++		 * dangling pointer and bus-fault on its next AppWindow list walk. */
++		if (data->appmsg) {
++			if (RemoveAppWindow(data->appmsg))
++				data->appmsg = NULL;
++		}
++
 +		if (data->win) {
++			D(bug("[SDL2:winlife] %s: sdlwin 0x%p win 0x%p -> NULL\n", __func__, window, data->win));
 +			AROS_CloseWindowSafely(window, data->win);
 +			data->win = NULL;
 +		}
++
++		/* Cleared only AFTER the close: AROS_CloseWindowSafely() reads
++		 * sdlwin->driverdata (for the shared port and the menu state), so
++		 * clearing it up front made that a NULL dereference. */
++		window->driverdata = NULL;
++
 +		if (data->region)
 +			DisposeRegion(data->region);
 +
@@ -9864,6 +10914,7 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +			AROS_CloseDisplay(_this);
 +		}
 +
++		D(bug("[SDL2:winlife] %s: sdlwin 0x%p freeing wd 0x%p\n", __func__, window, data));
 +		SDL_free(data->window_title);
 +		SDL_free(data);
 +	}
@@ -9897,23 +10948,13 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +            }
 +        }
 +
-+
-+		struct Window *win = data->win;
-+
-+#if defined(__AROS__)
-+		win->UserPort = NULL;
-+		ModifyIDCMP(win, 0);
-+#endif
-+
-+        if (data->menuactive == TRUE) {
-+            ClearMenuStrip(win);
-+            FreeMenus(data->menu);
-+            data->menu = NULL;
-+            FreeVisualInfo(data->menuvisualinfo);
-+            data->menuvisualinfo = NULL;
-+            data->menuactive = FALSE;
-+        }
-+        CloseWindow(win);
++        /* Must go through AROS_CloseWindowSafely(): it drains this window's
++         * still-queued IntuiMessages from the SHARED UserPort under Forbid()
++         * before CloseWindow(). Closing without that left messages in
++         * vd->WinPort that the pump then dispatched through the freed
++         * window's UserData. */
++        D(bug("[SDL2:winlife] %s: sdlwin 0x%p win 0x%p -> NULL\n", __func__, window, data->win));
++        AROS_CloseWindowSafely(window, data->win);
 +        data->win = NULL;
 +    }
 +}
@@ -9922,8 +10963,9 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +AROS_RecreateWindow(_THIS, SDL_Window * window)
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+	D(bug("[SDL2:aroswindow] %s: 0x%08lx\n", __func__, data->win));
-+	
++
++	D(bug("[SDL2:winlife] %s: ENTER sdlwin 0x%p wd 0x%p win 0x%p\n", __func__, window, data, data->win));
++
 +    if (window->flags & SDL_WINDOW_FOREIGN) {
 +		D(bug("[SDL2:aroswindow] %s: Cannot modify native window '%s'\n", __func__, window->title));
 +        return;
@@ -9936,8 +10978,18 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +
 +    AROS_ShowWindow_Internal(_this, window);
 +
-+    if (data->win) { // Make sure the new window is active
-+        AROS_ShowWindow(_this, window);
++    if (data->win) {
++        /* GL rebind to the fresh layer happens in AROS_ShowWindow_Internal
++         * (covers hide/show and iconify/restore reopens too). */
++        if (window->flags & SDL_WINDOW_HIDDEN) {
++            /* Keep it open but invisible, as at create time — the reopen must
++             * not make a hidden window pop up. */
++            D(bug("[SDL2:winlife] %s: sdlwin 0x%p still hidden, HideWindow(0x%p)\n", __func__, window, data->win));
++            HideWindow(data->win);
++            data->winflags &= ~SDL_AROS_WINDOW_SHOWN;
++        } else { // Make sure the new window is active
++            AROS_ShowWindow(_this, window);
++        }
 +    }
 +}
 +
@@ -10010,26 +11062,32 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 +    if (data->win) {
++#if defined(__AROS__)
++		/* WA_Opacity is not implemented on AROS, so the opacity pulse below
++		 * did nothing except block the caller for 200ms (and its value
++		 * expression overflowed float->ULONG anyway). Just draw attention
++		 * the way the platform can. */
++		WindowToFront(data->win);
++		ActivateWindow(data->win);
++#else
++		ULONG value_old = getv(data->win, WA_Opacity);
 +
-+		ULONG value_old = 0;
-+#if !defined(__AROS__)
-+		value_old = getv(data->win, WA_Opacity);
-+#endif
 +		WindowToFront(data->win);
 +		const Uint32 start = SDL_GetTicks();
 +		ULONG elapsed = 0;
 +		ULONG value = 0;
-+		
++
 +		while (TRUE) {
 +			elapsed = SDL_GetTicks() - start;
 +			if (elapsed > 200) break;
 +			value = 128 + 127 * sinf(elapsed * 3.14159f / 50.0f) * (ULONG_MAX);
-+			AROS_SetWindowOpacityPrivate(_this, window, value);	
++			AROS_SetWindowOpacityPrivate(_this, window, value);
 +			SDL_Delay(1);
 +		}
-+		
++
 +		ActivateWindow(data->win);
 +		AROS_SetWindowOpacityPrivate(_this, window, value_old);
++#endif
 +	}
 +}
 +
@@ -10059,25 +11117,30 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.c SDL2-2.32.10.aros/src/vid
 +AROS_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right)
 +{
 +	SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+	
++
++	/* Public API: reachable for a hidden/minimized window, which has no
++	 * Intuition window yet. */
++	if (!data->win)
++		return SDL_SetError("Window is not currently open");
++
 +	if (top)
 +		*top = data->win->BorderTop;
-+	
++
 +	if (left)
 +		*left = data->win->BorderLeft;
-+	
++
 +	if (bottom)
 +		*bottom = data->win->BorderBottom;
-+	
++
 +	if (right)
-+		*right = data->win->BorderRight;	
-+	
++		*right = data->win->BorderRight;
++
 +	return 0;
 +}
 diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.h SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.h
---- SDL2-2.32.10/src/video/aros/SDL_aroswindow.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.h	2025-08-11 00:37:06.556441007 +0000
-@@ -0,0 +1,136 @@
+--- SDL2-2.32.10/src/video/aros/SDL_aroswindow.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/video/aros/SDL_aroswindow.h	2026-10-07 09:44:40
+@@ -0,0 +1,145 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
@@ -10164,12 +11227,17 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.h SDL2-2.32.10.aros/src/vid
 +	BYTE grabbed;
 +	BYTE first_deltamove;
 +	BYTE winflags;
++
++	/* Last Intuition pointer applied to this window, so the pump does not
++	 * re-set it on every mouse move (-1 = cleared, -2 = busy, -3 = unknown).
++	 * Per window: a shared static picked up whichever window the pump last
++	 * drained a message for. */
++	IPTR ptr_state;
 +	
 +	APTR menuvisualinfo;
 +	struct Menu *menu;
 +	BOOL menuactive;
 +	
-+	struct BitMap *bitmap;
 +	APTR memfb;
 +} SDL_WindowData;
 +
@@ -10177,6 +11245,10 @@ diff -ruN SDL2-2.32.10/src/video/aros/SDL_aroswindow.h SDL2-2.32.10.aros/src/vid
 +#define SDL_AROS_WINDOW_SHOWN      (1 << 0)
 +#define SDL_AROS_WINDOW_FULLSCREEN (1 << 1)
 +#define SDL_AROS_WINDOW_FULLSCREEN_DESKTOP (1 << 2)
++/* A GL context is bound to this window's pre-show layer and has to be
++ * rebound, but only once the window is actually on screen. See
++ * AROS_ShowWindow() and AROS_GL_SwapWindow(). */
++#define SDL_AROS_WINDOW_GLREBIND   (1 << 3)
 +
 +/* SDL functions */
 +extern int AROS_CreateWindow(_THIS, SDL_Window * window);
@@ -10575,3 +11647,300 @@ diff -ruN SDL2-2.32.10/test/torturethread.c SDL2-2.32.10.aros/test/torturethread
      for (i = 0; i < NUMTHREADS; i++) {
          char name[64];
          (void)SDL_snprintf(name, sizeof(name), "Parent%d", i);
+diff -ruN SDL2-2.32.10/src/SDL_assert.c SDL2-2.32.10.aros/src/SDL_assert.c
+--- SDL2-2.32.10/src/SDL_assert.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/SDL_assert.c	2026-10-07 09:44:40
+@@ -289,7 +289,10 @@
+                 break;
+             }
+         }
+-#elif defined(HAVE_STDIO_H) && !defined(__3DS__)
++/* AROS falls through to SDL_ShowSimpleMessageBox() below: the port has a
++ * working message box, and this stdin/stderr prompt is the only thing in
++ * the library that needs stdcio.library. */
++#elif defined(HAVE_STDIO_H) && !defined(__3DS__) && !defined(__AROS__)
+         /* this is a little hacky. */
+         for (;;) {
+             char buf[32];
+diff -ruN SDL2-2.32.10/src/SDL_internal.h SDL2-2.32.10.aros/src/SDL_internal.h
+--- SDL2-2.32.10/src/SDL_internal.h	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/SDL_internal.h	2026-10-07 09:44:40
+@@ -208,8 +208,6 @@
+ #include "SDL_assert.h"
+ #include "SDL_log.h"
+ 
+-extern void SDL_InitMainThread(void);
+-
+ #endif /* SDL_internal_h_ */
+ 
+ /* vi: set ts=4 sw=4 expandtab: */
+diff -ruN SDL2-2.32.10/src/stdlib/SDL_malloc.c SDL2-2.32.10.aros/src/stdlib/SDL_malloc.c
+--- SDL2-2.32.10/src/stdlib/SDL_malloc.c	2026-10-07 09:37:29
++++ SDL2-2.32.10.aros/src/stdlib/SDL_malloc.c	2026-10-07 09:44:40
+@@ -30,7 +30,14 @@
+ #include "SDL_atomic.h"
+ #include "SDL_error.h"
+ 
+-#ifndef HAVE_MALLOC
++#ifdef SDL_MEMORY_AROS
++#include "aros/SDL_arosmem.h"
++#endif
++
++/* dlmalloc below wants mmap()/sbrk() to get memory from, and AROS has
++ * neither — SDL_MEMORY_AROS supplies real_malloc() and friends from an exec
++ * pool instead, so the whole allocator can drop out of the build. */
++#if !defined(HAVE_MALLOC) && !defined(SDL_MEMORY_AROS)
+ #define LACKS_SYS_TYPES_H
+ #define LACKS_STDIO_H
+ #define LACKS_STRINGS_H
+@@ -5190,13 +5197,18 @@
+ 
+ */
+ 
+-#endif /* !HAVE_MALLOC */
++#endif /* !HAVE_MALLOC && !SDL_MEMORY_AROS */
+ 
+ #ifdef HAVE_MALLOC
+ static void* SDLCALL real_malloc(size_t s) { return malloc(s); }
+ static void* SDLCALL real_calloc(size_t n, size_t s) { return calloc(n, s); }
+ static void* SDLCALL real_realloc(void *p, size_t s) { return realloc(p,s); }
+ static void  SDLCALL real_free(void *p) { free(p); }
++#elif defined(SDL_MEMORY_AROS)
++static void* SDLCALL real_malloc(size_t s) { return AROS_MemAlloc(s); }
++static void* SDLCALL real_calloc(size_t n, size_t s) { return AROS_MemCalloc(n, s); }
++static void* SDLCALL real_realloc(void *p, size_t s) { return AROS_MemRealloc(p, s); }
++static void  SDLCALL real_free(void *p) { AROS_MemFree(p); }
+ #else
+ #define real_malloc dlmalloc
+ #define real_calloc dlcalloc
+diff -ruN SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.c SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.c
+--- SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.c	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.c	2026-10-07 09:44:40
+@@ -0,0 +1,173 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#ifdef SDL_MEMORY_AROS
++
++#include "SDL_arosmem.h"
++#include "SDL_atomic.h"
++
++#include <exec/memory.h>
++#include <proto/exec.h>
++
++/* AllocPooled() does not record block sizes, so every allocation carries its
++ * own header. Keep that header a full alignment unit wide so the pointer we
++ * hand out stays as aligned as the pool's own blocks. */
++#define AROS_MEM_ALIGN   16
++
++/* 16 matches MEMCHUNK_TOTAL (AROS_WORSTALIGN is 16 on x86_64/i386/arm/ppc/
++ * riscv, and sizeof(struct MemChunk) elsewhere), so the pointer we return
++ * keeps the pool's own alignment rather than shaving it down. */
++SDL_COMPILE_TIME_ASSERT(aros_mem_align, AROS_MEM_ALIGN >= sizeof(size_t));
++
++/* Puddle size, and the size above which a block gets a puddle to itself.
++ * SDL's traffic is mostly small objects with the odd large surface. */
++#define AROS_MEM_PUDDLE  (128 * 1024)
++#define AROS_MEM_THRESH  (32 * 1024)
++
++static APTR aros_mem_pool;
++static SDL_SpinLock aros_mem_lock;
++
++static APTR AROS_MemGetPool(void)
++{
++    if (!aros_mem_pool) {
++        SDL_AtomicLock(&aros_mem_lock);
++        if (!aros_mem_pool) {
++            /* MEMF_SEM_PROTECTED makes exec serialise AllocPooled() and
++             * FreePooled() on this pool (rom/exec/createpool.c). SDL needs
++             * that: the audio thread allocates concurrently with the app. */
++            APTR pool = CreatePool(MEMF_ANY | MEMF_SEM_PROTECTED,
++                                   AROS_MEM_PUDDLE, AROS_MEM_THRESH);
++            SDL_MemoryBarrierRelease();
++            aros_mem_pool = pool;
++        }
++        SDL_AtomicUnlock(&aros_mem_lock);
++    }
++    SDL_MemoryBarrierAcquire();
++
++    return aros_mem_pool;
++}
++
++void *AROS_MemAlloc(size_t size)
++{
++    APTR pool = AROS_MemGetPool();
++    size_t total;
++    UBYTE *mem;
++
++    if (!pool) {
++        return NULL;
++    }
++
++    /* malloc(0) must not read as failure to the caller. */
++    if (size == 0) {
++        size = 1;
++    }
++
++    total = size + AROS_MEM_ALIGN;
++    if (total < size) { /* size_t overflow */
++        return NULL;
++    }
++
++    mem = (UBYTE *)AllocPooled(pool, total);
++    if (!mem) {
++        return NULL;
++    }
++
++    *(size_t *)mem = total;
++
++    return mem + AROS_MEM_ALIGN;
++}
++
++void AROS_MemFree(void *ptr)
++{
++    if (ptr) {
++        UBYTE *mem = (UBYTE *)ptr - AROS_MEM_ALIGN;
++
++        /* The pool must exist: this block came out of it. */
++        FreePooled(aros_mem_pool, mem, *(size_t *)mem);
++    }
++}
++
++void *AROS_MemCalloc(size_t nmemb, size_t size)
++{
++    size_t total = nmemb * size;
++    void *mem;
++
++    if (nmemb != 0 && (total / nmemb) != size) { /* multiplication overflowed */
++        return NULL;
++    }
++
++    mem = AROS_MemAlloc(total);
++    if (mem) {
++        SDL_memset(mem, 0, total);
++    }
++
++    return mem;
++}
++
++void *AROS_MemRealloc(void *ptr, size_t size)
++{
++    UBYTE *mem;
++    size_t oldsize;
++    void *newptr;
++
++    if (!ptr) {
++        return AROS_MemAlloc(size);
++    }
++
++    if (size == 0) {
++        AROS_MemFree(ptr);
++        return NULL;
++    }
++
++    mem = (UBYTE *)ptr - AROS_MEM_ALIGN;
++    oldsize = *(size_t *)mem - AROS_MEM_ALIGN;
++
++    /* Shrinking keeps the block, and the header keeps the size the pool was
++     * given — which is what FreePooled() has to be handed back. */
++    if (size <= oldsize) {
++        return ptr;
++    }
++
++    newptr = AROS_MemAlloc(size);
++    if (!newptr) {
++        return NULL;
++    }
++
++    SDL_memcpy(newptr, ptr, oldsize);
++    AROS_MemFree(ptr);
++
++    return newptr;
++}
++
++void AROS_MemQuit(void)
++{
++    SDL_AtomicLock(&aros_mem_lock);
++    if (aros_mem_pool) {
++        DeletePool(aros_mem_pool);
++        aros_mem_pool = NULL;
++    }
++    SDL_AtomicUnlock(&aros_mem_lock);
++}
++
++#endif /* SDL_MEMORY_AROS */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff -ruN SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.h SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.h
+--- SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.h	1970-01-01 01:00:00
++++ SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.h	2026-10-07 09:44:40
+@@ -0,0 +1,50 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#ifndef SDL_arosmem_h_
++#define SDL_arosmem_h_
++
++#ifdef SDL_MEMORY_AROS
++
++/* Backing store for SDL_malloc() and friends on AROS: one exec memory pool
++ * owned by SDL2.library itself.
++ *
++ * The alternative, letting SDL call through to stdc.library, is what forced
++ * the posixc/stdcio base-refresh workaround in SDL_arosvideo.c: stdc hands
++ * out a pool PER OPENER, so blocks allocated while one task's base was
++ * current were freed against a different pool once another task opened the
++ * library. Owning the pool here makes SDL's heap independent of whichever
++ * task happens to be running.
++ */
++
++extern void *AROS_MemAlloc(size_t size);
++extern void *AROS_MemCalloc(size_t nmemb, size_t size);
++extern void *AROS_MemRealloc(void *ptr, size_t size);
++extern void  AROS_MemFree(void *ptr);
++
++/* Tear the pool down. ONLY safe at library expunge, when no allocation is
++ * outstanding: DeletePool() releases every block in one go. */
++extern void  AROS_MemQuit(void);
++
++#endif /* SDL_MEMORY_AROS */
++
++#endif /* SDL_arosmem_h_ */
