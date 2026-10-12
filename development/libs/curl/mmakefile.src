@@ -4,7 +4,7 @@
 include $(SRCDIR)/config/aros-contrib.cfg
 
 #MM- contrib-curl : development-curl
-#MM- development-curl : contrib-openssl linklibs-pthread workbench-libs-zstd-library-linklib
+#MM- development-curl : contrib-openssl contrib-brotli linklibs-pthread workbench-libs-zstd-library-linklib
 #MM development-curl-fixconfig : development-curl-pakagefiles
 
 REPOSITORIES := https://curl.se/download \
@@ -33,7 +33,13 @@ endif
 # curl_multi_init() now treats a failing wakeup pipe/socketpair as fatal.  On
 # AROS the wakeup pipe cannot be made non-blocking (PIPE: has no
 # ACTION_CHANGE_MODE), so every transfer would die as CURLE_OUT_OF_MEMORY.
-CURL_OPTIONS=--disable-shared --without-libpsl --disable-ipv6 --disable-socketpair --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet $(CURL_ATOMIC_LIBS)"
+#
+# Without --with-brotli, curl only probes the default places: it finds
+# brotli/decode.h, then tests the library with -lbrotlidec alone, which
+# cannot link because libbrotlidec needs libbrotlicommon. The feature is
+# left enabled with nothing linked. Asking for it explicitly makes curl
+# query pkg-config, which names both libraries.
+CURL_OPTIONS=--disable-shared --without-libpsl --disable-ipv6 --disable-socketpair --with-brotli --with-openssl=$(AROS_DEVELOPER) --libdir=$(AROS_LIB) LIBS="-lmiami -lnet $(CURL_ATOMIC_LIBS)"
 
 %fetch_and_build_gnu_development package=curl version=$(CURL_VERSION) \
     patch=yes package_repo="$(REPOSITORIES)" \
