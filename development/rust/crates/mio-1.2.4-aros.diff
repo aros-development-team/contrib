@@ -1,0 +1,165 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/poll.rs b/src/poll.rs
+--- a/src/poll.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/poll.rs	2026-10-12 13:42:00.784138460 +0100
+@@ -7,6 +7,7 @@
+         target_os = "nuttx",
+         target_os = "fuchsia",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hermit",
+         target_os = "hurd",
+         target_os = "nto",
+@@ -449,6 +450,7 @@
+         target_os = "nuttx",
+         target_os = "fuchsia",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hermit",
+         target_os = "hurd",
+         target_os = "nto",
+@@ -752,6 +754,7 @@
+         target_os = "espidf",
+         target_os = "nuttx",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "fuchsia",
+         target_os = "hermit",
+         target_os = "hurd",
+@@ -775,6 +778,7 @@
+         target_os = "espidf",
+         target_os = "nuttx",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "fuchsia",
+         target_os = "hermit",
+         target_os = "hurd",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/mod.rs b/src/sys/unix/mod.rs
+--- a/src/sys/unix/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/mod.rs	2026-10-12 13:42:00.787397360 +0100
+@@ -49,7 +49,8 @@
+         target_os = "nuttx",
+         target_os = "fuchsia",
+         target_os = "haiku",
+-        target_os = "hermit",
++        target_os = "aros",
++                target_os = "hermit",
+         target_os = "hurd",
+         target_os = "nto",
+         target_os = "vita",
+@@ -108,7 +109,8 @@
+         ),
+         target_os = "aix",
+         target_os = "haiku",
+-        target_os = "hurd",
++        target_os = "aros",
++                target_os = "hurd",
+         target_os = "nto",
+         target_os = "redox",
+         all(mio_unsupported_force_poll_poll, target_os = "solaris"),
+@@ -159,7 +161,8 @@
+             target_os = "aix",
+             target_os = "dragonfly",
+             target_os = "haiku",
+-            target_os = "hurd",
++            target_os = "aros",
++                    target_os = "hurd",
+             target_os = "netbsd",
+             target_os = "nto",
+             target_os = "openbsd",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/net.rs b/src/sys/unix/net.rs
+--- a/src/sys/unix/net.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/net.rs	2026-10-12 13:42:00.789857060 +0100
+@@ -65,7 +65,8 @@
+         target_os = "watchos",
+         target_os = "espidf",
+         target_os = "haiku",
+-        target_os = "vita",
++        target_os = "aros",
++                target_os = "vita",
+         target_os = "nto",
+     ))]
+     {
+@@ -124,7 +125,8 @@
+                     target_os = "dragonfly",
+                     target_os = "freebsd",
+                     target_os = "haiku",
+-                    target_os = "hurd",
++                    target_os = "aros",
++                                        target_os = "hurd",
+                     target_os = "ios",
+                     target_os = "macos",
+                     target_os = "netbsd",
+@@ -160,7 +162,8 @@
+                     target_os = "dragonfly",
+                     target_os = "freebsd",
+                     target_os = "haiku",
+-                    target_os = "hurd",
++                    target_os = "aros",
++                                        target_os = "hurd",
+                     target_os = "ios",
+                     target_os = "macos",
+                     target_os = "netbsd",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/pipe.rs b/src/sys/unix/pipe.rs
+--- a/src/sys/unix/pipe.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/pipe.rs	2026-10-12 13:42:00.787218760 +0100
+@@ -34,7 +34,8 @@
+     #[cfg(any(
+         target_os = "aix",
+         target_os = "haiku",
+-        target_os = "ios",
++        target_os = "aros",
++                target_os = "ios",
+         target_os = "macos",
+         target_os = "tvos",
+         target_os = "visionos",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/tcp.rs b/src/sys/unix/tcp.rs
+--- a/src/sys/unix/tcp.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/tcp.rs	2026-10-12 13:42:00.787521960 +0100
+@@ -92,6 +92,7 @@
+     #[cfg(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "ios",
+         target_os = "macos",
+         target_os = "redox",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/uds/listener.rs b/src/sys/unix/uds/listener.rs
+--- a/src/sys/unix/uds/listener.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/uds/listener.rs	2026-10-12 13:42:00.788954960 +0100
+@@ -65,6 +65,7 @@
+     #[cfg(not(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "ios",
+         target_os = "macos",
+         target_os = "netbsd",
+@@ -94,6 +95,7 @@
+     #[cfg(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "ios",
+         target_os = "macos",
+         target_os = "netbsd",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/uds/mod.rs b/src/sys/unix/uds/mod.rs
+--- a/src/sys/unix/uds/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/uds/mod.rs	2026-10-12 13:42:00.789165660 +0100
+@@ -88,6 +88,7 @@
+     #[cfg(not(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "ios",
+         target_os = "macos",
+         target_os = "nto",
+@@ -113,7 +114,8 @@
+     #[cfg(any(
+         target_os = "aix",
+         target_os = "haiku",
+-        target_os = "ios",
++        target_os = "aros",
++                target_os = "ios",
+         target_os = "macos",
+         target_os = "nto",
+         target_os = "tvos",

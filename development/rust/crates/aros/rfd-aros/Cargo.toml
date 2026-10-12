@@ -1,0 +1,12 @@
+[package]
+name = "rfd"
+version = "0.17.2"
+edition = "2021"
+description = "AROS stand-in for rfd: file and drawer requesters through asl.library"
+license = "MIT"
+build = "build.rs"
+
+[dependencies]
+
+[lib]
+path = "src/lib.rs"

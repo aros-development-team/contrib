@@ -1,0 +1,59 @@
+diff -ruN -x '*.orig' -x '*.rej' -x .cargo-checksum.json -x .cargo_vcs_info.json -x Cargo.toml.orig a/src/font.rs b/src/font.rs
+--- a/src/font.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/font.rs	2026-10-12 02:23:50.213991705 +0100
+@@ -33,8 +33,14 @@
+         match &source.kind {
+             #[cfg(feature = "std")]
+             SourceKind::Path(path) => {
+-                let file = std::fs::File::open(&**path).ok()?;
+-                let mapped = unsafe { memmap2::Mmap::map(&file).ok()? };
++                // AROS has no memory mapping: the file is read instead.
++                #[cfg(target_os = "aros")]
++                let mapped = std::fs::read(&**path).ok()?;
++                #[cfg(not(target_os = "aros"))]
++                let mapped = {
++                    let file = std::fs::File::open(&**path).ok()?;
++                    unsafe { memmap2::Mmap::map(&file).ok()? }
++                };
+                 let font = FontRef::from_index(&mapped, index).ok()?;
+                 Self::from_font_ref(&font, source.clone(), index)
+             }
+diff -ruN -x '*.orig' -x '*.rej' -x .cargo-checksum.json -x .cargo_vcs_info.json -x Cargo.toml.orig a/src/scan.rs b/src/scan.rs
+--- a/src/scan.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/scan.rs	2026-10-12 02:23:50.214117705 +0100
+@@ -160,8 +160,14 @@
+             scan_path_impl(entry.path().as_path(), max_depth, f, depth + 1);
+         }
+     } else {
+-        let file = std::fs::File::open(path).ok()?;
+-        let mapped = unsafe { memmap2::Mmap::map(&file) }.ok()?;
++        // AROS has no memory mapping: the file is read instead.
++        #[cfg(target_os = "aros")]
++        let mapped = std::fs::read(path).ok()?;
++        #[cfg(not(target_os = "aros"))]
++        let mapped = {
++            let file = std::fs::File::open(path).ok()?;
++            unsafe { memmap2::Mmap::map(&file) }.ok()?
++        };
+         scan_memory_impl(&mapped, Some(path), f);
+     }
+     Some(())
+diff -ruN -x '*.orig' -x '*.rej' -x .cargo-checksum.json -x .cargo_vcs_info.json -x Cargo.toml.orig a/src/source_cache.rs b/src/source_cache.rs
+--- a/src/source_cache.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/source_cache.rs	2026-10-12 02:23:50.214235505 +0100
+@@ -248,7 +248,13 @@
+ 
+ #[cfg(feature = "std")]
+ pub(crate) fn load_blob(path: &Path) -> Option<Blob<u8>> {
+-    let file = std::fs::File::open(path).ok()?;
+-    let mapped = unsafe { memmap2::Mmap::map(&file).ok()? };
++    // AROS has no memory mapping: the file is read instead.
++    #[cfg(target_os = "aros")]
++    let mapped = std::fs::read(path).ok()?;
++    #[cfg(not(target_os = "aros"))]
++    let mapped = {
++        let file = std::fs::File::open(path).ok()?;
++        unsafe { memmap2::Mmap::map(&file).ok()? }
++    };
+     Some(Blob::new(Arc::new(mapped)))
+ }

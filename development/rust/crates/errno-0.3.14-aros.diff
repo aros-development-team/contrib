@@ -1,0 +1,11 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/unix.rs b/src/unix.rs
+--- a/src/unix.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/unix.rs	2026-10-12 14:15:58.853656153 +0100
+@@ -88,6 +88,7 @@
+         link_name = "___errno"
+     )]
+     #[cfg_attr(target_os = "haiku", link_name = "_errnop")]
++    #[cfg_attr(target_os = "aros", link_name = "__stdc_geterrnoptr")]
+     #[cfg_attr(
+         any(
+             target_os = "linux",

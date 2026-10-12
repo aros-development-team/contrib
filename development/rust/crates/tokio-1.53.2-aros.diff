@@ -1,0 +1,262 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/fs/read_dir.rs b/src/fs/read_dir.rs
+--- a/src/fs/read_dir.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/fs/read_dir.rs	2026-10-12 13:45:27.136016706 +0100
+@@ -138,6 +138,7 @@
+                     target_os = "solaris",
+                     target_os = "illumos",
+                     target_os = "haiku",
++                    target_os = "aros",
+                     target_os = "vxworks",
+                     target_os = "aix",
+                     target_os = "nto",
+@@ -202,6 +203,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "vxworks",
+         target_os = "aix",
+         target_os = "nto",
+@@ -336,6 +338,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "vxworks",
+             target_os = "aix",
+             target_os = "nto",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/tcp/socket.rs b/src/net/tcp/socket.rs
+--- a/src/net/tcp/socket.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/net/tcp/socket.rs	2026-10-12 13:45:27.164368007 +0100
+@@ -604,6 +604,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -614,6 +615,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -634,6 +636,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -644,6 +647,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -668,6 +672,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -678,6 +683,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -698,6 +704,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -708,6 +715,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/udp.rs b/src/net/udp.rs
+--- a/src/net/udp.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/net/udp.rs	2026-10-12 13:45:27.155544207 +0100
+@@ -2102,6 +2102,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -2112,6 +2113,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -2132,6 +2134,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -2142,6 +2145,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -2166,6 +2170,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -2176,6 +2181,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+@@ -2196,6 +2202,7 @@
+         target_os = "solaris",
+         target_os = "illumos",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     #[cfg_attr(
+@@ -2206,6 +2213,7 @@
+             target_os = "solaris",
+             target_os = "illumos",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "wasi",
+         ))))
+     )]
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/unix/ucred.rs b/src/net/unix/ucred.rs
+--- a/src/net/unix/ucred.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/net/unix/ucred.rs	2026-10-12 13:46:26.630693861 +0100
+@@ -71,7 +71,8 @@
+     target_os = "espidf",
+     target_os = "nuttx",
+     target_os = "vita",
+-    target_os = "hurd"
++    target_os = "hurd",
++    target_os = "aros"
+ ))]
+ pub(crate) use self::impl_noproc::get_peer_cred;
+ 
+@@ -99,6 +100,7 @@
+         target_os = "redox",
+         target_os = "android",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "cygwin"
+     ))]
+     use libc::ucred;
+@@ -402,7 +404,8 @@
+     target_os = "espidf",
+     target_os = "nuttx",
+     target_os = "vita",
+-    target_os = "hurd"
++    target_os = "hurd",
++    target_os = "aros"
+ ))]
+ pub(crate) mod impl_noproc {
+     use crate::net::unix::UnixStream;
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/runtime/builder.rs b/src/runtime/builder.rs
+--- a/src/runtime/builder.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/runtime/builder.rs	2026-10-12 13:55:22.781574490 +0100
+@@ -1768,7 +1768,10 @@
+         ///     .unwrap();
+         /// ```
+         pub fn enable_io(&mut self) -> &mut Self {
+-            self.enable_io = true;
++            // AROS: posixc has no readiness notification (`select` is a stub, `poll` does
++            // not exist), so the I/O driver cannot run; the runtime stays without it and
++            // net/process/signal resources report that I/O is disabled when used.
++            self.enable_io = cfg!(not(target_os = "aros"));
+             self
+         }
+ 
+@@ -1838,7 +1841,7 @@
+         #[cfg_attr(docsrs, doc(cfg(feature = "io-uring")))]
+         pub fn enable_io_uring(&mut self) -> &mut Self {
+             // Currently, the uring flag is equivalent to `enable_io`.
+-            self.enable_io = true;
++            self.enable_io = cfg!(not(target_os = "aros"));
+             self
+         }
+     }
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/signal/unix.rs b/src/signal/unix.rs
+--- a/src/signal/unix.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/signal/unix.rs	2026-10-12 14:20:29.626601060 +0100
+@@ -158,7 +158,8 @@
+         Self(libc::SIGINT)
+     }
+ 
+-    #[cfg(target_os = "haiku")]
++    #[cfg(any(target_os = "haiku", target_os = "aros"))]
++    #[cfg(not(target_os = "aros"))]
+     /// Represents the `SIGPOLL` signal.
+     ///
+     /// On POSIX systems this signal is sent when I/O operations are possible
+@@ -166,7 +167,7 @@
+     pub const fn io() -> Self {
+         Self(libc::SIGPOLL)
+     }
+-    #[cfg(not(target_os = "haiku"))]
++    #[cfg(not(any(target_os = "haiku", target_os = "aros")))]
+     /// Represents the `SIGIO` signal.
+     ///
+     /// On Unix systems this signal is sent when I/O operations are possible
+@@ -217,6 +218,7 @@
+         Self(libc::SIGUSR2)
+     }
+ 
++    #[cfg(not(target_os = "aros"))]
+     /// Represents the `SIGWINCH` signal.
+     ///
+     /// On Unix systems this signal is sent when the terminal window is resized.
+@@ -400,6 +402,15 @@
+ /// feature flag is not enabled.
+ #[track_caller]
+ pub fn signal(kind: SignalKind) -> io::Result<Signal> {
++    // AROS: the runtime has no I/O (and so no signal) driver; report that instead of
++    // panicking in whatever task asked for the signal.
++    if cfg!(target_os = "aros") {
++        let _ = kind;
++        return Err(io::Error::new(
++            io::ErrorKind::Unsupported,
++            "signal handling is not available on AROS (no I/O driver)",
++        ));
++    }
+     let handle = scheduler::Handle::current();
+     let rx = signal_with_handle(kind, handle.driver().signal())?;
+ 

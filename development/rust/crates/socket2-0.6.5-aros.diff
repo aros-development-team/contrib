@@ -1,0 +1,316 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/lib.rs	2026-10-12 13:42:00.780747260 +0100
+@@ -191,6 +191,7 @@
+ pub use sockaddr::{sa_family_t, socklen_t, SockAddr, SockAddrStorage};
+ #[cfg(not(any(
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "illumos",
+     target_os = "netbsd",
+     target_os = "redox",
+@@ -441,7 +442,7 @@
+ #[derive(Debug, Clone)]
+ pub struct TcpKeepalive {
+     #[cfg_attr(
+-        any(target_os = "openbsd", target_os = "haiku", target_os = "vita"),
++        any(target_os = "openbsd", target_os = "haiku", target_os = "aros", target_os = "vita"),
+         allow(dead_code)
+     )]
+     time: Option<Duration>,
+@@ -453,6 +454,7 @@
+         target_os = "espidf",
+         target_os = "vita",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "horizon"
+     )))]
+     interval: Option<Duration>,
+@@ -464,6 +466,7 @@
+         target_os = "espidf",
+         target_os = "vita",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "horizon"
+     )))]
+     retries: Option<u32>,
+@@ -483,6 +486,7 @@
+                 target_os = "espidf",
+                 target_os = "vita",
+                 target_os = "haiku",
++                target_os = "aros",
+                 target_os = "horizon"
+             )))]
+             interval: None,
+@@ -494,6 +498,7 @@
+                 target_os = "espidf",
+                 target_os = "vita",
+                 target_os = "haiku",
++                target_os = "aros",
+                 target_os = "horizon"
+             )))]
+             retries: None,
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sockaddr.rs b/src/sockaddr.rs
+--- a/src/sockaddr.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sockaddr.rs	2026-10-12 13:42:00.780273460 +0100
+@@ -365,7 +365,8 @@
+             target_os = "dragonfly",
+             target_os = "freebsd",
+             target_os = "haiku",
+-            target_os = "hermit",
++            target_os = "aros",
++                        target_os = "hermit",
+             target_os = "ios",
+             target_os = "visionos",
+             target_os = "macos",
+@@ -409,7 +410,8 @@
+             target_os = "dragonfly",
+             target_os = "freebsd",
+             target_os = "haiku",
+-            target_os = "hermit",
++            target_os = "aros",
++                        target_os = "hermit",
+             target_os = "ios",
+             target_os = "visionos",
+             target_os = "macos",
+@@ -434,7 +436,8 @@
+             target_os = "dragonfly",
+             target_os = "freebsd",
+             target_os = "haiku",
+-            target_os = "hermit",
++            target_os = "aros",
++                        target_os = "hermit",
+             target_os = "ios",
+             target_os = "visionos",
+             target_os = "macos",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/socket.rs b/src/socket.rs
+--- a/src/socket.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/socket.rs	2026-10-12 13:42:00.779700860 +0100
+@@ -850,6 +850,7 @@
+ /// that an appropriate interface should be selected by the system.
+ #[cfg(not(any(
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "illumos",
+     target_os = "netbsd",
+     target_os = "redox",
+@@ -1346,6 +1347,7 @@
+     #[cfg(not(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "illumos",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1382,6 +1384,7 @@
+     #[cfg(not(any(
+         target_os = "aix",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "illumos",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1420,6 +1423,7 @@
+     #[cfg(not(any(
+         target_os = "dragonfly",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hurd",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1460,6 +1464,7 @@
+     #[cfg(not(any(
+         target_os = "dragonfly",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hurd",
+         target_os = "netbsd",
+         target_os = "openbsd",
+@@ -1643,6 +1648,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     pub fn set_tos_v4(&self, tos: u32) -> io::Result<()> {
+@@ -1662,6 +1668,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "wasi",
+     )))]
+     pub fn tos_v4(&self) -> io::Result<u32> {
+@@ -1686,6 +1693,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "nto",
+         target_os = "espidf",
+         target_os = "nuttx",
+@@ -1721,6 +1729,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "nto",
+         target_os = "espidf",
+         target_os = "nuttx",
+@@ -2102,6 +2111,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hurd",
+         target_os = "espidf",
+         target_os = "nuttx",
+@@ -2130,6 +2140,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "hurd",
+         target_os = "espidf",
+         target_os = "nuttx",
+@@ -2165,6 +2176,7 @@
+             target_os = "redox",
+             target_os = "solaris",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "hurd",
+             target_os = "espidf",
+             target_os = "vita",
+@@ -2196,6 +2208,7 @@
+             target_os = "redox",
+             target_os = "solaris",
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "hurd",
+             target_os = "espidf",
+             target_os = "vita",
+@@ -2240,6 +2253,7 @@
+         not(any(
+             windows,
+             target_os = "haiku",
++            target_os = "aros",
+             target_os = "openbsd",
+             target_os = "vita"
+         ))
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix.rs b/src/sys/unix.rs
+--- a/src/sys/unix.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix.rs	2026-10-12 13:42:00.782418260 +0100
+@@ -151,6 +151,7 @@
+         target_os = "redox",
+         target_os = "solaris",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "espidf",
+         target_os = "vita",
+         target_os = "wasi",
+@@ -169,6 +170,7 @@
+     target_os = "redox",
+     target_os = "solaris",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "espidf",
+     target_os = "nuttx",
+     target_os = "vita",
+@@ -197,6 +199,7 @@
+     target_os = "redox",
+     target_os = "solaris",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "hurd",
+     target_os = "nto",
+     target_os = "espidf",
+@@ -212,6 +215,7 @@
+     target_os = "redox",
+     target_os = "solaris",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "wasi",
+ )))]
+ pub(crate) use libc::IP_TOS;
+@@ -247,6 +251,7 @@
+ #[cfg(not(any(
+     target_os = "dragonfly",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "hurd",
+     target_os = "netbsd",
+     target_os = "openbsd",
+@@ -265,6 +270,7 @@
+     target_os = "dragonfly",
+     target_os = "freebsd",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "illumos",
+     target_os = "ios",
+     target_os = "visionos",
+@@ -283,6 +289,7 @@
+     target_os = "dragonfly",
+     target_os = "freebsd",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "illumos",
+     target_os = "ios",
+     target_os = "visionos",
+@@ -336,6 +343,7 @@
+ use libc::TCP_KEEPALIVE as KEEPALIVE_TIME;
+ #[cfg(not(any(
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "ios",
+     target_os = "visionos",
+     target_os = "macos",
+@@ -420,6 +428,7 @@
+     target_os = "freebsd",
+     target_os = "fuchsia",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "hurd",
+     target_os = "illumos",
+     target_os = "ios",
+@@ -548,6 +557,7 @@
+     #[cfg(not(any(
+         target_os = "redox",
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "espidf",
+         target_os = "wasi",
+         target_os = "horizon"
+@@ -1263,7 +1273,7 @@
+ 
+ #[cfg(all(
+     feature = "all",
+-    not(any(target_os = "haiku", target_os = "openbsd", target_os = "vita"))
++    not(any(target_os = "haiku", target_os = "aros", target_os = "openbsd", target_os = "vita"))
+ ))]
+ pub(crate) fn tcp_keepalive_time(fd: RawSocket) -> io::Result<Duration> {
+     unsafe {
+@@ -1276,6 +1286,7 @@
+ pub(crate) fn set_tcp_keepalive(fd: RawSocket, keepalive: &TcpKeepalive) -> io::Result<()> {
+     #[cfg(not(any(
+         target_os = "haiku",
++        target_os = "aros",
+         target_os = "openbsd",
+         target_os = "nto",
+         target_os = "vita"
+@@ -1327,6 +1338,7 @@
+ 
+ #[cfg(not(any(
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "openbsd",
+     target_os = "nto",
+     target_os = "vita"
+@@ -1429,6 +1441,7 @@
+ #[cfg(not(any(
+     target_os = "aix",
+     target_os = "haiku",
++    target_os = "aros",
+     target_os = "illumos",
+     target_os = "netbsd",
+     target_os = "openbsd",

@@ -1,0 +1,86 @@
+#   The contrib store of crates.io crates for Rust programs, with the AROS-
+#   only crates written for them (crates/aros). The core store in
+#   tools/crosstools/rust/crates has the crates every Rust program needs; this
+#   one has the application crates that need AROS changes:
+#
+#     tokio, mio, socket2, errno  the async runtime without an I/O driver
+#                                 (posixc has no poll(), select() is a stub),
+#                                 AROS treated like Haiku where they pick
+#                                 platform code, errno from posixc;
+#     libloading 0.7 / 0.9        dlopen flag constants for AROS (dlopen
+#                                 itself fails at run time);
+#     iced, iced_tiny_skia        the iced 0.14 GUI toolkit with crates/aros/
+#                                 iced_aros as its shell (one Intuition window,
+#                                 software rendering) instead of winit/wgpu;
+#     fontique                    reads font files instead of mapping them.
+#
+#   crates/aros/rfd-aros replaces the rfd file-dialog crate with asl.library
+#   requesters. See README.md.
+#
+#   contrib-rust-crates.toml, the generated cargo config, replaces the
+#   crates.io versions with these; a program depends on
+#   contrib-rust-crates-config (which fetches all of them) and runs cargo with
+#   $(CONTRIB_RUST_CARGO) (contrib-rust.cfg).
+
+include $(SRCDIR)/config/aros-contrib.cfg
+-include $(SRCDIR)/tools/crosstools/rust.cfg
+-include $(SRCDIR)/contrib/development/rust/contrib-rust.cfg
+
+#MM contrib-rust-crates : contrib-rust-crates-tokio contrib-rust-crates-mio \
+#MM     contrib-rust-crates-socket2 contrib-rust-crates-errno \
+#MM     contrib-rust-crates-libloading07 contrib-rust-crates-libloading09 \
+#MM     contrib-rust-crates-iced contrib-rust-crates-iced-tiny-skia contrib-rust-crates-iced-aros \
+#MM     contrib-rust-crates-fontique contrib-rust-crates-config
+contrib-rust-crates :
+	$(Q)$(NOP)
+
+%rust_crate mmake=contrib-rust-crates-tokio crate=tokio version=$(CONTRIB_RUST_TOKIO_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_TOKIO)-aros.diff
+%rust_crate mmake=contrib-rust-crates-mio crate=mio version=$(CONTRIB_RUST_MIO_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_MIO)-aros.diff
+%rust_crate mmake=contrib-rust-crates-socket2 crate=socket2 version=$(CONTRIB_RUST_SOCKET2_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_SOCKET2)-aros.diff
+%rust_crate mmake=contrib-rust-crates-errno crate=errno version=$(CONTRIB_RUST_ERRNO_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_ERRNO)-aros.diff
+%rust_crate mmake=contrib-rust-crates-libloading07 crate=libloading version=$(CONTRIB_RUST_LIBLOADING07_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_LIBLOADING07)-aros.diff
+%rust_crate mmake=contrib-rust-crates-libloading09 crate=libloading version=$(CONTRIB_RUST_LIBLOADING09_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_LIBLOADING09)-aros.diff
+%rust_crate mmake=contrib-rust-crates-iced crate=iced version=$(CONTRIB_RUST_ICED_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_ICED)-aros.diff
+%rust_crate mmake=contrib-rust-crates-iced-tiny-skia crate=iced_tiny_skia version=$(CONTRIB_RUST_ICED_TINY_SKIA_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_ICED_TINY_SKIA)-aros.diff
+%rust_crate mmake=contrib-rust-crates-fontique crate=fontique version=$(CONTRIB_RUST_FONTIQUE_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_FONTIQUE)-aros.diff
+
+# The patched iced crate takes its shell from ../iced_aros: a link in the store.
+#MM
+contrib-rust-crates-iced-aros : $(RUST_CRATESDIR)/iced_aros
+
+$(RUST_CRATESDIR)/iced_aros :
+	@$(ECHO) "Linking    iced_aros into the crate store"
+	%mkdirs_q $(RUST_CRATESDIR)
+	@$(RM) $@
+	@ln -s $(CONTRIB_RUST_AROS_CRATESDIR)/iced_aros $@
+
+# Every entry must exist (cargo refuses a [patch] path that does not), so the
+# config target fetches all of them; a program that does not use one only
+# gets a warning.
+#MM contrib-rust-crates-config : contrib-rust-crates-tokio contrib-rust-crates-mio \
+#MM     contrib-rust-crates-socket2 contrib-rust-crates-errno \
+#MM     contrib-rust-crates-libloading07 contrib-rust-crates-libloading09 \
+#MM     contrib-rust-crates-iced contrib-rust-crates-iced-tiny-skia contrib-rust-crates-iced-aros \
+#MM     contrib-rust-crates-fontique
+%rust_patches_config mmake=contrib-rust-crates-config file=$(CONTRIB_RUST_CRATES_CONFIG) \
+    patches="tokio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_TOKIO) \
+        mio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_MIO) \
+        socket2=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_SOCKET2) \
+        errno=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ERRNO) \
+        libloading=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_LIBLOADING09) \
+        libloading07:libloading=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_LIBLOADING07) \
+        iced=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ICED) \
+        iced_tiny_skia=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ICED_TINY_SKIA) \
+        fontique=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_FONTIQUE) \
+        rfd=$(CONTRIB_RUST_AROS_CRATESDIR)/rfd-aros"
+
+%common

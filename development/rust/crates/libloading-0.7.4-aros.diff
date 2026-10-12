@@ -1,0 +1,35 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/os/unix/consts.rs b/src/os/unix/consts.rs
+--- a/src/os/unix/consts.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/os/unix/consts.rs	2026-10-12 13:55:11.171085473 +0100
+@@ -82,6 +82,7 @@
+ 
+             target_os = "fuchsia",
+             target_os = "redox",
++            target_os = "aros",
+         ))] {
+             pub(super) const RTLD_LAZY: c_int = 1;
+         } else {
+@@ -115,6 +116,7 @@
+ 
+             target_os = "fuchsia",
+             target_os = "redox",
++            target_os = "aros",
+         ))] {
+             pub(super) const RTLD_NOW: c_int = 2;
+         } else if #[cfg(all(target_os = "android",target_pointer_width = "32"))] {
+@@ -162,6 +164,7 @@
+ 
+             target_os = "fuchsia",
+             target_os = "redox",
++            target_os = "aros",
+         ))] {
+             pub(super) const RTLD_GLOBAL: c_int = 0x100;
+         } else {
+@@ -200,6 +203,7 @@
+ 
+             target_os = "fuchsia",
+             target_os = "redox",
++            target_os = "aros",
+         ))] {
+             pub(super) const RTLD_LOCAL: c_int = 0;
+         } else {

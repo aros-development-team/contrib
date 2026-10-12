@@ -1,0 +1,47 @@
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ b/Cargo.toml	2026-10-12 13:19:31.931158186 +0100
+@@ -166,10 +166,14 @@
+ [dependencies.iced_widget]
+ version = "0.14.0"
+ 
+-[dependencies.iced_winit]
++[target.'cfg(not(target_os = "aros"))'.dependencies.iced_winit]
+ version = "0.14.0"
+ default-features = false
+ 
++# AROS: an Intuition window and the tiny-skia renderer stand in for winit (see iced_aros).
++[target.'cfg(target_os = "aros")'.dependencies.iced_aros]
++path = "../iced_aros"
++
+ [dependencies.image]
+ version = "0.25"
+ optional = true
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/lib.rs	2026-10-12 14:32:59.781082226 +0100
+@@ -476,10 +476,13 @@
+ #![cfg_attr(docsrs, feature(doc_cfg))]
+ use iced_widget::graphics;
+ use iced_widget::renderer;
++#[cfg(not(target_os = "aros"))]
+ use iced_winit as shell;
+-use iced_winit::core;
+-use iced_winit::program;
+-use iced_winit::runtime;
++#[cfg(target_os = "aros")]
++use iced_aros as shell;
++use shell::core;
++use shell::program;
++use shell::runtime;
+ 
+ pub use iced_futures::futures;
+ pub use iced_futures::stream;
+@@ -499,6 +502,7 @@
+ #[cfg(all(
+     target_family = "unix",
+     not(target_os = "macos"),
++    not(target_os = "aros"),
+     not(feature = "wayland"),
+     not(feature = "x11"),
+ ))]

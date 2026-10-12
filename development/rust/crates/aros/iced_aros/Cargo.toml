@@ -1,0 +1,20 @@
+[package]
+name = "iced_aros"
+version = "0.14.0"
+edition = "2024"
+description = "An AROS shell for iced: an Intuition window, software rendering with tiny-skia"
+license = "MIT"
+build = "build.rs"
+
+[lib]
+name = "iced_aros"
+path = "src/lib.rs"
+
+[dependencies]
+iced_program = "0.14.0"
+iced_renderer = { version = "0.14.0", features = ["tiny-skia", "fira-sans"] }
+iced_tiny_skia = "0.14.1"
+tiny-skia = { version = "0.11", features = ["png-format"] }
+log = "0.4"
+thiserror = "2"
+rustc-hash = "2.0"
