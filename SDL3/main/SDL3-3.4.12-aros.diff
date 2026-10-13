@@ -6640,7 +6640,7 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.
 diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c
 --- SDL3-3.4.12/src/video/aros/SDL_arosopengl.c	1970-01-01 01:00:00.000000000 +0100
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c	2026-07-28 13:08:21.816580005 +0100
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,267 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -6817,6 +6817,20 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3
 +				ctxAttribs[i].ti_Tag = GLA_NoAccum;
 +				ctxAttribs[i++].ti_Data = GL_TRUE;
 +			}
++
++#ifdef GLA_ContextProfile
++			/* SDL_GL_CONTEXT_PROFILE_MASK and the requested GL version (a
++			   minimum: gl.library gives the newest it has, or fails) */
++			if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE)
++			{
++				ctxAttribs[i].ti_Tag = GLA_ContextProfile;
++				ctxAttribs[i++].ti_Data = GLA_PROFILE_CORE;
++			}
++			ctxAttribs[i].ti_Tag = GLA_ContextMajorVersion;
++			ctxAttribs[i++].ti_Data = _this->gl_config.major_version;
++			ctxAttribs[i].ti_Tag = GLA_ContextMinorVersion;
++			ctxAttribs[i++].ti_Data = _this->gl_config.minor_version;
++#endif
 +
 +			/* done */
 +			ctxAttribs[i].ti_Tag = TAG_DONE;
