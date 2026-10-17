@@ -1,0 +1,44 @@
+diff -ruN -x .cargo-ok -x .git -x target libloading-0.8.9.orig/Cargo.toml libloading-0.8.9/Cargo.toml
+--- libloading-0.8.9.orig/Cargo.toml	2026-10-04 08:51:59
++++ libloading-0.8.9/Cargo.toml	2026-10-03 11:22:47
+@@ -87,4 +87,5 @@
+ check-cfg = [
+     "cfg(libloading_docs)",
+     'cfg(target_os, values("cygwin"))',
++    'cfg(target_os, values("aros"))',
+ ]
+diff -ruN -x .cargo-ok -x .git -x target libloading-0.8.9.orig/src/os/unix/consts.rs libloading-0.8.9/src/os/unix/consts.rs
+--- libloading-0.8.9.orig/src/os/unix/consts.rs	2026-10-04 08:51:59
++++ libloading-0.8.9/src/os/unix/consts.rs	2026-10-03 10:25:36
+@@ -88,6 +88,7 @@
+             target_os = "redox",
+             target_os = "nto",
+             target_os = "hurd",
++            target_os = "aros",
+             target_os = "cygwin",
+         ))] {
+             pub(super) const RTLD_LAZY: c_int = 1;
+@@ -128,6 +129,7 @@
+             target_os = "redox",
+             target_os = "nto",
+             target_os = "hurd",
++            target_os = "aros",
+             target_os = "cygwin",
+         ))] {
+             pub(super) const RTLD_NOW: c_int = 2;
+@@ -182,6 +184,7 @@
+             target_os = "redox",
+             target_os = "nto",
+             target_os = "hurd",
++            target_os = "aros",
+         ))] {
+             pub(super) const RTLD_GLOBAL: c_int = 0x100;
+         } else {
+@@ -227,6 +230,7 @@
+             target_os = "fuchsia",
+             target_os = "redox",
+             target_os = "hurd",
++            target_os = "aros",
+             target_os = "cygwin",
+         ))] {
+             pub(super) const RTLD_LOCAL: c_int = 0;

@@ -15,8 +15,15 @@ given):
 * `contrib/development/rust/crates` (this directory): application crates -
   `tokio`/`mio`/`socket2`/`errno` (an async runtime without an I/O driver:
   posixc has no `poll()` and its `select()` is a stub), `libloading`, `iced`
-  and `iced_tiny_skia`, `fontique` - and the AROS-only crates in
-  `crates/aros`. Target `contrib-rust-crates-config` (fetches them and
+  and `iced_tiny_skia`, `fontique`; the window and graphics crates (`winit`
+  on Intuition, `raw-window-handle`, `glutin`, `wgpu`/`wgpu-core`/`wgpu-hal`
+  with a GLA backend, `naga`), `cpal` on AHI and the system crates the
+  cargo ports need (`polling`, `socket2` 0.5, `quinn-udp`, `filetime`,
+  `open`, `libsqlite3-sys`, `num_cpus`, `stacker`, `ring`, `kiddo`,
+  `copypasta`, `window_clipboard`, `atomicwrites`, `libc` 0.2.185 for
+  alacritty) - and the AROS-only crates in `crates/aros`. An edited diff
+  replaces its crate's unpacked tree on the next build
+  (`contrib-rust-crates-refresh`). Target `contrib-rust-crates-config` (fetches them and
   writes `$(CONTRIB_RUST_CRATES_CONFIG)`), cargo runs with
   `$(CONTRIB_RUST_CARGO)` (`contrib-rust.cfg`). Cargo refuses a `[patch]`
   entry whose path does not exist, so a config target fetches every crate of
@@ -55,8 +62,8 @@ stores' crate versions, since cargo only takes a `[patch]` entry whose
 version is the locked one), runs
 `cargo build --offline --release --target $(RUST_TARGET_TRIPLE)` with
 `$(CONTRIB_RUST_CARGO) --config <its config>`, and copies the result.
-`ports/graphics/photocraft` and `ports/audio/maolan` are the
-examples; what still has to live with a program are its own upstream diff and
+`ports/graphics/photocraft`, `ports/audio/maolan` and `games/RPG/veloren`
+are the examples; what still has to live with a program are its own upstream diff and
 the crates only it uses.
 
 Two things every port runs into: a process may only call `exit()` on its

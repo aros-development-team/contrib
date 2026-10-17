@@ -1,0 +1,59 @@
+diff -ruN -x .cargo-ok -x .git -x target copypasta-0.8.2.orig/Cargo.toml copypasta-0.8.2/Cargo.toml
+--- copypasta-0.8.2.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ copypasta-0.8.2/Cargo.toml	2026-10-13 13:47:35.292582998 +0100
+@@ -31,11 +31,11 @@
+ wayland = ["smithay-clipboard"]
+ x11 = ["x11-clipboard"]
+ 
+-[target."cfg(all(unix, not(any(target_os=\"macos\", target_os=\"android\", target_os=\"ios\", target_os=\"emscripten\"))))".dependencies.smithay-clipboard]
++[target."cfg(all(unix, not(any(target_os=\"macos\", target_os=\"android\", target_os=\"ios\", target_os=\"emscripten\", target_os=\"aros\"))))".dependencies.smithay-clipboard]
+ version = "0.6.0"
+ optional = true
+ 
+-[target."cfg(all(unix, not(any(target_os=\"macos\", target_os=\"android\", target_os=\"ios\", target_os=\"emscripten\"))))".dependencies.x11-clipboard]
++[target."cfg(all(unix, not(any(target_os=\"macos\", target_os=\"android\", target_os=\"ios\", target_os=\"emscripten\", target_os=\"aros\"))))".dependencies.x11-clipboard]
+ version = "0.7.0"
+ optional = true
+ 
+diff -ruN -x .cargo-ok -x .git -x target copypasta-0.8.2.orig/src/lib.rs copypasta-0.8.2/src/lib.rs
+--- copypasta-0.8.2.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ copypasta-0.8.2/src/lib.rs	2026-10-13 13:47:35.292542198 +0100
+@@ -22,7 +22,8 @@
+         target_os = "macos",
+         target_os = "android",
+         target_os = "ios",
+-        target_os = "emscripten"
++        target_os = "emscripten",
++        target_os = "aros"
+     ))
+ ))]
+ #[cfg(feature = "wayland")]
+@@ -33,7 +34,8 @@
+         target_os = "macos",
+         target_os = "android",
+         target_os = "ios",
+-        target_os = "emscripten"
++        target_os = "emscripten",
++        target_os = "aros"
+     ))
+ ))]
+ #[cfg(feature = "x11")]
+@@ -53,7 +55,8 @@
+         target_os = "macos",
+         target_os = "android",
+         target_os = "ios",
+-        target_os = "emscripten"
++        target_os = "emscripten",
++        target_os = "aros"
+     ))
+ ))]
+ #[cfg(feature = "x11")]
+@@ -66,6 +69,8 @@
+ pub type ClipboardContext = nop_clipboard::NopClipboardContext; // TODO: implement AndroidClipboardContext
+ #[cfg(target_os = "ios")]
+ pub type ClipboardContext = nop_clipboard::NopClipboardContext; // TODO: implement IOSClipboardContext
++#[cfg(target_os = "aros")]
++pub type ClipboardContext = nop_clipboard::NopClipboardContext; // the window's clipboard is used instead
+ #[cfg(not(any(
+     unix,
+     windows,

@@ -12,7 +12,17 @@
 #     iced, iced_tiny_skia        the iced 0.14 GUI toolkit with crates/aros/
 #                                 iced_aros as its shell (one Intuition window,
 #                                 software rendering) instead of winit/wgpu;
-#     fontique                    reads font files instead of mapping them.
+#     fontique                    reads font files instead of mapping them;
+#     winit, raw-window-handle,   windows on Intuition, OpenGL through mesa3dgl
+#     glutin, wgpu, wgpu-core,    (GLA), wgpu's GL backend on it, naga for
+#     wgpu-hal, naga, ...         the shaders;
+#     cpal                        audio through AHI;
+#     polling, socket2 0.5,       system crates: no epoll, posixc's sockets,
+#     quinn-udp, filetime, open,  utimes(), OpenURL, sqlite on dos.library,
+#     libsqlite3-sys, num_cpus,   sysconf() CPU count, heap stacks, the
+#     stacker, ring, ...          clipboard, files written in place, ...
+#     libc 0.2.185                for alacritty's locked graph (the core
+#                                 store's libc is 0.2.190); not in the config.
 #
 #   crates/aros/rfd-aros replaces the rfd file-dialog crate with asl.library
 #   requesters. See README.md.
@@ -30,7 +40,19 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM     contrib-rust-crates-socket2 contrib-rust-crates-errno \
 #MM     contrib-rust-crates-libloading07 contrib-rust-crates-libloading09 \
 #MM     contrib-rust-crates-iced contrib-rust-crates-iced-tiny-skia contrib-rust-crates-iced-aros \
-#MM     contrib-rust-crates-fontique contrib-rust-crates-config
+#MM     contrib-rust-crates-fontique \
+#MM     contrib-rust-crates-atomicwrites contrib-rust-crates-copypasta \
+#MM     contrib-rust-crates-cpal contrib-rust-crates-filetime \
+#MM     contrib-rust-crates-glutin contrib-rust-crates-kiddo \
+#MM     contrib-rust-crates-libc0185 contrib-rust-crates-libloading08 \
+#MM     contrib-rust-crates-libsqlite3-sys contrib-rust-crates-naga \
+#MM     contrib-rust-crates-num-cpus contrib-rust-crates-open \
+#MM     contrib-rust-crates-polling contrib-rust-crates-quinn-udp \
+#MM     contrib-rust-crates-raw-window-handle contrib-rust-crates-ring \
+#MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
+#MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
+#MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
+#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit contrib-rust-crates-config
 contrib-rust-crates :
 	$(Q)$(NOP)
 
@@ -53,6 +75,56 @@ contrib-rust-crates :
 %rust_crate mmake=contrib-rust-crates-fontique crate=fontique version=$(CONTRIB_RUST_FONTIQUE_VERSION) \
     patch=$(CONTRIB_RUST_CRATE_FONTIQUE)-aros.diff
 
+# The window, graphics, audio and system crates, from the ports' cargo builds.
+%rust_crate mmake=contrib-rust-crates-atomicwrites crate=atomicwrites version=$(CONTRIB_RUST_ATOMICWRITES_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_ATOMICWRITES)-aros.diff
+%rust_crate mmake=contrib-rust-crates-copypasta crate=copypasta version=$(CONTRIB_RUST_COPYPASTA_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_COPYPASTA)-aros.diff
+%rust_crate mmake=contrib-rust-crates-cpal crate=cpal version=$(CONTRIB_RUST_CPAL_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_CPAL)-aros.diff
+%rust_crate mmake=contrib-rust-crates-filetime crate=filetime version=$(CONTRIB_RUST_FILETIME_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_FILETIME)-aros.diff
+%rust_crate mmake=contrib-rust-crates-glutin crate=glutin version=$(CONTRIB_RUST_GLUTIN_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_GLUTIN)-aros.diff
+%rust_crate mmake=contrib-rust-crates-kiddo crate=kiddo version=$(CONTRIB_RUST_KIDDO_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_KIDDO)-aros.diff
+%rust_crate mmake=contrib-rust-crates-libc0185 crate=libc version=$(CONTRIB_RUST_LIBC0185_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_LIBC0185)-aros.diff
+%rust_crate mmake=contrib-rust-crates-libloading08 crate=libloading version=$(CONTRIB_RUST_LIBLOADING08_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_LIBLOADING08)-aros.diff
+%rust_crate mmake=contrib-rust-crates-libsqlite3-sys crate=libsqlite3-sys version=$(CONTRIB_RUST_LIBSQLITE3_SYS_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_LIBSQLITE3_SYS)-aros.diff
+%rust_crate mmake=contrib-rust-crates-naga crate=naga version=$(CONTRIB_RUST_NAGA_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_NAGA)-aros.diff
+%rust_crate mmake=contrib-rust-crates-num-cpus crate=num_cpus version=$(CONTRIB_RUST_NUM_CPUS_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_NUM_CPUS)-aros.diff
+%rust_crate mmake=contrib-rust-crates-open crate=open version=$(CONTRIB_RUST_OPEN_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_OPEN)-aros.diff
+%rust_crate mmake=contrib-rust-crates-polling crate=polling version=$(CONTRIB_RUST_POLLING_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_POLLING)-aros.diff
+%rust_crate mmake=contrib-rust-crates-quinn-udp crate=quinn-udp version=$(CONTRIB_RUST_QUINN_UDP_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_QUINN_UDP)-aros.diff
+%rust_crate mmake=contrib-rust-crates-raw-window-handle crate=raw-window-handle version=$(CONTRIB_RUST_RAW_WINDOW_HANDLE_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_RAW_WINDOW_HANDLE)-aros.diff
+%rust_crate mmake=contrib-rust-crates-ring crate=ring version=$(CONTRIB_RUST_RING_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_RING)-aros.diff
+%rust_crate mmake=contrib-rust-crates-socket205 crate=socket2 version=$(CONTRIB_RUST_SOCKET205_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_SOCKET205)-aros.diff
+%rust_crate mmake=contrib-rust-crates-stacker crate=stacker version=$(CONTRIB_RUST_STACKER_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_STACKER)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu crate=wgpu version=$(CONTRIB_RUST_WGPU_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-core crate=wgpu-core version=$(CONTRIB_RUST_WGPU_CORE_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_CORE)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-core-deps crate=wgpu-core-deps-windows-linux-android version=$(CONTRIB_RUST_WGPU_CORE_DEPS_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_CORE_DEPS)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-hal crate=wgpu-hal version=$(CONTRIB_RUST_WGPU_HAL_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_HAL)-aros.diff
+%rust_crate mmake=contrib-rust-crates-window-clipboard crate=window_clipboard version=$(CONTRIB_RUST_WINDOW_CLIPBOARD_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WINDOW_CLIPBOARD)-aros.diff
+%rust_crate mmake=contrib-rust-crates-winit crate=winit version=$(CONTRIB_RUST_WINIT_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WINIT)-aros.diff
+
 # The patched iced crate takes its shell from ../iced_aros: a link in the store.
 #MM
 contrib-rust-crates-iced-aros : $(RUST_CRATESDIR)/iced_aros
@@ -63,6 +135,49 @@ $(RUST_CRATESDIR)/iced_aros :
 	@$(RM) $@
 	@ln -s $(CONTRIB_RUST_AROS_CRATESDIR)/iced_aros $@
 
+# An edited diff replaces the crate's unpacked tree (RUST_REFRESH,
+# contrib-rust.cfg): every crate target first runs the refresh.
+#MM- contrib-rust-crates-tokio : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-mio : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-socket2 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-errno : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-libloading07 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-libloading09 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-iced : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-iced-tiny-skia : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-fontique : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-atomicwrites : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-copypasta : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-cpal : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-filetime : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-glutin : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-kiddo : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-libc0185 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-libloading08 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-libsqlite3-sys : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-naga : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-num-cpus : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-open : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-polling : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-quinn-udp : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-raw-window-handle : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-ring : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-socket205 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-stacker : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-core : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-core-deps : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-hal : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-window-clipboard : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-winit : contrib-rust-crates-refresh
+
+#MM
+contrib-rust-crates-refresh :
+	@for d in $(SRCDIR)/$(CURDIR)/*-aros.diff ; do \
+	    f=$${d##*/} ; c=$${f%-aros.diff} ; \
+	    $(call RUST_REFRESH,$(RUST_CRATESDIR),$$c.crate,$$c,$$f) ; \
+	done
+
 # Every entry must exist (cargo refuses a [patch] path that does not), so the
 # config target fetches all of them; a program that does not use one only
 # gets a warning.
@@ -70,7 +185,19 @@ $(RUST_CRATESDIR)/iced_aros :
 #MM     contrib-rust-crates-socket2 contrib-rust-crates-errno \
 #MM     contrib-rust-crates-libloading07 contrib-rust-crates-libloading09 \
 #MM     contrib-rust-crates-iced contrib-rust-crates-iced-tiny-skia contrib-rust-crates-iced-aros \
-#MM     contrib-rust-crates-fontique
+#MM     contrib-rust-crates-fontique \
+#MM     contrib-rust-crates-atomicwrites contrib-rust-crates-copypasta \
+#MM     contrib-rust-crates-cpal contrib-rust-crates-filetime \
+#MM     contrib-rust-crates-glutin contrib-rust-crates-kiddo \
+#MM     contrib-rust-crates-libc0185 contrib-rust-crates-libloading08 \
+#MM     contrib-rust-crates-libsqlite3-sys contrib-rust-crates-naga \
+#MM     contrib-rust-crates-num-cpus contrib-rust-crates-open \
+#MM     contrib-rust-crates-polling contrib-rust-crates-quinn-udp \
+#MM     contrib-rust-crates-raw-window-handle contrib-rust-crates-ring \
+#MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
+#MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
+#MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
+#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit
 %rust_patches_config mmake=contrib-rust-crates-config file=$(CONTRIB_RUST_CRATES_CONFIG) \
     patches="tokio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_TOKIO) \
         mio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_MIO) \
@@ -81,6 +208,29 @@ $(RUST_CRATESDIR)/iced_aros :
         iced=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ICED) \
         iced_tiny_skia=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ICED_TINY_SKIA) \
         fontique=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_FONTIQUE) \
+        atomicwrites=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_ATOMICWRITES) \
+        copypasta=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_COPYPASTA) \
+        cpal=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_CPAL) \
+        filetime=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_FILETIME) \
+        glutin=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_GLUTIN) \
+        kiddo=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_KIDDO) \
+        libloading08:libloading=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_LIBLOADING08) \
+        libsqlite3-sys=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_LIBSQLITE3_SYS) \
+        naga=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_NAGA) \
+        num_cpus=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_NUM_CPUS) \
+        open=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_OPEN) \
+        polling=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_POLLING) \
+        quinn-udp=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_QUINN_UDP) \
+        raw-window-handle=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_RAW_WINDOW_HANDLE) \
+        ring=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_RING) \
+        socket205:socket2=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_SOCKET205) \
+        stacker=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_STACKER) \
+        wgpu=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU) \
+        wgpu-core=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_CORE) \
+        wgpu-core-deps-windows-linux-android=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_CORE_DEPS) \
+        wgpu-hal=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_HAL) \
+        window_clipboard=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WINDOW_CLIPBOARD) \
+        winit=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WINIT) \
         rfd=$(CONTRIB_RUST_AROS_CRATESDIR)/rfd-aros"
 
 %common

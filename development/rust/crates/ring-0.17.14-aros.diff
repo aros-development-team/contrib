@@ -1,0 +1,22 @@
+diff -ruN -x .cargo-ok -x .git -x target ring-0.17.14.orig/build.rs ring-0.17.14/build.rs
+--- ring-0.17.14.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ ring-0.17.14/build.rs	2026-10-13 14:38:06.542416921 +0100
+@@ -243,6 +243,7 @@
+ /// mentioned in `ASM_TARGETS`.
+ const LINUX_ABI: &[&str] = &[
+     "android",
++    "aros",
+     "dragonfly",
+     "freebsd",
+     "fuchsia",
+diff -ruN -x .cargo-ok -x .git -x target ring-0.17.14.orig/src/rand.rs ring-0.17.14/src/rand.rs
+--- ring-0.17.14.orig/src/rand.rs	2006-07-24 02:21:28.000000000 +0100
++++ ring-0.17.14/src/rand.rs	2026-10-13 13:47:35.302487798 +0100
+@@ -126,6 +126,7 @@
+     all(feature = "less-safe-getrandom-espidf", target_os = "espidf"),
+     target_os = "aix",
+     target_os = "android",
++    target_os = "aros",
+     target_os = "dragonfly",
+     target_os = "freebsd",
+     target_os = "fuchsia",

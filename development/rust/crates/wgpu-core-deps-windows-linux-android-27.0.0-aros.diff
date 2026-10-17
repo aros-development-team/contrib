@@ -1,0 +1,10 @@
+diff -ruN -x .cargo-ok -x .git -x target wgpu-core-deps-windows-linux-android-27.0.0.orig/Cargo.toml wgpu-core-deps-windows-linux-android-27.0.0/Cargo.toml
+--- wgpu-core-deps-windows-linux-android-27.0.0.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-core-deps-windows-linux-android-27.0.0/Cargo.toml	2026-10-13 16:46:54.901785713 +0100
+@@ -38,5 +38,5 @@
+ name = "wgpu_core_deps_windows_linux_android"
+ path = "src/lib.rs"
+ 
+-[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd"))'.dependencies.wgpu-hal]
++[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "aros"))'.dependencies.wgpu-hal]
+ version = "27.0.0"

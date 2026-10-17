@@ -1,0 +1,12 @@
+diff -ruN -x .cargo-ok -x .git -x target wgpu-27.0.1.orig/build.rs wgpu-27.0.1/build.rs
+--- wgpu-27.0.1.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-27.0.1/build.rs	2026-10-13 16:46:54.896179813 +0100
+@@ -24,7 +24,7 @@
+         gles: { any(
+             // The `gles` feature enables the OpenGL/GLES backend only on "native OpenGL" platforms, i.e. Windows, Linux, Android, and Emscripten.
+             // (Note that WebGL is also not included here!)
+-            all(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", Emscripten), feature = "gles"),
++            all(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "aros", Emscripten), feature = "gles"),
+             // On Apple platforms, however, we require the `angle` feature to explicitly opt-in to OpenGL
+             // since its meant to be used with ANGLE.
+             all(target_vendor = "apple", feature = "angle")

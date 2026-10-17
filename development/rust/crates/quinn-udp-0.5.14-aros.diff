@@ -1,0 +1,48 @@
+diff -ruN -x .cargo-ok -x .git -x target quinn-udp-0.5.14.orig/src/fallback.rs quinn-udp-0.5.14/src/fallback.rs
+--- quinn-udp-0.5.14.orig/src/fallback.rs	2006-07-24 02:21:28.000000000 +0100
++++ quinn-udp-0.5.14/src/fallback.rs	2026-10-13 14:08:35.619275926 +0100
+@@ -117,10 +117,13 @@
+ }
+ 
+ fn send(socket: UdpSockRef<'_>, transmit: &Transmit<'_>) -> io::Result<()> {
+-    socket.0.send_to(
+-        transmit.contents,
+-        &socket2::SockAddr::from(transmit.destination),
+-    )
++    socket
++        .0
++        .send_to(
++            transmit.contents,
++            &socket2::SockAddr::from(transmit.destination),
++        )
++        .map(|_| ())
+ }
+ 
+ pub(crate) const BATCH_SIZE: usize = 1;
+diff -ruN -x .cargo-ok -x .git -x target quinn-udp-0.5.14.orig/src/lib.rs quinn-udp-0.5.14/src/lib.rs
+--- quinn-udp-0.5.14.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ quinn-udp-0.5.14/src/lib.rs	2026-10-13 14:05:40.077197284 +0100
+@@ -38,10 +38,12 @@
+     time::{Duration, Instant},
+ };
+ 
+-#[cfg(any(unix, windows))]
++// AROS: posixc has no sendmsg/recvmsg control messages, so the plain
++// sockets of the fallback are used.
++#[cfg(any(all(unix, not(target_os = "aros")), windows))]
+ mod cmsg;
+ 
+-#[cfg(unix)]
++#[cfg(all(unix, not(target_os = "aros")))]
+ #[path = "unix.rs"]
+ mod imp;
+ 
+@@ -50,7 +52,7 @@
+ mod imp;
+ 
+ // No ECN support
+-#[cfg(not(any(wasm_browser, unix, windows)))]
++#[cfg(not(any(wasm_browser, all(unix, not(target_os = "aros")), windows)))]
+ #[path = "fallback.rs"]
+ mod imp;
+ 

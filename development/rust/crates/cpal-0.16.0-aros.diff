@@ -1,0 +1,447 @@
+diff -ruN -x .cargo-ok -x .git -x target cpal-0.16.0.orig/Cargo.toml cpal-0.16.0/Cargo.toml
+--- cpal-0.16.0.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ cpal-0.16.0/Cargo.toml	2026-10-13 13:16:50.011967469 +0100
+@@ -114,6 +114,9 @@
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.mach2]
+ version = "0.4"
+ 
++[target.'cfg(target_os = "aros")'.dependencies.aros-ahi-sys]
++version = "0.1"
++
+ [target.'cfg(target_os = "android")'.dependencies.jni]
+ version = "0.21"
+ 
+diff -ruN -x .cargo-ok -x .git -x target cpal-0.16.0.orig/src/host/aros/mod.rs cpal-0.16.0/src/host/aros/mod.rs
+--- cpal-0.16.0.orig/src/host/aros/mod.rs	1970-01-01 01:00:00.000000000 +0100
++++ cpal-0.16.0/src/host/aros/mod.rs	2026-10-13 13:16:50.000421169 +0100
+@@ -0,0 +1,382 @@
++//! Playback through ahi.device on AROS, by way of the C glue in `aros-ahi-sys`.
++//!
++//! One output device, the default AHI unit; there is no input. A stream runs
++//! on a thread of its own, which opens the device (the reply port belongs to
++//! the task that creates it), asks the data callback for one buffer at a time
++//! and queues it double-buffered, so the callback runs while the previous
++//! buffer plays. The device takes signed 16-bit stereo in the machine's byte
++//! order; other formats and channel counts are converted here.
++
++use std::sync::atomic::{AtomicBool, Ordering};
++use std::sync::{mpsc, Arc};
++use std::thread;
++use std::time::{Duration, Instant};
++
++use aros_ahi_sys as sys;
++
++use crate::traits::{DeviceTrait, HostTrait, StreamTrait};
++use crate::{
++    BufferSize, BuildStreamError, Data, DefaultStreamConfigError, DeviceNameError, DevicesError,
++    FrameCount, InputCallbackInfo, OutputCallbackInfo, OutputStreamTimestamp, PauseStreamError,
++    PlayStreamError, SampleFormat, SampleRate, StreamConfig, StreamError, StreamInstant,
++    SupportedBufferSize, SupportedStreamConfig, SupportedStreamConfigRange,
++    SupportedStreamConfigsError,
++};
++
++const DEFAULT_RATE: u32 = 44100;
++const MIN_RATE: u32 = 8000;
++const MAX_RATE: u32 = 96000;
++/// Frames per buffer: about 23 ms at 44.1 kHz, two of them in flight.
++const DEFAULT_FRAMES: FrameCount = 1024;
++const MIN_FRAMES: FrameCount = 64;
++const MAX_FRAMES: FrameCount = 16384;
++
++pub struct Host;
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct Device;
++
++/// Yields the one device.
++pub struct Devices(bool);
++
++pub struct SupportedInputConfigs;
++
++pub struct SupportedOutputConfigs(std::vec::IntoIter<SupportedStreamConfigRange>);
++
++impl Host {
++    pub fn new() -> Result<Self, crate::HostUnavailable> {
++        Ok(Host)
++    }
++}
++
++impl HostTrait for Host {
++    type Devices = Devices;
++    type Device = Device;
++
++    fn is_available() -> bool {
++        true
++    }
++
++    fn devices(&self) -> Result<Self::Devices, DevicesError> {
++        Ok(Devices(false))
++    }
++
++    fn default_input_device(&self) -> Option<Device> {
++        None
++    }
++
++    fn default_output_device(&self) -> Option<Device> {
++        Some(Device)
++    }
++}
++
++impl Iterator for Devices {
++    type Item = Device;
++
++    fn next(&mut self) -> Option<Device> {
++        if self.0 {
++            None
++        } else {
++            self.0 = true;
++            Some(Device)
++        }
++    }
++}
++
++impl Iterator for SupportedInputConfigs {
++    type Item = SupportedStreamConfigRange;
++
++    fn next(&mut self) -> Option<SupportedStreamConfigRange> {
++        None
++    }
++}
++
++impl Iterator for SupportedOutputConfigs {
++    type Item = SupportedStreamConfigRange;
++
++    fn next(&mut self) -> Option<SupportedStreamConfigRange> {
++        self.0.next()
++    }
++}
++
++fn buffer_sizes() -> SupportedBufferSize {
++    SupportedBufferSize::Range {
++        min: MIN_FRAMES,
++        max: MAX_FRAMES,
++    }
++}
++
++fn output_ranges() -> Vec<SupportedStreamConfigRange> {
++    let mut ranges = Vec::new();
++    for format in [SampleFormat::F32, SampleFormat::I16] {
++        for channels in [2u16, 1] {
++            ranges.push(SupportedStreamConfigRange::new(
++                channels,
++                SampleRate(MIN_RATE),
++                SampleRate(MAX_RATE),
++                buffer_sizes(),
++                format,
++            ));
++        }
++    }
++    ranges
++}
++
++impl DeviceTrait for Device {
++    type SupportedInputConfigs = SupportedInputConfigs;
++    type SupportedOutputConfigs = SupportedOutputConfigs;
++    type Stream = Stream;
++
++    #[inline]
++    fn name(&self) -> Result<String, DeviceNameError> {
++        Ok("AHI".to_owned())
++    }
++
++    #[inline]
++    fn supported_input_configs(
++        &self,
++    ) -> Result<SupportedInputConfigs, SupportedStreamConfigsError> {
++        Ok(SupportedInputConfigs)
++    }
++
++    #[inline]
++    fn supported_output_configs(
++        &self,
++    ) -> Result<SupportedOutputConfigs, SupportedStreamConfigsError> {
++        Ok(SupportedOutputConfigs(output_ranges().into_iter()))
++    }
++
++    #[inline]
++    fn default_input_config(&self) -> Result<SupportedStreamConfig, DefaultStreamConfigError> {
++        Err(DefaultStreamConfigError::StreamTypeNotSupported)
++    }
++
++    #[inline]
++    fn default_output_config(&self) -> Result<SupportedStreamConfig, DefaultStreamConfigError> {
++        Ok(SupportedStreamConfig::new(
++            2,
++            SampleRate(DEFAULT_RATE),
++            buffer_sizes(),
++            SampleFormat::F32,
++        ))
++    }
++
++    fn build_input_stream_raw<D, E>(
++        &self,
++        _config: &StreamConfig,
++        _sample_format: SampleFormat,
++        _data_callback: D,
++        _error_callback: E,
++        _timeout: Option<Duration>,
++    ) -> Result<Self::Stream, BuildStreamError>
++    where
++        D: FnMut(&Data, &InputCallbackInfo) + Send + 'static,
++        E: FnMut(StreamError) + Send + 'static,
++    {
++        Err(BuildStreamError::StreamConfigNotSupported)
++    }
++
++    fn build_output_stream_raw<D, E>(
++        &self,
++        config: &StreamConfig,
++        sample_format: SampleFormat,
++        data_callback: D,
++        error_callback: E,
++        _timeout: Option<Duration>,
++    ) -> Result<Self::Stream, BuildStreamError>
++    where
++        D: FnMut(&mut Data, &OutputCallbackInfo) + Send + 'static,
++        E: FnMut(StreamError) + Send + 'static,
++    {
++        Stream::open(
++            config,
++            sample_format,
++            Box::new(data_callback),
++            Box::new(error_callback),
++        )
++    }
++}
++
++type DataCallback = Box<dyn FnMut(&mut Data, &OutputCallbackInfo) + Send + 'static>;
++type ErrorCallback = Box<dyn FnMut(StreamError) + Send + 'static>;
++
++pub struct Stream {
++    playing: Arc<AtomicBool>,
++    stop: Arc<AtomicBool>,
++    thread: Option<thread::JoinHandle<()>>,
++}
++
++impl Stream {
++    fn open(
++        config: &StreamConfig,
++        sample_format: SampleFormat,
++        data_callback: DataCallback,
++        error_callback: ErrorCallback,
++    ) -> Result<Self, BuildStreamError> {
++        match sample_format {
++            SampleFormat::F32 | SampleFormat::I16 => {}
++            _ => return Err(BuildStreamError::StreamConfigNotSupported),
++        }
++        let channels = config.channels as usize;
++        if channels == 0 || channels > 2 {
++            return Err(BuildStreamError::StreamConfigNotSupported);
++        }
++        let rate = config.sample_rate.0;
++        if !(MIN_RATE..=MAX_RATE).contains(&rate) {
++            return Err(BuildStreamError::StreamConfigNotSupported);
++        }
++        let frames = match config.buffer_size {
++            BufferSize::Default => DEFAULT_FRAMES,
++            BufferSize::Fixed(frames) => frames.clamp(MIN_FRAMES, MAX_FRAMES),
++        } as usize;
++
++        let playing = Arc::new(AtomicBool::new(false));
++        let stop = Arc::new(AtomicBool::new(false));
++        let (ready_tx, ready_rx) = mpsc::channel::<Result<(), BuildStreamError>>();
++
++        let worker = Worker {
++            playing: playing.clone(),
++            stop: stop.clone(),
++            channels,
++            rate,
++            frames,
++            sample_format,
++            data_callback,
++            error_callback,
++        };
++        let thread = thread::Builder::new()
++            .name("cpal-ahi".to_owned())
++            .stack_size(256 * 1024)
++            .spawn(move || worker.run(ready_tx))
++            .map_err(|_| BuildStreamError::DeviceNotAvailable)?;
++
++        match ready_rx.recv() {
++            Ok(Ok(())) => Ok(Stream {
++                playing,
++                stop,
++                thread: Some(thread),
++            }),
++            Ok(Err(error)) => {
++                let _ = thread.join();
++                Err(error)
++            }
++            Err(_) => {
++                let _ = thread.join();
++                Err(BuildStreamError::DeviceNotAvailable)
++            }
++        }
++    }
++}
++
++impl StreamTrait for Stream {
++    fn play(&self) -> Result<(), PlayStreamError> {
++        self.playing.store(true, Ordering::SeqCst);
++        Ok(())
++    }
++
++    fn pause(&self) -> Result<(), PauseStreamError> {
++        self.playing.store(false, Ordering::SeqCst);
++        Ok(())
++    }
++}
++
++impl Drop for Stream {
++    fn drop(&mut self) {
++        self.stop.store(true, Ordering::SeqCst);
++        if let Some(thread) = self.thread.take() {
++            let _ = thread.join();
++        }
++    }
++}
++
++/// The playback thread's side of a stream.
++struct Worker {
++    playing: Arc<AtomicBool>,
++    stop: Arc<AtomicBool>,
++    channels: usize,
++    rate: u32,
++    frames: usize,
++    sample_format: SampleFormat,
++    data_callback: DataCallback,
++    error_callback: ErrorCallback,
++}
++
++impl Worker {
++    fn run(mut self, ready: mpsc::Sender<Result<(), BuildStreamError>>) {
++        let ahi = unsafe { sys::aros_ahi_open() };
++        if ahi.is_null() {
++            let _ = ready.send(Err(BuildStreamError::DeviceNotAvailable));
++            return;
++        }
++        let _ = ready.send(Ok(()));
++
++        let start = Instant::now();
++        let samples = self.frames * self.channels;
++        let buffer_duration = Duration::from_secs_f64(self.frames as f64 / self.rate as f64);
++        let mut f32_buffer = vec![0f32; samples];
++        let mut i16_buffer = vec![0i16; samples];
++        let mut out = vec![0i16; self.frames * 2];
++
++        while !self.stop.load(Ordering::SeqCst) {
++            if !self.playing.load(Ordering::SeqCst) {
++                thread::sleep(Duration::from_millis(5));
++                continue;
++            }
++
++            let callback = StreamInstant::from_nanos(start.elapsed().as_nanos() as i64);
++            // Two buffers are queued ahead of this one at most.
++            let playback = callback.add(buffer_duration * 2).unwrap_or(callback);
++            let info = OutputCallbackInfo {
++                timestamp: OutputStreamTimestamp { callback, playback },
++            };
++
++            match self.sample_format {
++                SampleFormat::F32 => {
++                    f32_buffer.iter_mut().for_each(|s| *s = 0.0);
++                    let mut data = unsafe {
++                        Data::from_parts(f32_buffer.as_mut_ptr() as *mut (), samples, SampleFormat::F32)
++                    };
++                    (self.data_callback)(&mut data, &info);
++                    for (frame, out) in out.chunks_exact_mut(2).enumerate() {
++                        let left = f32_buffer[frame * self.channels];
++                        let right = f32_buffer[frame * self.channels + self.channels - 1];
++                        out[0] = (left.clamp(-1.0, 1.0) * 32767.0) as i16;
++                        out[1] = (right.clamp(-1.0, 1.0) * 32767.0) as i16;
++                    }
++                }
++                SampleFormat::I16 => {
++                    i16_buffer.iter_mut().for_each(|s| *s = 0);
++                    let mut data = unsafe {
++                        Data::from_parts(i16_buffer.as_mut_ptr() as *mut (), samples, SampleFormat::I16)
++                    };
++                    (self.data_callback)(&mut data, &info);
++                    for (frame, out) in out.chunks_exact_mut(2).enumerate() {
++                        out[0] = i16_buffer[frame * self.channels];
++                        out[1] = i16_buffer[frame * self.channels + self.channels - 1];
++                    }
++                }
++                _ => unreachable!("checked when the stream was built"),
++            }
++
++            // Queues this buffer and waits for the previous one to finish.
++            let error = unsafe {
++                sys::aros_ahi_write(
++                    ahi,
++                    out.as_ptr() as *const _,
++                    (out.len() * 2) as _,
++                    sys::AHIST_S16S,
++                    self.rate,
++                )
++            };
++            if error != 0 {
++                (self.error_callback)(StreamError::DeviceNotAvailable);
++                break;
++            }
++        }
++
++        unsafe {
++            sys::aros_ahi_drain(ahi);
++            sys::aros_ahi_close(ahi);
++        }
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target cpal-0.16.0.orig/src/host/mod.rs cpal-0.16.0/src/host/mod.rs
+--- cpal-0.16.0.orig/src/host/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ cpal-0.16.0/src/host/mod.rs	2026-10-13 13:16:50.011832769 +0100
+@@ -24,6 +24,8 @@
+ ))]
+ pub(crate) mod jack;
+ pub(crate) mod null;
++#[cfg(target_os = "aros")]
++pub(crate) mod aros;
+ #[cfg(windows)]
+ pub(crate) mod wasapi;
+ #[cfg(all(target_arch = "wasm32", feature = "wasm-bindgen"))]
+diff -ruN -x .cargo-ok -x .git -x target cpal-0.16.0.orig/src/platform/mod.rs cpal-0.16.0/src/platform/mod.rs
+--- cpal-0.16.0.orig/src/platform/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ cpal-0.16.0/src/platform/mod.rs	2026-10-13 13:16:50.011919469 +0100
+@@ -715,6 +715,24 @@
+     }
+ }
+ 
++#[cfg(target_os = "aros")]
++mod platform_impl {
++    pub use crate::host::aros::{
++        Device as ArosDevice, Devices as ArosDevices, Host as ArosHost, Stream as ArosStream,
++        SupportedInputConfigs as ArosSupportedInputConfigs,
++        SupportedOutputConfigs as ArosSupportedOutputConfigs,
++    };
++
++    impl_platform_host!(Aros aros "AHI");
++
++    /// The default host for the current compilation target platform.
++    pub fn default_host() -> Host {
++        ArosHost::new()
++            .expect("the default host should always be available")
++            .into()
++    }
++}
++
+ #[cfg(not(any(
+     windows,
+     target_os = "linux",
+@@ -725,6 +743,7 @@
+     target_os = "ios",
+     target_os = "emscripten",
+     target_os = "android",
++    target_os = "aros",
+     all(target_arch = "wasm32", feature = "wasm-bindgen"),
+ )))]
+ mod platform_impl {

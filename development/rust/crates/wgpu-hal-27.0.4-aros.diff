@@ -1,0 +1,802 @@
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/build.rs wgpu-hal-27.0.4/build.rs
+--- wgpu-hal-27.0.4.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-hal-27.0.4/build.rs	2026-10-13 16:57:29.824868780 +0100
+@@ -22,7 +22,8 @@
+             )
+         ) },
+         metal: { all(target_vendor = "apple", feature = "metal") },
+-        vulkan: { all(not(target_arch = "wasm32"), feature = "vulkan") },
++        // No Vulkan on AROS (wgpu's default features ask for it).
++        vulkan: { all(not(target_arch = "wasm32"), not(target_os = "aros"), feature = "vulkan") },
+         // ⚠️ Keep in sync with target.cfg() definition in Cargo.toml and cfg_alias in `wgpu` crate ⚠️
+         static_dxc: { all(target_os = "windows", feature = "static-dxc", not(target_arch = "aarch64")) },
+         supports_64bit_atomics: { target_has_atomic = "64" },
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/Cargo.toml wgpu-hal-27.0.4/Cargo.toml
+--- wgpu-hal-27.0.4.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-hal-27.0.4/Cargo.toml	2026-10-13 22:54:27.133272360 +0100
+@@ -330,7 +330,7 @@
+ version = "0.3.2"
+ optional = true
+ 
+-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.khronos-egl]
++[target.'cfg(not(any(target_arch = "wasm32", target_os = "aros")))'.dependencies.khronos-egl]
+ version = "6"
+ features = ["dynamic"]
+ optional = true
+@@ -353,6 +353,9 @@
+ features = ["alloc"]
+ optional = true
+ 
++[target.'cfg(target_os = "aros")'.dependencies.aros-gui-sys]
++version = "0.1"
++
+ [target.'cfg(target_os = "android")'.dependencies.android_system_properties]
+ version = "0.1.1"
+ optional = true
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/src/gles/adapter.rs wgpu-hal-27.0.4/src/gles/adapter.rs
+--- wgpu-hal-27.0.4.orig/src/gles/adapter.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-hal-27.0.4/src/gles/adapter.rs	2026-10-13 22:54:07.564217871 +0100
+@@ -395,7 +395,11 @@
+         downlevel_flags.set(wgt::DownlevelFlags::BASE_VERTEX, supported((3, 2), (3, 2)));
+         downlevel_flags.set(
+             wgt::DownlevelFlags::INDEPENDENT_BLEND,
+-            supported((3, 2), (4, 0)) || extensions.contains("GL_EXT_draw_buffers_indexed"),
++            supported((3, 2), (4, 0))
++                || extensions.contains("GL_EXT_draw_buffers_indexed")
++                // The desktop GL 3.x extension for the same calls (AROS: Mesa's
++                // softpipe stops at GL 3.3 but has it).
++                || (cfg!(target_os = "aros") && extensions.contains("GL_ARB_draw_buffers_blend")),
+         );
+         downlevel_flags.set(
+             wgt::DownlevelFlags::VERTEX_STORAGE,
+@@ -580,14 +584,21 @@
+         // We *might* be able to emulate bgra8unorm-storage but currently don't attempt to.
+ 
+         let mut private_caps = super::PrivateCapabilities::empty();
++        // AROS bring-up: WGPU_GLA_BUFFER_STORAGE=0 turns persistent mapping off.
++        let buffer_storage_allowed = !(cfg!(target_os = "aros")
++            && std::env::var("WGPU_GLA_BUFFER_STORAGE").as_deref() == Ok("0"));
+         private_caps.set(
+             super::PrivateCapabilities::BUFFER_ALLOCATION,
+-            extensions.contains("GL_EXT_buffer_storage")
+-                || extensions.contains("GL_ARB_buffer_storage"),
+-        );
++            buffer_storage_allowed
++                && (extensions.contains("GL_EXT_buffer_storage")
++                    || extensions.contains("GL_ARB_buffer_storage")),
++        );
++        // naga writes layout(binding = N) from GLSL 4.20 / ES 3.10 on; a GL 3.x
++        // driver with GL_ARB_compute_shader (Mesa's softpipe) still needs the
++        // bindings set after linking, or every texture samples unit 0.
+         private_caps.set(
+             super::PrivateCapabilities::SHADER_BINDING_LAYOUT,
+-            supports_compute,
++            supports_compute && supported((3, 1), (4, 2)),
+         );
+         private_caps.set(
+             super::PrivateCapabilities::SHADER_TEXTURE_SHADOW_LOD,
+@@ -626,7 +637,7 @@
+         private_caps.set(super::PrivateCapabilities::QUERY_64BIT, full_ver.is_some());
+         private_caps.set(
+             super::PrivateCapabilities::TEXTURE_STORAGE,
+-            supported((3, 0), (4, 2)),
++            supported((3, 0), (4, 2)) || extensions.contains("GL_ARB_texture_storage"),
+         );
+         private_caps.set(super::PrivateCapabilities::DEBUG_FNS, gl.supports_debug());
+         private_caps.set(
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/src/gles/aros.rs wgpu-hal-27.0.4/src/gles/aros.rs
+--- wgpu-hal-27.0.4.orig/src/gles/aros.rs	1970-01-01 01:00:00.000000000 +0100
++++ wgpu-hal-27.0.4/src/gles/aros.rs	2026-10-14 12:55:05.072720165 +0100
+@@ -0,0 +1,633 @@
++//! OpenGL on AROS through gl.library's GLA contexts, by way of the C glue in
++//! `aros-gui-sys`.
++//!
++//! A GLA context renders into an Intuition window, so the instance has no
++//! context until a window is known: it is created on the window of the
++//! surface that adapters are enumerated for (or, failing that, on a small
++//! helper window), and pointed at a surface's window interior whenever the
++//! surface is configured. Presentation blits wgpu's framebuffer into the
++//! window's back buffer and swaps.
++
++use alloc::{ffi::CString, string::String, sync::Arc, vec::Vec};
++use core::{
++    ffi::c_void,
++    mem::ManuallyDrop,
++    ptr,
++    sync::atomic::{AtomicBool, Ordering},
++    time::Duration,
++};
++
++use aros_gui_sys as sys;
++use glow::HasContext;
++use parking_lot::{Mutex, MutexGuard, RwLock};
++use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
++use wgt::InstanceFlags;
++
++/// The amount of time to wait while trying to obtain a lock to the adapter context.
++/// Longer than the other backends' second: with software rendering a pipeline
++/// thread can hold the context that long compiling one program.
++const CONTEXT_LOCK_TIMEOUT_SECS: u64 = 120;
++
++/// With WGPU_GLA_TRACE set, the backend's steps are logged at once: to stderr
++/// with WGPU_GLA_TRACE=stderr (Veloren sends that to the serial port), else to
++/// T:wgpu-gla.log. A crash in gl.library leaves nothing else behind.
++pub(super) fn trace(step: core::fmt::Arguments<'_>) {
++    use std::io::Write;
++    static MODE: std::sync::OnceLock<u8> = std::sync::OnceLock::new();
++    let mode = *MODE.get_or_init(|| match std::env::var("WGPU_GLA_TRACE") {
++        Ok(v) if v == "stderr" => 2,
++        Ok(_) => 1,
++        Err(_) => 0,
++    });
++    match mode {
++        2 => eprintln!("[wgpu-gla] {step}"),
++        1 => {
++            if let Ok(mut file) = std::fs::OpenOptions::new()
++                .create(true)
++                .append(true)
++                .open("T:wgpu-gla.log")
++            {
++                let _ = writeln!(file, "{step}");
++            }
++        }
++        _ => {}
++    }
++}
++
++/// A GLA context and the window it renders into.
++struct GlaContext {
++    raw: usize,
++    window: usize,
++}
++
++impl GlaContext {
++    fn create(window: usize) -> Result<Self, crate::InstanceError> {
++        trace(format_args!("gl_create on window {window:#x}"));
++        // wgpu renders into its own framebuffers; the window buffer only has
++        // to take the final blit, with alpha for the formats that carry it.
++        // A core profile context gets the newest GL the driver has (Mesa
++        // keeps compatibility contexts lower); an older gl.library ignores
++        // the request, and a failure falls back to compatibility.
++        // WGPU_GLA_PROFILE=compat skips the core profile (for drivers that
++        // misbehave with it).
++        let compat_only = std::env::var("WGPU_GLA_PROFILE").as_deref() == Ok("compat");
++        let mut raw = if compat_only {
++            0
++        } else {
++            unsafe { sys::aros_gui_gl_create_profile(window, 1, 0, 0, 1, 3, 3) }
++        };
++        if raw == 0 {
++            trace(format_args!("no core profile context; trying compatibility"));
++            raw = unsafe { sys::aros_gui_gl_create(window, 1, 0, 0) };
++        }
++        if raw == 0 {
++            return Err(crate::InstanceError::new(String::from(
++                "unable to create a GLA context on the window",
++            )));
++        }
++        trace(format_args!("gl_create = {raw:#x}"));
++        Ok(Self { raw, window })
++    }
++
++    fn make_current(&self) {
++        unsafe { sys::aros_gui_gl_make_current(self.raw) };
++    }
++
++    fn unmake_current(&self) {
++        if unsafe { sys::aros_gui_gl_current() } == self.raw {
++            unsafe { sys::aros_gui_gl_make_current(0) };
++        }
++    }
++
++    /// Points the context at the current interior of `window`.
++    fn bind(&mut self, window: usize) {
++        trace(format_args!("set_window {window:#x}"));
++        unsafe { sys::aros_gui_gl_set_window(self.raw, window) };
++        self.window = window;
++    }
++}
++
++impl Drop for GlaContext {
++    fn drop(&mut self) {
++        self.unmake_current();
++        unsafe { sys::aros_gui_gl_destroy(self.raw) };
++    }
++}
++
++/// The window the context is created on when adapters are enumerated before
++/// any surface exists.
++struct HelperWindow(usize);
++
++impl HelperWindow {
++    fn open() -> Result<Self, crate::InstanceError> {
++        let attrs = sys::aros_gui_window_attrs {
++            left: 0,
++            top: 0,
++            inner_width: 1,
++            inner_height: 1,
++            min_width: 0,
++            min_height: 0,
++            flags: sys::AROS_GUI_WINDOW_BORDERLESS,
++            title: c"wgpu".as_ptr(),
++        };
++        let mut info = sys::aros_gui_window_info::default();
++        if unsafe { sys::aros_gui_window_open(&attrs, &mut info) } != 0 {
++            return Err(crate::InstanceError::new(String::from(
++                "unable to open the helper window for the GL context",
++            )));
++        }
++        Ok(Self(info.handle))
++    }
++}
++
++impl Drop for HelperWindow {
++    fn drop(&mut self) {
++        unsafe { sys::aros_gui_window_close(self.0) };
++    }
++}
++
++struct Inner {
++    /// `None` until the first window is known.
++    gl: Option<ManuallyDrop<glow::Context>>,
++    context: Option<GlaContext>,
++    helper: Option<HelperWindow>,
++    flags: InstanceFlags,
++}
++
++impl Drop for Inner {
++    fn drop(&mut self) {
++        // Context must be current when dropped. See safety docs on
++        // `glow::HasContext`.
++        if let Some(context) = &self.context {
++            context.make_current();
++        }
++        if let Some(gl) = &mut self.gl {
++            // SAFETY: Field not used after this.
++            unsafe { ManuallyDrop::drop(gl) };
++        }
++        if let Some(context) = &self.context {
++            context.unmake_current();
++        }
++        // The context (a field above) goes before the helper window.
++    }
++}
++
++unsafe impl Send for Inner {}
++unsafe impl Sync for Inner {}
++
++struct Shared {
++    inner: Mutex<Inner>,
++    /// Known once the context exists.
++    srgb_capable: AtomicBool,
++}
++
++fn load_gl_func(name: &str) -> *const c_void {
++    let Ok(name) = CString::new(name) else {
++        return ptr::null();
++    };
++    unsafe { sys::aros_gui_gl_proc(name.as_ptr()) }
++}
++
++/// Creates the context on `window` (0: on a helper window) unless it exists.
++fn ensure_context(shared: &Shared, window: usize) -> Result<(), crate::InstanceError> {
++    let mut inner = shared.inner.lock();
++    if inner.context.is_some() {
++        return Ok(());
++    }
++
++    let window = if window != 0 {
++        window
++    } else {
++        log::warn!("No surface to create the GL context on; opening a helper window");
++        trace(format_args!("opening the helper window"));
++        let helper = HelperWindow::open()?;
++        let window = helper.0;
++        inner.helper = Some(helper);
++        window
++    };
++
++    let context = GlaContext::create(window)?;
++    context.make_current();
++    trace(format_args!("current; loading GL functions"));
++
++    let mut gl = unsafe { glow::Context::from_loader_function(load_gl_func) };
++    trace(format_args!("GL {:?}", gl.version()));
++
++    let srgb_capable = gl
++        .supported_extensions()
++        .contains("GL_ARB_framebuffer_sRGB")
++        || gl
++            .supported_extensions()
++            .contains("GL_EXT_framebuffer_sRGB");
++
++    // In contrast to OpenGL ES, OpenGL requires explicitly enabling sRGB conversions,
++    // as otherwise the user has to do the sRGB conversion.
++    if srgb_capable {
++        unsafe { gl.enable(glow::FRAMEBUFFER_SRGB) };
++    }
++
++    if inner.flags.contains(InstanceFlags::VALIDATION) && gl.supports_debug() {
++        log::debug!("Enabling GL debug output");
++        unsafe { gl.enable(glow::DEBUG_OUTPUT) };
++        unsafe { gl.debug_message_callback(super::gl_debug_message_callback) };
++    }
++
++    context.unmake_current();
++
++    shared.srgb_capable.store(srgb_capable, Ordering::Release);
++    inner.gl = Some(ManuallyDrop::new(gl));
++    inner.context = Some(context);
++    Ok(())
++}
++
++/// A wrapper around a [`glow::Context`] and the required GLA context that uses locking to
++/// guarantee exclusive access when shared with multiple threads.
++pub struct AdapterContext {
++    shared: Arc<Shared>,
++}
++
++unsafe impl Sync for AdapterContext {}
++unsafe impl Send for AdapterContext {}
++
++impl AdapterContext {
++    pub fn is_owned(&self) -> bool {
++        true
++    }
++
++    pub fn raw_context(&self) -> *mut c_void {
++        match self.shared.inner.lock().context {
++            Some(ref context) => context.raw as *mut c_void,
++            None => ptr::null_mut(),
++        }
++    }
++
++    /// Obtain a lock to the GLA context and get handle to the [`glow::Context`] that can be used to
++    /// do rendering.
++    #[track_caller]
++    pub fn lock(&self) -> AdapterContextLock<'_> {
++        let inner = self
++            .shared
++            .inner
++            // Don't lock forever. If it takes longer than 1 second to get the lock we've got a
++            // deadlock and should panic to show where we got stuck
++            .try_lock_for(Duration::from_secs(CONTEXT_LOCK_TIMEOUT_SECS))
++            .expect("Could not lock adapter context. This is most-likely a deadlock.");
++
++        if let Some(context) = &inner.context {
++            context.make_current();
++        }
++
++        AdapterContextLock { inner }
++    }
++}
++
++/// A guard containing a lock to an [`AdapterContext`], while the GL context is kept current.
++pub struct AdapterContextLock<'a> {
++    inner: MutexGuard<'a, Inner>,
++}
++
++impl<'a> core::ops::Deref for AdapterContextLock<'a> {
++    type Target = glow::Context;
++
++    fn deref(&self) -> &Self::Target {
++        self.inner
++            .gl
++            .as_deref()
++            .expect("the GL context is created once a window is known")
++    }
++}
++
++impl<'a> Drop for AdapterContextLock<'a> {
++    fn drop(&mut self) {
++        if let Some(context) = &self.inner.context {
++            context.unmake_current();
++        }
++    }
++}
++
++pub struct Instance {
++    options: wgt::GlBackendOptions,
++    shared: Arc<Shared>,
++}
++
++unsafe impl Send for Instance {}
++unsafe impl Sync for Instance {}
++
++impl crate::Instance for Instance {
++    type A = super::Api;
++
++    unsafe fn init(desc: &crate::InstanceDescriptor) -> Result<Self, crate::InstanceError> {
++        profiling::scope!("Init OpenGL (GLA) Backend");
++        // gl.library is opened by libGL's autoinit; the context waits for a window.
++        Ok(Instance {
++            options: desc.backend_options.gl.clone(),
++            shared: Arc::new(Shared {
++                inner: Mutex::new(Inner {
++                    gl: None,
++                    context: None,
++                    helper: None,
++                    flags: desc.flags,
++                }),
++                srgb_capable: AtomicBool::new(false),
++            }),
++        })
++    }
++
++    unsafe fn create_surface(
++        &self,
++        _display_handle: RawDisplayHandle,
++        window_handle: RawWindowHandle,
++    ) -> Result<Surface, crate::InstanceError> {
++        let window = if let RawWindowHandle::Aros(handle) = window_handle {
++            handle.window.as_ptr() as usize
++        } else {
++            return Err(crate::InstanceError::new(format!(
++                "unsupported window: {window_handle:?}"
++            )));
++        };
++        // The context goes on the first window a surface is made for, so no
++        // helper window is needed when adapters are enumerated afterwards.
++        ensure_context(&self.shared, window)?;
++        Ok(Surface {
++            window,
++            presentable: true,
++            swapchain: RwLock::new(None),
++            shared: self.shared.clone(),
++        })
++    }
++
++    unsafe fn enumerate_adapters(
++        &self,
++        surface_hint: Option<&Surface>,
++    ) -> Vec<crate::ExposedAdapter<super::Api>> {
++        let window = surface_hint.map_or(0, |surface| surface.window);
++        trace(format_args!("enumerate_adapters, window {window:#x}"));
++        if let Err(error) = ensure_context(&self.shared, window) {
++            log::error!("unable to create the GL context: {error}");
++            return Vec::new();
++        }
++        let adapters: Vec<_> = unsafe {
++            super::Adapter::expose(
++                AdapterContext {
++                    shared: self.shared.clone(),
++                },
++                self.options.clone(),
++            )
++        }
++        .into_iter()
++        .collect();
++        trace(format_args!("{} adapter(s)", adapters.len()));
++        adapters
++    }
++}
++
++impl super::Adapter {
++    /// Creates a new external adapter using the specified loader function.
++    ///
++    /// # Safety
++    ///
++    /// - The underlying OpenGL ES context must be current.
++    /// - The underlying OpenGL ES context must be current when interfacing with any objects returned by
++    ///   wgpu-hal from this adapter.
++    /// - The underlying OpenGL ES context must be current when dropping this adapter and when
++    ///   dropping any objects returned from this adapter.
++    pub unsafe fn new_external(
++        fun: impl FnMut(&str) -> *const c_void,
++        options: wgt::GlBackendOptions,
++    ) -> Option<crate::ExposedAdapter<super::Api>> {
++        let context = unsafe { glow::Context::from_loader_function(fun) };
++        let srgb_capable = context
++            .supported_extensions()
++            .contains("GL_ARB_framebuffer_sRGB");
++        unsafe {
++            Self::expose(
++                AdapterContext {
++                    shared: Arc::new(Shared {
++                        inner: Mutex::new(Inner {
++                            gl: Some(ManuallyDrop::new(context)),
++                            context: None,
++                            helper: None,
++                            flags: InstanceFlags::empty(),
++                        }),
++                        srgb_capable: AtomicBool::new(srgb_capable),
++                    }),
++                },
++                options,
++            )
++        }
++    }
++
++    pub fn adapter_context(&self) -> &AdapterContext {
++        &self.shared.context
++    }
++}
++
++impl super::Device {
++    /// Returns the underlying GLA context.
++    pub fn context(&self) -> &AdapterContext {
++        &self.shared.context
++    }
++}
++
++pub struct Swapchain {
++    framebuffer: glow::Framebuffer,
++    renderbuffer: glow::Renderbuffer,
++
++    /// Extent because the window lies
++    extent: wgt::Extent3d,
++
++    format: wgt::TextureFormat,
++    format_desc: super::TextureFormatDesc,
++    #[allow(unused)]
++    sample_type: wgt::TextureSampleType,
++}
++
++pub struct Surface {
++    /// The Intuition window.
++    window: usize,
++    pub(super) presentable: bool,
++    swapchain: RwLock<Option<Swapchain>>,
++    shared: Arc<Shared>,
++}
++
++unsafe impl Send for Surface {}
++unsafe impl Sync for Surface {}
++
++impl Surface {
++    pub(super) unsafe fn present(
++        &self,
++        _suf_texture: super::Texture,
++        context: &AdapterContext,
++    ) -> Result<(), crate::SurfaceError> {
++        let swapchain = self.swapchain.read();
++        let sc = swapchain.as_ref().unwrap();
++        let gl = context.lock();
++        let srgb_capable = self.supports_srgb();
++
++        unsafe { gl.bind_framebuffer(glow::DRAW_FRAMEBUFFER, None) };
++        unsafe { gl.bind_framebuffer(glow::READ_FRAMEBUFFER, Some(sc.framebuffer)) };
++
++        if srgb_capable {
++            // Disable sRGB conversions for `glBlitFramebuffer` as behavior does diverge between
++            // drivers and formats otherwise and we want to ensure no sRGB conversions happen.
++            unsafe { gl.disable(glow::FRAMEBUFFER_SRGB) };
++        }
++
++        // Note the Y-flipping here. GL's presentation is not flipped,
++        // but main rendering is. Therefore, we Y-flip the output positions
++        // in the shader, and also this blit.
++        unsafe {
++            gl.blit_framebuffer(
++                0,
++                sc.extent.height as i32,
++                sc.extent.width as i32,
++                0,
++                0,
++                0,
++                sc.extent.width as i32,
++                sc.extent.height as i32,
++                glow::COLOR_BUFFER_BIT,
++                glow::NEAREST,
++            )
++        };
++
++        if srgb_capable {
++            unsafe { gl.enable(glow::FRAMEBUFFER_SRGB) };
++        }
++
++        unsafe { gl.bind_renderbuffer(glow::RENDERBUFFER, None) };
++        unsafe { gl.bind_framebuffer(glow::READ_FRAMEBUFFER, None) };
++
++        let raw = gl.inner.context.as_ref().map_or(0, |context| context.raw);
++        static FIRST: std::sync::Once = std::sync::Once::new();
++        FIRST.call_once(|| trace(format_args!("first present")));
++        unsafe { sys::aros_gui_gl_swap_buffers(raw) };
++
++        Ok(())
++    }
++
++    pub fn supports_srgb(&self) -> bool {
++        self.shared.srgb_capable.load(Ordering::Acquire)
++    }
++}
++
++impl crate::Surface for Surface {
++    type A = super::Api;
++
++    unsafe fn configure(
++        &self,
++        device: &super::Device,
++        config: &crate::SurfaceConfiguration,
++    ) -> Result<(), crate::SurfaceError> {
++        trace(format_args!("configure {:?} {:?}", config.extent, config.format));
++        // Remove the old configuration.
++        unsafe { self.unconfigure(device) };
++
++        if let Err(error) = ensure_context(&self.shared, self.window) {
++            log::error!("unable to create the GL context for the surface: {error}");
++            return Err(crate::SurfaceError::Other(
++                "unable to create the GL context for the surface",
++            ));
++        }
++
++        // The context follows the surface's window, and its current size.
++        {
++            let mut inner = self.shared.inner.lock();
++            if let Some(context) = inner.context.as_mut() {
++                context.bind(self.window);
++            }
++        }
++
++        let format_desc = device.shared.describe_texture_format(config.format);
++        let gl = &device.shared.context.lock();
++
++        let renderbuffer = unsafe { gl.create_renderbuffer() }.map_err(|error| {
++            log::error!("Internal swapchain renderbuffer creation failed: {error}");
++            crate::DeviceError::OutOfMemory
++        })?;
++        unsafe { gl.bind_renderbuffer(glow::RENDERBUFFER, Some(renderbuffer)) };
++        unsafe {
++            gl.renderbuffer_storage(
++                glow::RENDERBUFFER,
++                format_desc.internal,
++                config.extent.width as _,
++                config.extent.height as _,
++            )
++        };
++
++        let framebuffer = unsafe { gl.create_framebuffer() }.map_err(|error| {
++            log::error!("Internal swapchain framebuffer creation failed: {error}");
++            crate::DeviceError::OutOfMemory
++        })?;
++        unsafe { gl.bind_framebuffer(glow::READ_FRAMEBUFFER, Some(framebuffer)) };
++        unsafe {
++            gl.framebuffer_renderbuffer(
++                glow::READ_FRAMEBUFFER,
++                glow::COLOR_ATTACHMENT0,
++                glow::RENDERBUFFER,
++                Some(renderbuffer),
++            )
++        };
++        unsafe { gl.bind_renderbuffer(glow::RENDERBUFFER, None) };
++        unsafe { gl.bind_framebuffer(glow::READ_FRAMEBUFFER, None) };
++
++        // GLA has no swap interval: a swap presents as soon as it can.
++        match config.present_mode {
++            wgt::PresentMode::Immediate | wgt::PresentMode::Fifo | wgt::PresentMode::AutoVsync
++            | wgt::PresentMode::AutoNoVsync => {}
++            other => {
++                log::warn!("present mode {other:?} is not supported; presenting without vsync");
++            }
++        }
++
++        self.swapchain.write().replace(Swapchain {
++            renderbuffer,
++            framebuffer,
++            extent: config.extent,
++            format: config.format,
++            format_desc,
++            sample_type: wgt::TextureSampleType::Float { filterable: false },
++        });
++
++        Ok(())
++    }
++
++    unsafe fn unconfigure(&self, device: &super::Device) {
++        let gl = &device.shared.context.lock();
++        if let Some(sc) = self.swapchain.write().take() {
++            unsafe {
++                gl.delete_renderbuffer(sc.renderbuffer);
++                gl.delete_framebuffer(sc.framebuffer)
++            };
++        }
++    }
++
++    unsafe fn acquire_texture(
++        &self,
++        _timeout_ms: Option<Duration>,
++        _fence: &super::Fence,
++    ) -> Result<Option<crate::AcquiredSurfaceTexture<super::Api>>, crate::SurfaceError> {
++        let swapchain = self.swapchain.read();
++        let sc = swapchain.as_ref().unwrap();
++        let texture = super::Texture {
++            inner: super::TextureInner::Renderbuffer {
++                raw: sc.renderbuffer,
++            },
++            drop_guard: None,
++            array_layer_count: 1,
++            mip_level_count: 1,
++            format: sc.format,
++            format_desc: sc.format_desc.clone(),
++            copy_size: crate::CopyExtent {
++                width: sc.extent.width,
++                height: sc.extent.height,
++                depth: 1,
++            },
++        };
++        Ok(Some(crate::AcquiredSurfaceTexture {
++            texture,
++            suboptimal: false,
++        }))
++    }
++    unsafe fn discard_texture(&self, _texture: super::Texture) {}
++}
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/src/gles/device.rs wgpu-hal-27.0.4/src/gles/device.rs
+--- wgpu-hal-27.0.4.orig/src/gles/device.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-hal-27.0.4/src/gles/device.rs	2026-10-13 22:54:07.564409771 +0100
+@@ -448,8 +448,14 @@
+                     super::BindingRegister::StorageBuffers => {
+                         let index =
+                             unsafe { gl.get_shader_storage_block_index(program, name) }.unwrap();
+-                        log::error!("Unable to re-map shader storage block {name} to {index}");
+-                        return Err(crate::DeviceError::Lost.into());
++                        // GL 3.x with GL_ARB_shader_storage_buffer_object (AROS:
++                        // Mesa's softpipe) has glShaderStorageBlockBinding.
++                        if cfg!(target_os = "aros") {
++                            unsafe { gl.shader_storage_block_binding(program, index, slot as _) };
++                        } else {
++                            log::error!("Unable to re-map shader storage block {name} to {index}");
++                            return Err(crate::DeviceError::Lost.into());
++                        }
+                     }
+                     super::BindingRegister::Textures | super::BindingRegister::Images => {
+                         let location = unsafe { gl.get_uniform_location(program, name) };
+@@ -818,7 +824,7 @@
+                         )
+                     } else if target == glow::TEXTURE_3D {
+                         let mut width = desc.size.width;
+-                        let mut height = desc.size.width;
++                        let mut height = desc.size.height;
+                         let mut depth = desc.size.depth_or_array_layers;
+                         for i in 0..desc.mip_level_count {
+                             gl.tex_image_3d(
+@@ -839,7 +845,7 @@
+                         }
+                     } else {
+                         let mut width = desc.size.width;
+-                        let mut height = desc.size.width;
++                        let mut height = desc.size.height;
+                         for i in 0..desc.mip_level_count {
+                             gl.tex_image_3d(
+                                 target,
+@@ -912,7 +918,7 @@
+                         }
+                     } else {
+                         let mut width = desc.size.width;
+-                        let mut height = desc.size.width;
++                        let mut height = desc.size.height;
+                         for i in 0..desc.mip_level_count {
+                             gl.tex_image_2d(
+                                 target,
+diff -ruN -x .cargo-ok -x .git -x target wgpu-hal-27.0.4.orig/src/gles/mod.rs wgpu-hal-27.0.4/src/gles/mod.rs
+--- wgpu-hal-27.0.4.orig/src/gles/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-hal-27.0.4/src/gles/mod.rs	2026-10-13 13:15:41.900960253 +0100
+@@ -80,7 +80,10 @@
+ */
+ 
+ ///cbindgen:ignore
+-#[cfg(not(any(windows, webgl)))]
++#[cfg(target_os = "aros")]
++mod aros;
++///cbindgen:ignore
++#[cfg(not(any(windows, webgl, target_os = "aros")))]
+ mod egl;
+ #[cfg(Emscripten)]
+ mod emscripten;
+@@ -98,9 +101,14 @@
+ 
+ pub use fence::Fence;
+ 
+-#[cfg(not(any(windows, webgl)))]
++#[cfg(target_os = "aros")]
++pub use self::aros::{AdapterContext, AdapterContextLock};
++#[cfg(target_os = "aros")]
++pub use self::aros::{Instance, Surface};
++
++#[cfg(not(any(windows, webgl, target_os = "aros")))]
+ pub use self::egl::{AdapterContext, AdapterContextLock};
+-#[cfg(not(any(windows, webgl)))]
++#[cfg(not(any(windows, webgl, target_os = "aros")))]
+ pub use self::egl::{Instance, Surface};
+ 
+ #[cfg(webgl)]

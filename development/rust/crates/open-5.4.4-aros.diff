@@ -1,0 +1,51 @@
+diff -ruN -x .cargo-ok -x .git -x target open-5.4.4.orig/src/aros.rs open-5.4.4/src/aros.rs
+--- open-5.4.4.orig/src/aros.rs	1970-01-01 01:00:00.000000000 +0100
++++ open-5.4.4/src/aros.rs	2026-10-13 14:16:01.205442993 +0100
+@@ -0,0 +1,16 @@
++use std::{ffi::OsStr, process::Command};
++
++// The OpenURL command of the openurl.library distribution; the Rust std on
++// AROS cannot start programs yet, so this reports an error rather than
++// opening anything.
++pub fn commands<T: AsRef<OsStr>>(path: T) -> Vec<Command> {
++    let mut cmd = Command::new("C:OpenURL");
++    cmd.arg(path.as_ref());
++    vec![cmd]
++}
++
++pub fn with_command<T: AsRef<OsStr>>(path: T, app: impl Into<String>) -> Command {
++    let mut cmd = Command::new(app.into());
++    cmd.arg(path.as_ref());
++    cmd
++}
+diff -ruN -x .cargo-ok -x .git -x target open-5.4.4.orig/src/lib.rs open-5.4.4/src/lib.rs
+--- open-5.4.4.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ open-5.4.4/src/lib.rs	2026-10-13 14:16:01.205329093 +0100
+@@ -115,6 +115,9 @@
+ #[cfg(target_os = "redox")]
+ use redox as os;
+ 
++#[cfg(target_os = "aros")]
++use aros as os;
++
+ #[cfg(any(
+     target_os = "linux",
+     target_os = "android",
+@@ -144,6 +147,7 @@
+     target_os = "windows",
+     target_os = "haiku",
+     target_os = "redox",
++    target_os = "aros",
+     target_os = "aix",
+     target_os = "hurd"
+ )))]
+@@ -440,6 +444,9 @@
+ #[cfg(target_os = "redox")]
+ mod redox;
+ 
++#[cfg(target_os = "aros")]
++mod aros;
++
+ #[cfg(any(
+     test,
+     target_os = "linux",

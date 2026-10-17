@@ -1,0 +1,18 @@
+diff -ruN -x .cargo-ok -x .git -x target stacker-0.1.22.orig/src/lib.rs stacker-0.1.22/src/lib.rs
+--- stacker-0.1.22.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ stacker-0.1.22/src/lib.rs	2026-10-13 14:12:23.331254284 +0100
+@@ -135,11 +135,12 @@
+ 
+ psm_stack_manipulation! {
+     yes {
+-        #[cfg(not(any(target_arch = "wasm32",target_os = "hermit")))]
++        // AROS has no mmap: the new stack comes from the allocator.
++        #[cfg(not(any(target_arch = "wasm32",target_os = "hermit",target_os = "aros")))]
+         #[path = "mmap_stack_restore_guard.rs"]
+         mod stack_restore_guard;
+ 
+-        #[cfg(any(target_arch = "wasm32",target_os = "hermit"))]
++        #[cfg(any(target_arch = "wasm32",target_os = "hermit",target_os = "aros"))]
+         #[path = "alloc_stack_restore_guard.rs"]
+         mod stack_restore_guard;
+ 

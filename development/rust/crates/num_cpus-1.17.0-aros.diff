@@ -1,0 +1,21 @@
+diff -ruN -x .cargo-ok -x .git -x target -x .cargo_vcs_info.json num_cpus-1.17.0.orig/src/lib.rs num_cpus-1.17.0/src/lib.rs
+--- num_cpus-1.17.0.orig/src/lib.rs	2026-10-14 15:58:09.126522716 +0100
++++ num_cpus-1.17.0/src/lib.rs	2026-10-14 15:58:09.700548016 +0100
+@@ -358,7 +358,8 @@
+     target_os = "aix",
+     target_os = "solaris",
+     target_os = "illumos",
+-    target_os = "fuchsia")
++    target_os = "fuchsia",
++    target_os = "aros")
+ )]
+ fn get_num_cpus() -> usize {
+     // On ARM targets, processors could be turned off to save power.
+@@ -447,6 +448,7 @@
+     target_os = "netbsd",
+     target_os = "haiku",
+     target_os = "hermit",
++    target_os = "aros",
+     windows,
+ )))]
+ fn get_num_cpus() -> usize {

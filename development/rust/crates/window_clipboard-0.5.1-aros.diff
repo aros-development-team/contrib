@@ -1,0 +1,117 @@
+diff -ruN -x .cargo-ok -x .git -x target window_clipboard-0.5.1.orig/Cargo.toml window_clipboard-0.5.1/Cargo.toml
+--- window_clipboard-0.5.1.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ window_clipboard-0.5.1/Cargo.toml	2026-10-13 13:33:46.270359651 +0100
+@@ -71,14 +71,17 @@
+ [dev-dependencies.winit]
+ version = "0.29"
+ 
+-[target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten", target_os="ios", target_os="redox"))))'.dependencies.clipboard_wayland]
++[target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten", target_os="ios", target_os="redox", target_os="aros"))))'.dependencies.clipboard_wayland]
+ version = "0.2.2"
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten", target_os="ios", target_os="redox"))))'.dependencies.clipboard_x11]
++[target.'cfg(all(unix, not(any(target_os="macos", target_os="android", target_os="emscripten", target_os="ios", target_os="redox", target_os="aros"))))'.dependencies.clipboard_x11]
+ version = "0.4.2"
+ optional = true
+ 
++[target.'cfg(target_os = "aros")'.dependencies.aros-gui-sys]
++version = "0.1"
++
+ [target.'cfg(target_os = "macos")'.dependencies.clipboard_macos]
+ version = "0.1"
+ 
+diff -ruN -x .cargo-ok -x .git -x target window_clipboard-0.5.1.orig/src/lib.rs window_clipboard-0.5.1/src/lib.rs
+--- window_clipboard-0.5.1.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ window_clipboard-0.5.1/src/lib.rs	2026-10-13 13:14:14.776952173 +0100
+@@ -5,12 +5,17 @@
+         target_os = "ios",
+         target_os = "android",
+         target_os = "emscripten",
+-        target_os = "redox"
++        target_os = "redox",
++        target_os = "aros"
+     ))
+ ))]
+ #[path = "platform/linux.rs"]
+ mod platform;
+ 
++#[cfg(target_os = "aros")]
++#[path = "platform/aros.rs"]
++mod platform;
++
+ #[cfg(target_os = "windows")]
+ #[path = "platform/windows.rs"]
+ mod platform;
+@@ -35,13 +40,15 @@
+             target_os = "ios",
+             target_os = "android",
+             target_os = "emscripten",
+-            target_os = "redox"
++            target_os = "redox",
++            target_os = "aros"
+         ))
+     ),
+     target_os = "windows",
+     target_os = "macos",
+     target_os = "ios",
+-    target_os = "android"
++    target_os = "android",
++    target_os = "aros"
+ )))]
+ #[path = "platform/dummy.rs"]
+ mod platform;
+diff -ruN -x .cargo-ok -x .git -x target window_clipboard-0.5.1.orig/src/platform/aros.rs window_clipboard-0.5.1/src/platform/aros.rs
+--- window_clipboard-0.5.1.orig/src/platform/aros.rs	1970-01-01 01:00:00.000000000 +0100
++++ window_clipboard-0.5.1/src/platform/aros.rs	2026-10-13 13:14:14.776980273 +0100
+@@ -0,0 +1,50 @@
++//! AROS: the clipboard (clipboard.device unit 0, IFF FTXT) through the C
++//! glue in `aros-gui-sys`. Its text is ISO-8859-1.
++
++use crate::ClipboardProvider;
++
++use raw_window_handle::HasDisplayHandle;
++use std::error::Error;
++
++struct Aros;
++
++pub unsafe fn connect<W: HasDisplayHandle>(
++    _window: &W,
++) -> Result<Box<dyn ClipboardProvider>, Box<dyn Error>> {
++    Ok(Box::new(Aros))
++}
++
++impl ClipboardProvider for Aros {
++    fn read(&self) -> Result<String, Box<dyn Error>> {
++        let mut len: i32 = 0;
++        let text = unsafe { aros_gui_sys::aros_gui_clip_read(&mut len) };
++        if text.is_null() {
++            return Err(Box::new(ArosClipboardError::Empty));
++        }
++        let bytes = unsafe { std::slice::from_raw_parts(text, len.max(0) as usize) };
++        let contents: String = bytes.iter().map(|&b| char::from(b)).collect();
++        unsafe { aros_gui_sys::aros_gui_clip_free(text) };
++        Ok(contents)
++    }
++
++    fn write(&mut self, contents: String) -> Result<(), Box<dyn Error>> {
++        let bytes: Vec<u8> = contents
++            .chars()
++            .map(|c| u8::try_from(u32::from(c)).unwrap_or(b'?'))
++            .collect();
++        let rc = unsafe { aros_gui_sys::aros_gui_clip_write(bytes.as_ptr(), bytes.len() as i32) };
++        if rc == 0 {
++            Ok(())
++        } else {
++            Err(Box::new(ArosClipboardError::Write))
++        }
++    }
++}
++
++#[derive(Debug, Clone, Copy, thiserror::Error)]
++enum ArosClipboardError {
++    #[error("the clipboard holds no text")]
++    Empty,
++    #[error("the clipboard could not be written")]
++    Write,
++}

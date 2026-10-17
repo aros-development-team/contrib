@@ -1,0 +1,43 @@
+diff -ruN -x .cargo-ok -x .git -x target naga-27.0.3.orig/src/back/glsl/features.rs naga-27.0.3/src/back/glsl/features.rs
+--- naga-27.0.3.orig/src/back/glsl/features.rs	2006-07-24 02:21:28.000000000 +0100
++++ naga-27.0.3/src/back/glsl/features.rs	2026-10-13 18:59:18.612298325 +0100
+@@ -107,7 +107,12 @@
+         }
+ 
+         check_feature!(COMPUTE_SHADER, 420, 310);
++        // AROS: Mesa's softpipe (GLSL 3.30) has GL_ARB_shader_storage_buffer_object,
++        // which write() enables for storage buffers on desktop GL.
++        #[cfg(not(target_os = "aros"))]
+         check_feature!(BUFFER_STORAGE, 400, 310);
++        #[cfg(target_os = "aros")]
++        check_feature!(BUFFER_STORAGE, 330, 310);
+         check_feature!(DOUBLE_TYPE, 150);
+         check_feature!(CUBE_TEXTURES_ARRAY, 130, 310);
+         check_feature!(MULTISAMPLED_TEXTURES, 150, 300);
+@@ -120,7 +125,11 @@
+         check_feature!(CLIP_DISTANCE, 130, 300 /* with extension */);
+         check_feature!(CULL_DISTANCE, 450, 300 /* with extension */);
+         check_feature!(SAMPLE_VARIABLES, 400, 300);
++        // Runtime sized arrays come with the same extension.
++        #[cfg(not(target_os = "aros"))]
+         check_feature!(DYNAMIC_ARRAY_SIZE, 430, 310);
++        #[cfg(target_os = "aros")]
++        check_feature!(DYNAMIC_ARRAY_SIZE, 330, 310);
+         check_feature!(DUAL_SOURCE_BLENDING, 330, 300 /* with extension */);
+         check_feature!(SUBGROUP_OPERATIONS, 430, 310);
+         check_feature!(TEXTURE_ATOMICS, 420, 310);
+diff -ruN -x .cargo-ok -x .git -x target naga-27.0.3.orig/src/back/glsl/mod.rs naga-27.0.3/src/back/glsl/mod.rs
+--- naga-27.0.3.orig/src/back/glsl/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ naga-27.0.3/src/back/glsl/mod.rs	2026-10-13 19:50:04.226751345 +0100
+@@ -216,7 +216,10 @@
+     }
+ 
+     fn supports_std430_layout(&self) -> bool {
+-        *self >= Version::Desktop(430) || *self >= Version::new_gles(310)
++        // AROS: std430 comes with GL_ARB_shader_storage_buffer_object, which
++        // Mesa's softpipe (GLSL 3.30) has; see Features::BUFFER_STORAGE.
++        let desktop = if cfg!(target_os = "aros") { 330 } else { 430 };
++        *self >= Version::Desktop(desktop) || *self >= Version::new_gles(310)
+     }
+ 
+     fn supports_fma_function(&self) -> bool {

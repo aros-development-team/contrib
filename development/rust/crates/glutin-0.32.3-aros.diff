@@ -1,0 +1,1124 @@
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/Cargo.toml glutin-0.32.3/Cargo.toml
+--- glutin-0.32.3.orig/Cargo.toml	2026-10-03 12:31:09
++++ glutin-0.32.3/Cargo.toml	2026-10-04 08:50:26
+@@ -163,6 +163,9 @@
+ ]
+ default-features = false
+ 
++[target.'cfg(target_os = "aros")'.dependencies.aros-gui-sys]
++version = "0.1"
++
+ [target.'cfg(target_os = "android")'.dependencies.glutin_egl_sys]
+ version = "0.7.1"
+ 
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/build.rs glutin-0.32.3/build.rs
+--- glutin-0.32.3.orig/build.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/build.rs	2026-10-03 12:32:10
+@@ -9,17 +9,19 @@
+         wasm_platform: { target_family = "wasm" },
+         macos_platform: { target_os = "macos" },
+         ios_platform: { target_os = "ios" },
++        aros_platform: { target_os = "aros" },
+         apple: { any(ios_platform, macos_platform) },
+-        free_unix: { all(unix, not(apple), not(android_platform), not(ohos_platform)) },
++        free_unix: { all(unix, not(apple), not(android_platform), not(ohos_platform), not(aros_platform)) },
+ 
+         // Native displays.
+         x11_platform: { all(feature = "x11", free_unix, not(wasm_platform)) },
+         wayland_platform: { all(feature = "wayland", free_unix, not(wasm_platform)) },
+ 
+         // Backends.
+-        egl_backend: { all(feature = "egl", any(windows, unix), not(apple), not(wasm_platform)) },
++        egl_backend: { all(feature = "egl", any(windows, unix), not(apple), not(wasm_platform), not(aros_platform)) },
+         glx_backend: { all(feature = "glx", x11_platform, not(wasm_platform)) },
+         wgl_backend: { all(feature = "wgl", windows, not(wasm_platform)) },
+         cgl_backend: { all(macos_platform, not(wasm_platform)) },
++        gla_backend: { aros_platform },
+     }
+ }
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/gla/config.rs glutin-0.32.3/src/api/gla/config.rs
+--- glutin-0.32.3.orig/src/api/gla/config.rs	1970-01-01 01:00:00
++++ glutin-0.32.3/src/api/gla/config.rs	2026-10-03 12:33:08
+@@ -0,0 +1,147 @@
++//! GLA configs. GLA has no pixel format list: a context gets 8-bit RGB, and
++//! alpha, depth and stencil buffers on request.
++
++use std::sync::Arc;
++use std::{fmt, iter};
++
++use crate::config::{
++    Api, AsRawConfig, ColorBufferType, ConfigSurfaceTypes, ConfigTemplate, GlConfig, RawConfig,
++};
++use crate::display::GetGlDisplay;
++use crate::error::{ErrorKind, Result};
++use crate::private::Sealed;
++
++use super::display::Display;
++
++impl Display {
++    pub(crate) unsafe fn find_configs(
++        &self,
++        template: ConfigTemplate,
++    ) -> Result<Box<dyn Iterator<Item = Config> + '_>> {
++        if !matches!(template.color_buffer_type, ColorBufferType::Rgb { .. }) {
++            return Err(
++                ErrorKind::NotSupported("luminance buffers are not supported with GLA").into()
++            );
++        }
++
++        let window_only = template.config_surface_types.contains(ConfigSurfaceTypes::WINDOW);
++        let opengl = template.api.map_or(true, |api| api.contains(Api::OPENGL));
++        if !window_only || !opengl || template.float_pixels || template.single_buffering {
++            return Ok(Box::new(iter::empty()));
++        }
++
++        let inner = Arc::new(ConfigInner {
++            display: self.clone(),
++            alpha: template.alpha_size > 0,
++            depth: template.depth_size > 0,
++            stencil: template.stencil_size > 0,
++        });
++        Ok(Box::new(iter::once(Config { inner })))
++    }
++}
++
++/// The buffers a GLA context is created with.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct Config {
++    pub(crate) inner: Arc<ConfigInner>,
++}
++
++impl GlConfig for Config {
++    fn color_buffer_type(&self) -> Option<ColorBufferType> {
++        Some(ColorBufferType::Rgb { r_size: 8, g_size: 8, b_size: 8 })
++    }
++
++    fn float_pixels(&self) -> bool {
++        false
++    }
++
++    fn alpha_size(&self) -> u8 {
++        if self.inner.alpha {
++            8
++        } else {
++            0
++        }
++    }
++
++    fn srgb_capable(&self) -> bool {
++        false
++    }
++
++    fn hardware_accelerated(&self) -> bool {
++        // Whether gl.library uses a hardware driver is not visible from here.
++        false
++    }
++
++    fn depth_size(&self) -> u8 {
++        if self.inner.depth {
++            24
++        } else {
++            0
++        }
++    }
++
++    fn stencil_size(&self) -> u8 {
++        if self.inner.stencil {
++            8
++        } else {
++            0
++        }
++    }
++
++    fn num_samples(&self) -> u8 {
++        0
++    }
++
++    fn config_surface_types(&self) -> ConfigSurfaceTypes {
++        ConfigSurfaceTypes::WINDOW
++    }
++
++    fn supports_transparency(&self) -> Option<bool> {
++        Some(false)
++    }
++
++    fn api(&self) -> Api {
++        Api::OPENGL
++    }
++}
++
++impl GetGlDisplay for Config {
++    type Target = Display;
++
++    fn display(&self) -> Self::Target {
++        self.inner.display.clone()
++    }
++}
++
++impl AsRawConfig for Config {
++    fn raw_config(&self) -> RawConfig {
++        RawConfig::Gla
++    }
++}
++
++impl Sealed for Config {}
++
++pub(crate) struct ConfigInner {
++    display: Display,
++    pub(crate) alpha: bool,
++    pub(crate) depth: bool,
++    pub(crate) stencil: bool,
++}
++
++impl PartialEq for ConfigInner {
++    fn eq(&self, other: &Self) -> bool {
++        (self.alpha, self.depth, self.stencil) == (other.alpha, other.depth, other.stencil)
++    }
++}
++
++impl Eq for ConfigInner {}
++
++impl fmt::Debug for ConfigInner {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("Config")
++            .field("alpha", &self.alpha)
++            .field("depth", &self.depth)
++            .field("stencil", &self.stencil)
++            .finish()
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/gla/context.rs glutin-0.32.3/src/api/gla/context.rs
+--- glutin-0.32.3.orig/src/api/gla/context.rs	1970-01-01 01:00:00
++++ glutin-0.32.3/src/api/gla/context.rs	2026-10-05 17:34:18
+@@ -0,0 +1,273 @@
++//! Everything related to `GLAContext`.
++
++use std::cell::Cell;
++use std::fmt;
++use std::marker::PhantomData;
++
++use aros_gui_sys as sys;
++use raw_window_handle::RawWindowHandle;
++
++use crate::config::GetGlConfig;
++use crate::context::{AsRawContext, ContextApi, ContextAttributes, Priority, RawContext, Robustness};
++use crate::display::GetGlDisplay;
++use crate::error::{ErrorKind, Result};
++use crate::prelude::*;
++use crate::private::Sealed;
++use crate::surface::SurfaceTypeTrait;
++
++use super::config::Config;
++use super::display::Display;
++use super::surface::Surface;
++
++impl Display {
++    pub(crate) unsafe fn create_context(
++        &self,
++        config: &Config,
++        context_attributes: &ContextAttributes,
++    ) -> Result<NotCurrentContext> {
++        if matches!(context_attributes.api, Some(ContextApi::Gles(_))) {
++            return Err(ErrorKind::NotSupported("gles is not supported with GLA").into());
++        }
++
++        if context_attributes.robustness != Robustness::NotRobust {
++            return Err(ErrorKind::NotSupported("robustness is not supported with GLA").into());
++        }
++
++        if context_attributes.shared_context.is_some() {
++            return Err(ErrorKind::NotSupported("shared contexts are not supported with GLA").into());
++        }
++
++        let inner = ContextInner {
++            display: self.clone(),
++            config: config.clone(),
++            raw: Cell::new(0),
++            window: Cell::new(0),
++        };
++
++        // With a window at hand the context is created now, so a failure
++        // surfaces here rather than at the first make current.
++        if let Some(RawWindowHandle::Aros(window)) = context_attributes.raw_window_handle {
++            inner.bind(window.window.as_ptr() as usize)?;
++        }
++
++        Ok(NotCurrentContext::new(inner))
++    }
++}
++
++/// A wrapper around `GLAContext` that is known to be not current on the
++/// current thread.
++#[derive(Debug)]
++pub struct NotCurrentContext {
++    pub(crate) inner: ContextInner,
++    _nosync: PhantomData<std::cell::UnsafeCell<()>>,
++}
++
++impl NotCurrentContext {
++    fn new(inner: ContextInner) -> Self {
++        Self { inner, _nosync: PhantomData }
++    }
++}
++
++impl NotCurrentGlContext for NotCurrentContext {
++    type PossiblyCurrentContext = PossiblyCurrentContext;
++    type Surface<T: SurfaceTypeTrait> = Surface<T>;
++
++    fn treat_as_possibly_current(self) -> PossiblyCurrentContext {
++        PossiblyCurrentContext { inner: self.inner, _nosendsync: PhantomData }
++    }
++
++    fn make_current<T: SurfaceTypeTrait>(
++        self,
++        surface: &Self::Surface<T>,
++    ) -> Result<Self::PossiblyCurrentContext> {
++        self.inner.make_current(surface)?;
++        Ok(PossiblyCurrentContext { inner: self.inner, _nosendsync: PhantomData })
++    }
++
++    fn make_current_draw_read<T: SurfaceTypeTrait>(
++        self,
++        _surface_draw: &Self::Surface<T>,
++        _surface_read: &Self::Surface<T>,
++    ) -> Result<Self::PossiblyCurrentContext> {
++        Err(ContextInner::draw_read_unsupported().into())
++    }
++}
++
++impl GlContext for NotCurrentContext {
++    fn context_api(&self) -> ContextApi {
++        ContextApi::OpenGl(None)
++    }
++
++    fn priority(&self) -> Priority {
++        Priority::Medium
++    }
++}
++
++impl GetGlConfig for NotCurrentContext {
++    type Target = Config;
++
++    fn config(&self) -> Self::Target {
++        self.inner.config.clone()
++    }
++}
++
++impl GetGlDisplay for NotCurrentContext {
++    type Target = Display;
++
++    fn display(&self) -> Self::Target {
++        self.inner.display.clone()
++    }
++}
++
++impl AsRawContext for NotCurrentContext {
++    fn raw_context(&self) -> RawContext {
++        RawContext::Gla(self.inner.raw.get() as *const _)
++    }
++}
++
++impl Sealed for NotCurrentContext {}
++
++/// A wrapper around `GLAContext` that could be current on the current thread.
++#[derive(Debug)]
++pub struct PossiblyCurrentContext {
++    pub(crate) inner: ContextInner,
++    // The context could be current only on the one thread.
++    _nosendsync: PhantomData<*mut ()>,
++}
++
++impl PossiblyCurrentGlContext for PossiblyCurrentContext {
++    type NotCurrentContext = NotCurrentContext;
++    type Surface<T: SurfaceTypeTrait> = Surface<T>;
++
++    fn make_not_current(self) -> Result<Self::NotCurrentContext> {
++        self.make_not_current_in_place()?;
++        Ok(NotCurrentContext::new(self.inner))
++    }
++
++    fn make_not_current_in_place(&self) -> Result<()> {
++        if self.is_current() {
++            unsafe { sys::aros_gui_gl_make_current(0) };
++        }
++        Ok(())
++    }
++
++    fn is_current(&self) -> bool {
++        self.inner.is_current()
++    }
++
++    fn make_current<T: SurfaceTypeTrait>(&self, surface: &Self::Surface<T>) -> Result<()> {
++        self.inner.make_current(surface)
++    }
++
++    fn make_current_draw_read<T: SurfaceTypeTrait>(
++        &self,
++        _surface_draw: &Self::Surface<T>,
++        _surface_read: &Self::Surface<T>,
++    ) -> Result<()> {
++        Err(ContextInner::draw_read_unsupported().into())
++    }
++}
++
++impl GlContext for PossiblyCurrentContext {
++    fn context_api(&self) -> ContextApi {
++        ContextApi::OpenGl(None)
++    }
++
++    fn priority(&self) -> Priority {
++        Priority::Medium
++    }
++}
++
++impl GetGlConfig for PossiblyCurrentContext {
++    type Target = Config;
++
++    fn config(&self) -> Self::Target {
++        self.inner.config.clone()
++    }
++}
++
++impl GetGlDisplay for PossiblyCurrentContext {
++    type Target = Display;
++
++    fn display(&self) -> Self::Target {
++        self.inner.display.clone()
++    }
++}
++
++impl AsRawContext for PossiblyCurrentContext {
++    fn raw_context(&self) -> RawContext {
++        RawContext::Gla(self.inner.raw.get() as *const _)
++    }
++}
++
++impl Sealed for PossiblyCurrentContext {}
++
++pub(crate) struct ContextInner {
++    display: Display,
++    config: Config,
++    /// The `GLAContext`, 0 until bound to a window.
++    pub(crate) raw: Cell<usize>,
++    /// The Intuition window the context renders into.
++    pub(crate) window: Cell<usize>,
++}
++
++impl ContextInner {
++    fn draw_read_unsupported() -> ErrorKind {
++        ErrorKind::NotSupported("make current draw read isn't supported with GLA")
++    }
++
++    /// Creates the context on `window`, or moves it there.
++    fn bind(&self, window: usize) -> Result<()> {
++        if self.raw.get() == 0 {
++            let config = &self.config.inner;
++            let raw = unsafe {
++                sys::aros_gui_gl_create(
++                    window,
++                    config.alpha as i32,
++                    config.depth as i32,
++                    config.stencil as i32,
++                )
++            };
++            if raw == 0 {
++                return Err(ErrorKind::BadContext.into());
++            }
++            self.raw.set(raw);
++        } else if self.window.get() != window {
++            unsafe { sys::aros_gui_gl_set_window(self.raw.get(), window) };
++        }
++        self.window.set(window);
++        Ok(())
++    }
++
++    fn make_current<T: SurfaceTypeTrait>(&self, surface: &Surface<T>) -> Result<()> {
++        self.bind(surface.window)?;
++        unsafe { sys::aros_gui_gl_make_current(self.raw.get()) };
++        Ok(())
++    }
++
++    pub(crate) fn is_current(&self) -> bool {
++        self.raw.get() != 0 && unsafe { sys::aros_gui_gl_current() } == self.raw.get()
++    }
++}
++
++impl Drop for ContextInner {
++    fn drop(&mut self) {
++        let raw = self.raw.get();
++        if raw != 0 {
++            if self.is_current() {
++                unsafe { sys::aros_gui_gl_make_current(0) };
++            }
++            unsafe { sys::aros_gui_gl_destroy(raw) };
++        }
++    }
++}
++
++impl fmt::Debug for ContextInner {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("Context")
++            .field("config", &self.config.inner)
++            .field("raw", &self.raw.get())
++            .field("window", &self.window.get())
++            .finish()
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/gla/display.rs glutin-0.32.3/src/api/gla/display.rs
+--- glutin-0.32.3.orig/src/api/gla/display.rs	1970-01-01 01:00:00
++++ glutin-0.32.3/src/api/gla/display.rs	2026-10-03 12:33:08
+@@ -0,0 +1,105 @@
++//! A GLA display.
++
++use std::ffi::{self, CStr};
++use std::marker::PhantomData;
++
++use raw_window_handle::RawDisplayHandle;
++
++use crate::config::ConfigTemplate;
++use crate::display::{AsRawDisplay, DisplayFeatures, RawDisplay};
++use crate::error::{ErrorKind, Result};
++use crate::prelude::*;
++use crate::private::Sealed;
++use crate::surface::{PbufferSurface, PixmapSurface, SurfaceAttributes, WindowSurface};
++
++use super::config::Config;
++use super::context::NotCurrentContext;
++use super::surface::Surface;
++
++/// The GLA display.
++#[derive(Debug, Clone)]
++pub struct Display {
++    // Prevent building of it without constructor.
++    _marker: PhantomData<()>,
++}
++
++impl Display {
++    /// Create GLA display.
++    ///
++    /// # Safety
++    ///
++    /// The function is unsafe for consistency.
++    pub unsafe fn new(display: RawDisplayHandle) -> Result<Self> {
++        match display {
++            RawDisplayHandle::Aros(..) => Ok(Display { _marker: PhantomData }),
++            _ => Err(ErrorKind::NotSupported("provided native display is not supported").into()),
++        }
++    }
++}
++
++impl GlDisplay for Display {
++    type Config = Config;
++    type NotCurrentContext = NotCurrentContext;
++    type PbufferSurface = Surface<PbufferSurface>;
++    type PixmapSurface = Surface<PixmapSurface>;
++    type WindowSurface = Surface<WindowSurface>;
++
++    unsafe fn find_configs(
++        &self,
++        template: ConfigTemplate,
++    ) -> Result<Box<dyn Iterator<Item = Self::Config> + '_>> {
++        unsafe { Self::find_configs(self, template) }
++    }
++
++    unsafe fn create_window_surface(
++        &self,
++        config: &Self::Config,
++        surface_attributes: &SurfaceAttributes<WindowSurface>,
++    ) -> Result<Self::WindowSurface> {
++        unsafe { Self::create_window_surface(self, config, surface_attributes) }
++    }
++
++    unsafe fn create_pbuffer_surface(
++        &self,
++        config: &Self::Config,
++        surface_attributes: &SurfaceAttributes<PbufferSurface>,
++    ) -> Result<Self::PbufferSurface> {
++        unsafe { Self::create_pbuffer_surface(self, config, surface_attributes) }
++    }
++
++    unsafe fn create_context(
++        &self,
++        config: &Self::Config,
++        context_attributes: &crate::context::ContextAttributes,
++    ) -> Result<Self::NotCurrentContext> {
++        unsafe { Self::create_context(self, config, context_attributes) }
++    }
++
++    unsafe fn create_pixmap_surface(
++        &self,
++        config: &Self::Config,
++        surface_attributes: &SurfaceAttributes<PixmapSurface>,
++    ) -> Result<Self::PixmapSurface> {
++        unsafe { Self::create_pixmap_surface(self, config, surface_attributes) }
++    }
++
++    fn get_proc_address(&self, addr: &CStr) -> *const ffi::c_void {
++        unsafe { aros_gui_sys::aros_gui_gl_proc(addr.as_ptr()) }
++    }
++
++    fn version_string(&self) -> String {
++        String::from("AROS GLA")
++    }
++
++    fn supported_features(&self) -> DisplayFeatures {
++        DisplayFeatures::empty()
++    }
++}
++
++impl AsRawDisplay for Display {
++    fn raw_display(&self) -> RawDisplay {
++        RawDisplay::Gla
++    }
++}
++
++impl Sealed for Display {}
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/gla/mod.rs glutin-0.32.3/src/api/gla/mod.rs
+--- glutin-0.32.3.orig/src/api/gla/mod.rs	1970-01-01 01:00:00
++++ glutin-0.32.3/src/api/gla/mod.rs	2026-10-03 12:33:08
+@@ -0,0 +1,10 @@
++//! The GLA Api: AROS's `gl.library`.
++//!
++//! A GLA context renders into the interior of one Intuition window and has no
++//! separate surface object, so the context binds to a window when it is first
++//! made current with a surface.
++
++pub mod config;
++pub mod context;
++pub mod display;
++pub mod surface;
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/gla/surface.rs glutin-0.32.3/src/api/gla/surface.rs
+--- glutin-0.32.3.orig/src/api/gla/surface.rs	1970-01-01 01:00:00
++++ glutin-0.32.3/src/api/gla/surface.rs	2026-10-03 12:33:47
+@@ -0,0 +1,152 @@
++//! A GLA "surface": the Intuition window a context renders into.
++
++use std::fmt;
++use std::marker::PhantomData;
++use std::num::NonZeroU32;
++
++use aros_gui_sys as sys;
++use raw_window_handle::RawWindowHandle;
++
++use crate::config::GetGlConfig;
++use crate::display::GetGlDisplay;
++use crate::error::{ErrorKind, Result};
++use crate::private::Sealed;
++use crate::surface::{
++    AsRawSurface, GlSurface, PbufferSurface, PixmapSurface, RawSurface, SurfaceAttributes,
++    SurfaceTypeTrait, SwapInterval, WindowSurface,
++};
++
++use super::config::Config;
++use super::context::PossiblyCurrentContext;
++use super::display::Display;
++
++impl Display {
++    pub(crate) unsafe fn create_pixmap_surface(
++        &self,
++        _config: &Config,
++        _surface_attributes: &SurfaceAttributes<PixmapSurface>,
++    ) -> Result<Surface<PixmapSurface>> {
++        Err(ErrorKind::NotSupported("pixmaps are not supported with GLA").into())
++    }
++
++    pub(crate) unsafe fn create_pbuffer_surface(
++        &self,
++        _config: &Config,
++        _surface_attributes: &SurfaceAttributes<PbufferSurface>,
++    ) -> Result<Surface<PbufferSurface>> {
++        Err(ErrorKind::NotSupported("pbuffers are not supported with GLA").into())
++    }
++
++    pub(crate) unsafe fn create_window_surface(
++        &self,
++        config: &Config,
++        surface_attributes: &SurfaceAttributes<WindowSurface>,
++    ) -> Result<Surface<WindowSurface>> {
++        let window = match surface_attributes.raw_window_handle {
++            Some(RawWindowHandle::Aros(window)) => window.window.as_ptr() as usize,
++            _ => {
++                return Err(
++                    ErrorKind::NotSupported("provided native window is not supported").into()
++                )
++            },
++        };
++
++        Ok(Surface { display: self.clone(), config: config.clone(), window, _ty: PhantomData })
++    }
++}
++
++/// The Intuition window a GLA context renders into.
++pub struct Surface<T: SurfaceTypeTrait> {
++    display: Display,
++    config: Config,
++    pub(crate) window: usize,
++    _ty: PhantomData<T>,
++}
++
++impl<T: SurfaceTypeTrait> Surface<T> {
++    fn info(&self) -> sys::aros_gui_window_info {
++        let mut info = sys::aros_gui_window_info::default();
++        unsafe { sys::aros_gui_window_info(self.window, &mut info) };
++        info
++    }
++}
++
++impl<T: SurfaceTypeTrait> GlSurface<T> for Surface<T> {
++    type Context = PossiblyCurrentContext;
++    type SurfaceType = T;
++
++    fn buffer_age(&self) -> u32 {
++        0
++    }
++
++    fn width(&self) -> Option<u32> {
++        Some(self.info().inner_width as u32)
++    }
++
++    fn height(&self) -> Option<u32> {
++        Some(self.info().inner_height as u32)
++    }
++
++    fn is_single_buffered(&self) -> bool {
++        false
++    }
++
++    fn swap_buffers(&self, context: &Self::Context) -> Result<()> {
++        unsafe { sys::aros_gui_gl_swap_buffers(context.inner.raw.get()) };
++        Ok(())
++    }
++
++    fn set_swap_interval(&self, _context: &Self::Context, _interval: SwapInterval) -> Result<()> {
++        Err(ErrorKind::NotSupported("swap interval is not supported with GLA").into())
++    }
++
++    fn is_current(&self, context: &Self::Context) -> bool {
++        context.inner.is_current() && context.inner.window.get() == self.window
++    }
++
++    fn is_current_draw(&self, context: &Self::Context) -> bool {
++        self.is_current(context)
++    }
++
++    fn is_current_read(&self, context: &Self::Context) -> bool {
++        self.is_current(context)
++    }
++
++    fn resize(&self, context: &Self::Context, _width: NonZeroU32, _height: NonZeroU32) {
++        // GLA follows the window: re-read its interior.
++        unsafe { sys::aros_gui_gl_set_window(context.inner.raw.get(), self.window) };
++    }
++}
++
++impl<T: SurfaceTypeTrait> GetGlConfig for Surface<T> {
++    type Target = Config;
++
++    fn config(&self) -> Self::Target {
++        self.config.clone()
++    }
++}
++
++impl<T: SurfaceTypeTrait> GetGlDisplay for Surface<T> {
++    type Target = Display;
++
++    fn display(&self) -> Self::Target {
++        self.display.clone()
++    }
++}
++
++impl<T: SurfaceTypeTrait> AsRawSurface for Surface<T> {
++    fn raw_surface(&self) -> RawSurface {
++        RawSurface::Gla(self.window as *const _)
++    }
++}
++
++impl<T: SurfaceTypeTrait> fmt::Debug for Surface<T> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.debug_struct("Surface")
++            .field("window", &self.window)
++            .field("type", &T::surface_type())
++            .finish()
++    }
++}
++
++impl<T: SurfaceTypeTrait> Sealed for Surface<T> {}
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/api/mod.rs glutin-0.32.3/src/api/mod.rs
+--- glutin-0.32.3.orig/src/api/mod.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/api/mod.rs	2026-10-03 12:32:10
+@@ -4,6 +4,8 @@
+ pub mod cgl;
+ #[cfg(egl_backend)]
+ pub mod egl;
++#[cfg(gla_backend)]
++pub mod gla;
+ #[cfg(glx_backend)]
+ pub mod glx;
+ #[cfg(wgl_backend)]
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/config.rs glutin-0.32.3/src/config.rs
+--- glutin-0.32.3.orig/src/config.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/config.rs	2026-10-03 12:32:10
+@@ -14,6 +14,8 @@
+ 
+ #[cfg(cgl_backend)]
+ use crate::api::cgl::config::Config as CglConfig;
++#[cfg(gla_backend)]
++use crate::api::gla::config::Config as GlaConfig;
+ #[cfg(egl_backend)]
+ use crate::api::egl::config::Config as EglConfig;
+ #[cfg(glx_backend)]
+@@ -444,6 +446,9 @@
+     /// The CGL config.
+     #[cfg(cgl_backend)]
+     Cgl(CglConfig),
++    /// The GLA config.
++    #[cfg(gla_backend)]
++    Gla(GlaConfig),
+ }
+ 
+ impl GlConfig for Config {
+@@ -527,6 +532,9 @@
+     /// NSOpenGLPixelFormat.
+     #[cfg(cgl_backend)]
+     Cgl(*const std::ffi::c_void),
++    /// GLA has no config object.
++    #[cfg(gla_backend)]
++    Gla,
+ }
+ 
+ impl AsRawConfig for Config {
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/context.rs glutin-0.32.3/src/context.rs
+--- glutin-0.32.3.orig/src/context.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/context.rs	2026-10-03 12:32:10
+@@ -15,6 +15,10 @@
+ use crate::api::cgl::context::{
+     NotCurrentContext as NotCurrentCglContext, PossiblyCurrentContext as PossiblyCurrentCglContext,
+ };
++#[cfg(gla_backend)]
++use crate::api::gla::context::{
++    NotCurrentContext as NotCurrentGlaContext, PossiblyCurrentContext as PossiblyCurrentGlaContext,
++};
+ #[cfg(egl_backend)]
+ use crate::api::egl::context::{
+     NotCurrentContext as NotCurrentEglContext, PossiblyCurrentContext as PossiblyCurrentEglContext,
+@@ -404,6 +408,9 @@
+     /// The CGL context.
+     #[cfg(cgl_backend)]
+     Cgl(NotCurrentCglContext),
++    /// The GLA context.
++    #[cfg(gla_backend)]
++    Gla(NotCurrentGlaContext),
+ }
+ 
+ impl NotCurrentGlContext for NotCurrentContext {
+@@ -435,6 +442,10 @@
+             (Self::Cgl(context), Surface::Cgl(surface)) => {
+                 Ok(PossiblyCurrentContext::Cgl(context.make_current(surface)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(context), Surface::Gla(surface)) => {
++                Ok(PossiblyCurrentContext::Gla(context.make_current(surface)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -461,6 +472,10 @@
+             (Self::Cgl(context), Surface::Cgl(draw), Surface::Cgl(read)) => {
+                 Ok(PossiblyCurrentContext::Cgl(context.make_current_draw_read(draw, read)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(context), Surface::Gla(draw), Surface::Gla(read)) => {
++                Ok(PossiblyCurrentContext::Gla(context.make_current_draw_read(draw, read)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -533,6 +548,9 @@
+     /// The CGL context.
+     #[cfg(cgl_backend)]
+     Cgl(PossiblyCurrentCglContext),
++    /// The GLA context.
++    #[cfg(gla_backend)]
++    Gla(PossiblyCurrentGlaContext),
+ }
+ 
+ impl PossiblyCurrentGlContext for PossiblyCurrentContext {
+@@ -563,6 +581,8 @@
+             (Self::Wgl(context), Surface::Wgl(surface)) => context.make_current(surface),
+             #[cfg(cgl_backend)]
+             (Self::Cgl(context), Surface::Cgl(surface)) => context.make_current(surface),
++            #[cfg(gla_backend)]
++            (Self::Gla(context), Surface::Gla(surface)) => context.make_current(surface),
+             _ => unreachable!(),
+         }
+     }
+@@ -589,6 +609,10 @@
+             (Self::Cgl(context), Surface::Cgl(draw), Surface::Cgl(read)) => {
+                 context.make_current_draw_read(draw, read)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(context), Surface::Gla(draw), Surface::Gla(read)) => {
++                context.make_current_draw_read(draw, read)
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -646,6 +670,9 @@
+     /// Pointer to NSOpenGLContext.
+     #[cfg(cgl_backend)]
+     Cgl(*const ffi::c_void),
++    /// Pointer to the `GLAContext`.
++    #[cfg(gla_backend)]
++    Gla(*const ffi::c_void),
+ }
+ 
+ /// Priority hint
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/display.rs glutin-0.32.3/src/display.rs
+--- glutin-0.32.3.orig/src/display.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/display.rs	2026-10-03 12:32:10
+@@ -18,6 +18,8 @@
+ 
+ #[cfg(cgl_backend)]
+ use crate::api::cgl::display::Display as CglDisplay;
++#[cfg(gla_backend)]
++use crate::api::gla::display::Display as GlaDisplay;
+ #[cfg(egl_backend)]
+ use crate::api::egl::display::Display as EglDisplay;
+ #[cfg(glx_backend)]
+@@ -191,6 +193,9 @@
+     /// The CGL display.
+     #[cfg(cgl_backend)]
+     Cgl(CglDisplay),
++    /// The GLA display.
++    #[cfg(gla_backend)]
++    Gla(GlaDisplay),
+ }
+ 
+ impl Display {
+@@ -253,6 +258,8 @@
+             },
+             #[cfg(cgl_backend)]
+             DisplayApiPreference::Cgl => unsafe { Ok(Self::Cgl(CglDisplay::new(display)?)) },
++            #[cfg(gla_backend)]
++            DisplayApiPreference::Gla => unsafe { Ok(Self::Gla(GlaDisplay::new(display)?)) },
+         }
+     }
+ }
+@@ -285,6 +292,10 @@
+             Self::Cgl(display) => unsafe {
+                 Ok(Box::new(display.find_configs(template)?.map(Config::Cgl)))
+             },
++            #[cfg(gla_backend)]
++            Self::Gla(display) => unsafe {
++                Ok(Box::new(display.find_configs(template)?.map(Config::Gla)))
++            },
+         }
+     }
+ 
+@@ -310,6 +321,10 @@
+             (Self::Cgl(display), Config::Cgl(config)) => unsafe {
+                 Ok(NotCurrentContext::Cgl(display.create_context(config, context_attributes)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(display), Config::Gla(config)) => unsafe {
++                Ok(NotCurrentContext::Gla(display.create_context(config, context_attributes)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -336,6 +351,10 @@
+             (Self::Cgl(display), Config::Cgl(config)) => unsafe {
+                 Ok(Surface::Cgl(display.create_window_surface(config, surface_attributes)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(display), Config::Gla(config)) => unsafe {
++                Ok(Surface::Gla(display.create_window_surface(config, surface_attributes)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -362,6 +381,10 @@
+             (Self::Cgl(display), Config::Cgl(config)) => unsafe {
+                 Ok(Surface::Cgl(display.create_pbuffer_surface(config, surface_attributes)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(display), Config::Gla(config)) => unsafe {
++                Ok(Surface::Gla(display.create_pbuffer_surface(config, surface_attributes)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -388,6 +411,10 @@
+             (Self::Cgl(display), Config::Cgl(config)) => unsafe {
+                 Ok(Surface::Cgl(display.create_pixmap_surface(config, surface_attributes)?))
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(display), Config::Gla(config)) => unsafe {
++                Ok(Surface::Gla(display.create_pixmap_surface(config, surface_attributes)?))
++            },
+             _ => unreachable!(),
+         }
+     }
+@@ -462,6 +489,11 @@
+     /// The only option on macOS for now.
+     #[cfg(cgl_backend)]
+     Cgl,
++    /// Use only GLA, `gl.library`'s context API.
++    ///
++    /// The only option on AROS.
++    #[cfg(gla_backend)]
++    Gla,
+ 
+     /// Prefer EGL and fallback to GLX.
+     ///
+@@ -519,6 +551,8 @@
+             DisplayApiPreference::WglThenEgl(_) => "WglThenEgl",
+             #[cfg(cgl_backend)]
+             DisplayApiPreference::Cgl => "Cgl",
++            #[cfg(gla_backend)]
++            DisplayApiPreference::Gla => "Gla",
+         };
+ 
+         f.write_fmt(format_args!("DisplayApiPreference::{api}"))
+@@ -589,4 +623,7 @@
+     /// Raw display is CGL.
+     #[cfg(cgl_backend)]
+     Cgl,
++    /// Raw display is GLA.
++    #[cfg(gla_backend)]
++    Gla,
+ }
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/lib.rs glutin-0.32.3/src/lib.rs
+--- glutin-0.32.3.orig/src/lib.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/lib.rs	2026-10-03 12:32:10
+@@ -24,7 +24,13 @@
+ #![cfg_attr(clippy, deny(warnings))]
+ #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+ 
+-#[cfg(all(not(egl_backend), not(glx_backend), not(wgl_backend), not(cgl_backend)))]
++#[cfg(all(
++    not(egl_backend),
++    not(glx_backend),
++    not(wgl_backend),
++    not(cgl_backend),
++    not(gla_backend)
++))]
+ compile_error!("Please select at least one api backend");
+ 
+ pub mod api;
+@@ -67,6 +73,8 @@
+                 $enum::Wgl($($c1)*) => $enum2::Wgl($x),
+                 #[cfg(cgl_backend)]
+                 $enum::Cgl($($c1)*) => $enum2::Cgl($x),
++                #[cfg(gla_backend)]
++                $enum::Gla($($c1)*) => $enum2::Gla($x),
+             }
+         };
+         ($what:ident; $enum:ident ( $($c1:tt)* ) => $x:expr) => {
+@@ -79,6 +87,8 @@
+                 $enum::Wgl($($c1)*) => $x,
+                 #[cfg(cgl_backend)]
+                 $enum::Cgl($($c1)*) => $x,
++                #[cfg(gla_backend)]
++                $enum::Gla($($c1)*) => $x,
+             }
+         };
+     }
+diff -ruN -x .cargo-ok -x .git -x target glutin-0.32.3.orig/src/surface.rs glutin-0.32.3/src/surface.rs
+--- glutin-0.32.3.orig/src/surface.rs	2026-10-03 12:31:09
++++ glutin-0.32.3/src/surface.rs	2026-10-03 12:32:10
+@@ -13,6 +13,8 @@
+ 
+ #[cfg(cgl_backend)]
+ use crate::api::cgl::surface::Surface as CglSurface;
++#[cfg(gla_backend)]
++use crate::api::gla::surface::Surface as GlaSurface;
+ #[cfg(egl_backend)]
+ use crate::api::egl::surface::Surface as EglSurface;
+ #[cfg(glx_backend)]
+@@ -291,6 +293,9 @@
+     /// The CGL surface.
+     #[cfg(cgl_backend)]
+     Cgl(CglSurface<T>),
++    /// The GLA surface.
++    #[cfg(gla_backend)]
++    Gla(GlaSurface<T>),
+ }
+ 
+ impl<T: SurfaceTypeTrait> GlSurface<T> for Surface<T> {
+@@ -327,6 +332,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.swap_buffers(context)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.swap_buffers(context)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.swap_buffers(context)
+@@ -349,6 +358,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.set_swap_interval(context, interval)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.set_swap_interval(context, interval)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.set_swap_interval(context, interval)
+@@ -371,6 +384,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.is_current(context)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.is_current(context)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.is_current(context)
+@@ -393,6 +410,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.is_current_draw(context)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.is_current_draw(context)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.is_current_draw(context)
+@@ -415,6 +436,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.is_current_read(context)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.is_current_read(context)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.is_current_read(context)
+@@ -440,6 +465,10 @@
+             (Self::Cgl(surface), PossiblyCurrentContext::Cgl(context)) => {
+                 surface.resize(context, width, height)
+             },
++            #[cfg(gla_backend)]
++            (Self::Gla(surface), PossiblyCurrentContext::Gla(context)) => {
++                surface.resize(context, width, height)
++            },
+             #[cfg(wgl_backend)]
+             (Self::Wgl(surface), PossiblyCurrentContext::Wgl(context)) => {
+                 surface.resize(context, width, height)
+@@ -526,6 +555,9 @@
+     /// Pointer to `NSView`.
+     #[cfg(cgl_backend)]
+     Cgl(*const std::ffi::c_void),
++    /// Pointer to the Intuition `struct Window`.
++    #[cfg(gla_backend)]
++    Gla(*const std::ffi::c_void),
+ }
+ 
+ /// The rect that is being used in various surface operations.

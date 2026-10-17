@@ -1,0 +1,262 @@
+diff -ruN -x .cargo-ok -x .git -x target polling-3.11.0.orig/Cargo.toml polling-3.11.0/Cargo.toml
+--- polling-3.11.0.orig/Cargo.toml	2026-10-04 08:51:59
++++ polling-3.11.0/Cargo.toml	2026-10-03 11:22:47
+@@ -123,7 +123,7 @@
+ [target.'cfg(all(unix, not(target_os="vita")))'.dev-dependencies.signal-hook]
+ version = "0.3.17"
+ 
+-[target.'cfg(any(unix, target_os = "fuchsia", target_os = "vxworks"))'.dependencies.rustix]
++[target.'cfg(all(any(unix, target_os = "fuchsia", target_os = "vxworks"), not(target_os = "aros")))'.dependencies.rustix]
+ version = "1.0.5"
+ features = [
+     "event",
+@@ -168,4 +168,5 @@
+ check-cfg = [
+     "cfg(polling_test_poll_backend)",
+     "cfg(polling_test_epoll_pipe)",
++    'cfg(target_os, values("aros"))',
+ ]
+diff -ruN -x .cargo-ok -x .git -x target polling-3.11.0.orig/src/aros.rs polling-3.11.0/src/aros.rs
+--- polling-3.11.0.orig/src/aros.rs	1970-01-01 01:00:00
++++ polling-3.11.0/src/aros.rs	2026-10-03 11:21:13
+@@ -0,0 +1,187 @@
++//! Event queue for AROS.
++//!
++//! AROS has no `poll()`, so file descriptors cannot be watched. Instead the
++//! threads that do the I/O post readiness themselves, see
++//! [`PollerArosExt`](crate::os::aros::PollerArosExt).
++
++use std::io;
++use std::os::unix::io::{BorrowedFd, RawFd};
++use std::sync::{Condvar, Mutex};
++use std::time::Instant;
++
++use crate::{Event, PollMode};
++
++/// Interface to the posted event queue.
++#[derive(Debug)]
++pub struct Poller {
++    state: Mutex<State>,
++    cond: Condvar,
++}
++
++#[derive(Debug, Default)]
++struct State {
++    queue: Vec<Event>,
++    notified: bool,
++}
++
++fn unsupported() -> io::Error {
++    io::Error::new(
++        io::ErrorKind::Unsupported,
++        "AROS cannot poll file descriptors; post events instead",
++    )
++}
++
++impl Poller {
++    /// Creates a new poller.
++    pub fn new() -> io::Result<Poller> {
++        Ok(Poller {
++            state: Mutex::new(State::default()),
++            cond: Condvar::new(),
++        })
++    }
++
++    /// Whether this poller supports level-triggered events.
++    pub fn supports_level(&self) -> bool {
++        true
++    }
++
++    /// Whether this poller supports edge-triggered events.
++    pub fn supports_edge(&self) -> bool {
++        false
++    }
++
++    /// Adds a file descriptor.
++    pub fn add(&self, _fd: RawFd, _ev: Event, _mode: PollMode) -> io::Result<()> {
++        Err(unsupported())
++    }
++
++    /// Modifies an existing file descriptor.
++    pub fn modify(&self, _fd: BorrowedFd<'_>, _ev: Event, _mode: PollMode) -> io::Result<()> {
++        Err(unsupported())
++    }
++
++    /// Deletes a file descriptor.
++    pub fn delete(&self, _fd: BorrowedFd<'_>) -> io::Result<()> {
++        Err(unsupported())
++    }
++
++    /// Waits for posted events or a notification, until the deadline.
++    pub fn wait_deadline(&self, events: &mut Events, deadline: Option<Instant>) -> io::Result<()> {
++        let mut state = self.state.lock().unwrap();
++
++        while state.queue.is_empty() && !state.notified {
++            match deadline {
++                None => state = self.cond.wait(state).unwrap(),
++                Some(deadline) => {
++                    let now = Instant::now();
++                    if now >= deadline {
++                        break;
++                    }
++                    state = self.cond.wait_timeout(state, deadline - now).unwrap().0;
++                }
++            }
++        }
++
++        state.notified = false;
++        events.inner.append(&mut state.queue);
++
++        Ok(())
++    }
++
++    /// Sends a notification to wake up the current or next `wait()` call.
++    pub fn notify(&self) -> io::Result<()> {
++        self.state.lock().unwrap().notified = true;
++        self.cond.notify_all();
++        Ok(())
++    }
++
++    /// Queues an event and wakes up the current or next `wait()` call.
++    pub fn post(&self, ev: Event) -> io::Result<()> {
++        self.state.lock().unwrap().queue.push(ev);
++        self.cond.notify_all();
++        Ok(())
++    }
++}
++
++/// A list of reported I/O events.
++pub struct Events {
++    inner: Vec<Event>,
++}
++
++impl Events {
++    /// Creates an empty list.
++    pub fn with_capacity(cap: usize) -> Events {
++        Self {
++            inner: Vec::with_capacity(cap),
++        }
++    }
++
++    /// Iterates over I/O events.
++    pub fn iter(&self) -> impl Iterator<Item = Event> + '_ {
++        self.inner.iter().copied()
++    }
++
++    /// Clear the list.
++    pub fn clear(&mut self) {
++        self.inner.clear();
++    }
++
++    /// Get the capacity of the list.
++    pub fn capacity(&self) -> usize {
++        self.inner.capacity()
++    }
++}
++
++/// Extra information associated with an event.
++#[derive(Debug, Copy, Clone, PartialEq, Eq)]
++pub struct EventExtra {
++    hup: bool,
++    pri: bool,
++}
++
++impl EventExtra {
++    /// Creates an empty set of extra information.
++    #[inline]
++    pub const fn empty() -> Self {
++        Self {
++            hup: false,
++            pri: false,
++        }
++    }
++
++    /// Set the interrupt flag.
++    #[inline]
++    pub fn set_hup(&mut self, value: bool) {
++        self.hup = value;
++    }
++
++    /// Set the priority flag.
++    #[inline]
++    pub fn set_pri(&mut self, value: bool) {
++        self.pri = value;
++    }
++
++    /// Is this an interrupt event?
++    #[inline]
++    pub fn is_hup(&self) -> bool {
++        self.hup
++    }
++
++    /// Is this a priority event?
++    #[inline]
++    pub fn is_pri(&self) -> bool {
++        self.pri
++    }
++
++    /// Posted events carry no connection state.
++    #[inline]
++    pub fn is_connect_failed(&self) -> Option<bool> {
++        None
++    }
++
++    /// Posted events carry no error state.
++    #[inline]
++    pub fn is_err(&self) -> Option<bool> {
++        None
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target polling-3.11.0.orig/src/lib.rs polling-3.11.0/src/lib.rs
+--- polling-3.11.0.orig/src/lib.rs	2026-10-04 08:51:59
++++ polling-3.11.0/src/lib.rs	2026-10-03 11:22:02
+@@ -102,6 +102,9 @@
+     ))] {
+         mod kqueue;
+         use kqueue as sys;
++    } else if #[cfg(target_os = "aros")] {
++        mod aros;
++        use aros as sys;
+     } else if #[cfg(any(
+         target_os = "vxworks",
+         target_os = "hermit",
+diff -ruN -x .cargo-ok -x .git -x target polling-3.11.0.orig/src/os/aros.rs polling-3.11.0/src/os/aros.rs
+--- polling-3.11.0.orig/src/os/aros.rs	1970-01-01 01:00:00
++++ polling-3.11.0/src/os/aros.rs	2026-10-03 11:21:13
+@@ -0,0 +1,23 @@
++//! Functionality that is only available on AROS.
++
++use super::__private::PollerSealed;
++use crate::{Event, Poller};
++
++use std::io;
++
++/// Extension trait for the [`Poller`] type on AROS.
++///
++/// AROS cannot poll file descriptors, so the threads doing the I/O post
++/// readiness events to the poller themselves.
++///
++/// [`Poller`]: crate::Poller
++pub trait PollerArosExt: PollerSealed {
++    /// Post a new [`Event`] to the poller, waking up the current or next `wait()`.
++    fn post(&self, event: Event) -> io::Result<()>;
++}
++
++impl PollerArosExt for Poller {
++    fn post(&self, event: Event) -> io::Result<()> {
++        self.poller.post(event)
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target polling-3.11.0.orig/src/os.rs polling-3.11.0/src/os.rs
+--- polling-3.11.0.orig/src/os.rs	2026-10-04 08:51:59
++++ polling-3.11.0/src/os.rs	2026-10-03 11:21:13
+@@ -15,6 +15,9 @@
+ #[cfg(target_os = "windows")]
+ pub mod iocp;
+ 
++#[cfg(target_os = "aros")]
++pub mod aros;
++
+ mod __private {
+     #[doc(hidden)]
+     #[allow(dead_code)]

@@ -1,0 +1,108 @@
+diff -ruN -x .cargo-ok -x .git -x target libsqlite3-sys-0.35.0.orig/build.rs libsqlite3-sys-0.35.0/build.rs
+--- libsqlite3-sys-0.35.0.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ libsqlite3-sys-0.35.0/build.rs	2026-10-13 14:44:18.718008853 +0100
+@@ -143,6 +143,15 @@
+             .flag("-D_POSIX_THREAD_SAFE_FUNCTIONS") // cross compile with MinGW
+             .warnings(false);
+ 
++        // AROS has no mmap()/shared memory and no dlopen(): no WAL journal,
++        // no memory mapped I/O, no extension loading.
++        if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("aros") {
++            cfg.flag("-DSQLITE_OMIT_WAL")
++                .flag("-DSQLITE_MAX_MMAP_SIZE=0")
++                .flag("-USQLITE_ENABLE_LOAD_EXTENSION")
++                .flag("-DSQLITE_OMIT_LOAD_EXTENSION");
++        }
++
+         if cfg!(feature = "bundled-sqlcipher") {
+             cfg.flag("-DSQLITE_HAS_CODEC").flag("-DSQLITE_TEMP_STORE=2");
+ 
+diff -ruN -x .cargo-ok -x .git -x target libsqlite3-sys-0.35.0.orig/sqlite3/sqlite3.c libsqlite3-sys-0.35.0/sqlite3/sqlite3.c
+--- libsqlite3-sys-0.35.0.orig/sqlite3/sqlite3.c	2006-07-24 02:21:28.000000000 +0100
++++ libsqlite3-sys-0.35.0/sqlite3/sqlite3.c	2026-10-14 14:03:22.109251064 +0100
+@@ -29859,6 +29859,17 @@
+ 
+ #include <pthread.h>
+ 
++#ifdef __AROS__
++/* The AROS pthread.h drags in exec/types.h, whose GLOBAL macro (extern)
++** clobbers the one defined above; restore it. */
++# undef GLOBAL
++# ifdef SQLITE_OMIT_WSD
++#  define GLOBAL(t,v) (*(t*)sqlite3_wsd_find((void*)&(v), sizeof(v)))
++# else
++#  define GLOBAL(t,v) v
++# endif
++#endif
++
+ /*
+ ** The sqlite3_mutex.id, sqlite3_mutex.nRef, and sqlite3_mutex.owner fields
+ ** are necessary under two conditions:  (1) Debug builds and (2) using
+@@ -39262,6 +39273,26 @@
+ ** testing and sandboxing.  The following array holds the names and pointers
+ ** to all overrideable system calls.
+ */
++#ifdef __AROS__
++/* AROS: posixc has no POSIX byte-range locks (F_SETLK fails, so every
++** database open ends in SQLITE_IOERR_LOCK). Programs on AROS use a database
++** from one process at a time, so report locks as granted and the file as
++** unlocked; pass everything else through. */
++static int arosFcntl(int fd, int op, ...){
++  va_list ap;
++  void *arg;
++  va_start(ap, op);
++  arg = va_arg(ap, void*);
++  va_end(ap);
++  if( op==F_SETLK || op==F_SETLKW ) return 0;
++  if( op==F_GETLK ){
++    ((struct flock*)arg)->l_type = F_UNLCK;
++    return 0;
++  }
++  return fcntl(fd, op, arg);
++}
++#endif
++
+ static struct unix_syscall {
+   const char *zName;            /* Name of the system call */
+   sqlite3_syscall_ptr pCurrent; /* Current value of the system call */
+@@ -39299,7 +39330,11 @@
+   { "ftruncate",    (sqlite3_syscall_ptr)ftruncate,  0  },
+ #define osFtruncate ((int(*)(int,off_t))aSyscall[6].pCurrent)
+ 
++#ifdef __AROS__
++  { "fcntl",        (sqlite3_syscall_ptr)arosFcntl,  0  },
++#else
+   { "fcntl",        (sqlite3_syscall_ptr)fcntl,      0  },
++#endif
+ #define osFcntl     ((int(*)(int,int,...))aSyscall[7].pCurrent)
+ 
+   { "read",         (sqlite3_syscall_ptr)read,       0  },
+@@ -45561,6 +45596,28 @@
+   path.nSymlink = 0;
+   path.nOut = nOut;
+   path.zOut = zOut;
++#ifdef __AROS__
++  /* AROS paths: "Volume:dir/file" is absolute, anything else is relative to
++  ** the current directory, and joining never starts with a '/' (that would
++  ** mean the parent directory / a volume named "/..." to DOS). */
++  {
++    const char *zColon = strchr(zPath, ':');
++    const char *zSlash = strchr(zPath, '/');
++    if( zColon && (zSlash==0 || zColon<zSlash) ){
++      sqlite3_snprintf(nOut, zOut, "%s", zPath);
++    }else{
++      char zPwd[SQLITE_MAX_PATHLEN+2];
++      size_t nPwd;
++      if( osGetcwd(zPwd, sizeof(zPwd)-2)==0 ){
++        return unixLogError(SQLITE_CANTOPEN_BKPT, "getcwd", zPath);
++      }
++      nPwd = strlen(zPwd);
++      sqlite3_snprintf(nOut, zOut, "%s%s%s", zPwd,
++                       (nPwd && zPwd[nPwd-1]!=':' && zPwd[nPwd-1]!='/') ? "/" : "", zPath);
++    }
++    return SQLITE_OK;
++  }
++#endif
+   if( zPath[0]!='/' ){
+     char zPwd[SQLITE_MAX_PATHLEN+2];
+     if( osGetcwd(zPwd, sizeof(zPwd)-2)==0 ){

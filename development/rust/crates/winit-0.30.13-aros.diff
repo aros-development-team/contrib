@@ -1,0 +1,1582 @@
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/build.rs winit-0.30.13/build.rs
+--- winit-0.30.13.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ winit-0.30.13/build.rs	2026-10-13 13:11:01.102741102 +0100
+@@ -13,8 +13,9 @@
+         ios_platform: { target_os = "ios" },
+         windows_platform: { target_os = "windows" },
+         apple: { any(target_os = "ios", target_os = "macos") },
+-        free_unix: { all(unix, not(apple), not(android_platform), not(target_os = "emscripten")) },
++        free_unix: { all(unix, not(apple), not(android_platform), not(target_os = "emscripten"), not(aros_platform)) },
+         redox: { target_os = "redox" },
++        aros_platform: { target_os = "aros" },
+ 
+         // Native displays.
+         x11_platform: { all(feature = "x11", free_unix, not(redox)) },
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/Cargo.toml winit-0.30.13/Cargo.toml
+--- winit-0.30.13.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ winit-0.30.13/Cargo.toml	2026-10-13 13:11:01.102353002 +0100
+@@ -226,31 +226,31 @@
+ version = "2"
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.ahash]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.ahash]
+ version = "0.8.7"
+ features = ["no-rng"]
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.bytemuck]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.bytemuck]
+ version = "1.13.1"
+ optional = true
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.calloop]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.calloop]
+ version = "0.13.0"
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.libc]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.libc]
+ version = "0.2.64"
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.memmap2]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.memmap2]
+ version = "0.9.0"
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.percent-encoding]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.percent-encoding]
+ version = "2.0"
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.rustix]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.rustix]
+ version = "0.38.4"
+ features = [
+     "std",
+@@ -260,43 +260,43 @@
+ ]
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.sctk]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.sctk]
+ version = "0.19.2"
+ features = ["calloop"]
+ optional = true
+ default-features = false
+ package = "smithay-client-toolkit"
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.sctk-adwaita]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.sctk-adwaita]
+ version = "0.10.1"
+ optional = true
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-backend]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-backend]
+ version = "0.3.10"
+ features = ["client_system"]
+ optional = true
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-client]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-client]
+ version = "0.31.10"
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-protocols]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-protocols]
+ version = "0.32.8"
+ features = ["staging"]
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-protocols-plasma]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.wayland-protocols-plasma]
+ version = "0.3.8"
+ features = ["client"]
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.x11-dl]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.x11-dl]
+ version = "2.19.1"
+ optional = true
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.x11rb]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.x11rb]
+ version = "0.13.0"
+ features = [
+     "allow-unsafe-code",
+@@ -309,7 +309,7 @@
+ optional = true
+ default-features = false
+ 
+-[target.'cfg(all(unix, not(any(target_os = "redox", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.xkbcommon-dl]
++[target.'cfg(all(unix, not(any(target_os = "redox", target_os = "aros", target_family = "wasm", target_os = "android", target_os = "ios", target_os = "macos"))))'.dependencies.xkbcommon-dl]
+ version = "0.4.2"
+ 
+ [target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies.block2]
+@@ -512,6 +512,9 @@
+     "NSValue",
+ ]
+ 
++[target.'cfg(target_os = "aros")'.dependencies.aros-gui-sys]
++version = "0.1"
++
+ [target.'cfg(target_os = "redox")'.dependencies.orbclient]
+ version = "0.3.47"
+ default-features = false
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/event.rs winit-0.30.13/src/event.rs
+--- winit-0.30.13.orig/src/event.rs	2006-07-24 02:21:28.000000000 +0100
++++ winit-0.30.13/src/event.rs	2026-10-13 13:11:01.103078302 +0100
+@@ -982,7 +982,7 @@
+ }
+ 
+ impl InnerSizeWriter {
+-    #[cfg(not(orbital_platform))]
++    #[cfg(not(any(orbital_platform, aros_platform)))]
+     pub(crate) fn new(new_inner_size: Weak<Mutex<PhysicalSize<u32>>>) -> Self {
+         Self { new_inner_size }
+     }
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform/mod.rs winit-0.30.13/src/platform/mod.rs
+--- winit-0.30.13.orig/src/platform/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ winit-0.30.13/src/platform/mod.rs	2026-10-13 13:11:01.103179302 +0100
+@@ -47,9 +47,17 @@
+     x11_platform,
+     wayland_platform,
+     orbital_platform,
++    aros_platform,
+     docsrs
+ ))]
+ pub mod modifier_supplement;
+ 
+-#[cfg(any(windows_platform, macos_platform, x11_platform, wayland_platform, docsrs))]
++#[cfg(any(
++    windows_platform,
++    macos_platform,
++    x11_platform,
++    wayland_platform,
++    aros_platform,
++    docsrs
++))]
+ pub mod scancode;
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform_impl/aros/event_loop.rs winit-0.30.13/src/platform_impl/aros/event_loop.rs
+--- winit-0.30.13.orig/src/platform_impl/aros/event_loop.rs	1970-01-01 01:00:00.000000000 +0100
++++ winit-0.30.13/src/platform_impl/aros/event_loop.rs	2026-10-13 14:19:48.968545016 +0100
+@@ -0,0 +1,495 @@
++use std::cell::Cell;
++use std::collections::VecDeque;
++use std::ffi::{c_int, c_void};
++use std::marker::PhantomData;
++use std::sync::atomic::{AtomicBool, Ordering};
++use std::sync::{mpsc, Arc, Mutex};
++use std::time::Instant;
++
++use aros_gui_sys as sys;
++
++use super::keyboard;
++use super::{DeviceId, MonitorHandle, OsError, PlatformSpecificEventLoopAttributes, WindowId};
++use crate::error::EventLoopError;
++use crate::event::{
++    self, DeviceEvent, ElementState, MouseButton, MouseScrollDelta, StartCause, TouchPhase,
++};
++use crate::event_loop::{self, ControlFlow, DeviceEvents};
++use crate::window::{CustomCursor as RootCustomCursor, CustomCursorSource, Theme};
++
++/// Wakes the event loop from any thread by signalling its task.
++#[derive(Debug)]
++pub(super) struct Waker {
++    task: usize,
++    mask: u32,
++}
++
++impl Waker {
++    pub(super) fn wake(&self) {
++        unsafe { sys::aros_gui_signal_send(self.task as *mut c_void, self.mask) };
++    }
++}
++
++/// State shared between the event loop and its windows and proxies.
++#[derive(Debug)]
++pub(super) struct Shared {
++    pub(super) redraws: Mutex<VecDeque<WindowId>>,
++    /// Windows dropped while the loop runs. The loop closes them itself, so
++    /// it never reads a port that `CloseWindow` has freed.
++    pub(super) destroys: Mutex<VecDeque<usize>>,
++    pub(super) running: AtomicBool,
++    pub(super) waker: Waker,
++}
++
++/// A window the loop reads messages from.
++struct WindowState {
++    info: sys::aros_gui_window_info,
++    qualifier: u16,
++    cursor: (i32, i32),
++}
++
++impl WindowState {
++    fn id(&self) -> WindowId {
++        WindowId { handle: self.info.handle as u64 }
++    }
++}
++
++pub struct EventLoop<T: 'static> {
++    windows: Vec<WindowState>,
++    window_target: event_loop::ActiveEventLoop,
++    wake_bit: c_int,
++    user_events_sender: mpsc::Sender<T>,
++    user_events_receiver: mpsc::Receiver<T>,
++}
++
++impl<T: 'static> EventLoop<T> {
++    pub(crate) fn new(_: &PlatformSpecificEventLoopAttributes) -> Result<Self, EventLoopError> {
++        let wake_bit = unsafe { sys::aros_gui_signal_alloc() };
++        if wake_bit < 0 {
++            return Err(EventLoopError::Os(os_error!(OsError("no free signal bit"))));
++        }
++        let task = unsafe { sys::aros_gui_task_self() } as usize;
++        let (user_events_sender, user_events_receiver) = mpsc::channel();
++
++        Ok(Self {
++            windows: Vec::new(),
++            window_target: event_loop::ActiveEventLoop {
++                p: ActiveEventLoop {
++                    control_flow: Cell::new(ControlFlow::default()),
++                    exit: Cell::new(false),
++                    creates: Mutex::new(VecDeque::new()),
++                    shared: Arc::new(Shared {
++                        redraws: Mutex::new(VecDeque::new()),
++                        destroys: Mutex::new(VecDeque::new()),
++                        running: AtomicBool::new(true),
++                        waker: Waker { task, mask: 1 << wake_bit },
++                    }),
++                },
++                _marker: PhantomData,
++            },
++            wake_bit,
++            user_events_sender,
++            user_events_receiver,
++        })
++    }
++
++    fn shared(&self) -> &Arc<Shared> {
++        &self.window_target.p.shared
++    }
++
++    fn destroy_pending(&self, handle: usize) -> bool {
++        self.shared().destroys.lock().unwrap().contains(&handle)
++    }
++
++    fn close_destroyed<F>(&mut self, event_handler: &mut F)
++    where
++        F: FnMut(event::Event<T>, &event_loop::ActiveEventLoop),
++    {
++        loop {
++            // Popped in its own statement so the lock is released before the handler runs.
++            let Some(handle) = self.shared().destroys.lock().unwrap().pop_front() else { break };
++            let id = WindowId { handle: handle as u64 };
++            unsafe { sys::aros_gui_window_close(handle) };
++            self.windows.retain(|window| window.info.handle != handle);
++            self.shared().redraws.lock().unwrap().retain(|redraw| *redraw != id);
++            event_handler(
++                event::Event::WindowEvent {
++                    window_id: crate::window::WindowId(id),
++                    event: event::WindowEvent::Destroyed,
++                },
++                &self.window_target,
++            );
++        }
++    }
++
++    fn send_modifiers<F>(window: &mut WindowState, qualifier: u16, mut send: F)
++    where
++        F: FnMut(event::WindowEvent),
++    {
++        let before = keyboard::modifiers(window.qualifier);
++        window.qualifier = qualifier;
++        let after = keyboard::modifiers(qualifier);
++        if before != after {
++            send(event::WindowEvent::ModifiersChanged(after));
++        }
++    }
++
++    fn process_message<F>(
++        window: &mut WindowState,
++        msg: sys::aros_gui_message,
++        redraws: &Mutex<VecDeque<WindowId>>,
++        mut send_any: F,
++    ) where
++        F: FnMut(event::Event<T>),
++    {
++        let device_id = event::DeviceId(DeviceId);
++        let window_id = crate::window::WindowId(window.id());
++        // Macros rather than closures: both kinds of event go through the one
++        // handler, which a closure would hold on to.
++        macro_rules! send {
++            ($event:expr) => {
++                send_any(event::Event::WindowEvent { window_id, event: $event })
++            };
++        }
++        macro_rules! send_device {
++            ($event:expr) => {
++                send_any(event::Event::DeviceEvent { device_id, event: $event })
++            };
++        }
++
++        match msg.class {
++            sys::IDCMP_CLOSEWINDOW => send!(event::WindowEvent::CloseRequested),
++            sys::IDCMP_ACTIVEWINDOW => send!(event::WindowEvent::Focused(true)),
++            sys::IDCMP_INACTIVEWINDOW => send!(event::WindowEvent::Focused(false)),
++            sys::IDCMP_NEWSIZE | sys::IDCMP_CHANGEWINDOW => {
++                let old = window.info;
++                unsafe { sys::aros_gui_window_info(old.handle, &mut window.info) };
++                let new = window.info;
++                if (new.left, new.top) != (old.left, old.top) {
++                    send!(event::WindowEvent::Moved((new.left, new.top).into()));
++                }
++                if (new.inner_width, new.inner_height) != (old.inner_width, old.inner_height) {
++                    send!(event::WindowEvent::Resized(
++                        (new.inner_width as u32, new.inner_height as u32).into(),
++                    ));
++                    let mut redraws = redraws.lock().unwrap();
++                    if !redraws.contains(&window.id()) {
++                        redraws.push_back(window.id());
++                    }
++                }
++            },
++            sys::IDCMP_MOUSEMOVE => {
++                // With the pointer grabbed the window is in IDCMP_DELTAMOVE
++                // mode and reports movements, which go out as device motion.
++                if unsafe { sys::aros_gui_window_delta_move(window.info.handle) } != 0 {
++                    if (msg.mouse_x, msg.mouse_y) != (0, 0) {
++                        send_device!(DeviceEvent::MouseMotion {
++                            delta: (msg.mouse_x as f64, msg.mouse_y as f64),
++                        });
++                    }
++                    return;
++                }
++                window.cursor = (msg.mouse_x, msg.mouse_y);
++                send!(event::WindowEvent::CursorMoved {
++                    device_id,
++                    position: (msg.mouse_x as f64, msg.mouse_y as f64).into(),
++                });
++            },
++            sys::IDCMP_MOUSEBUTTONS => {
++                Self::send_modifiers(window, msg.qualifier, &mut |event| send_any(event::Event::WindowEvent { window_id, event }));
++                if window.cursor != (msg.mouse_x, msg.mouse_y) {
++                    window.cursor = (msg.mouse_x, msg.mouse_y);
++                    send!(event::WindowEvent::CursorMoved {
++                        device_id,
++                        position: (msg.mouse_x as f64, msg.mouse_y as f64).into(),
++                    });
++                }
++                let button = match msg.code & !sys::IECODE_UP_PREFIX {
++                    sys::IECODE_LBUTTON => MouseButton::Left,
++                    sys::IECODE_RBUTTON => MouseButton::Right,
++                    sys::IECODE_MBUTTON => MouseButton::Middle,
++                    _ => return,
++                };
++                let state = if msg.code & sys::IECODE_UP_PREFIX != 0 {
++                    ElementState::Released
++                } else {
++                    ElementState::Pressed
++                };
++                send!(event::WindowEvent::MouseInput { device_id, state, button });
++            },
++            sys::IDCMP_RAWKEY => {
++                let delta = match msg.code {
++                    keyboard::RAWKEY_NM_WHEEL_UP => Some((0.0, 1.0)),
++                    keyboard::RAWKEY_NM_WHEEL_DOWN => Some((0.0, -1.0)),
++                    keyboard::RAWKEY_NM_WHEEL_LEFT => Some((1.0, 0.0)),
++                    keyboard::RAWKEY_NM_WHEEL_RIGHT => Some((-1.0, 0.0)),
++                    code if code & !sys::IECODE_UP_PREFIX >= keyboard::RAWKEY_NM_WHEEL_UP
++                        && code & !sys::IECODE_UP_PREFIX <= keyboard::RAWKEY_NM_WHEEL_RIGHT =>
++                    {
++                        // The wheel's release half carries nothing.
++                        return;
++                    },
++                    _ => None,
++                };
++                if let Some((x, y)) = delta {
++                    send!(event::WindowEvent::MouseWheel {
++                        device_id,
++                        delta: MouseScrollDelta::LineDelta(x, y),
++                        phase: TouchPhase::Moved,
++                    });
++                    return;
++                }
++
++                let qualifier = keyboard::qualifier_after(msg.code, msg.qualifier);
++                let key = event::WindowEvent::KeyboardInput {
++                    device_id,
++                    event: keyboard::key_event(msg.code, msg.qualifier),
++                    is_synthetic: false,
++                };
++                // A modifier key reports itself first, like the other backends;
++                // any other key is seen under the modifiers already in effect.
++                if keyboard::is_modifier_key(msg.code) {
++                    send!(key);
++                    Self::send_modifiers(window, qualifier, &mut |event| send_any(event::Event::WindowEvent { window_id, event }));
++                } else {
++                    Self::send_modifiers(window, qualifier, &mut |event| send_any(event::Event::WindowEvent { window_id, event }));
++                    send!(key);
++                }
++            },
++            _ => (),
++        }
++    }
++
++    pub fn run<F>(mut self, mut event_handler: F) -> Result<(), EventLoopError>
++    where
++        F: FnMut(event::Event<T>, &event_loop::ActiveEventLoop),
++    {
++        let mut start_cause = StartCause::Init;
++
++        loop {
++            event_handler(event::Event::NewEvents(start_cause), &self.window_target);
++
++            if start_cause == StartCause::Init {
++                event_handler(event::Event::Resumed, &self.window_target);
++            }
++
++            // Windows opened since the last iteration.
++            loop {
++                let Some(info) = self.window_target.p.creates.lock().unwrap().pop_front() else {
++                    break;
++                };
++                let window =
++                    WindowState { info, qualifier: 0, cursor: (i32::MIN, i32::MIN) };
++                let id = window.id();
++                self.windows.push(window);
++                event_handler(
++                    event::Event::WindowEvent {
++                        window_id: crate::window::WindowId(id),
++                        event: event::WindowEvent::Resized(
++                            (info.inner_width as u32, info.inner_height as u32).into(),
++                        ),
++                    },
++                    &self.window_target,
++                );
++            }
++
++            self.close_destroyed(&mut event_handler);
++
++            // IDCMP messages. Stop reading a window as soon as it is dropped.
++            let mut i = 0;
++            while i < self.windows.len() {
++                let handle = self.windows[i].info.handle;
++                let id = crate::window::WindowId(self.windows[i].id());
++                loop {
++                    if self.destroy_pending(handle) {
++                        break;
++                    }
++                    let mut msg = sys::aros_gui_message::default();
++                    if unsafe { sys::aros_gui_window_next_message(handle, &mut msg) } == 0 {
++                        break;
++                    }
++                    let target = &self.window_target;
++                    Self::process_message(
++                        &mut self.windows[i],
++                        msg,
++                        &target.p.shared.redraws,
++                        |event| event_handler(event, target),
++                    );
++                }
++                i += 1;
++            }
++
++            while let Ok(event) = self.user_events_receiver.try_recv() {
++                event_handler(event::Event::UserEvent(event), &self.window_target);
++            }
++
++            // The lock is not held while the handler runs, which may request more.
++            loop {
++                let Some(id) = self.shared().redraws.lock().unwrap().pop_front() else { break };
++                event_handler(
++                    event::Event::WindowEvent {
++                        window_id: crate::window::WindowId(id),
++                        event: event::WindowEvent::RedrawRequested,
++                    },
++                    &self.window_target,
++                );
++            }
++
++            event_handler(event::Event::AboutToWait, &self.window_target);
++
++            self.close_destroyed(&mut event_handler);
++
++            if self.window_target.p.exiting() {
++                break;
++            }
++
++            let requested_resume = match self.window_target.p.control_flow() {
++                ControlFlow::Poll => {
++                    start_cause = StartCause::Poll;
++                    continue;
++                },
++                ControlFlow::Wait => None,
++                ControlFlow::WaitUntil(instant) => Some(instant),
++            };
++
++            // Anything queued by the handler wakes the loop straight away.
++            let mut mask = self.shared().waker.mask;
++            for window in &self.windows {
++                mask |= window.info.sigmask;
++            }
++            let start = Instant::now();
++            let timeout_us = match requested_resume {
++                None => -1,
++                Some(instant) => instant
++                    .checked_duration_since(start)
++                    .map_or(0, |d| d.as_micros().min(i64::MAX as u128) as i64),
++            };
++            let mut timed_out = 0;
++            unsafe { sys::aros_gui_wait(mask, timeout_us, &mut timed_out) };
++
++            start_cause = match requested_resume {
++                Some(requested_resume) if timed_out != 0 => {
++                    StartCause::ResumeTimeReached { start, requested_resume }
++                },
++                _ => StartCause::WaitCancelled { start, requested_resume },
++            };
++        }
++
++        event_handler(event::Event::LoopExiting, &self.window_target);
++
++        // Windows still alive close themselves when dropped from here on.
++        self.shared().running.store(false, Ordering::SeqCst);
++        self.close_destroyed(&mut |_, _| ());
++        unsafe {
++            sys::aros_gui_signal_free(self.wake_bit);
++            sys::aros_gui_wait_cleanup();
++        }
++
++        Ok(())
++    }
++
++    pub fn window_target(&self) -> &event_loop::ActiveEventLoop {
++        &self.window_target
++    }
++
++    pub fn create_proxy(&self) -> EventLoopProxy<T> {
++        EventLoopProxy {
++            user_events_sender: self.user_events_sender.clone(),
++            shared: self.shared().clone(),
++        }
++    }
++}
++
++pub struct EventLoopProxy<T: 'static> {
++    user_events_sender: mpsc::Sender<T>,
++    shared: Arc<Shared>,
++}
++
++impl<T> EventLoopProxy<T> {
++    pub fn send_event(&self, event: T) -> Result<(), event_loop::EventLoopClosed<T>> {
++        self.user_events_sender
++            .send(event)
++            .map_err(|mpsc::SendError(x)| event_loop::EventLoopClosed(x))?;
++        self.shared.waker.wake();
++        Ok(())
++    }
++}
++
++impl<T> Clone for EventLoopProxy<T> {
++    fn clone(&self) -> Self {
++        Self { user_events_sender: self.user_events_sender.clone(), shared: self.shared.clone() }
++    }
++}
++
++impl<T> Unpin for EventLoopProxy<T> {}
++
++pub struct ActiveEventLoop {
++    control_flow: Cell<ControlFlow>,
++    exit: Cell<bool>,
++    pub(super) creates: Mutex<VecDeque<sys::aros_gui_window_info>>,
++    pub(super) shared: Arc<Shared>,
++}
++
++impl ActiveEventLoop {
++    pub fn create_custom_cursor(&self, source: CustomCursorSource) -> RootCustomCursor {
++        let _ = source.inner;
++        RootCustomCursor { inner: super::PlatformCustomCursor }
++    }
++
++    pub fn primary_monitor(&self) -> Option<MonitorHandle> {
++        Some(MonitorHandle)
++    }
++
++    pub fn available_monitors(&self) -> VecDeque<MonitorHandle> {
++        VecDeque::from([MonitorHandle])
++    }
++
++    #[inline]
++    pub fn listen_device_events(&self, _allowed: DeviceEvents) {}
++
++    #[inline]
++    pub fn system_theme(&self) -> Option<Theme> {
++        None
++    }
++
++    #[cfg(feature = "rwh_06")]
++    #[inline]
++    pub fn raw_display_handle_rwh_06(
++        &self,
++    ) -> Result<rwh_06::RawDisplayHandle, rwh_06::HandleError> {
++        Ok(rwh_06::RawDisplayHandle::Aros(rwh_06::ArosDisplayHandle::new()))
++    }
++
++    pub fn set_control_flow(&self, control_flow: ControlFlow) {
++        self.control_flow.set(control_flow)
++    }
++
++    pub fn control_flow(&self) -> ControlFlow {
++        self.control_flow.get()
++    }
++
++    pub(crate) fn exit(&self) {
++        self.exit.set(true);
++    }
++
++    pub(crate) fn exiting(&self) -> bool {
++        self.exit.get()
++    }
++
++    pub(crate) fn owned_display_handle(&self) -> OwnedDisplayHandle {
++        OwnedDisplayHandle
++    }
++}
++
++#[derive(Clone)]
++pub(crate) struct OwnedDisplayHandle;
++
++impl OwnedDisplayHandle {
++    #[cfg(feature = "rwh_06")]
++    #[inline]
++    pub fn raw_display_handle_rwh_06(
++        &self,
++    ) -> Result<rwh_06::RawDisplayHandle, rwh_06::HandleError> {
++        Ok(rwh_06::ArosDisplayHandle::new().into())
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform_impl/aros/keyboard.rs winit-0.30.13/src/platform_impl/aros/keyboard.rs
+--- winit-0.30.13.orig/src/platform_impl/aros/keyboard.rs	1970-01-01 01:00:00.000000000 +0100
++++ winit-0.30.13/src/platform_impl/aros/keyboard.rs	2026-10-13 13:11:01.104629602 +0100
+@@ -0,0 +1,362 @@
++//! Amiga raw key codes, qualifiers and the keymap.
++
++use std::ffi::{c_char, c_int};
++
++use aros_gui_sys as sys;
++use smol_str::SmolStr;
++
++use super::KeyEventExtra;
++use crate::event::{ElementState, KeyEvent, Modifiers};
++use crate::keyboard::{
++    Key, KeyCode, KeyLocation, ModifiersKeys, ModifiersState, NamedKey, NativeKey, NativeKeyCode,
++    PhysicalKey,
++};
++
++// NewMouse wheel codes, devices/rawkeycodes.h.
++pub(super) const RAWKEY_NM_WHEEL_UP: u16 = 0x7A;
++pub(super) const RAWKEY_NM_WHEEL_DOWN: u16 = 0x7B;
++pub(super) const RAWKEY_NM_WHEEL_LEFT: u16 = 0x7C;
++pub(super) const RAWKEY_NM_WHEEL_RIGHT: u16 = 0x7D;
++
++/// Physical keys by raw code, devices/rawkeycodes.h.
++const KEYS: &[(u16, KeyCode)] = &[
++    (0x00, KeyCode::Backquote),
++    (0x01, KeyCode::Digit1),
++    (0x02, KeyCode::Digit2),
++    (0x03, KeyCode::Digit3),
++    (0x04, KeyCode::Digit4),
++    (0x05, KeyCode::Digit5),
++    (0x06, KeyCode::Digit6),
++    (0x07, KeyCode::Digit7),
++    (0x08, KeyCode::Digit8),
++    (0x09, KeyCode::Digit9),
++    (0x0A, KeyCode::Digit0),
++    (0x0B, KeyCode::Minus),
++    (0x0C, KeyCode::Equal),
++    (0x0D, KeyCode::Backslash),
++    (0x0F, KeyCode::Numpad0),
++    (0x10, KeyCode::KeyQ),
++    (0x11, KeyCode::KeyW),
++    (0x12, KeyCode::KeyE),
++    (0x13, KeyCode::KeyR),
++    (0x14, KeyCode::KeyT),
++    (0x15, KeyCode::KeyY),
++    (0x16, KeyCode::KeyU),
++    (0x17, KeyCode::KeyI),
++    (0x18, KeyCode::KeyO),
++    (0x19, KeyCode::KeyP),
++    (0x1A, KeyCode::BracketLeft),
++    (0x1B, KeyCode::BracketRight),
++    (0x1D, KeyCode::Numpad1),
++    (0x1E, KeyCode::Numpad2),
++    (0x1F, KeyCode::Numpad3),
++    (0x20, KeyCode::KeyA),
++    (0x21, KeyCode::KeyS),
++    (0x22, KeyCode::KeyD),
++    (0x23, KeyCode::KeyF),
++    (0x24, KeyCode::KeyG),
++    (0x25, KeyCode::KeyH),
++    (0x26, KeyCode::KeyJ),
++    (0x27, KeyCode::KeyK),
++    (0x28, KeyCode::KeyL),
++    (0x29, KeyCode::Semicolon),
++    (0x2A, KeyCode::Quote),
++    // The ISO key next to Return; W3C names it after the US backslash.
++    (0x2B, KeyCode::Backslash),
++    (0x2D, KeyCode::Numpad4),
++    (0x2E, KeyCode::Numpad5),
++    (0x2F, KeyCode::Numpad6),
++    (0x30, KeyCode::IntlBackslash),
++    (0x31, KeyCode::KeyZ),
++    (0x32, KeyCode::KeyX),
++    (0x33, KeyCode::KeyC),
++    (0x34, KeyCode::KeyV),
++    (0x35, KeyCode::KeyB),
++    (0x36, KeyCode::KeyN),
++    (0x37, KeyCode::KeyM),
++    (0x38, KeyCode::Comma),
++    (0x39, KeyCode::Period),
++    (0x3A, KeyCode::Slash),
++    (0x3C, KeyCode::NumpadDecimal),
++    (0x3D, KeyCode::Numpad7),
++    (0x3E, KeyCode::Numpad8),
++    (0x3F, KeyCode::Numpad9),
++    (0x40, KeyCode::Space),
++    (0x41, KeyCode::Backspace),
++    (0x42, KeyCode::Tab),
++    (0x43, KeyCode::NumpadEnter),
++    (0x44, KeyCode::Enter),
++    (0x45, KeyCode::Escape),
++    (0x46, KeyCode::Delete),
++    (0x47, KeyCode::Insert),
++    (0x48, KeyCode::PageUp),
++    (0x49, KeyCode::PageDown),
++    (0x4A, KeyCode::NumpadSubtract),
++    (0x4B, KeyCode::F11),
++    (0x4C, KeyCode::ArrowUp),
++    (0x4D, KeyCode::ArrowDown),
++    (0x4E, KeyCode::ArrowRight),
++    (0x4F, KeyCode::ArrowLeft),
++    (0x50, KeyCode::F1),
++    (0x51, KeyCode::F2),
++    (0x52, KeyCode::F3),
++    (0x53, KeyCode::F4),
++    (0x54, KeyCode::F5),
++    (0x55, KeyCode::F6),
++    (0x56, KeyCode::F7),
++    (0x57, KeyCode::F8),
++    (0x58, KeyCode::F9),
++    (0x59, KeyCode::F10),
++    (0x5A, KeyCode::NumpadParenLeft),
++    (0x5B, KeyCode::NumpadParenRight),
++    (0x5C, KeyCode::NumpadDivide),
++    (0x5D, KeyCode::NumpadMultiply),
++    (0x5E, KeyCode::NumpadAdd),
++    (0x5F, KeyCode::Help),
++    (0x60, KeyCode::ShiftLeft),
++    (0x61, KeyCode::ShiftRight),
++    (0x62, KeyCode::CapsLock),
++    (0x63, KeyCode::ControlLeft),
++    (0x64, KeyCode::AltLeft),
++    (0x65, KeyCode::AltRight),
++    (0x66, KeyCode::SuperLeft),
++    (0x67, KeyCode::SuperRight),
++    (0x6B, KeyCode::ScrollLock),
++    (0x6C, KeyCode::PrintScreen),
++    (0x6D, KeyCode::NumLock),
++    (0x6E, KeyCode::Pause),
++    (0x6F, KeyCode::F12),
++    (0x70, KeyCode::Home),
++    (0x71, KeyCode::End),
++    (0x72, KeyCode::MediaStop),
++    (0x73, KeyCode::MediaPlayPause),
++    (0x74, KeyCode::MediaTrackPrevious),
++    (0x75, KeyCode::MediaTrackNext),
++];
++
++fn key_code(raw: u16) -> Option<KeyCode> {
++    KEYS.iter().find(|(r, _)| *r == raw).map(|(_, code)| *code)
++}
++
++pub(crate) fn scancode_to_physicalkey(scancode: u32) -> PhysicalKey {
++    u16::try_from(scancode)
++        .ok()
++        .and_then(key_code)
++        .map_or(PhysicalKey::Unidentified(NativeKeyCode::Unidentified), PhysicalKey::Code)
++}
++
++pub(crate) fn physicalkey_to_scancode(key: PhysicalKey) -> Option<u32> {
++    let PhysicalKey::Code(code) = key else { return None };
++    KEYS.iter().find(|(_, c)| *c == code).map(|(raw, _)| u32::from(*raw))
++}
++
++fn named_key(code: KeyCode) -> Option<NamedKey> {
++    Some(match code {
++        KeyCode::Space => NamedKey::Space,
++        KeyCode::Backspace => NamedKey::Backspace,
++        KeyCode::Tab => NamedKey::Tab,
++        KeyCode::Enter | KeyCode::NumpadEnter => NamedKey::Enter,
++        KeyCode::Escape => NamedKey::Escape,
++        KeyCode::Delete => NamedKey::Delete,
++        KeyCode::Insert => NamedKey::Insert,
++        KeyCode::PageUp => NamedKey::PageUp,
++        KeyCode::PageDown => NamedKey::PageDown,
++        KeyCode::Home => NamedKey::Home,
++        KeyCode::End => NamedKey::End,
++        KeyCode::ArrowUp => NamedKey::ArrowUp,
++        KeyCode::ArrowDown => NamedKey::ArrowDown,
++        KeyCode::ArrowLeft => NamedKey::ArrowLeft,
++        KeyCode::ArrowRight => NamedKey::ArrowRight,
++        KeyCode::F1 => NamedKey::F1,
++        KeyCode::F2 => NamedKey::F2,
++        KeyCode::F3 => NamedKey::F3,
++        KeyCode::F4 => NamedKey::F4,
++        KeyCode::F5 => NamedKey::F5,
++        KeyCode::F6 => NamedKey::F6,
++        KeyCode::F7 => NamedKey::F7,
++        KeyCode::F8 => NamedKey::F8,
++        KeyCode::F9 => NamedKey::F9,
++        KeyCode::F10 => NamedKey::F10,
++        KeyCode::F11 => NamedKey::F11,
++        KeyCode::F12 => NamedKey::F12,
++        KeyCode::Help => NamedKey::Help,
++        KeyCode::ShiftLeft | KeyCode::ShiftRight => NamedKey::Shift,
++        KeyCode::CapsLock => NamedKey::CapsLock,
++        KeyCode::ControlLeft => NamedKey::Control,
++        KeyCode::AltLeft => NamedKey::Alt,
++        // AROS keymaps use the right Alt key for the third level of symbols.
++        KeyCode::AltRight => NamedKey::AltGraph,
++        KeyCode::SuperLeft | KeyCode::SuperRight => NamedKey::Super,
++        KeyCode::ScrollLock => NamedKey::ScrollLock,
++        KeyCode::PrintScreen => NamedKey::PrintScreen,
++        KeyCode::NumLock => NamedKey::NumLock,
++        KeyCode::Pause => NamedKey::Pause,
++        KeyCode::MediaStop => NamedKey::MediaStop,
++        KeyCode::MediaPlayPause => NamedKey::MediaPlayPause,
++        KeyCode::MediaTrackPrevious => NamedKey::MediaTrackPrevious,
++        KeyCode::MediaTrackNext => NamedKey::MediaTrackNext,
++        _ => return None,
++    })
++}
++
++/// The text winit reports for the named keys that produce any.
++fn named_text(key: NamedKey) -> Option<&'static str> {
++    Some(match key {
++        NamedKey::Space => " ",
++        NamedKey::Backspace => "\u{8}",
++        NamedKey::Tab => "\t",
++        NamedKey::Enter => "\r",
++        NamedKey::Escape => "\u{1b}",
++        NamedKey::Delete => "\u{7f}",
++        _ => return None,
++    })
++}
++
++fn location(code: KeyCode) -> KeyLocation {
++    match code {
++        KeyCode::ShiftLeft | KeyCode::ControlLeft | KeyCode::AltLeft | KeyCode::SuperLeft => {
++            KeyLocation::Left
++        },
++        KeyCode::ShiftRight | KeyCode::AltRight | KeyCode::SuperRight => KeyLocation::Right,
++        KeyCode::Numpad0
++        | KeyCode::Numpad1
++        | KeyCode::Numpad2
++        | KeyCode::Numpad3
++        | KeyCode::Numpad4
++        | KeyCode::Numpad5
++        | KeyCode::Numpad6
++        | KeyCode::Numpad7
++        | KeyCode::Numpad8
++        | KeyCode::Numpad9
++        | KeyCode::NumpadDecimal
++        | KeyCode::NumpadEnter
++        | KeyCode::NumpadSubtract
++        | KeyCode::NumpadAdd
++        | KeyCode::NumpadMultiply
++        | KeyCode::NumpadDivide
++        | KeyCode::NumpadParenLeft
++        | KeyCode::NumpadParenRight => KeyLocation::Numpad,
++        _ => KeyLocation::Standard,
++    }
++}
++
++/// The qualifier bit a modifier key sets.
++fn modifier_qualifier(code: u16) -> u16 {
++    match code {
++        0x60 => sys::IEQUALIFIER_LSHIFT,
++        0x61 => sys::IEQUALIFIER_RSHIFT,
++        0x63 => sys::IEQUALIFIER_CONTROL,
++        0x64 => sys::IEQUALIFIER_LALT,
++        0x65 => sys::IEQUALIFIER_RALT,
++        0x66 => sys::IEQUALIFIER_LCOMMAND,
++        0x67 => sys::IEQUALIFIER_RCOMMAND,
++        _ => 0,
++    }
++}
++
++/// The qualifier once this key event has taken effect, whether or not
++/// input.device already counted the modifier key itself.
++pub(super) fn qualifier_after(raw: u16, qualifier: u16) -> u16 {
++    let bit = modifier_qualifier(raw & !sys::IECODE_UP_PREFIX);
++    if raw & sys::IECODE_UP_PREFIX != 0 {
++        qualifier & !bit
++    } else {
++        qualifier | bit
++    }
++}
++
++pub(super) fn is_modifier_key(raw: u16) -> bool {
++    modifier_qualifier(raw & !sys::IECODE_UP_PREFIX) != 0
++}
++
++/// Right Alt is AltGr on AROS keymaps, so it is not reported as Alt.
++pub(super) fn modifiers(qualifier: u16) -> Modifiers {
++    let has = |bit: u16| qualifier & bit != 0;
++    let mut state = ModifiersState::empty();
++    let mut pressed_mods = ModifiersKeys::empty();
++
++    state.set(ModifiersState::SHIFT, has(sys::IEQUALIFIER_LSHIFT | sys::IEQUALIFIER_RSHIFT));
++    state.set(ModifiersState::CONTROL, has(sys::IEQUALIFIER_CONTROL));
++    state.set(ModifiersState::ALT, has(sys::IEQUALIFIER_LALT));
++    state.set(ModifiersState::SUPER, has(sys::IEQUALIFIER_LCOMMAND | sys::IEQUALIFIER_RCOMMAND));
++
++    pressed_mods.set(ModifiersKeys::LSHIFT, has(sys::IEQUALIFIER_LSHIFT));
++    pressed_mods.set(ModifiersKeys::RSHIFT, has(sys::IEQUALIFIER_RSHIFT));
++    pressed_mods.set(ModifiersKeys::LCONTROL, has(sys::IEQUALIFIER_CONTROL));
++    pressed_mods.set(ModifiersKeys::LALT, has(sys::IEQUALIFIER_LALT));
++    pressed_mods.set(ModifiersKeys::LSUPER, has(sys::IEQUALIFIER_LCOMMAND));
++    pressed_mods.set(ModifiersKeys::RSUPER, has(sys::IEQUALIFIER_RCOMMAND));
++
++    Modifiers { state, pressed_mods }
++}
++
++/// The qualifiers the keymap looks at.
++const MAPPING_QUALIFIERS: u16 = sys::IEQUALIFIER_LSHIFT
++    | sys::IEQUALIFIER_RSHIFT
++    | sys::IEQUALIFIER_CAPSLOCK
++    | sys::IEQUALIFIER_CONTROL
++    | sys::IEQUALIFIER_LALT
++    | sys::IEQUALIFIER_RALT
++    | sys::IEQUALIFIER_NUMERICPAD;
++
++/// Text for a key through the current keymap, which produces ISO-8859-1.
++fn map_rawkey(code: u16, qualifier: u16) -> Option<SmolStr> {
++    let mut buf = [0 as c_char; 8];
++    let len = unsafe {
++        sys::aros_gui_map_rawkey(code, qualifier, buf.as_mut_ptr(), buf.len() as c_int)
++    };
++    if len <= 0 {
++        return None;
++    }
++    let bytes = &buf[..len as usize];
++    // Cursor and function keys map to CSI sequences, which are not text.
++    if bytes[0] as u8 == 0x9b {
++        return None;
++    }
++    Some(bytes.iter().map(|&b| char::from(b as u8)).collect())
++}
++
++fn printable(text: &Option<SmolStr>) -> Option<SmolStr> {
++    text.clone().filter(|text| !text.chars().any(char::is_control))
++}
++
++/// Translates an `IDCMP_RAWKEY` message, other than a wheel one.
++pub(super) fn key_event(raw: u16, qualifier: u16) -> KeyEvent {
++    let pressed = raw & sys::IECODE_UP_PREFIX == 0;
++    let code = raw & !sys::IECODE_UP_PREFIX;
++    let key_code = key_code(code);
++    let physical_key = scancode_to_physicalkey(u32::from(code));
++
++    // Left Alt is a modifier, not a symbol shift; right Alt (AltGr) is kept.
++    let mapping = qualifier & MAPPING_QUALIFIERS & !sys::IEQUALIFIER_LALT;
++    let with_ctrl = map_rawkey(code, mapping);
++    let without_ctrl = map_rawkey(code, mapping & !sys::IEQUALIFIER_CONTROL);
++    let bare = map_rawkey(code, mapping & sys::IEQUALIFIER_NUMERICPAD);
++
++    let (logical_key, key_without_modifiers, text, text_with_all_modifiers) =
++        match key_code.and_then(named_key) {
++            Some(named) => {
++                let text = named_text(named).map(SmolStr::new_static);
++                (Key::Named(named), Key::Named(named), text.clone(), text)
++            },
++            None => {
++                let logical = printable(&without_ctrl)
++                    .map_or(Key::Unidentified(NativeKey::Unidentified), Key::Character);
++                let bare = printable(&bare).map_or_else(|| logical.clone(), Key::Character);
++                (logical, bare, without_ctrl, with_ctrl)
++            },
++        };
++
++    KeyEvent {
++        physical_key,
++        logical_key,
++        text: if pressed { text } else { None },
++        location: key_code.map_or(KeyLocation::Standard, location),
++        state: if pressed { ElementState::Pressed } else { ElementState::Released },
++        repeat: qualifier & sys::IEQUALIFIER_REPEAT != 0,
++        platform_specific: KeyEventExtra {
++            key_without_modifiers,
++            text_with_all_modifiers: if pressed { text_with_all_modifiers } else { None },
++        },
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform_impl/aros/mod.rs winit-0.30.13/src/platform_impl/aros/mod.rs
+--- winit-0.30.13.orig/src/platform_impl/aros/mod.rs	1970-01-01 01:00:00.000000000 +0100
++++ winit-0.30.13/src/platform_impl/aros/mod.rs	2026-10-13 13:11:01.104891902 +0100
+@@ -0,0 +1,144 @@
++#![cfg(target_os = "aros")]
++
++//! AROS backend: Intuition windows, driven by their IDCMP ports.
++//!
++//! The Intuition calls go through the C glue in `aros-gui-sys`.
++
++use std::fmt::{self, Display, Formatter};
++
++use smol_str::SmolStr;
++
++use crate::dpi::{PhysicalPosition, PhysicalSize};
++use crate::keyboard::Key;
++
++pub(crate) use self::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy, OwnedDisplayHandle};
++pub(crate) use self::keyboard::{physicalkey_to_scancode, scancode_to_physicalkey};
++pub use self::window::Window;
++
++mod event_loop;
++mod keyboard;
++mod window;
++
++#[derive(Default, Debug, Copy, Clone, PartialEq, Eq, Hash)]
++pub(crate) struct PlatformSpecificEventLoopAttributes {}
++
++/// The address of the Intuition window.
++#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
++pub struct WindowId {
++    handle: u64,
++}
++
++impl WindowId {
++    pub const fn dummy() -> Self {
++        WindowId { handle: u64::MAX }
++    }
++}
++
++impl From<WindowId> for u64 {
++    fn from(id: WindowId) -> Self {
++        id.handle
++    }
++}
++
++impl From<u64> for WindowId {
++    fn from(handle: u64) -> Self {
++        Self { handle }
++    }
++}
++
++#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
++pub struct DeviceId;
++
++impl DeviceId {
++    pub const fn dummy() -> Self {
++        DeviceId
++    }
++}
++
++#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
++pub struct PlatformSpecificWindowAttributes;
++
++#[derive(Clone, Debug)]
++pub struct OsError(&'static str);
++
++impl Display for OsError {
++    fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), fmt::Error> {
++        fmt.write_str(self.0)
++    }
++}
++
++pub(crate) use crate::cursor::{
++    NoCustomCursor as PlatformCustomCursor, NoCustomCursor as PlatformCustomCursorSource,
++};
++pub(crate) use crate::icon::NoIcon as PlatformIcon;
++
++/// The Workbench screen.
++#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
++pub struct MonitorHandle;
++
++impl MonitorHandle {
++    pub fn name(&self) -> Option<String> {
++        Some("Workbench".to_owned())
++    }
++
++    pub fn size(&self) -> PhysicalSize<u32> {
++        let (mut width, mut height) = (0, 0);
++        if unsafe { aros_gui_sys::aros_gui_screen_size(&mut width, &mut height) } != 0 {
++            return PhysicalSize::new(0, 0);
++        }
++        PhysicalSize::new(width as u32, height as u32)
++    }
++
++    pub fn position(&self) -> PhysicalPosition<i32> {
++        (0, 0).into()
++    }
++
++    pub fn scale_factor(&self) -> f64 {
++        1.0
++    }
++
++    pub fn refresh_rate_millihertz(&self) -> Option<u32> {
++        None
++    }
++
++    pub fn video_modes(&self) -> impl Iterator<Item = VideoModeHandle> {
++        std::iter::once(VideoModeHandle {
++            size: self.size().into(),
++            bit_depth: 32,
++            refresh_rate_millihertz: 60000,
++            monitor: self.clone(),
++        })
++    }
++}
++
++#[derive(Clone, Debug, Eq, Hash, PartialEq)]
++pub struct VideoModeHandle {
++    size: (u32, u32),
++    bit_depth: u16,
++    refresh_rate_millihertz: u32,
++    monitor: MonitorHandle,
++}
++
++impl VideoModeHandle {
++    pub fn size(&self) -> PhysicalSize<u32> {
++        self.size.into()
++    }
++
++    pub fn bit_depth(&self) -> u16 {
++        self.bit_depth
++    }
++
++    pub fn refresh_rate_millihertz(&self) -> u32 {
++        self.refresh_rate_millihertz
++    }
++
++    pub fn monitor(&self) -> MonitorHandle {
++        self.monitor.clone()
++    }
++}
++
++#[derive(Debug, Clone, Eq, PartialEq, Hash)]
++pub struct KeyEventExtra {
++    pub key_without_modifiers: Key,
++    pub text_with_all_modifiers: Option<SmolStr>,
++}
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform_impl/aros/window.rs winit-0.30.13/src/platform_impl/aros/window.rs
+--- winit-0.30.13.orig/src/platform_impl/aros/window.rs	1970-01-01 01:00:00.000000000 +0100
++++ winit-0.30.13/src/platform_impl/aros/window.rs	2026-10-13 13:11:41.326698129 +0100
+@@ -0,0 +1,376 @@
++use std::collections::VecDeque;
++use std::ffi::CString;
++use std::sync::atomic::Ordering;
++use std::sync::{Arc, Mutex};
++
++use aros_gui_sys as sys;
++
++use super::event_loop::Shared;
++use super::{ActiveEventLoop, MonitorHandle, OsError, WindowId};
++use crate::cursor::Cursor;
++use crate::dpi::{PhysicalPosition, PhysicalSize, Position, Size};
++use crate::platform_impl::Fullscreen;
++use crate::window::ImePurpose;
++use crate::{error, window};
++
++/// Default interior when the application asks for none.
++const DEFAULT_SIZE: (u32, u32) = (800, 600);
++
++pub struct Window {
++    handle: usize,
++    title: Mutex<String>,
++    resizable: bool,
++    decorated: bool,
++    shared: Arc<Shared>,
++}
++
++impl Window {
++    pub(crate) fn new(
++        el: &ActiveEventLoop,
++        attrs: window::WindowAttributes,
++    ) -> Result<Self, error::OsError> {
++        let scale = MonitorHandle.scale_factor();
++
++        let (left, top) = match attrs.position {
++            Some(position) => position.to_physical::<i32>(scale).into(),
++            None => (-1, -1),
++        };
++        let (width, height): (u32, u32) =
++            attrs.inner_size.map_or(DEFAULT_SIZE, |size| size.to_physical::<u32>(scale).into());
++        let (min_width, min_height): (u32, u32) =
++            attrs.min_inner_size.map_or((0, 0), |size| size.to_physical::<u32>(scale).into());
++
++        let mut flags = sys::AROS_GUI_WINDOW_ACTIVATE;
++        if attrs.resizable {
++            flags |= sys::AROS_GUI_WINDOW_RESIZABLE;
++        }
++        if !attrs.decorations {
++            flags |= sys::AROS_GUI_WINDOW_BORDERLESS;
++        }
++
++        let title = CString::new(attrs.title.replace('\0', "")).unwrap_or_default();
++        let raw_attrs = sys::aros_gui_window_attrs {
++            left,
++            top,
++            inner_width: width as i32,
++            inner_height: height as i32,
++            min_width: min_width as i32,
++            min_height: min_height as i32,
++            flags,
++            title: title.as_ptr(),
++        };
++        let mut info = sys::aros_gui_window_info::default();
++        if unsafe { sys::aros_gui_window_open(&raw_attrs, &mut info) } != 0 {
++            return Err(os_error!(OsError("Intuition could not open the window")));
++        }
++
++        // The loop picks the window up on its next iteration.
++        el.creates.lock().unwrap().push_back(info);
++        el.shared.waker.wake();
++
++        Ok(Self {
++            handle: info.handle,
++            title: Mutex::new(attrs.title),
++            resizable: attrs.resizable,
++            decorated: attrs.decorations,
++            shared: el.shared.clone(),
++        })
++    }
++
++    pub(crate) fn maybe_queue_on_main(&self, f: impl FnOnce(&Self) + Send + 'static) {
++        f(self)
++    }
++
++    pub(crate) fn maybe_wait_on_main<R: Send>(&self, f: impl FnOnce(&Self) -> R + Send) -> R {
++        f(self)
++    }
++
++    fn info(&self) -> sys::aros_gui_window_info {
++        let mut info = sys::aros_gui_window_info::default();
++        unsafe { sys::aros_gui_window_info(self.handle, &mut info) };
++        info
++    }
++
++    #[inline]
++    pub fn id(&self) -> WindowId {
++        WindowId { handle: self.handle as u64 }
++    }
++
++    #[inline]
++    pub fn primary_monitor(&self) -> Option<MonitorHandle> {
++        Some(MonitorHandle)
++    }
++
++    #[inline]
++    pub fn available_monitors(&self) -> VecDeque<MonitorHandle> {
++        VecDeque::from([MonitorHandle])
++    }
++
++    #[inline]
++    pub fn current_monitor(&self) -> Option<MonitorHandle> {
++        Some(MonitorHandle)
++    }
++
++    #[inline]
++    pub fn scale_factor(&self) -> f64 {
++        MonitorHandle.scale_factor()
++    }
++
++    #[inline]
++    pub fn request_redraw(&self) {
++        let id = self.id();
++        let mut redraws = self.shared.redraws.lock().unwrap();
++        if !redraws.contains(&id) {
++            redraws.push_back(id);
++            self.shared.waker.wake();
++        }
++    }
++
++    #[inline]
++    pub fn pre_present_notify(&self) {}
++
++    #[inline]
++    pub fn reset_dead_keys(&self) {}
++
++    #[inline]
++    pub fn inner_position(&self) -> Result<PhysicalPosition<i32>, error::NotSupportedError> {
++        let info = self.info();
++        Ok((info.left + info.border_left, info.top + info.border_top).into())
++    }
++
++    #[inline]
++    pub fn outer_position(&self) -> Result<PhysicalPosition<i32>, error::NotSupportedError> {
++        let info = self.info();
++        Ok((info.left, info.top).into())
++    }
++
++    #[inline]
++    pub fn set_outer_position(&self, position: Position) {
++        let (left, top): (i32, i32) = position.to_physical::<i32>(self.scale_factor()).into();
++        unsafe { sys::aros_gui_window_set_position(self.handle, left, top) };
++    }
++
++    #[inline]
++    pub fn inner_size(&self) -> PhysicalSize<u32> {
++        let info = self.info();
++        (info.inner_width as u32, info.inner_height as u32).into()
++    }
++
++    #[inline]
++    pub fn request_inner_size(&self, size: Size) -> Option<PhysicalSize<u32>> {
++        let (width, height): (u32, u32) = size.to_physical::<u32>(self.scale_factor()).into();
++        unsafe { sys::aros_gui_window_set_inner_size(self.handle, width as i32, height as i32) };
++        // Intuition resizes asynchronously and reports it with IDCMP_NEWSIZE.
++        None
++    }
++
++    #[inline]
++    pub fn outer_size(&self) -> PhysicalSize<u32> {
++        let info = self.info();
++        (info.width as u32, info.height as u32).into()
++    }
++
++    #[inline]
++    pub fn set_min_inner_size(&self, size: Option<Size>) {
++        let (width, height): (u32, u32) =
++            size.map_or((0, 0), |size| size.to_physical::<u32>(self.scale_factor()).into());
++        unsafe { sys::aros_gui_window_set_min_size(self.handle, width as i32, height as i32) };
++    }
++
++    #[inline]
++    pub fn set_max_inner_size(&self, _: Option<Size>) {}
++
++    #[inline]
++    pub fn title(&self) -> String {
++        self.title.lock().unwrap().clone()
++    }
++
++    #[inline]
++    pub fn set_title(&self, title: &str) {
++        let Ok(text) = CString::new(title.replace('\0', "")) else { return };
++        if unsafe { sys::aros_gui_window_set_title(self.handle, text.as_ptr()) } == 0 {
++            *self.title.lock().unwrap() = title.to_owned();
++        }
++    }
++
++    #[inline]
++    pub fn set_transparent(&self, _transparent: bool) {}
++
++    #[inline]
++    pub fn set_blur(&self, _blur: bool) {}
++
++    #[inline]
++    pub fn set_visible(&self, _visible: bool) {}
++
++    #[inline]
++    pub fn is_visible(&self) -> Option<bool> {
++        None
++    }
++
++    #[inline]
++    pub fn resize_increments(&self) -> Option<PhysicalSize<u32>> {
++        None
++    }
++
++    #[inline]
++    pub fn set_resize_increments(&self, _increments: Option<Size>) {}
++
++    #[inline]
++    pub fn set_resizable(&self, _resizable: bool) {}
++
++    #[inline]
++    pub fn is_resizable(&self) -> bool {
++        self.resizable
++    }
++
++    #[inline]
++    pub fn set_minimized(&self, _minimized: bool) {}
++
++    #[inline]
++    pub fn is_minimized(&self) -> Option<bool> {
++        None
++    }
++
++    #[inline]
++    pub fn set_maximized(&self, _maximized: bool) {}
++
++    #[inline]
++    pub fn is_maximized(&self) -> bool {
++        false
++    }
++
++    #[inline]
++    pub(crate) fn set_fullscreen(&self, _monitor: Option<Fullscreen>) {}
++
++    #[inline]
++    pub(crate) fn fullscreen(&self) -> Option<Fullscreen> {
++        None
++    }
++
++    #[inline]
++    pub fn set_decorations(&self, _decorations: bool) {}
++
++    #[inline]
++    pub fn is_decorated(&self) -> bool {
++        self.decorated
++    }
++
++    #[inline]
++    pub fn set_window_level(&self, _level: window::WindowLevel) {}
++
++    #[inline]
++    pub fn set_window_icon(&self, _window_icon: Option<crate::icon::Icon>) {}
++
++    #[inline]
++    pub fn set_ime_cursor_area(&self, _position: Position, _size: Size) {}
++
++    #[inline]
++    pub fn set_ime_allowed(&self, _allowed: bool) {}
++
++    #[inline]
++    pub fn set_ime_purpose(&self, _purpose: ImePurpose) {}
++
++    #[inline]
++    pub fn focus_window(&self) {
++        unsafe { sys::aros_gui_window_focus(self.handle) };
++    }
++
++    #[inline]
++    pub fn request_user_attention(&self, _request_type: Option<window::UserAttentionType>) {}
++
++    #[inline]
++    pub fn set_cursor(&self, _: Cursor) {}
++
++    #[inline]
++    pub fn set_cursor_position(&self, _: Position) -> Result<(), error::ExternalError> {
++        Err(error::ExternalError::NotSupported(error::NotSupportedError::new()))
++    }
++
++    #[inline]
++    pub fn set_cursor_grab(&self, mode: window::CursorGrabMode) -> Result<(), error::ExternalError> {
++        // Intuition cannot confine the pointer; a grab switches the window to
++        // relative mouse reports (IDCMP_DELTAMOVE), which keep coming when the
++        // pointer sits at a screen edge, so a locked pointer works for looking
++        // around. Only the task that opened the window may change its IDCMP.
++        let on = !matches!(mode, window::CursorGrabMode::None);
++        unsafe { sys::aros_gui_window_set_delta_move(self.handle, on as i32) };
++        Ok(())
++    }
++
++    #[inline]
++    pub fn set_cursor_visible(&self, visible: bool) {
++        unsafe { sys::aros_gui_window_set_pointer_visible(self.handle, visible as i32) };
++    }
++
++    #[inline]
++    pub fn drag_window(&self) -> Result<(), error::ExternalError> {
++        Err(error::ExternalError::NotSupported(error::NotSupportedError::new()))
++    }
++
++    #[inline]
++    pub fn drag_resize_window(
++        &self,
++        _direction: window::ResizeDirection,
++    ) -> Result<(), error::ExternalError> {
++        Err(error::ExternalError::NotSupported(error::NotSupportedError::new()))
++    }
++
++    #[inline]
++    pub fn show_window_menu(&self, _position: Position) {}
++
++    #[inline]
++    pub fn set_cursor_hittest(&self, _hittest: bool) -> Result<(), error::ExternalError> {
++        Err(error::ExternalError::NotSupported(error::NotSupportedError::new()))
++    }
++
++    #[cfg(feature = "rwh_06")]
++    #[inline]
++    pub fn raw_window_handle_rwh_06(&self) -> Result<rwh_06::RawWindowHandle, rwh_06::HandleError> {
++        let window = std::ptr::NonNull::new(self.handle as *mut _)
++            .expect("an open Intuition window is never null");
++        Ok(rwh_06::RawWindowHandle::Aros(rwh_06::ArosWindowHandle::new(window)))
++    }
++
++    #[cfg(feature = "rwh_06")]
++    #[inline]
++    pub fn raw_display_handle_rwh_06(
++        &self,
++    ) -> Result<rwh_06::RawDisplayHandle, rwh_06::HandleError> {
++        Ok(rwh_06::RawDisplayHandle::Aros(rwh_06::ArosDisplayHandle::new()))
++    }
++
++    #[inline]
++    pub fn set_enabled_buttons(&self, _buttons: window::WindowButtons) {}
++
++    #[inline]
++    pub fn enabled_buttons(&self) -> window::WindowButtons {
++        window::WindowButtons::all()
++    }
++
++    #[inline]
++    pub fn theme(&self) -> Option<window::Theme> {
++        None
++    }
++
++    #[inline]
++    pub fn has_focus(&self) -> bool {
++        unsafe { sys::aros_gui_window_is_active(self.handle) != 0 }
++    }
++
++    #[inline]
++    pub fn set_theme(&self, _theme: Option<window::Theme>) {}
++
++    pub fn set_content_protected(&self, _protected: bool) {}
++}
++
++impl Drop for Window {
++    fn drop(&mut self) {
++        if self.shared.running.load(Ordering::SeqCst) {
++            self.shared.destroys.lock().unwrap().push_back(self.handle);
++            self.shared.waker.wake();
++        } else {
++            // The loop is gone; this is still the task that opened the window.
++            unsafe { sys::aros_gui_window_close(self.handle) };
++        }
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target winit-0.30.13.orig/src/platform_impl/mod.rs winit-0.30.13/src/platform_impl/mod.rs
+--- winit-0.30.13.orig/src/platform_impl/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ winit-0.30.13/src/platform_impl/mod.rs	2026-10-13 13:11:01.106856902 +0100
+@@ -3,6 +3,8 @@
+ 
+ #[cfg(android_platform)]
+ mod android;
++#[cfg(aros_platform)]
++mod aros;
+ #[cfg(ios_platform)]
+ mod ios;
+ #[cfg(any(x11_platform, wayland_platform))]
+@@ -18,6 +20,8 @@
+ 
+ #[cfg(android_platform)]
+ use android as platform;
++#[cfg(aros_platform)]
++use aros as platform;
+ #[cfg(ios_platform)]
+ use ios as platform;
+ #[cfg(any(x11_platform, wayland_platform))]
+@@ -74,5 +78,6 @@
+     not(wayland_platform),
+     not(web_platform),
+     not(orbital_platform),
++    not(aros_platform),
+ ))]
+ compile_error!("The platform you're compiling for is not supported by winit");

@@ -1,0 +1,119 @@
+diff -ruN -x .cargo-ok -x .git -x target atomicwrites-0.4.4.orig/Cargo.toml atomicwrites-0.4.4/Cargo.toml
+--- atomicwrites-0.4.4.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ atomicwrites-0.4.4/Cargo.toml	2026-10-13 13:34:45.686328609 +0100
+@@ -42,10 +42,10 @@
+ name = "lib"
+ path = "tests/lib.rs"
+ 
+-[dependencies.tempfile]
++[target.'cfg(not(target_os = "aros"))'.dependencies.tempfile]
+ version = "3.1"
+ 
+-[target."cfg(unix)".dependencies.rustix]
++[target.'cfg(all(unix, not(target_os = "aros")))'.dependencies.rustix]
+ version = "0.38.0"
+ features = ["fs"]
+ 
+diff -ruN -x .cargo-ok -x .git -x target atomicwrites-0.4.4.orig/src/lib.rs atomicwrites-0.4.4/src/lib.rs
+--- atomicwrites-0.4.4.orig/src/lib.rs	2006-07-24 02:21:28.000000000 +0100
++++ atomicwrites-0.4.4/src/lib.rs	2026-10-13 13:35:08.584820232 +0100
+@@ -1,6 +1,7 @@
+ // INSERT_README_VIA_MAKE
+-#[cfg(unix)]
++#[cfg(all(unix, not(target_os = "aros")))]
+ extern crate rustix;
++#[cfg(not(target_os = "aros"))]
+ extern crate tempfile;
+ 
+ use std::convert::AsRef;
+@@ -152,10 +153,7 @@
+     where
+         F: FnOnce(&mut fs::File) -> Result<T, E>,
+     {
+-        let tmpdir = tempfile::Builder::new()
+-            .prefix(".atomicwrite")
+-            .tempdir_in(&self.tmpdir)
+-            .map_err(Error::Internal)?;
++        let tmpdir = tempdir_in(&self.tmpdir).map_err(Error::Internal)?;
+ 
+         let tmppath = tmpdir.path().join("tmpfile.tmp");
+         let rv = {
+@@ -169,7 +167,77 @@
+     }
+ }
+ 
+-#[cfg(unix)]
++/// A temporary subdirectory, removed when dropped.
++#[cfg(not(target_os = "aros"))]
++fn tempdir_in(dir: &path::Path) -> io::Result<tempfile::TempDir> {
++    tempfile::Builder::new().prefix(".atomicwrite").tempdir_in(dir)
++}
++#[cfg(target_os = "aros")]
++use imp::tempdir_in;
++
++// AROS: posixc has neither the *at() calls rustix wants nor an atomic
++// replacing rename, so this is the plain sequence of std operations: the
++// file is written in its own subdirectory, the old one removed, the new one
++// renamed into place.
++#[cfg(target_os = "aros")]
++mod imp {
++    use std::io;
++    use std::path;
++    use std::sync::atomic::{AtomicU32, Ordering};
++
++    /// A temporary subdirectory, removed when dropped.
++    pub struct TempDir(path::PathBuf);
++
++    impl TempDir {
++        pub fn path(&self) -> &path::Path {
++            &self.0
++        }
++    }
++
++    impl Drop for TempDir {
++        fn drop(&mut self) {
++            let _ = std::fs::remove_dir_all(&self.0);
++        }
++    }
++
++    pub fn tempdir_in(dir: &path::Path) -> io::Result<TempDir> {
++        static COUNTER: AtomicU32 = AtomicU32::new(0);
++        loop {
++            let name = format!(
++                ".atomicwrite{}-{}",
++                std::process::id(),
++                COUNTER.fetch_add(1, Ordering::Relaxed)
++            );
++            let path = dir.join(name);
++            match std::fs::create_dir(&path) {
++                Ok(()) => return Ok(TempDir(path)),
++                Err(e) if e.kind() == io::ErrorKind::AlreadyExists => continue,
++                Err(e) => return Err(e),
++            }
++        }
++    }
++
++    pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
++        match std::fs::remove_file(dst) {
++            Ok(()) => {}
++            Err(e) if e.kind() == io::ErrorKind::NotFound => {}
++            Err(e) => return Err(e),
++        }
++        std::fs::rename(src, dst)
++    }
++
++    pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
++        if dst.exists() {
++            return Err(io::Error::new(
++                io::ErrorKind::AlreadyExists,
++                "the destination file exists",
++            ));
++        }
++        std::fs::rename(src, dst)
++    }
++}
++
++#[cfg(all(unix, not(target_os = "aros")))]
+ mod imp {
+     use super::safe_parent;
+ 

@@ -1,0 +1,83 @@
+diff -ruN -x .cargo-ok -x .git -x target filetime-0.2.26.orig/src/unix/aros.rs filetime-0.2.26/src/unix/aros.rs
+--- filetime-0.2.26.orig/src/unix/aros.rs	1970-01-01 01:00:00.000000000 +0100
++++ filetime-0.2.26/src/unix/aros.rs	2026-10-13 13:14:14.679950676 +0100
+@@ -0,0 +1,66 @@
++//! AROS: posixc has `utimes()` by path and nothing by descriptor.
++
++use crate::FileTime;
++use std::ffi::CString;
++use std::fs;
++use std::io;
++use std::os::unix::prelude::*;
++use std::path::Path;
++
++pub fn set_file_times(p: &Path, atime: FileTime, mtime: FileTime) -> io::Result<()> {
++    set_times(p, Some(atime), Some(mtime))
++}
++
++pub fn set_file_mtime(p: &Path, mtime: FileTime) -> io::Result<()> {
++    set_times(p, None, Some(mtime))
++}
++
++pub fn set_file_atime(p: &Path, atime: FileTime) -> io::Result<()> {
++    set_times(p, Some(atime), None)
++}
++
++pub fn set_file_handle_times(
++    _f: &fs::File,
++    _atime: Option<FileTime>,
++    _mtime: Option<FileTime>,
++) -> io::Result<()> {
++    Err(io::Error::new(
++        io::ErrorKind::Unsupported,
++        "setting the times of an open file is not supported on AROS",
++    ))
++}
++
++// AROS file systems have no symbolic links to speak of; the link's target
++// gets the times, as on the systems without lutimes().
++pub fn set_symlink_file_times(p: &Path, atime: FileTime, mtime: FileTime) -> io::Result<()> {
++    set_times(p, Some(atime), Some(mtime))
++}
++
++fn set_times(p: &Path, atime: Option<FileTime>, mtime: Option<FileTime>) -> io::Result<()> {
++    // utimes() sets both, so a missing one is read back from the file.
++    let (atime, mtime) = match (atime, mtime) {
++        (Some(atime), Some(mtime)) => (atime, mtime),
++        _ => {
++            let meta = fs::metadata(p)?;
++            (
++                atime.unwrap_or_else(|| FileTime::from_last_access_time(&meta)),
++                mtime.unwrap_or_else(|| FileTime::from_last_modification_time(&meta)),
++            )
++        }
++    };
++    let times = [to_timeval(&atime), to_timeval(&mtime)];
++    let p = CString::new(p.as_os_str().as_bytes())?;
++    let rc = unsafe { libc::utimes(p.as_ptr(), times.as_ptr()) };
++    if rc == 0 {
++        Ok(())
++    } else {
++        Err(io::Error::last_os_error())
++    }
++}
++
++fn to_timeval(ft: &FileTime) -> libc::timeval {
++    libc::timeval {
++        tv_sec: ft.seconds() as libc::time_t,
++        tv_usec: (ft.nanoseconds() / 1000) as libc::suseconds_t,
++    }
++}
+diff -ruN -x .cargo-ok -x .git -x target filetime-0.2.26.orig/src/unix/mod.rs filetime-0.2.26/src/unix/mod.rs
+--- filetime-0.2.26.orig/src/unix/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ filetime-0.2.26/src/unix/mod.rs	2026-10-13 13:14:14.679922176 +0100
+@@ -25,6 +25,9 @@
+                         target_os = "haiku"))] {
+         mod utimensat;
+         pub use self::utimensat::*;
++    } else if #[cfg(target_os = "aros")] {
++        mod aros;
++        pub use self::aros::*;
+     } else {
+         mod utimes;
+         pub use self::utimes::*;
