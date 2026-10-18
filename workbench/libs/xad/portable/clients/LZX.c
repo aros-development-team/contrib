@@ -148,7 +148,7 @@ XADRECOGDATA(LZX)
 #define XADFIBF_EXECUTE (1<<1)
 #define XADFIBF_WRITE   (1<<2)
 #define XADFIBF_READ    (1<<3)
-#define XADFIBF_PURE    (1<<4)
+#define XADFIBF_PURE    (1<<5)
 
 XADGETINFO(LZX)
 {
