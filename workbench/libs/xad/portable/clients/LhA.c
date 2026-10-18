@@ -321,7 +321,7 @@ struct xadMasterBase *xadMasterBase)
       {
         if((xadUINT8)*filename2 == '\\' || (xadUINT8)*filename2 == 0xFF)
           *filename2 = '/';
-        else if((*filename2&0x7F) <= 0x20 || *filename2 == 0x7F)
+        else if((*filename2&0x7F) < 0x20 || *filename2 == 0x7F)
           *filename2 = '_';
       }
       fi->xfi_Size = EndGetI32(&head[11]);
