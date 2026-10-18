@@ -300,9 +300,10 @@ struct xadMasterBase *xadMasterBase)
         xadCopyMem(XADM comment, fi->xfi_Comment, commentsize-1);
       else if(comment2)
         xadCopyMem(XADM comment2, fi->xfi_Comment, commentsize-1);
-      if(!filename && !filename2)
+      if(!filename && (!filename2 || (!filename2[0] && head[4] == 'h' && head[5] == 'd')))
       {
-        xadCopyMem(XADM dirname, fi->xfi_FileName, dirsize-1);
+        if(dirname)
+          xadCopyMem(XADM dirname, fi->xfi_FileName, dirsize-1);
         fi->xfi_Flags |= XADFIF_DIRECTORY;
       }
       else
@@ -335,6 +336,8 @@ struct xadMasterBase *xadMasterBase)
       xadCopyMem(XADM head+2, LHAPI(fi)->NamePart, 5); /* 0 byte already there! */
       fi->xfi_EntryInfo = (xadSTRPTR) LHAPI(fi)->NamePart;
       LHAPI(fi)->Method = EndGetM32(head+2);
+      if(head[4] == 'h' && head[5] == 'd')
+        fi->xfi_Flags |= XADFIF_DIRECTORY;
       if(!fi->xfi_FileName[0])
       {
         fi->xfi_FileName = xadGetDefaultName(XADM XAD_ARCHIVEINFO, ai, XAD_EXTENSION,
