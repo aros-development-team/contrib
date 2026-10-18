@@ -172,9 +172,12 @@ struct xadMasterBase *xadMasterBase)
             err = XADERR_NOMEMORY;
         }
         break;
-      case 0x40:
-        if (os == 0) os = 'M'; // force OS ID for MS-DOS protection bits
-      case 0x50: /* File permission */
+      case 0x40: /* MS-DOS attributes override the base-header attributes */
+        os = 'M';
+        prot = EndGetI16(&bufptr[1]);
+        break;
+      case 0x50: /* UNIX mode, independent of the archive's OS identifier */
+        os = 'U';
         prot = EndGetI16(&bufptr[1]);
         break;
       case 0x51: /* ID's */
