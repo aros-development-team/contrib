@@ -112,7 +112,7 @@ struct xadMasterBase *xadMasterBase)
     if(head[20] >= 2) os = head[23];
   }
 
-  prot = head[19];
+  prot = (xadUINT8) head[19];
 
   while(nextsize && !err)
   {
