@@ -1,0 +1,32 @@
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git wgpu-core-30.0.1.orig/build.rs wgpu-core-30.0.1/build.rs
+--- wgpu-core-30.0.1.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-core-30.0.1/build.rs	2026-10-19 14:29:36.373125693 +0100
+@@ -1,6 +1,6 @@
+ fn main() {
+     cfg_aliases::cfg_aliases! {
+-        windows_linux_android: { any(windows, target_os = "linux", target_os = "android", target_os = "freebsd") },
++        windows_linux_android: { any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "aros") },
+         send_sync: { all(
+             feature = "std",
+             any(
+@@ -17,7 +17,7 @@
+             all(target_vendor = "apple", feature = "angle") // ANGLE on Apple
+         ) },
+         vulkan: { any(
+-            all(windows_linux_android, feature = "vulkan"), // Regular Vulkan
++            all(windows_linux_android, not(target_os = "aros"), feature = "vulkan"), // Regular Vulkan (none on AROS)
+             all(target_vendor = "apple", feature = "vulkan-portability") // Vulkan Portability on Apple
+         ) },
+         drm: { all(
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git wgpu-core-30.0.1.orig/Cargo.toml wgpu-core-30.0.1/Cargo.toml
+--- wgpu-core-30.0.1.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-core-30.0.1/Cargo.toml	2026-10-19 14:29:36.374167593 +0100
+@@ -212,7 +212,7 @@
+ version = "30.0.0"
+ optional = true
+ 
+-[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd"))'.dependencies.wgpu-core-deps-windows-linux-android]
++[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "aros"))'.dependencies.wgpu-core-deps-windows-linux-android]
+ version = "30.0.0"
+ optional = true
+ 

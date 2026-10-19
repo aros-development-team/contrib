@@ -15,7 +15,8 @@
 #     fontique                    reads font files instead of mapping them;
 #     winit, raw-window-handle,   windows on Intuition, OpenGL through mesa3dgl
 #     glutin, wgpu, wgpu-core,    (GLA), wgpu's GL backend on it, naga for
-#     wgpu-hal, naga, ...         the shaders;
+#     wgpu-hal, naga, ...         the shaders (wgpu 27 for Veloren, wgpu 30
+#                                 with naga-types for SolidCraft's egui 0.36);
 #     cpal                        audio through AHI;
 #     polling, socket2 0.5,       system crates: no epoll, posixc's sockets,
 #     quinn-udp, filetime, open,  utimes(), OpenURL, sqlite on dos.library,
@@ -52,7 +53,10 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
 #MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
 #MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
-#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit contrib-rust-crates-config
+#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit \
+#MM     contrib-rust-crates-wgpu30 contrib-rust-crates-wgpu-core30 \
+#MM     contrib-rust-crates-wgpu-core-deps30 contrib-rust-crates-wgpu-hal30 \
+#MM     contrib-rust-crates-naga30 contrib-rust-crates-naga-types contrib-rust-crates-config
 contrib-rust-crates :
 	$(Q)$(NOP)
 
@@ -125,6 +129,21 @@ contrib-rust-crates :
 %rust_crate mmake=contrib-rust-crates-winit crate=winit version=$(CONTRIB_RUST_WINIT_VERSION) \
     patch=$(CONTRIB_RUST_CRATE_WINIT)-aros.diff
 
+# wgpu 30 for SolidCraft (egui 0.36), beside Veloren's wgpu 27: the same AROS
+# changes, with the GLSL version rules that moved to naga-types.
+%rust_crate mmake=contrib-rust-crates-wgpu30 crate=wgpu version=$(CONTRIB_RUST_WGPU30_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU30)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-core30 crate=wgpu-core version=$(CONTRIB_RUST_WGPU_CORE30_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_CORE30)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-core-deps30 crate=wgpu-core-deps-windows-linux-android version=$(CONTRIB_RUST_WGPU_CORE_DEPS30_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_CORE_DEPS30)-aros.diff
+%rust_crate mmake=contrib-rust-crates-wgpu-hal30 crate=wgpu-hal version=$(CONTRIB_RUST_WGPU_HAL30_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_WGPU_HAL30)-aros.diff
+%rust_crate mmake=contrib-rust-crates-naga30 crate=naga version=$(CONTRIB_RUST_NAGA30_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_NAGA30)-aros.diff
+%rust_crate mmake=contrib-rust-crates-naga-types crate=naga-types version=$(CONTRIB_RUST_NAGA_TYPES_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_NAGA_TYPES)-aros.diff
+
 # The patched iced crate takes its shell from ../iced_aros: a link in the store.
 #MM
 contrib-rust-crates-iced-aros : $(RUST_CRATESDIR)/iced_aros
@@ -170,6 +189,12 @@ $(RUST_CRATESDIR)/iced_aros :
 #MM- contrib-rust-crates-wgpu-hal : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-window-clipboard : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-winit : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu30 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-core30 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-core-deps30 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-wgpu-hal30 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-naga30 : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-naga-types : contrib-rust-crates-refresh
 
 #MM
 contrib-rust-crates-refresh :
@@ -197,7 +222,10 @@ contrib-rust-crates-refresh :
 #MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
 #MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
 #MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
-#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit
+#MM     contrib-rust-crates-window-clipboard contrib-rust-crates-winit \
+#MM     contrib-rust-crates-wgpu30 contrib-rust-crates-wgpu-core30 \
+#MM     contrib-rust-crates-wgpu-core-deps30 contrib-rust-crates-wgpu-hal30 \
+#MM     contrib-rust-crates-naga30 contrib-rust-crates-naga-types
 %rust_patches_config mmake=contrib-rust-crates-config file=$(CONTRIB_RUST_CRATES_CONFIG) \
     patches="tokio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_TOKIO) \
         mio=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_MIO) \
@@ -231,6 +259,12 @@ contrib-rust-crates-refresh :
         wgpu-hal=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_HAL) \
         window_clipboard=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WINDOW_CLIPBOARD) \
         winit=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WINIT) \
+        wgpu30:wgpu=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU30) \
+        wgpu-core30:wgpu-core=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_CORE30) \
+        wgpu-core-deps30:wgpu-core-deps-windows-linux-android=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_CORE_DEPS30) \
+        wgpu-hal30:wgpu-hal=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU_HAL30) \
+        naga30:naga=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_NAGA30) \
+        naga-types=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_NAGA_TYPES) \
         rfd=$(CONTRIB_RUST_AROS_CRATESDIR)/rfd-aros"
 
 %common

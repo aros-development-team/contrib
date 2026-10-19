@@ -1,0 +1,171 @@
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git naga-30.0.1.orig/src/back/glsl/features.rs naga-30.0.1/src/back/glsl/features.rs
+--- naga-30.0.1.orig/src/back/glsl/features.rs	2006-07-24 02:21:28.000000000 +0100
++++ naga-30.0.1/src/back/glsl/features.rs	2026-10-19 15:33:14.874042392 +0100
+@@ -110,8 +110,19 @@
+             };
+         }
+ 
++        // AROS: Mesa's softpipe offers GL_ARB_compute_shader on its GLSL 3.30 core
++        // contexts (the `#extension` line below asks for it); wgpu-hal's adapter only
++        // reports compute where the extension is there.
++        #[cfg(not(target_os = "aros"))]
+         check_feature!(COMPUTE_SHADER, 420, 310);
++        #[cfg(target_os = "aros")]
++        check_feature!(COMPUTE_SHADER, 330, 310);
++        // AROS: Mesa's softpipe (GLSL 3.30) has GL_ARB_shader_storage_buffer_object,
++        // which write() enables for storage buffers on desktop GL.
++        #[cfg(not(target_os = "aros"))]
+         check_feature!(BUFFER_STORAGE, 400, 310);
++        #[cfg(target_os = "aros")]
++        check_feature!(BUFFER_STORAGE, 330, 310);
+         check_feature!(DOUBLE_TYPE, 150);
+         check_feature!(CUBE_TEXTURES_ARRAY, 130, 310);
+         check_feature!(MULTISAMPLED_TEXTURES, 150, 300);
+@@ -124,7 +135,11 @@
+         check_feature!(CLIP_DISTANCE, 130, 300 /* with extension */);
+         check_feature!(CULL_DISTANCE, 450, 300 /* with extension */);
+         check_feature!(SAMPLE_VARIABLES, 400, 300);
++        // Runtime sized arrays come with the same extension (AROS: GLSL 3.30).
++        #[cfg(not(target_os = "aros"))]
+         check_feature!(DYNAMIC_ARRAY_SIZE, 400 /* with extension */, 310);
++        #[cfg(target_os = "aros")]
++        check_feature!(DYNAMIC_ARRAY_SIZE, 330, 310);
+         check_feature!(DUAL_SOURCE_BLENDING, 330, 300 /* with extension */);
+         check_feature!(SUBGROUP_OPERATIONS, 430, 310);
+         check_feature!(TEXTURE_ATOMICS, 420, 310);
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git naga-30.0.1.orig/src/back/glsl/writer.rs naga-30.0.1/src/back/glsl/writer.rs
+--- naga-30.0.1.orig/src/back/glsl/writer.rs	2006-07-24 02:21:28.000000000 +0100
++++ naga-30.0.1/src/back/glsl/writer.rs	2026-10-19 16:54:35.321092499 +0100
+@@ -43,6 +43,10 @@
+     pub(in crate::back::glsl) multiview: Option<core::num::NonZeroU32>,
+     /// Mapping of varying variables to their location. Needed for reflections.
+     varying: crate::FastHashMap<String, VaryingLocation>,
++    /// Depth images that are only read with `textureLoad` (never sampled with a comparison):
++    /// declared as plain samplers so that `texelFetch` works on them (GLSL has no texel fetch
++    /// for shadow samplers); the fetched texel's first component is the depth.
++    depth_fetch_images: crate::FastHashSet<Handle<crate::GlobalVariable>>,
+     /// Number of user-defined clip planes. Only non-zero for vertex shaders.
+     clip_distance_count: u32,
+ }
+@@ -114,14 +118,63 @@
+             continue_ctx: back::continue_forward::ContinueCtx::default(),
+             varying: Default::default(),
+             clip_distance_count: 0,
++            depth_fetch_images: Default::default(),
+         };
+ 
++        this.collect_depth_fetch_images();
++
+         // Find all features required to print this module
+         this.collect_required_features()?;
+ 
+         Ok(this)
+     }
+ 
++    /// Finds the depth image globals that only `textureLoad` reads (see
++    /// [`Self::depth_fetch_images`]): every function's `ImageLoad` of a depth global counts it
++    /// in, an `ImageSample` with a depth reference counts it out again.
++    fn collect_depth_fetch_images(&mut self) {
++        let module = self.module;
++        let is_depth = |handle: Handle<crate::GlobalVariable>| {
++            matches!(
++                module.types[module.global_variables[handle].ty].inner,
++                TypeInner::Image {
++                    class: crate::ImageClass::Depth { .. },
++                    ..
++                }
++            )
++        };
++        let mut loaded = crate::FastHashSet::default();
++        let mut compared = crate::FastHashSet::default();
++        let functions = module
++            .functions
++            .iter()
++            .map(|(_, f)| f)
++            .chain(module.entry_points.iter().map(|ep| &ep.function));
++        for function in functions {
++            for (_, expr) in function.expressions.iter() {
++                let (image, is_load) = match *expr {
++                    crate::Expression::ImageLoad { image, .. } => (image, true),
++                    crate::Expression::ImageSample {
++                        image,
++                        depth_ref: Some(_),
++                        ..
++                    } => (image, false),
++                    _ => continue,
++                };
++                if let crate::Expression::GlobalVariable(handle) = function.expressions[image] {
++                    if is_depth(handle) {
++                        if is_load {
++                            loaded.insert(handle);
++                        } else {
++                            compared.insert(handle);
++                        }
++                    }
++                }
++            }
++        }
++        self.depth_fetch_images = loaded.difference(&compared).copied().collect();
++    }
++
+     /// Writes the [`Module`](crate::Module) as glsl to the output
+     ///
+     /// # Notes
+@@ -384,6 +437,17 @@
+                     //
+                     // This is way we need the leading space because `write_image_type` doesn't add
+                     // any spaces at the beginning or end
++                    let class = if self.depth_fetch_images.contains(&handle) {
++                        match class {
++                            crate::ImageClass::Depth { multi } => crate::ImageClass::Sampled {
++                                kind: crate::ScalarKind::Float,
++                                multi,
++                            },
++                            class => class,
++                        }
++                    } else {
++                        class
++                    };
+                     self.write_image_type(dim, arrayed, class)?;
+ 
+                     // Finally write the name and end the global with a `;`
+@@ -4084,6 +4148,28 @@
+             _ => unreachable!(),
+         };
+ 
++        // A depth image that is only read this way is declared as a plain sampler (see
++        // `depth_fetch_images`); its texel's first component is the depth.
++        let depth_fetch = matches!(class, crate::ImageClass::Depth { .. })
++            && matches!(
++                ctx.expressions[image],
++                crate::Expression::GlobalVariable(handle) if self.depth_fetch_images.contains(&handle)
++            );
++        let class = if depth_fetch {
++            match class {
++                crate::ImageClass::Depth { multi } => crate::ImageClass::Sampled {
++                    kind: crate::ScalarKind::Float,
++                    multi,
++                },
++                class => class,
++            }
++        } else {
++            class
++        };
++        if depth_fetch {
++            write!(self.out, "(")?;
++        }
++
+         // Get the name of the function to be used for the load operation
+         // and the policy to be used with it.
+         let (fun_name, policy) = match class {
+@@ -4324,6 +4410,10 @@
+             write!(self.out, ")")?;
+         }
+ 
++        if depth_fetch {
++            write!(self.out, ").x")?;
++        }
++
+         Ok(())
+     }
+ 

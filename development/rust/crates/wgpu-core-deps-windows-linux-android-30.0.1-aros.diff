@@ -1,0 +1,12 @@
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git wgpu-core-deps-windows-linux-android-30.0.1.orig/Cargo.toml wgpu-core-deps-windows-linux-android-30.0.1/Cargo.toml
+--- wgpu-core-deps-windows-linux-android-30.0.1.orig/Cargo.toml	2006-07-24 02:21:28.000000000 +0100
++++ wgpu-core-deps-windows-linux-android-30.0.1/Cargo.toml	2026-10-19 14:30:20.308003759 +0100
+@@ -39,7 +39,7 @@
+ name = "wgpu_core_deps_windows_linux_android"
+ path = "src/lib.rs"
+ 
+-[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd"))'.dependencies.wgpu-hal]
++[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "aros"))'.dependencies.wgpu-hal]
+ version = "30.0.0"
+ 
+ [lints.clippy]

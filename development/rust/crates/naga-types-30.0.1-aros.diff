@@ -1,0 +1,15 @@
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git naga-types-30.0.1.orig/src/glsl.rs naga-types-30.0.1/src/glsl.rs
+--- naga-types-30.0.1.orig/src/glsl.rs	2006-07-24 02:21:28.000000000 +0100
++++ naga-types-30.0.1/src/glsl.rs	2026-10-19 14:39:20.496605606 +0100
+@@ -81,7 +81,10 @@
+ 
+     pub fn supports_std430_layout(&self) -> bool {
+         // std430 is available from 400 via GL_ARB_shader_storage_buffer_object.
+-        *self >= Version::Desktop(400) || *self >= Version::new_gles(310)
++        // AROS: Mesa's softpipe has the extension on its GLSL 3.30 contexts;
++        // see naga's Features::BUFFER_STORAGE.
++        let desktop = if cfg!(target_os = "aros") { 330 } else { 400 };
++        *self >= Version::Desktop(desktop) || *self >= Version::new_gles(310)
+     }
+ 
+     pub fn supports_fma_function(&self) -> bool {

@@ -17,7 +17,8 @@ given):
   posixc has no `poll()` and its `select()` is a stub), `libloading`, `iced`
   and `iced_tiny_skia`, `fontique`; the window and graphics crates (`winit`
   on Intuition, `raw-window-handle`, `glutin`, `wgpu`/`wgpu-core`/`wgpu-hal`
-  with a GLA backend, `naga`), `cpal` on AHI and the system crates the
+  with a GLA backend, `naga`; wgpu 27 for Veloren and wgpu 30 with
+  `naga-types` for SolidCraft's egui 0.36), `cpal` on AHI and the system crates the
   cargo ports need (`polling`, `socket2` 0.5, `quinn-udp`, `filetime`,
   `open`, `libsqlite3-sys`, `num_cpus`, `stacker`, `ring`, `kiddo`,
   `copypasta`, `window_clipboard`, `atomicwrites`, `libc` 0.2.185 for
@@ -62,8 +63,8 @@ stores' crate versions, since cargo only takes a `[patch]` entry whose
 version is the locked one), runs
 `cargo build --offline --release --target $(RUST_TARGET_TRIPLE)` with
 `$(CONTRIB_RUST_CARGO) --config <its config>`, and copies the result.
-`ports/graphics/photocraft`, `ports/audio/maolan` and `games/RPG/veloren`
-are the examples; what still has to live with a program are its own upstream diff and
+`ports/graphics/photocraft`, `ports/graphics/solidcraft`, `ports/audio/maolan`
+and `games/RPG/veloren` are the examples; what still has to live with a program are its own upstream diff and
 the crates only it uses.
 
 Two things every port runs into: a process may only call `exit()` on its
