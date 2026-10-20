@@ -762,6 +762,32 @@ int IfcDoExit( tsd_t *TSD, int Code,
 /* ================ general purpose API functions ================= */
 
 /* You are not allowed to use TSD or __regina_get_tsd() here! */
+/*****************************************************************************
+
+    NAME
+        APIRET RexxFreeMemory()
+
+    SYNOPSIS
+        PVOID MemoryBlock );
+
+    FUNCTION
+        Releases memory allocated by the Regina API allocator.
+
+    INPUTS
+        MemoryBlock - Pointer returned by RexxAllocateMemory() or by a Regina
+                      interface that allocates through the same allocator.
+
+    RESULT
+        The allocator release status. A null pointer produces RXFUNC_BADTYPE.
+
+    NOTES
+        Do not release a buffer twice or use it after release.
+
+    SEE ALSO
+        RexxAllocateMemory(), ReginaVersion()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxFreeMemory(PVOID MemoryBlock )
 {
    if (!MemoryBlock)
@@ -771,6 +797,31 @@ EXPORT_C APIRET APIENTRY RexxFreeMemory(PVOID MemoryBlock )
 }
 
 /* You are not allowed to use TSD or __regina_get_tsd() here! */
+/*****************************************************************************
+
+    NAME
+        PVOID RexxAllocateMemory()
+
+    SYNOPSIS
+        ULONG size );
+
+    FUNCTION
+        Allocates a buffer using the Regina API allocator.
+
+    INPUTS
+        size - Requested allocation size in bytes.
+
+    RESULT
+        Pointer to the allocation, or NULL when allocation fails.
+
+    NOTES
+        Release the buffer using RexxFreeMemory().
+
+    SEE ALSO
+        RexxFreeMemory()
+
+*****************************************************************************/
+
 EXPORT_C PVOID APIENTRY RexxAllocateMemory(ULONG size )
 {
    return IfcAllocateMemory( size );
@@ -778,6 +829,52 @@ EXPORT_C PVOID APIENTRY RexxAllocateMemory(ULONG size )
 
 /* ================================================================ */
 /* ================ in order to start Rexx scripts ================ */
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxStart()
+
+    SYNOPSIS
+        LONG ArgCount,
+        PRXSTRING ArgList,
+        PCSZ ProgramName,
+        PRXSTRING Instore,
+        PCSZ EnvName,
+        LONG CallType,
+        PRXSYSEXIT Exits,
+        PSHORT ReturnCode,
+        PRXSTRING Result );
+
+    FUNCTION
+        Starts a Rexx program from a file, source buffer, or tokenized in-
+        storage image.
+
+    INPUTS
+        ArgCount, ArgList - Argument count and RXSTRING array.
+        ProgramName - Program identity or filename; must not be NULL.
+        Instore - Optional source/tokenized image pair.
+        EnvName - Optional initial command environment.
+        CallType - RXCOMMAND, RXSUBROUTINE, or RXFUNCTION, optionally combined
+                   with RXRESTRICTED.
+        Exits - Optional RXENDLST-terminated system-exit array.
+        ReturnCode - Optional program numeric result.
+        Result - Optional RXSTRING receiving the textual result.
+
+    RESULT
+        API status of the invocation; the program return code is reported
+        separately through ReturnCode. Invalid parameters produce
+        RXFUNC_BADTYPE or RX_START_BADP. Too many arguments produce
+        RX_START_TOOMANYP.
+
+    NOTES
+        RXCOMMAND accepts at most one argument string. Result storage depends
+        on the supplied RXSTRING buffer and interpreter output.
+
+    SEE ALSO
+        RexxCallBack(), RexxRegisterExitExe(), RexxFreeMemory()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxStart(LONG       ArgCount,
                           PRXSTRING  ArgList,
@@ -1006,6 +1103,41 @@ EXPORT_C APIRET APIENTRY RexxStart(LONG       ArgCount,
  * In opposite to the documentation we accept a NULL parameter of Result
  * silently.
  */
+/*****************************************************************************
+
+    NAME
+        APIRET RexxCallBack()
+
+    SYNOPSIS
+        PCSZ ProcedureName,
+        LONG ArgCount,
+        PRXSTRING ArgList,
+        PSHORT ReturnCode,
+        PRXSTRING Result );
+
+    FUNCTION
+        Calls a named Rexx procedure within an active interpreter session.
+
+    INPUTS
+        ProcedureName - Internal procedure to call.
+        ArgCount, ArgList - Parameters supplied to the procedure.
+        ReturnCode - Optional numeric result.
+        Result - Optional RXSTRING receiving the textual result.
+
+    RESULT
+        The callback status. RX_CB_NOTSTARTED indicates no active interpreter;
+        RX_CB_BADP, RX_CB_TOOMANYP, and RX_CB_BADN cover invalid arguments and
+        unknown procedures.
+
+    NOTES
+        Normally call from the thread executing the interpreter. A NULL Result
+        is accepted.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxCallBack( PCSZ       ProcedureName,
                                        LONG       ArgCount,
                                        PRXSTRING  ArgList,
@@ -1094,6 +1226,33 @@ EXPORT_C APIRET APIENTRY RexxCallBack( PCSZ       ProcedureName,
 /* ============================================================= */
 /* subcom handler subsystem */
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterSubcomExe()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        RexxSubcomHandler *EntryPoint,
+        PUCHAR UserArea );
+
+    FUNCTION
+        Registers a direct handler for a named Rexx command environment.
+
+    INPUTS
+        EnvName - Command-environment name.
+        EntryPoint - Subcommand handler callback.
+        UserArea - Optional associated caller data.
+
+    RESULT
+        The registration status; RXSUBCOM_BADTYPE is returned when EnvName or
+        EntryPoint is NULL.
+
+    SEE ALSO
+        RexxRegisterSubcomDll(), RexxDeregisterSubcom(), RexxQuerySubcom()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterSubcomExe(PCSZ EnvName,
 #ifdef RX_WEAKTYPING
                                       PFN              EntryPoint,
@@ -1118,6 +1277,41 @@ EXPORT_C APIRET APIENTRY RexxRegisterSubcomExe(PCSZ EnvName,
 }
 
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterSubcomDll()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName,
+        PCSZ ProcedureName,
+        PUCHAR UserArea,
+        ULONG DropAuth );
+
+    FUNCTION
+        Registers a command environment implemented by a dynamically loaded
+        procedure.
+
+    INPUTS
+        EnvName - Name of the command environment.
+        ModuleName - Module to load.
+        ProcedureName - Exported handler name.
+        UserArea - Optional associated data.
+        DropAuth - RXSUBCOM_DROPPABLE or RXSUBCOM_NONDROP.
+
+    RESULT
+        Registration status. Missing required names or an invalid DropAuth
+        produce RXSUBCOM_BADTYPE.
+
+    NOTES
+        DropAuth is checked but is not passed to the registration helper.
+
+    SEE ALSO
+        RexxRegisterSubcomExe(), RexxDeregisterSubcom()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterSubcomDll(PCSZ EnvName,
                                       PCSZ ModuleName,
                                       PCSZ ProcedureName,
@@ -1139,6 +1333,34 @@ EXPORT_C APIRET APIENTRY RexxRegisterSubcomDll(PCSZ EnvName,
                         UserArea );
 }
 
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxQuerySubcom()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName,
+        PUSHORT Flag,
+        PUCHAR UserArea );
+
+    FUNCTION
+        Queries a registered Rexx command environment.
+
+    INPUTS
+        EnvName - Environment name.
+        ModuleName - Optional module name.
+        Flag - Receives RXSUBCOM_ISREG if found, otherwise zero.
+        UserArea - Receives associated registration data where applicable.
+
+    RESULT
+        The query status. A null EnvName or Flag produces RXSUBCOM_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterSubcomExe(), RexxDeregisterSubcom()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxQuerySubcom(PCSZ EnvName,
                                 PCSZ ModuleName,
@@ -1163,6 +1385,30 @@ EXPORT_C APIRET APIENTRY RexxQuerySubcom(PCSZ EnvName,
 
    return ret;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxDeregisterSubcom()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName );
+
+    FUNCTION
+        Removes a registered Rexx subcommand environment.
+
+    INPUTS
+        EnvName - Name of the registered environment.
+        ModuleName - Optional backing module name.
+
+    RESULT
+        The deregistration status. Null EnvName produces RXSUBCOM_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterSubcomExe(), RexxRegisterSubcomDll()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxDeregisterSubcom(PCSZ EnvName,
                                      PCSZ ModuleName )
@@ -1204,6 +1450,37 @@ EXPORT_C APIRET APIENTRY RexxDeregisterSubcom(PCSZ EnvName,
  *    checks to split it back out.
  *
  ****************************************************************************/
+/*****************************************************************************
+
+    NAME
+        APIRET RexxVariablePool()
+
+    SYNOPSIS
+        PSHVBLOCK RequestBlockList );
+
+    FUNCTION
+        Processes a linked sequence of Rexx variable-pool requests in the
+        running interpreter.
+
+    INPUTS
+        RequestBlockList - First SHVBLOCK request. Each block selects an
+                           operation with shvcode and reports its outcome in
+                           shvret.
+
+    RESULT
+        Bitwise combination of the request status bits. RXSHV_NOAVL is
+        returned when no interpreter variable tree is available; a null
+        request list produces RXFUNC_BADTYPE.
+
+    NOTES
+        For each request, inspect shvret and any returned name or value. The
+        interface requires an active interpreter context.
+
+    SEE ALSO
+        RexxStart(), RexxCallBack()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxVariablePool(PSHVBLOCK RequestBlockList )
 {
    int Code=0, RetCode=0, IVPcode;
@@ -1377,6 +1654,33 @@ EXPORT_C APIRET APIENTRY RexxVariablePool(PSHVBLOCK RequestBlockList )
 /* ================================================================ */
 /* system exit handler subsystem */
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterExitExe()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        RexxExitHandler *EntryPoint,
+        PUCHAR UserArea );
+
+    FUNCTION
+        Registers a process-resident system exit handler for RexxStart().
+
+    INPUTS
+        EnvName - Name used to identify the exit.
+        EntryPoint - Callback to invoke.
+        UserArea - Optional caller data associated with the registration.
+
+    RESULT
+        The status returned by the exit-registration interface. RXEXIT_BADTYPE
+        is returned for a null name or callback.
+
+    SEE ALSO
+        RexxRegisterExitDll(), RexxDeregisterExit(), RexxQueryExit()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterExitExe(PCSZ EnvName,
 #ifdef RX_WEAKTYPING
                                              PFN              EntryPoint,
@@ -1400,6 +1704,42 @@ EXPORT_C APIRET APIENTRY RexxRegisterExitExe(PCSZ EnvName,
    return IfcRegExit( TSD, EnvName, NULL, NULL, (PFN)EntryPoint, UserArea );
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterExitDll()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName,
+        PCSZ ProcedureName,
+        PUCHAR UserArea,
+        ULONG DropAuth );
+
+    FUNCTION
+        Registers a system exit handler identified by a dynamic module and
+        procedure.
+
+    INPUTS
+        EnvName - Registration name.
+        ModuleName - Module providing the handler.
+        ProcedureName - Exported handler name.
+        UserArea - Optional caller data.
+        DropAuth - RXEXIT_DROPPABLE or RXEXIT_NONDROP.
+
+    RESULT
+        The exit-registration status. Null required names or an invalid
+        DropAuth produce RXEXIT_BADTYPE.
+
+    NOTES
+        The implementation validates DropAuth but does not pass it to the
+        registration helper.
+
+    SEE ALSO
+        RexxRegisterExitExe(), RexxDeregisterExit(), RexxQueryExit()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterExitDll(PCSZ EnvName,
                                     PCSZ ModuleName,
                                     PCSZ ProcedureName,
@@ -1421,6 +1761,31 @@ EXPORT_C APIRET APIENTRY RexxRegisterExitDll(PCSZ EnvName,
 }
 
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxDeregisterExit()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName );
+
+    FUNCTION
+        Removes a previously registered system exit handler.
+
+    INPUTS
+        EnvName - Name of the exit registration.
+        ModuleName - Module name for a module-backed registration, or NULL for
+                     a direct handler.
+
+    RESULT
+        The deregistration status. A null EnvName produces RXEXIT_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterExitExe(), RexxRegisterExitDll(), RexxQueryExit()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxDeregisterExit(PCSZ EnvName,
                                    PCSZ ModuleName )
 {
@@ -1435,6 +1800,34 @@ EXPORT_C APIRET APIENTRY RexxDeregisterExit(PCSZ EnvName,
 
    return IfcDelExit( TSD, EnvName, ModuleName );
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxQueryExit()
+
+    SYNOPSIS
+        PCSZ EnvName,
+        PCSZ ModuleName,
+        PUSHORT Flag,
+        PUCHAR UserArea );
+
+    FUNCTION
+        Checks for a registered system exit handler.
+
+    INPUTS
+        EnvName - Registration name.
+        ModuleName - Optional module name.
+        Flag - Receives RXEXIT_ISREG on success, otherwise zero.
+        UserArea - Receives the registered user data where applicable.
+
+    RESULT
+        The query status. A null EnvName or Flag produces RXEXIT_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterExitExe(), RexxDeregisterExit()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxQueryExit(PCSZ EnvName,
                               PCSZ ModuleName,
@@ -1466,6 +1859,31 @@ EXPORT_C APIRET APIENTRY RexxQueryExit(PCSZ EnvName,
  * This section contains the support for the external functions
  */
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterFunctionExe()
+
+    SYNOPSIS
+        PCSZ Name,
+        RexxFunctionHandler *EntryPoint );
+
+    FUNCTION
+        Registers a direct external Rexx function handler.
+
+    INPUTS
+        Name - Rexx-callable function name.
+        EntryPoint - Handler callback.
+
+    RESULT
+        The registration status. A null Name or EntryPoint produces
+        RXFUNC_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterFunctionDll(), RexxDeregisterFunction(), RexxQueryFunction()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterFunctionExe( PCSZ Name,
 #ifdef RX_WEAKTYPING
                                                   PFN                  EntryPoint )
@@ -1485,6 +1903,32 @@ EXPORT_C APIRET APIENTRY RexxRegisterFunctionExe( PCSZ Name,
    return IfcRegFunc( TSD, Name, NULL, NULL, (PFN)EntryPoint );
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxRegisterFunctionDll()
+
+    SYNOPSIS
+        PCSZ ExternalName,
+        PCSZ LibraryName,
+        PCSZ InternalName );
+
+    FUNCTION
+        Registers a Rexx function backed by a named dynamic library export.
+
+    INPUTS
+        ExternalName - Rexx-visible name.
+        LibraryName - Module containing the implementation.
+        InternalName - Exported procedure name.
+
+    RESULT
+        The registration status. A null required name produces RXFUNC_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterFunctionExe(), RexxDeregisterFunction()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxRegisterFunctionDll( PCSZ ExternalName,
                                                   PCSZ LibraryName,
                                                   PCSZ InternalName )
@@ -1501,6 +1945,28 @@ EXPORT_C APIRET APIENTRY RexxRegisterFunctionDll( PCSZ ExternalName,
    return IfcRegFunc( TSD, ExternalName, LibraryName, InternalName, NULL );
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxQueryFunction()
+
+    SYNOPSIS
+        PCSZ Name );
+
+    FUNCTION
+        Looks up an external Rexx function registration.
+
+    INPUTS
+        Name - Rexx function name to query.
+
+    RESULT
+        The query status. A null Name produces RXFUNC_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterFunctionExe(), RexxDeregisterFunction()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxQueryFunction( PCSZ Name )
 {
    tsd_t *TSD = getGlobalTSD();
@@ -1514,6 +1980,28 @@ EXPORT_C APIRET APIENTRY RexxQueryFunction( PCSZ Name )
    return IfcQueryFunc( TSD, Name );
 }
 
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxDeregisterFunction()
+
+    SYNOPSIS
+        PCSZ Name );
+
+    FUNCTION
+        Removes an external Rexx function registration.
+
+    INPUTS
+        Name - Registered Rexx function name.
+
+    RESULT
+        The deregistration status. A null Name produces RXFUNC_BADTYPE.
+
+    SEE ALSO
+        RexxRegisterFunctionExe(), RexxQueryFunction()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxDeregisterFunction( PCSZ Name )
 {
@@ -1701,6 +2189,33 @@ int IfcHaveFunctionExit(const tsd_t *TSD)
 /* ============================================================= */
 /* Asynchronous Rexx API interface */
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxSetHalt()
+
+    SYNOPSIS
+        LONG pid,
+        LONG tid );
+
+    FUNCTION
+        Requests interruption of the current Rexx interpreter context.
+
+    INPUTS
+        pid, tid - API process and thread identifiers.
+
+    RESULT
+        RXARI_OK after setting the current context halt flag.
+
+    NOTES
+        This implementation ignores pid and tid; it does not select a
+        different process or thread.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxSetHalt(LONG dummyProcess,
                             LONG dummyThread )
 {
@@ -1718,6 +2233,38 @@ EXPORT_C APIRET APIENTRY RexxSetHalt(LONG dummyProcess,
 
 /* ============================================================= */
 /* Named queue interface */
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxCreateQueue()
+
+    SYNOPSIS
+        PSZ Buffer,
+        ULONG BuffLen,
+        PSZ RequestedName,
+        ULONG *DupFlag );
+
+    FUNCTION
+        Creates a named queue in the Regina queue subsystem.
+
+    INPUTS
+        Buffer - Receives the resulting queue name.
+        BuffLen - Size of Buffer.
+        RequestedName - Optional requested queue name.
+        DupFlag - Receives the duplicate-name outcome.
+
+    RESULT
+        The queue creation status returned by the queue subsystem.
+
+    NOTES
+        The AROS build disables external queues with NO_EXTERNAL_QUEUES. Do
+        not assume a named queue is shared between processes.
+
+    SEE ALSO
+        RexxDeleteQueue(), RexxQueryQueue()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxCreateQueue( PSZ Buffer,
                                  ULONG BuffLen,
@@ -1739,6 +2286,33 @@ EXPORT_C APIRET APIENTRY RexxCreateQueue( PSZ Buffer,
    return code;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxDeleteQueue()
+
+    SYNOPSIS
+        PSZ QueueName );
+
+    FUNCTION
+        Deletes a queue by name.
+
+    INPUTS
+        QueueName - Nonempty queue name.
+
+    RESULT
+        The queue operation status; a missing or empty name produces
+        RXQUEUE_BADQNAME.
+
+    NOTES
+        The AROS build provides local queue handling but disables external
+        queues.
+
+    SEE ALSO
+        RexxCreateQueue()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxDeleteQueue( PSZ QueueName )
 {
    int code;
@@ -1756,6 +2330,34 @@ EXPORT_C APIRET APIENTRY RexxDeleteQueue( PSZ QueueName )
    TSD->called_from_saa = 0;
    return code;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxQueryQueue()
+
+    SYNOPSIS
+        PSZ QueueName,
+        ULONG *Count );
+
+    FUNCTION
+        Obtains the number of entries in a named queue.
+
+    INPUTS
+        QueueName - Nonempty queue name.
+        Count - Receives the number of entries.
+
+    RESULT
+        The query status; a missing or empty name produces RXQUEUE_BADQNAME.
+
+    NOTES
+        The AROS build disables external queues. Queue visibility is limited
+        by the local queue subsystem.
+
+    SEE ALSO
+        RexxCreateQueue(), RexxAddQueue(), RexxPullQueue()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxQueryQueue( PSZ QueueName,
                                 ULONG* Count)
@@ -1778,6 +2380,36 @@ EXPORT_C APIRET APIENTRY RexxQueryQueue( PSZ QueueName,
    return code;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxAddQueue()
+
+    SYNOPSIS
+        PSZ QueueName,
+        PRXSTRING EntryData,
+        ULONG AddFlag );
+
+    FUNCTION
+        Adds an RXSTRING entry to a named queue.
+
+    INPUTS
+        QueueName - Nonempty queue name.
+        EntryData - String and length to add.
+        AddFlag - RXQUEUE_FIFO or RXQUEUE_LIFO.
+
+    RESULT
+        The queue operation status; a missing or empty name produces
+        RXQUEUE_BADQNAME.
+
+    NOTES
+        The AROS build disables external queues.
+
+    SEE ALSO
+        RexxPullQueue(), RexxQueryQueue()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxAddQueue( PSZ QueueName,
                               PRXSTRING EntryData,
                               ULONG AddFlag)
@@ -1797,6 +2429,39 @@ EXPORT_C APIRET APIENTRY RexxAddQueue( PSZ QueueName,
    TSD->called_from_saa = 0;
    return code;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxPullQueue()
+
+    SYNOPSIS
+        PSZ QueueName,
+        PRXSTRING DataBuf,
+        PDATETIME TimeStamp,
+        ULONG WaitFlag );
+
+    FUNCTION
+        Removes an entry from the named queue.
+
+    INPUTS
+        QueueName - Nonempty queue name.
+        DataBuf - Receives the entry data and its length.
+        TimeStamp - Optional timestamp structure; valid is cleared on success.
+        WaitFlag - RXQUEUE_WAIT to wait, or RXQUEUE_NOWAIT to return without
+                   waiting.
+
+    RESULT
+        The queue operation status. Invalid WaitFlag produces
+        RXQUEUE_BADWAITFLAG; a null DataBuf produces RXQUEUE_MEMFAIL.
+
+    NOTES
+        The AROS build disables external queues.
+
+    SEE ALSO
+        RexxAddQueue(), RexxQueryQueue()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxPullQueue( PSZ QueueName,
                                PRXSTRING DataBuf,
@@ -1840,6 +2505,33 @@ EXPORT_C APIRET APIENTRY RexxPullQueue( PSZ QueueName,
 /* ============================================================= */
 /* MacroSpace Rexx API interface */
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxAddMacro()
+
+    SYNOPSIS
+        PSZ FuncName,
+        PSZ SourceFile,
+        ULONG Position );
+
+    FUNCTION
+        This entry point is intended to register a source program in the macro
+        space, but is not implemented.
+
+    INPUTS
+        FuncName - Macro registration name.
+        SourceFile - Rexx source file.
+        Position - Requested search position.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxAddMacro( PSZ FuncName,
                               PSZ SourceFile,
                               ULONG Position )
@@ -1847,10 +2539,60 @@ EXPORT_C APIRET APIENTRY RexxAddMacro( PSZ FuncName,
    return 0;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxDropMacro()
+
+    SYNOPSIS
+        PSZ FuncName );
+
+    FUNCTION
+        This entry point is intended to remove a program from the macro space,
+        but is not implemented.
+
+    INPUTS
+        FuncName - Macro registration name.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxDropMacro( PSZ FuncName)
 {
    return 0;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxSaveMacroSpace()
+
+    SYNOPSIS
+        ULONG FuncCount,
+        PSZ *FuncNames,
+        PSZ MacroLibFile );
+
+    FUNCTION
+        This entry point is intended to save macro-space entries to a file,
+        but is not implemented.
+
+    INPUTS
+        FuncCount - Number of listed names.
+        FuncNames - Names to save.
+        MacroLibFile - Destination file.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxSaveMacroSpace( ULONG FuncCount,
                                     PSZ * FuncNames,
@@ -1859,6 +2601,33 @@ EXPORT_C APIRET APIENTRY RexxSaveMacroSpace( ULONG FuncCount,
    return 0;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxLoadMacroSpace()
+
+    SYNOPSIS
+        ULONG FuncCount,
+        PSZ *FuncNames,
+        PSZ MacroLibFile );
+
+    FUNCTION
+        This entry point is intended to load macro-space entries from a file,
+        but is not implemented.
+
+    INPUTS
+        FuncCount - Number of listed names.
+        FuncNames - Names to load.
+        MacroLibFile - Source file.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxLoadMacroSpace( ULONG FuncCount,
                                     PSZ * FuncNames,
                                     PSZ MacroLibFile)
@@ -1866,17 +2635,88 @@ EXPORT_C APIRET APIENTRY RexxLoadMacroSpace( ULONG FuncCount,
    return 0;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxQueryMacro()
+
+    SYNOPSIS
+        PSZ FuncName,
+        PUSHORT Position );
+
+    FUNCTION
+        This entry point is intended to query a macro-space entry, but is not
+        implemented.
+
+    INPUTS
+        FuncName - Macro name.
+        Position - Intended output for the search position; unchanged by this
+                   implementation.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxQueryMacro( PSZ FuncName,
                                 PUSHORT Position )
 {
    return 0;
 }
 
+/*****************************************************************************
+
+    NAME
+        APIRET RexxReorderMacro()
+
+    SYNOPSIS
+        PSZ FuncName,
+        ULONG Position );
+
+    FUNCTION
+        This entry point is intended to change the search order of a macro-
+        space entry, but is not implemented.
+
+    INPUTS
+        FuncName - Macro name.
+        Position - Requested search position.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY RexxReorderMacro( PSZ FuncName,
                                   ULONG Position )
 {
    return 0;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET RexxClearMacroSpace()
+
+    SYNOPSIS
+        );
+
+    FUNCTION
+        This entry point is intended to clear the macro space, but is not
+        implemented.
+
+    RESULT
+        Returns RXMACRO_OK (zero) without performing the requested operation.
+
+    SEE ALSO
+        RexxStart()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY RexxClearMacroSpace( VOID )
 {
@@ -1886,6 +2726,36 @@ EXPORT_C APIRET APIENTRY RexxClearMacroSpace( VOID )
 /* ============================================================= */
 /* Regina extensions */
 /* see rexxsaa.h for a description */
+/*****************************************************************************
+
+    NAME
+        APIRET ReginaVersion()
+
+    SYNOPSIS
+        PRXSTRING VersionString );
+
+    FUNCTION
+        Returns the Regina library version and can optionally fill a version
+        string.
+
+    INPUTS
+        VersionString - Optional RXSTRING output. If its length is zero,
+                        Regina allocates a string buffer; otherwise it writes
+                        into the supplied buffer up to its declared length.
+
+    RESULT
+        A numeric version code with the major version in the upper byte and a
+        two-digit minor component in the low byte.
+
+    NOTES
+        VersionString.strlength excludes the terminating NUL. Release an API-
+        allocated version buffer with RexxFreeMemory().
+
+    SEE ALSO
+        ReginaCleanup(), RexxFreeMemory()
+
+*****************************************************************************/
+
 EXPORT_C APIRET APIENTRY ReginaVersion( PRXSTRING VersionString )
 {
    char low[3];
@@ -1927,6 +2797,29 @@ fastexit:
    low[2] = '\0';
    return( (atoi(REGINA_VERSION_MAJOR) << 8) | atoi(low) ) ;
 }
+
+/*****************************************************************************
+
+    NAME
+        APIRET ReginaCleanup()
+
+    SYNOPSIS
+        );
+
+    FUNCTION
+        Cleans up Regina state associated with the current execution context.
+
+    RESULT
+        Zero when no state was released; nonzero when cleanup performed work.
+
+    NOTES
+        Deregister external handlers before cleanup. Do not call while the
+        interpreter is actively using the state.
+
+    SEE ALSO
+        RexxStart(), ReginaVersion()
+
+*****************************************************************************/
 
 EXPORT_C APIRET APIENTRY ReginaCleanup( VOID )
 {
