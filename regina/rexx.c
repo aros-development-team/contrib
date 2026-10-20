@@ -693,6 +693,34 @@ int APIENTRY __regina_faked_main(int argc,char *argv[])
 # endif
 # define CALL_MAIN __regina_faked_main
 #else
+/*****************************************************************************
+
+    NAME
+        rexx
+
+    FORMAT
+        rexx [options] [script [arguments]]
+
+    LOCATION
+        Contrib Regina directory
+
+    FUNCTION
+        Runs the standalone Regina Rexx interpreter without the SAA external-
+        function interface.
+
+    INPUTS
+        script - Rexx program or standard input when omitted.
+        arguments - Program parameters.
+
+    RESULT
+        Runs the program and returns an interpreter exit status.
+
+    NOTES
+        This executable is built without the shared Regina SAA interface. Use
+        regina for SAA external-function packages.
+
+*****************************************************************************/
+
 int main(int argc,char *argv[])
 # define CALL_MAIN main
 #endif

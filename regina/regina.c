@@ -48,6 +48,36 @@
 #endif
 #include "rexx.h"
 
+/*****************************************************************************
+
+    NAME
+        regina
+
+    FORMAT
+        regina [options] [script [arguments]]
+
+    LOCATION
+        Contrib Regina directory
+
+    FUNCTION
+        Interprets a Rexx program through the shared Regina interpreter library.
+
+    INPUTS
+        script - Rexx source or tokenized program; if omitted or "-", source
+                 is read from standard input.
+        arguments - Parameters passed to the program.
+        options - Trace, interactive, argument, version, compile, and
+                  tokenized-image switches described by Regina.
+
+    RESULT
+        Runs the program and returns an interpreter exit status.
+
+    NOTES
+        Unlike the standalone rexx executable, regina supports external
+        function packages registered through the SAA interface.
+
+*****************************************************************************/
+
 int main(int argc, char *argv[])
 {
    int rc;

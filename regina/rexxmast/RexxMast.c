@@ -32,6 +32,31 @@ static void RemCon(struct RexxMsg *);
 
 void server_process(void);
 
+/*****************************************************************************
+
+    NAME
+        RexxMast
+
+    FORMAT
+        RexxMast
+
+    LOCATION
+        C:
+
+    FUNCTION
+        Starts the ARexx message service used for launching and managing Rexx
+        scripts.
+
+    RESULT
+        Runs until interrupted by Ctrl-C, then requests termination of its
+        server task.
+
+    NOTES
+        The server registers the public REXX message port and creates a task
+        named RexxMaster. It requires regina.library and rexxsyslib.library.
+
+*****************************************************************************/
+
 int main(int argc, char **argv)
 {
    ULONG signals;
