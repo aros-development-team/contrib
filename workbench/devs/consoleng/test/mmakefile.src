@@ -1,0 +1,18 @@
+include $(SRCDIR)/config/aros-contrib.cfg
+
+# Visual proof for consoleng.device: opens the NEW device by name on a window
+# and renders a mixed stream into it. Nothing here opens console.device, so a
+# screenshot of this program is a screenshot of the new device only.
+
+# This must be "#MM", not "#MM-". The dashed form only records a dependency
+# EDGE; it does not claim that this directory implements the target. With only
+# the dashed form, "make contrib-workbench-devs-consoleng-test" resolved the name,
+# built the dependency, generated the fd sweep and exited 0 having never
+# compiled this program - a silent no-op that looks exactly like success.
+#MM contrib-workbench-devs-consoleng-test : contrib-workbench-devs-consoleng includes linklibs
+
+%build_prog mmake=contrib-workbench-devs-consoleng-test \
+    progname=ConsolengTest \
+    files=consolengtest \
+    targetdir=$(AROS_TESTS) \
+    uselibs="amiga"

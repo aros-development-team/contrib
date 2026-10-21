@@ -1,0 +1,1068 @@
+{
+  "reference": "542147067dd016fc5f49120ef0ba605a98a4e3a7",
+  "columns": 80,
+  "cases": [
+    [
+      "(?-i:\\p{ahex}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{alpha}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{alphabetic}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{asciihexdigit}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{bidic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{bidicontrol}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{bidim}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{bidimirrored}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{cased}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{caseignorable}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{changeswhencasefolded}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{changeswhencasemapped}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{changeswhenlowercased}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{changeswhentitlecased}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{changeswhenuppercased}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{ci}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{cwcf}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{cwcm}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{cwl}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{cwt}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{cwu}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{dash}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{defaultignorablecodepoint}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{dep}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{deprecated}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{di}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{dia}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{diacritic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ebase}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ecomp}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{emod}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{emoji}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{emojicomponent}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{emojimodifier}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{emojimodifierbase}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{emojipresentation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{epres}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ext}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{extendedpictographic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{extender}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{extpict}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{graphemebase}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{graphemeextend}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{graphemelink}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{grbase}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{grext}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{grlink}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{hex}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{hexdigit}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{hyphen}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idc}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{idcompatmathcontinue}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idcompatmathstart}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idcontinue}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{ideo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ideographic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ids}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{idsb}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idsbinaryoperator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idst}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idstart}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{idstrinaryoperator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idsu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{idsunaryoperator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{joinc}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{joincontrol}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{loe}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{logicalorderexception}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{lower}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{lowercase}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{math}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{mcm}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{modifiercombiningmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{nchar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{noncharactercodepoint}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{oalpha}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{odi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ogrext}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{oidc}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{oids}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{olower}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{omath}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otheralphabetic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otherdefaultignorablecodepoint}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{othergraphemeextend}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otheridcontinue}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otheridstart}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otherlowercase}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{othermath}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otheruppercase}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{oupper}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{patsyn}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{patternsyntax}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{patternwhitespace}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{patws}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{pcm}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{prependedconcatenationmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{qmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{quotationmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{radical}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{regionalindicator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sd}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sentenceterminal}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{softdotted}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{space}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{sterm}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{term}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{terminalpunctuation}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{uideo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{unifiedideograph}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{upper}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{uppercase}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{variationselector}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{vs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{whitespace}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{wspace}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{xidc}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{xidcontinue}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{xids}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{xidstart}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\P{Alphabetic}+",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:\\P{Uppercase}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:\\p{Lowercase}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "[0\\p{Alphabetic}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "[\\p{Emoji}a]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "\\p{Extended_Pictographic}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ]
+  ]
+}
