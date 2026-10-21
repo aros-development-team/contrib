@@ -8,7 +8,7 @@ USER_CPPFLAGS := -I$(SRCDIR)/$(CURDIR)/../include
     progname=ConsoleNG targetdir=$(AROSDIR)/Prefs files=main
 
 %copy_files_q mmake=contrib-workbench-devs-consoleng-prefs-startup-script \
-    files=ConsoleNG-Startup dst=$(AROSDIR)/S
+    files="ConsoleNG-Startup ConsoleNG-Shell ConsoleNG-Mountlist" dst=$(AROSDIR)/S
 %copy_files_q mmake=contrib-workbench-devs-consoleng-prefs-startup-package \
     files=ConsoleNG src=package dst=$(AROSDIR)/Prefs/Env-Archive/SYS/Packages
 

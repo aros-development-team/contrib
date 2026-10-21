@@ -43,3 +43,21 @@ make contrib-workbench-devs-consoleng-prefs-startup-package
 
 Do not launch multiple top-level targets concurrently while mmake is generating
 new makefiles. Parallel compilation within an initialized target is supported.
+
+## Opening a console
+
+Install the matching core handler and clipboard companions, then run:
+
+```
+Execute S:ConsoleNG-Shell
+```
+
+The launcher mounts `CONNG:` on demand using `S:ConsoleNG-Mountlist`, with a
+64 KiB handler stack, then opens an ordinary native Shell. It does not mount a
+console automatically during boot or replace the classic `CON:` device. An
+already mounted `CONNG:` is reused; update any older mount definition to use the
+same stack size before booting it.
+
+Run `SYS:Prefs/ConsoleNG` for the editor. The package startup restores saved
+future-console defaults through the OS's `ENV:`/`ENVARC:` assignments. A read-only
+Live CD cannot save to a read-only `ENVARC:`; Use still applies session defaults.
