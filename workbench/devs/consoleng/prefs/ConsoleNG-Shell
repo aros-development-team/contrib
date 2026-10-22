@@ -1,0 +1,11 @@
+; Copyright (C) 2026, The AROS Development Team. All rights reserved.
+; Open on request; mounting the device may create its native window.
+FailAt 21
+Assign EXISTS CONNG: >NIL:
+If WARN
+    Mount CONNG: FROM S:ConsoleNG-Mountlist
+    If WARN
+        Quit 20
+    EndIf
+EndIf
+NewShell CONNG:

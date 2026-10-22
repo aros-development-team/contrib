@@ -1,0 +1,2202 @@
+{
+  "reference": "542147067dd016fc5f49120ef0ba605a98a4e3a7",
+  "columns": 80,
+  "cases": [
+    [
+      "(?-i:\\p{sc=Adlam}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ahom}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Anatolian_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Arabic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Armenian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Avestan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Balinese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Bamum}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Bassa_Vah}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Batak}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Bengali}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Bhaiksuki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Bopomofo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Brahmi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Braille}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Buginese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Buhid}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Canadian_Aboriginal}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Carian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Caucasian_Albanian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Chakma}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cherokee}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Chorasmian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Common}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{sc=Coptic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cuneiform}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cypriot}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cypro_Minoan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Cyrillic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Deseret}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Devanagari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Dives_Akuru}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Dogra}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Duployan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Egyptian_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Elbasan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Elymaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ethiopic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Garay}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Georgian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Glagolitic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Gothic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Grantha}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Greek}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Gujarati}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Gunjala_Gondi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Gurmukhi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Gurung_Khema}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Han}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hangul}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hanifi_Rohingya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hanunoo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hatran}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hebrew}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Hiragana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Imperial_Aramaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Inherited}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Inscriptional_Pahlavi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Inscriptional_Parthian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Javanese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kaithi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kannada}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Katakana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kawi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kayah_Li}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kharoshthi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Khitan_Small_Script}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Khmer}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Khojki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Khudawadi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Kirat_Rai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Lao}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Latin}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{sc=Lepcha}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Limbu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Linear_A}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Linear_B}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Lisu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Lycian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Lydian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Mahajani}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Makasar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Malayalam}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Mandaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Manichaean}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Marchen}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Masaram_Gondi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Medefaidrin}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Meetei_Mayek}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Mende_Kikakui}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Meroitic_Cursive}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Meroitic_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Miao}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Modi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Mongolian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Mro}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Multani}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Myanmar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nabataean}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nag_Mundari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nandinagari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=New_Tai_Lue}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Newa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nko}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nushu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Nyiakeng_Puachue_Hmong}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ogham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ol_Chiki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ol_Onal}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Hungarian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Italic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_North_Arabian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Permic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Persian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Sogdian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_South_Arabian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Turkic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Old_Uyghur}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Oriya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Osage}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Osmanya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Pahawh_Hmong}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Palmyrene}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Pau_Cin_Hau}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Phags_Pa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Phoenician}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Psalter_Pahlavi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Rejang}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Runic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Samaritan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Saurashtra}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sharada}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Shavian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Siddham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=SignWriting}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sinhala}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sogdian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sora_Sompeng}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Soyombo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sundanese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Sunuwar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Syloti_Nagri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Syriac}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tagalog}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tagbanwa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tai_Le}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tai_Tham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tai_Viet}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Takri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tamil}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tangsa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tangut}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Telugu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Thaana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Thai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tibetan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tifinagh}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tirhuta}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Todhri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Toto}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Tulu_Tigalari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Ugaritic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Vai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Vithkuqi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Wancho}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Warang_Citi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Yezidi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Yi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sc=Zanabazar_Square}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Adlam}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ahom}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Anatolian_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Arabic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Armenian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Avestan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Balinese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Bamum}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Bassa_Vah}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Batak}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Bengali}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Bhaiksuki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Bopomofo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Brahmi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Braille}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Buginese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Buhid}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Canadian_Aboriginal}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Carian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Caucasian_Albanian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Chakma}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cherokee}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Chorasmian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Common}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{scx=Coptic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cuneiform}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cypriot}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cypro_Minoan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Cyrillic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Deseret}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Devanagari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Dives_Akuru}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Dogra}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Duployan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Egyptian_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Elbasan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Elymaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ethiopic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Garay}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Georgian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Glagolitic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Gothic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Grantha}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Greek}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Gujarati}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Gunjala_Gondi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Gurmukhi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Gurung_Khema}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Han}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hangul}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hanifi_Rohingya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hanunoo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hatran}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hebrew}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Hiragana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Imperial_Aramaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Inherited}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Inscriptional_Pahlavi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Inscriptional_Parthian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Javanese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kaithi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kannada}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Katakana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kawi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kayah_Li}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kharoshthi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Khitan_Small_Script}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Khmer}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Khojki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Khudawadi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Kirat_Rai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Lao}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Latin}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{scx=Lepcha}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Limbu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Linear_A}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Linear_B}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Lisu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Lycian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Lydian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Mahajani}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Makasar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Malayalam}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Mandaic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Manichaean}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Marchen}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Masaram_Gondi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Medefaidrin}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Meetei_Mayek}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Mende_Kikakui}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Meroitic_Cursive}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Meroitic_Hieroglyphs}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Miao}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Modi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Mongolian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Mro}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Multani}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Myanmar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nabataean}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nag_Mundari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nandinagari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=New_Tai_Lue}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Newa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nko}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nushu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Nyiakeng_Puachue_Hmong}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ogham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ol_Chiki}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ol_Onal}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Hungarian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Italic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_North_Arabian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Permic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Persian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Sogdian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_South_Arabian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Turkic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Old_Uyghur}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Oriya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Osage}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Osmanya}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Pahawh_Hmong}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Palmyrene}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Pau_Cin_Hau}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Phags_Pa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Phoenician}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Psalter_Pahlavi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Rejang}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Runic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Samaritan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Saurashtra}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sharada}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Shavian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Siddham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=SignWriting}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sinhala}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sogdian}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sora_Sompeng}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Soyombo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sundanese}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Sunuwar}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Syloti_Nagri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Syriac}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tagalog}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tagbanwa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tai_Le}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tai_Tham}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tai_Viet}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Takri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tamil}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tangsa}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tangut}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Telugu}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Thaana}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Thai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tibetan}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tifinagh}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tirhuta}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Todhri}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Toto}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Tulu_Tigalari}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Ugaritic}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Vai}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Vithkuqi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Wancho}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Warang_Citi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Yezidi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Yi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{scx=Zanabazar_Square}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{Latin}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{Latn}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{Script=Latin}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{sc:Latn}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\P{Latin}+",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:\\p{sc=Latin}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?i:\\P{sc=Latin}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "[0\\p{Greek}]+",
+      "aAB 09_!$zZ",
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    [
+      "[\\p{Latin}0]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{Script_Extensions=Latn}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{scx=Latn}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ]
+  ]
+}
