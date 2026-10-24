@@ -11,30 +11,51 @@
 
 /*****************************************************************************
 
-    NAME */
+    NAME
+        BOOL IsReginaMsg()
 
-BOOL IsReginaMsg (struct RexxMsg *msg)
+    SYNOPSIS
+        BOOL IsReginaMsg(struct RexxMsg *msg);
 
-/*  FUNCTION
-        Check to see if message was generated from the regina interpreter.
-        This function will look at the rm_Private1 and rm_Private2 fields
-        to see if they are valid.
+    FUNCTION
+        Checks whether a Rexx message is associated with one of the
+        thread-context values currently recorded by regina.library. The
+        routine opens rexxsyslib.library, calls IsRexxMsg(), closes the
+        library, and compares rm_Private2 with the stored TSD values.
 
     INPUTS
+        msg - Non-NULL pointer to a readable RexxMsg. The message must
+              remain valid throughout this call.
 
     RESULT
+        TRUE when IsRexxMsg() accepts the message and rm_Private2 matches
+        a value in the Regina context list; FALSE otherwise.
+
+        Also returns FALSE if rexxsyslib.library cannot be opened.
 
     NOTES
+        IsRexxMsg() checks the RexxSys message-identity pointer, not the
+        contents of an arbitrary RexxMsg. This routine does not read
+        rm_Private1 or validate the message contents beyond these tests.
 
-    EXAMPLE
+        This routine traverses the context list without taking a lock.
+        Its result is not guaranteed during concurrent changes to that
+        list. A match does not confer ownership of the message or context.
 
     BUGS
+        An invalid or NULL msg is unsafe: IsRexxMsg() dereferences the
+        supplied pointer without checking it first.
+
+        Cleanup clears a context node's TSD pointer without removing its
+        node. Therefore a valid RexxSys message with rm_Private2 == NULL
+        can be accepted as a Regina message if any cleared node remains
+        in the list.
 
     SEE ALSO
-
-    INTERNALS
+        rexxsyslib.library/IsRexxMsg(), RexxStart()
 
 *****************************************************************************/
+BOOL IsReginaMsg (struct RexxMsg *msg)
 {
     tsd_node_t *node;
     BOOL ok;
