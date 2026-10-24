@@ -686,6 +686,58 @@ static int execute_file( tsd_t *TSD )
 }
 
 #ifdef RXLIB
+/*****************************************************************************
+
+    NAME
+        int __regina_faked_main()
+
+    SYNOPSIS
+        int __regina_faked_main(int argc, char *argv[]);
+
+    FUNCTION
+        Runs Regina's command-line interpreter from the shared library.
+        It initializes interpreter state, processes command-line options,
+        and reads, executes, or tokenizes the selected Rexx input.
+
+        The regina executable calls this entry point. It is not the
+        RexxStart() SAA execution interface.
+
+    INPUTS
+        argc - Number of elements in argv, as for a C program entry point.
+        argv - Command-line arguments, including the program name at
+               argv[0]. All referenced strings must remain readable.
+
+    RESULT
+        Returns the converted numeric script result during ordinary
+        execution. If that result is absent or cannot be converted to an
+        integer, ordinary result conversion returns EXIT_SUCCESS.
+
+        Returns zero for help or version options and on successful
+        tokenization. In the exceptional interpreter-exit path, returns
+        -1 if no result is stored; otherwise uses atoi() on that result.
+
+    NOTES
+        With no input filename, the interpreter reads from standard input.
+        The -c option produces tokenized output; -e executes tokenized
+        input. Other options follow the standalone Regina command line.
+
+        This entry point uses command-line state and shared interpreter
+        initialization. It does not provide per-call isolation guarantees
+        for embedding in arbitrary applications. Use RexxStart() for the
+        SAA programmatic execution interface.
+
+    BUGS
+        Some invalid or conflicting command-line options call exit(1)
+        rather than returning an error. Calling this vector from within
+        another program can therefore terminate that program.
+
+        The argument vector and argv[0] are not validated before use.
+        Invalid pointers are not a supported input condition.
+
+    SEE ALSO
+        RexxStart(), regina, rexx
+
+*****************************************************************************/
 # if defined(__LCC__)
 int __regina_faked_main(int argc,char *argv[])
 # else
