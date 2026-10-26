@@ -313,7 +313,7 @@ int decode_mpeg(unsigned char *buf, unsigned long length, double sync_time)
 
       len = mpeg.inbuf_ptr - mpeg.inbuf;
       if (len == HEADER_SIZE) {
-        header = *(unsigned long *)mpeg.inbuf; /* FIXME: Big endian only */
+        header = ((unsigned long)mpeg.inbuf[0] << 24) | (mpeg.inbuf[1] << 16) | (mpeg.inbuf[2] << 8) | mpeg.inbuf[3];
 
         if (header_check(header) < 0) {
           memcpy(mpeg.inbuf, mpeg.inbuf + 1, HEADER_SIZE - 1);

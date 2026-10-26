@@ -15,6 +15,7 @@ int plugin_set_id(unsigned long id, unsigned long subid);
 int plugin_video_init(unsigned long type, unsigned long fourcc, int width, int height, int depth, double framerate);
 int plugin_audio_init(unsigned long type, unsigned long fourcc, int rate, int bits, int channels);
 int plugin_start(void);
+int plugin_playing(void);
 int plugin_exit(void);
 
 /* Video */

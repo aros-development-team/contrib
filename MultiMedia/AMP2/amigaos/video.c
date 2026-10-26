@@ -56,7 +56,7 @@ extern struct Library *CyberGfxBase;
 extern struct Library *CGXVideoBase;
 extern struct Library *P96Base;
 extern unsigned char *baseaddress[3];
-extern unsigned long pixfmt, bpr, bpp;
+extern ULONG pixfmt, bpr, bpp;
 extern struct BitMap agabitmap[3];
 
 struct Screen *screen = NULL;
@@ -363,10 +363,46 @@ static void overlay_refresh_init()
   if (LockVLayer(VLH)) {
     vlayerimage = (unsigned long *)GetVLayerAttr(VLH, VOA_BaseAddress);
     refresh_rect.dst = vlayerimage;
+#ifdef SRCFMT_YCbCr420
+    if (refresh_rect.overlay_planar) {
+      refresh_rect.overlay_pitch = GetVLayerAttr(VLH, VOA_Modulo);
+      refresh_rect.overlay_uoff = GetVLayerAttr(VLH, VOA_BaseOffset1);
+      refresh_rect.overlay_voff = GetVLayerAttr(VLH, VOA_BaseOffset2);
+    }
+#endif
     overlay_is_locked = 1;
   } else {
     overlay_is_locked = 0;
   }
+}
+
+/* Creates the YUV overlay, planar I420 (the decoder output) is preferred over packed YUYV */
+static void create_yuv_vlayer(struct Screen *scr, int width, int height, int mode, unsigned long *error)
+{
+  refresh_rect.overlay_planar = 0;
+
+#ifdef SRCFMT_YCbCr420
+  if (mode == REFRESH_YUV420) {
+    VLH = CreateVLayerHandleTags(scr,
+                                 VOA_SrcType, SRCFMT_YCbCr420,
+                                 VOA_SrcWidth, width,
+                                 VOA_SrcHeight, height,
+                                 VOA_Error, error,
+                                 TAG_DONE);
+    if (VLH != NULL) {
+      debug_printf("VLayer: I420\n");
+      refresh_rect.overlay_planar = 1;
+      return;
+    }
+  }
+#endif
+
+  VLH = CreateVLayerHandleTags(scr,
+                               VOA_SrcType, SRCFMT_YCbCr16,
+                               VOA_SrcWidth, width,
+                               VOA_SrcHeight, height,
+                               VOA_Error, error,
+                               TAG_DONE);
 }
 
 static void overlay_refresh_exit()
@@ -392,7 +428,7 @@ static void aga_window_refresh_exit()
 int open_screen(int width, int height, int mode)
 {
   int screen_width, screen_height;
-  unsigned long error, dispid;
+  unsigned long error = 0, dispid;
   unsigned long my_depth = 0;
   int i, b;
 
@@ -483,12 +519,7 @@ int open_screen(int width, int height, int mode)
 
     if ((CGXVideoBase != NULL) && (prefs.overlay == PREFS_ON) && (screentype = CGFX)) {
       if ((mode == REFRESH_YUV420) || (prefs.colormode == PREFS_GRAY)) {
-        VLH = CreateVLayerHandleTags(window->WScreen,
-                                     VOA_SrcType, SRCFMT_YCbCr16,
-                                     VOA_SrcWidth, width,
-                                     VOA_SrcHeight, height,
-                                     VOA_Error, &error,
-                                     TAG_DONE);
+        create_yuv_vlayer(window->WScreen, width, height, mode, &error);
       } else {
         VLH = CreateVLayerHandleTags(window->WScreen,
                                      VOA_SrcType, SRCFMT_RGB16PC,
@@ -638,12 +669,7 @@ int open_screen(int width, int height, int mode)
 
       if ((CGXVideoBase != NULL) && (prefs.overlay == PREFS_ON)) {
         if ((mode == REFRESH_YUV420) || (prefs.colormode == PREFS_GRAY)) {
-          VLH = CreateVLayerHandleTags(screen,
-                                       VOA_SrcType, SRCFMT_YCbCr16,
-                                       VOA_SrcWidth, width,
-                                       VOA_SrcHeight, height,
-                                       VOA_Error, &error,
-                                       TAG_DONE);
+          create_yuv_vlayer(screen, width, height, mode, &error);
         } else {
           VLH = CreateVLayerHandleTags(screen,
                                        VOA_SrcType, SRCFMT_RGB16PC,
@@ -754,8 +780,17 @@ int open_screen(int width, int height, int mode)
     refresh_rect.dst = vlayerimage;
     bpr = refresh_rect.width * 2;
     refresh_rect.init();
-    for (i=0; i<refresh_rect.screen_width * refresh_rect.screen_height / 2; i++) {
-      refresh_rect.dst[i] = 0x00800080;
+    if (refresh_rect.overlay_planar) {
+      unsigned char *base = (unsigned char *)refresh_rect.dst;
+      int uvsize = (refresh_rect.overlay_pitch / 2) * (refresh_rect.height / 2);
+
+      memset(base, 0x10, refresh_rect.overlay_pitch * refresh_rect.height);
+      memset(base + refresh_rect.overlay_uoff, 0x80, uvsize);
+      memset(base + refresh_rect.overlay_voff, 0x80, uvsize);
+    } else {
+      for (i=0; i<refresh_rect.screen_width * refresh_rect.screen_height / 2; i++) {
+        refresh_rect.dst[i] = 0x00800080;
+      }
     }
     refresh_rect.exit();
   }

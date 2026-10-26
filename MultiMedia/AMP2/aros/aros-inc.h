@@ -13,6 +13,7 @@
 #include <libraries/asl.h>
 
 #include <string.h>
+#include <unistd.h>
 
 #include <aros/macros.h>
 
@@ -27,11 +28,11 @@ extern struct Task *CreateTask( struct TagItem *);
 
 #ifndef GOT_TASKTAGS
 #define GOT_TASKTAGS
-#define TAGBASE					0x1202020
-#define TASKATTR_CODE			(TAGBASE + 0x01)
-#define TASKATTR_NAME			(TAGBASE + 0x02)
-#define TASKATTR_STACKSIZE		(TAGBASE + 0x03)
-#define TASKATTR_INHERITR2		(TAGBASE + 0x04)
+/* Decoders call dos.library, so they must be processes */
+#define TASKATTR_CODE			NP_Entry
+#define TASKATTR_NAME			NP_Name
+#define TASKATTR_STACKSIZE		NP_StackSize
+#define TASKATTR_INHERITR2		TAG_IGNORE
 #endif /* GOT_TASKTAGS */
 
 #define AllocVecPPC(x,y,z) AllocVec(x,y)
@@ -55,7 +56,7 @@ extern struct Task *CreateTask( struct TagItem *);
 #define ReleaseSemaphorePPC ReleaseSemaphore
 
 #define FreeSemaphorePPC(sem)
-#define WaitTime(x,y) { int tmp = y ; while (tmp >= 0) tmp--; }
+#define WaitTime(x,y) usleep((x) * 1000000 + (y))
 #define SSPPC_SUCCESS TRUE
 
 #define AllocSignalPPC AllocSignal
@@ -65,6 +66,6 @@ extern struct Task *CreateTask( struct TagItem *);
 #define WaitPPC Wait
 #define GetSysTimePPC GetSysTime
 #define SubTimePPC SubTime
-#define CreateTaskPPC NewCreateTaskA
+#define CreateTaskPPC(tags) ((struct Task *)CreateNewProc(tags))
 #define FindTaskPPC FindTask
 

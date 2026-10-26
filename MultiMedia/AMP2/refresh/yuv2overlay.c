@@ -8,6 +8,8 @@
 #include "aros-inc.h"
 #endif
 
+#include <string.h>
+
 #include "refresh_internal.h"
 
 void yuv2overlay(rect_type *rect, unsigned char *src[])
@@ -79,4 +81,50 @@ void yuv2overlay_gray(rect_type *rect, unsigned char *src[])
 
     yadd += yrow;
   }
+}
+
+static void i420_copy_y(rect_type *rect, unsigned char *src[])
+{
+  unsigned char *dst = (unsigned char *)rect->dst;
+  int j;
+
+  for (j=0; j<rect->height; j++) {
+    unsigned char *py = rect->buf_use_osd[j] ? rect->osd[0] : src[0];
+
+    memcpy(dst + j * rect->overlay_pitch, py + j * rect->line_width, rect->width);
+  }
+}
+
+/* Planar overlay, the planes are copied as they come from the decoder */
+void yuv2overlay_i420(rect_type *rect, unsigned char *src[])
+{
+  unsigned char *dst = (unsigned char *)rect->dst;
+  unsigned char cuv = (rect->cuv ^ 0x80808080) & 0xff; /* Overlay wants it the other way around */
+  int uvpitch = rect->overlay_pitch / 2, uvrow = rect->line_width / 2;
+  int p, i, j;
+
+  i420_copy_y(rect, src);
+
+  for (p=1; p<3; p++) {
+    unsigned char *pdst = dst + ((p == 1) ? rect->overlay_uoff : rect->overlay_voff);
+
+    for (j=0; j<rect->height / 2; j++) {
+      unsigned char *s = (rect->buf_use_osd[j * 2] ? rect->osd[p] : src[p]) + j * uvrow;
+      unsigned char *d = pdst + j * uvpitch;
+
+      if (cuv == 0) {
+        memcpy(d, s, rect->width / 2);
+      } else {
+        for (i=0; i<rect->width / 2; i++) {
+          d[i] = s[i] ^ cuv;
+        }
+      }
+    }
+  }
+}
+
+/* Chroma stays at the neutral value it was cleared to */
+void yuv2overlay_i420_gray(rect_type *rect, unsigned char *src[])
+{
+  i420_copy_y(rect, src);
 }

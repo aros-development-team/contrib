@@ -399,6 +399,10 @@ int refresh_open(int w, int h, int l_w, unsigned long mode, double framerate)
     i++;
   }
 
+  if ((refresh_rect.screen_type == TYPE_OVERLAY) && refresh_rect.overlay_planar) {
+    temp = (prefs.colormode == PREFS_GRAY) ? yuv2overlay_i420_gray : yuv2overlay_i420;
+  }
+
   if (prefs.half == PREFS_ON) {
     refresh_rect.aga_half_height = 1;
   }
