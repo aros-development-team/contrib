@@ -184,7 +184,7 @@ int plugin_get(unsigned long function, unsigned long type, unsigned long fourcc)
     /* Not found, stop */
     printf("Plugin is old or no longer support the current format!\n");
     plugin_put(msg->msg_port, FUNCTION_EXIT);
-    pin_port[type] = NULL;
+    pin_port[(type & TYPE_VIDEO) ? VIDEO_PIN : AUDIO_PIN] = NULL;
   }
 
   return found;
@@ -205,7 +205,7 @@ void scan_file(char *filename, char *file)
     i = 0;
     while (i < length) {
       if (*(unsigned long *)(scan_buf + i) == PLUGIN_AMP) {
-        if (*(unsigned long *)(scan_buf + i + 4) == PLUGIN_ID) {
+        if (*(unsigned long *)(scan_buf + i + sizeof(unsigned long)) == PLUGIN_ID) {
           plugin = (plugin_ident *)(scan_buf + i);
           plugin++;
           while (plugin->type != 0) {
@@ -243,7 +243,8 @@ void scan_dir(void)
     if (Examine(lock, &fiblock)) {
       while (ExNext(lock, &fiblock)) {
         debug_printf("scanning file: %s\n", fiblock.fib_FileName);
-        if (strstr(fiblock.fib_FileName, ".AMP") != NULL) {
+        int len = strlen(fiblock.fib_FileName);
+        if ((len > 4) && (strcasecmp(fiblock.fib_FileName + len - 4, ".AMP") == 0)) {
           strcpy(plugin_file, plugin_path);
           strcat(plugin_file, fiblock.fib_FileName);
           scan_file(plugin_file, fiblock.fib_FileName);
@@ -458,8 +459,7 @@ amp_plugin_type *wait_for_plugin_init(unsigned long type, unsigned long fourcc)
       fclose(fp);
     }
 
-    sprintf(cli, "stack %d\n", (1024*512));
-    strcat(cli, "run >NIL: \""); // Run AMP in the background
+    strcpy(cli, "\"");
     strcat(cli, plugin_file);
     strcat(cli, "\"");
 
@@ -470,14 +470,20 @@ amp_plugin_type *wait_for_plugin_init(unsigned long type, unsigned long fourcc)
     strcat(cli, "Plugin/");
     strcat(cli, "\"");
 
-    if (prefs.debug == PREFS_ON) {
-      strcat(cli, " >CON:0/0/800/200/DEBUG/AUTO/WAIT"); /* FIXME */
-    } else {
-      strcat(cli, " >NIL:"); /* FIXME */
-    }
-
     debug_printf("%s\n", cli);
-    Execute(cli, NULL, NULL);
+
+    /* Run the plugin in the background, streams are closed by the plugin process */
+    {
+      BPTR in = Open("NIL:", MODE_OLDFILE);
+      BPTR out = Open((prefs.debug == PREFS_ON) ? "CON:0/0/800/200/DEBUG/AUTO/WAIT" : "NIL:", MODE_NEWFILE);
+
+      if (SystemTags(cli, SYS_Input, in, SYS_Output, out, SYS_Asynch, TRUE, TAG_DONE) == -1) {
+        printf("Failed to start plugin: %s\n", plugin_file);
+        Close(in);
+        Close(out);
+        goto retry_scan;
+      }
+    }
 
     if (plugin_get(FUNCTION_INIT, type, fourcc) < 0) {
       goto retry_scan;

@@ -47,6 +47,7 @@
 struct Library *GfxBase      = NULL;
 #else
 struct Device	 *TimerBase=NULL;
+static struct timerequest timer_req;
 #endif
 
 struct IntuitionBase *IntuitionBase = NULL;
@@ -61,6 +62,12 @@ static char *filename = NULL;
 
 void close_libraries()
 {
+#if defined(__AROS__)
+  if (TimerBase != NULL) {
+    CloseDevice((struct IORequest *)&timer_req);
+    TimerBase = NULL;
+  }
+#endif
   if (CGXVideoBase != NULL) {
     CloseLibrary(CGXVideoBase);
     CGXVideoBase = NULL;
@@ -141,6 +148,16 @@ void open_libraries()
 
   CyberGfxBase = OpenLibrary("cybergraphics.library", 40);
   CGXVideoBase = OpenLibrary("cgxvideo.library", 41);
+
+#if defined(__AROS__)
+  /* For GetSysTime() */
+  if (OpenDevice(TIMERNAME, UNIT_MICROHZ, (struct IORequest *)&timer_req, 0) != 0) {
+    printf("Could not open timer.device!\n");
+    close_libraries();
+    exit(0);
+  }
+  TimerBase = timer_req.tr_node.io_Device;
+#endif
 }
 
 #if !defined(__AROS__) || defined(__mc68000__)

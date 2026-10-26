@@ -106,6 +106,12 @@ typedef struct {
   int screen_type;
   int pixel_mode;
 
+  /* Planar (I420) overlay */
+  int overlay_planar;
+  int overlay_pitch;
+  int overlay_uoff;
+  int overlay_voff;
+
 } rect_type;
 
 
@@ -295,6 +301,8 @@ void yuv2win_gray(rect_type *rect, unsigned char *src[]);
 /* yuv2overlay.c */
 void yuv2overlay(rect_type *rect, unsigned char *src[]);
 void yuv2overlay_gray(rect_type *rect, unsigned char *src[]);
+void yuv2overlay_i420(rect_type *rect, unsigned char *src[]);
+void yuv2overlay_i420_gray(rect_type *rect, unsigned char *src[]);
 
 
 /* ARGB32 */

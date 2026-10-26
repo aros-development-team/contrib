@@ -96,7 +96,7 @@ void motion_comp_init (void)
   AVG2((AVG4(a, b, c, d)), e)
 
 /* Long access to byte pointer */
-#define LONG(var, offset) (*(unsigned long *)(var + offset))
+#define LONG(var, offset) (*(uint32_t *)(var + offset))
 
 void MC_put_8_c (uint8_t * dest, uint8_t * ref, int stride, int height)
 {

@@ -55,6 +55,9 @@ static struct {
   amiaudio_t *amiaudio;
 } local;
 
+/* Set by the decoders when all buffered data has been played */
+static volatile int video_done, audio_done;
+
 /* Variables protected by the semaphore -> */
 
 static struct timeval st = { 0, 0 };
@@ -465,6 +468,8 @@ static void video_decoder(void)
     video_pin->ident->exit();
   }
 
+  video_done = 1;
+
   if (video_decoder_ok == 1) {
     WaitPPC(SIGNAL_QUIT);
   }
@@ -496,6 +501,8 @@ static void audio_decoder(void)
     }
     audio_pin->ident->exit();
   }
+
+  audio_done = 1;
 
   if (audio_decoder_ok == 1) {
     WaitPPC(SIGNAL_QUIT);
@@ -531,6 +538,7 @@ int plugin_video_init(unsigned long type, unsigned long fourcc, int width, int h
   local.video_type = type;
   local.video_fourcc = fourcc;
   local.video_task_running = 0;
+  video_done = 0;
 
   type |= TYPE_VIDEO;
 
@@ -592,6 +600,7 @@ int plugin_audio_init(unsigned long type, unsigned long fourcc, int rate, int bi
   local.audio_type = type;
   local.audio_fourcc = fourcc;
   local.audio_task_running = 0;
+  audio_done = 0;
   local.amiaudio = AUDIO_NEW(AUDIO_AHI, (prefs.ahi == PREFS_ON),
                              AUDIO_STEREO, (prefs.stereo == PREFS_ON),
                              AUDIO_PAULA_56KHZ, (prefs.khz56 == PREFS_ON),
@@ -705,6 +714,12 @@ int plugin_start(void)
   }
 
   return CORE_OK;
+}
+
+/* True while a started decoder still has buffered data to play */
+int plugin_playing(void)
+{
+  return (local.video_task_running && !video_done) || (local.audio_task_running && !audio_done);
 }
 
 int plugin_exit(void)

@@ -171,6 +171,7 @@ int ReadFirstStartCode(unsigned int *startCode)
   if (ampio_fread((unsigned char *)startCode, 4) != 4) {
     return 1;
   }
+  *startCode = AROS_BE2LONG(*startCode);
 
   for (;;) {
     unsigned char byte;
@@ -195,6 +196,7 @@ int ReadStartCode(unsigned int *startCode)
   if (ampio_fread((unsigned char *)startCode, 4) != 4) {
     return 1;
   }
+  *startCode = AROS_BE2LONG(*startCode);
 
   for (;;) {
     unsigned char byte;
@@ -221,6 +223,7 @@ int ReadSystemHeader()
   if (ampio_fread((char *)&headerSize, 2) != 2) {
     return 1;
   }
+  headerSize = AROS_BE2WORD(headerSize);
 
   if (ampio_fseek(headerSize, SEEK_CUR) == 0) {
     return 1;
@@ -267,6 +270,7 @@ int ReadPacket(unsigned char packetID)
   if (ampio_fread((unsigned char *)&packetLength, 2) != 2) {
     return 1;
   }
+  packetLength = AROS_BE2WORD(packetLength);
 
   /* Skip everything but audio, video and ac3 streams */
   if ((packetID != AUDIO_STREAM_ID) && (packetID != VIDEO_STREAM_ID) && (packetID != AC3_STREAM_ID)) {
@@ -453,6 +457,16 @@ void split_stream()
     }
     if (decoders_running == FALSE) {
       start_decoders();
+    }
+
+    /* Keep the slider and the window going while the buffers are played */
+    video_feof();
+    audio_feof();
+    while (plugin_playing()) {
+      if (exit_demuxer() == TRUE) {
+        break;
+      }
+      WaitTime(0, 100000);
     }
 }
 

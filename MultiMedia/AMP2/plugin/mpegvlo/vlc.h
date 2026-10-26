@@ -6,7 +6,7 @@
 
 #define GETWORD(bit_buf,shift,bit_ptr)                 \
 do {                                    \
-    bit_buf |= (*((uint16_t *)(bit_ptr))) << (shift); \
+    bit_buf |= ((bit_ptr[0] << 8) | bit_ptr[1]) << (shift); \
     bit_ptr += 2;                            \
 } while (0)
 
