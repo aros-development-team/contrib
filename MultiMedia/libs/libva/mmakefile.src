@@ -1,0 +1,63 @@
+#
+#   libva (VA-API) with the built-in "aros" driver, as a static link
+#   library. Decoding is done by the display drivers through gfx.hidd's
+#   decode interface; see va_aros_drv.c and <va/va_aros.h>.
+#
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+VAVERSION       := 2.22.0
+ARCHBASE        := libva-$(VAVERSION)
+VASRCDIR        := $(PORTSDIR)/libva/$(ARCHBASE)
+PATCHSPEC       := $(ARCHBASE)-aros.diff:$(ARCHBASE):-p1
+REPOSITORIES    := \
+    cache:// \
+    https://github.com/intel/libva/releases/download/$(VAVERSION)
+
+#MM- contrib-multimedia : contrib-libva
+#MM- contrib-libva : contrib-libva-linklib
+#MM contrib-libva-linklib : contrib-libva-fetch contrib-libva-includes linklibs-surfacetrack includes linklibs-startup
+#MM- contrib-libva-includes : contrib-libva-includes-copy contrib-libva-aros-includes-copy
+#MM contrib-libva-includes-copy : contrib-libva-fetch
+
+%fetch mmake=contrib-libva-fetch archive=$(ARCHBASE) destination=$(PORTSDIR)/libva \
+    location=$(PORTSSOURCEDIR) archive_origins=$(REPOSITORIES) suffixes="tar.bz2" \
+    patches_specs=$(PATCHSPEC)
+
+%create_patch mmake=contrib-libva-create-patch \
+    archive=$(ARCHBASE) suffixes="tar.bz2" \
+    destination=$(PORTSDIR)/libva
+
+USER_INCLUDES   := -I$(VASRCDIR)/va -I$(SRCDIR)/$(CURDIR)/include -I$(AROS_CONTRIB_INCLUDES)
+USER_CPPFLAGS   := -DSYSCONFDIR=\"ENV:VA\"
+USER_CFLAGS     := $(NOWARN_UNUSED_FUNCTION) $(NOWARN_UNUSED_VARIABLE)
+
+VAFILES := \
+    $(VASRCDIR)/va/va \
+    $(VASRCDIR)/va/va_str \
+    $(VASRCDIR)/va/va_trace \
+    va_aros_drv
+
+%build_linklib mmake=contrib-libva-linklib libname=va files="$(VAFILES)"
+
+# Upstream headers, unchanged, plus <va/va_aros.h>
+VAINCLUDES := va.h va_backend.h va_backend_prot.h va_backend_vpp.h va_compat.h \
+    va_dec_av1.h va_dec_hevc.h va_dec_jpeg.h va_dec_vp8.h va_dec_vp9.h va_dec_vvc.h \
+    va_drmcommon.h va_enc_av1.h va_enc_h264.h va_enc_hevc.h va_enc_jpeg.h va_enc_mpeg2.h \
+    va_enc_vp8.h va_enc_vp9.h va_fei.h va_fei_h264.h va_fei_hevc.h va_prot.h va_str.h \
+    va_tpi.h va_version.h va_vpp.h
+
+%copy_includes mmake=contrib-libva-includes-copy path=va dir=$(VASRCDIR)/va includes="$(VAINCLUDES)"
+
+%copy_includes mmake=contrib-libva-aros-includes-copy path=va dir=include includes="va_aros.h"
+
+#MM- contrib-libva : contrib-libva-vainfo
+#MM contrib-libva-vainfo : contrib-libva-linklib
+
+USER_INCLUDES   := -I$(AROS_CONTRIB_INCLUDES)
+
+%build_prog mmake=contrib-libva-vainfo progname=vainfo \
+    files="vainfo/vainfo" targetdir=$(AROS_CONTRIB)/MultiMedia/Video \
+    uselibs="va surfacetrack pthread"
+
+%common

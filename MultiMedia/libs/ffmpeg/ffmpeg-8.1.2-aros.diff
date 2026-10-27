@@ -1,7 +1,15 @@
 diff -ruN ffmpeg-8.1.2/configure ffmpeg-8.1.2.aros/configure
 --- ffmpeg-8.1.2/configure	2026-06-17 03:17:51.000000000 +0100
-+++ ffmpeg-8.1.2.aros/configure	2026-07-27 22:34:09.315618949 +0100
-@@ -6041,6 +6041,8 @@
++++ ffmpeg-8.1.2.aros/configure	2026-10-27 18:30:29.769859522 +0000
+@@ -2564,6 +2564,7 @@
+ 
+ SYSTEM_LIBRARIES="
+     bcrypt
++    vaapi_aros
+     vaapi_drm
+     vaapi_x11
+     vaapi_win32
+@@ -6041,6 +6042,8 @@
          SLIB_INSTALL_LINKS=
          SHFLAGS='-shared -Wl,-soname,$(SLIBNAME)'
          ;;
@@ -10,9 +18,33 @@ diff -ruN ffmpeg-8.1.2/configure ffmpeg-8.1.2.aros/configure
      haiku)
          prefix_default="/boot/common"
          network_extralibs="-lnetwork"
+@@ -7664,14 +7667,22 @@
+ enabled libdrm &&
+     check_pkg_config libdrm_getfb2 libdrm "xf86drmMode.h" drmModeGetFB2
+ 
+-enabled vaapi &&
++if enabled vaapi && test "$target_os" = aros; then
++    # libva is a static link library with its built-in driver, no pkg-config
++    check_lib vaapi "va/va.h" vaInitialize -lva -lsurfacetrack -lpthread
++elif enabled vaapi; then
+     check_pkg_config vaapi "libva >= 0.35.0" "va/va.h" vaInitialize
++fi
+ 
+ if enabled vaapi; then
+     case $target_os in
+         mingw32*|mingw64*|win32|win64)
+             check_pkg_config vaapi_win32 "libva-win32" "va/va_win32.h" vaGetDisplayWin32
+             ;;
++        aros)
++            check_func_headers "va/va.h va/va_aros.h" vaGetDisplayAROS -lva -lsurfacetrack -lpthread &&
++                enable vaapi_aros
++            ;;
+         *)
+             check_pkg_config vaapi_drm "libva-drm" "va/va_drm.h" vaGetDisplayDRM
+             ;;
 diff -ruN ffmpeg-8.1.2/libavformat/os_support.h ffmpeg-8.1.2.aros/libavformat/os_support.h
 --- ffmpeg-8.1.2/libavformat/os_support.h	2026-06-17 03:17:51.000000000 +0100
-+++ ffmpeg-8.1.2.aros/libavformat/os_support.h	2026-07-27 22:34:09.315888049 +0100
++++ ffmpeg-8.1.2.aros/libavformat/os_support.h	2026-10-27 18:30:14.210133936 +0000
 @@ -136,6 +136,12 @@
  #define closesocket close
  #endif
@@ -26,3 +58,63 @@ diff -ruN ffmpeg-8.1.2/libavformat/os_support.h ffmpeg-8.1.2.aros/libavformat/os
  #if !HAVE_POLL_H
  typedef unsigned long nfds_t;
  
+diff -ruN ffmpeg-8.1.2/libavutil/hwcontext_vaapi.c ffmpeg-8.1.2.aros/libavutil/hwcontext_vaapi.c
+--- ffmpeg-8.1.2/libavutil/hwcontext_vaapi.c	2026-06-17 03:17:51.000000000 +0100
++++ ffmpeg-8.1.2.aros/libavutil/hwcontext_vaapi.c	2026-10-27 18:59:23.261210540 +0000
+@@ -33,6 +33,9 @@
+ #if HAVE_VAAPI_DRM
+ #   include <va/va_drm.h>
+ #endif
++#if HAVE_VAAPI_AROS
++#   include <va/va_aros.h>
++#endif
+ 
+ #if CONFIG_LIBDRM
+ #   include <va/va_drmcommon.h>
+@@ -1715,7 +1718,7 @@
+     VAAPIDevicePriv *priv;
+     VADisplay display = NULL;
+     const AVDictionaryEntry *ent;
+-    int try_drm, try_x11, try_win32, try_all av_unused;
++    int try_drm, try_x11, try_win32, try_aros, try_all av_unused;
+ 
+     priv = av_mallocz(sizeof(*priv));
+     if (!priv)
+@@ -1728,8 +1731,10 @@
+ 
+     ent = av_dict_get(opts, "connection_type", NULL, 0);
+     if (ent) {
+-        try_all = try_drm = try_x11 = try_win32 = 0;
+-        if (!strcmp(ent->value, "drm")) {
++        try_all = try_drm = try_x11 = try_win32 = try_aros = 0;
++        if (!strcmp(ent->value, "aros")) {
++            try_aros = 1;
++        } else if (!strcmp(ent->value, "drm")) {
+             try_drm = 1;
+         } else if (!strcmp(ent->value, "x11")) {
+             try_x11 = 1;
+@@ -1745,7 +1750,24 @@
+         try_drm = HAVE_VAAPI_DRM;
+         try_x11 = HAVE_VAAPI_X11;
+         try_win32 = HAVE_VAAPI_WIN32;
++        try_aros = HAVE_VAAPI_AROS;
++    }
++
++#if HAVE_VAAPI_AROS
++    if (!display && try_aros) {
++        // The device is a public screen name, NULL for the default one:
++        // its display driver decodes and its video planes show the frames.
++        // libva keeps the screen locked until vaTerminate().
++        display = vaGetDisplayAROSPubScreen(device);
++        if (!display) {
++            av_log(ctx, AV_LOG_VERBOSE, "Cannot open a VA display "
++                   "from public screen %s.\n", device ? device : "(default)");
++        } else {
++            av_log(ctx, AV_LOG_VERBOSE, "Opened VA display via "
++                   "AROS screen %s.\n", device ? device : "(default)");
++        }
+     }
++#endif
+ 
+ #if HAVE_VAAPI_DRM
+     while (!display && try_drm) {

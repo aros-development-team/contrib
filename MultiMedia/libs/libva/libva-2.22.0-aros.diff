@@ -1,0 +1,122 @@
+diff -u libva-2.22.0/va/va.c libva-2.22.0.aros/va/va.c
+--- libva-2.22.0/va/va.c	2026-10-27 18:14:10.696025972 +0000
++++ libva-2.22.0.aros/va/va.c	2026-10-27 18:14:10.698776672 +0000
+@@ -41,6 +41,9 @@
+ #define DRIVER_EXTENSION    "_drv_video.dll"
+ #define DRIVER_PATH_STRING  "%s\\%s%s"
+ #define ENV_VAR_SEPARATOR ";"
++#elif defined(__AROS__)
++/* No loadable drivers: the "aros" driver is part of the library */
++#include <unistd.h>
+ #else
+ #include <dlfcn.h>
+ #include <unistd.h>
+@@ -346,6 +349,7 @@
+     return true;
+ }
+ 
++#if !defined(__AROS__)
+ static inline int
+ va_getDriverInitName(char *name, int namelen, int major, int minor)
+ {
+@@ -544,6 +548,56 @@
+     return vaStatus;
+ }
+ 
++#else /* __AROS__ */
++
++/* The built-in driver (va_aros_drv.c) */
++VAStatus __vaDriverInit_1_22(VADriverContextP ctx);
++
++static VAStatus va_openDriver(VADisplay dpy, char *driver_name)
++{
++    VADriverContextP ctx = CTX(dpy);
++    VAStatus vaStatus = VA_STATUS_SUCCESS;
++
++    if (strcmp(driver_name, "aros") != 0) {
++        va_errorMessage(dpy, "no VA driver %s\n", driver_name);
++        return VA_STATUS_ERROR_UNKNOWN;
++    }
++
++    if (!ctx->vtable)
++        ctx->vtable = calloc(1, sizeof(*ctx->vtable));
++    if (!ctx->vtable_vpp) {
++        ctx->vtable_vpp = calloc(1, sizeof(*ctx->vtable_vpp));
++        if (ctx->vtable_vpp)
++            ctx->vtable_vpp->version = VA_DRIVER_VTABLE_VPP_VERSION;
++    }
++    if (!ctx->vtable_prot) {
++        ctx->vtable_prot = calloc(1, sizeof(*ctx->vtable_prot));
++        if (ctx->vtable_prot)
++            ctx->vtable_prot->version = VA_DRIVER_VTABLE_PROT_VERSION;
++    }
++    if (!ctx->vtable || !ctx->vtable_vpp || !ctx->vtable_prot)
++        return VA_STATUS_ERROR_ALLOCATION_FAILED;
++
++    vaStatus = __vaDriverInit_1_22(ctx);
++    if (VA_STATUS_SUCCESS == vaStatus) {
++        CHECK_MAXIMUM(vaStatus, ctx, profiles);
++        CHECK_MAXIMUM(vaStatus, ctx, entrypoints);
++        CHECK_MAXIMUM(vaStatus, ctx, attributes);
++        CHECK_MAXIMUM(vaStatus, ctx, image_formats);
++        CHECK_MAXIMUM(vaStatus, ctx, subpic_formats);
++        CHECK_STRING(vaStatus, ctx, vendor);
++        CHECK_VTABLE(vaStatus, ctx, Terminate);
++    }
++    if (VA_STATUS_SUCCESS == vaStatus)
++        ctx->handle = (void *)__vaDriverInit_1_22;   /* "driver loaded" */
++    else
++        va_errorMessage(dpy, "%s init failed\n", driver_name);
++
++    return vaStatus;
++}
++
++#endif /* __AROS__ */
++
+ VAPrivFunc vaGetLibFunc(VADisplay dpy, const char *func)
+ {
+     VADriverContextP ctx;
+@@ -554,7 +608,11 @@
+     if (NULL == ctx->handle)
+         return NULL;
+ 
++#if defined(__AROS__)
++    return NULL;    /* the built-in driver exports nothing by name */
++#else
+     return (VAPrivFunc) dlsym(ctx->handle, func);
++#endif
+ }
+ 
+ 
+@@ -767,7 +825,9 @@
+ 
+     if (old_ctx->handle) {
+         vaStatus = old_ctx->vtable->vaTerminate(old_ctx);
++#if !defined(__AROS__)
+         dlclose(old_ctx->handle);
++#endif
+         old_ctx->handle = NULL;
+     }
+     free(old_ctx->vtable);
+diff -u libva-2.22.0/va/va_trace.c libva-2.22.0.aros/va/va_trace.c
+--- libva-2.22.0/va/va_trace.c	2026-10-27 18:14:10.695572472 +0000
++++ libva-2.22.0.aros/va/va_trace.c	2026-10-27 18:16:58.587254918 +0000
+@@ -51,7 +51,9 @@
+ #include "win32/va_win32.h"
+ #include "compat_win32.h"
+ #else
++#if !defined(__AROS__)
+ #include <dlfcn.h>
++#endif
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+@@ -85,6 +87,8 @@
+     return getthrid();
+ #elif defined(__sun)
+     return thr_self();
++#elif defined(__AROS__)
++    return (pid_t)(intptr_t)pthread_self();
+ #else
+ #warning "Cannot get kernel thread identifier on this platform."
+     return (intptr_t)pthread_self();

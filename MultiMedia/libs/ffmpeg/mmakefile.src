@@ -3,7 +3,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-#MM- contrib-ffmpeg : linklibs-startup linklibs-amiga linklibs-arossupport linklibs-clib
+#MM- contrib-ffmpeg : linklibs-startup linklibs-amiga linklibs-arossupport linklibs-clib contrib-libva
 
 NOWARN_FLAGS := $(NOWARN_ATTRIBUTES) $(NOWARN_DEPRECATED_DECLARATIONS) $(NOWARN_MISLEADING_INDENTATION) \
         $(NOWARN_INCOMPAT_POINTER_TYPES) $(NOWARN_ARRAY_BOUNDS) $(NOWARN_DISCARDED_QUALIFIERS) \
@@ -51,6 +51,7 @@ FFMPEG_OPTIONS := \
         --disable-x86asm \
         --disable-doc \
         --disable-debug \
+        --enable-vaapi \
         $(FFMPEG_PROGS)
 
 ifeq ($(AROS_TARGET_CPU),m68k)
