@@ -388,7 +388,7 @@ static VAStatus aros_CreateConfig(VADriverContextP ctx, VAProfile profile, VAEnt
         return VA_STATUS_ERROR_ALLOCATION_FAILED;
     cfg->profile    = profile;
     cfg->entrypoint = entrypoint;
-    cfg->rtformat   = (supported & VA_RT_FORMAT_YUV420) ? VA_RT_FORMAT_YUV420 : supported;
+    cfg->rtformat   = supported;    /* every format the profile decodes to: FFmpeg picks the stream's from the surface attributes */
 
     for (i = 0; i < num_attribs; i++)
     {
