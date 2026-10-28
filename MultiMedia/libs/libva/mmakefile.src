@@ -60,4 +60,14 @@ USER_INCLUDES   := -I$(AROS_CONTRIB_INCLUDES)
     files="vainfo/vainfo" targetdir=$(AROS_CONTRIB)/MultiMedia/Video \
     uselibs="va surfacetrack pthread"
 
+# vadecode: FFmpeg + VA-API decode check (per-frame checksums); needs the
+# FFmpeg port, so it is not part of contrib-libva
+#MM contrib-libva-vadecode : contrib-libva-linklib contrib-ffmpeg
+
+USER_LDFLAGS := -L$(AROS_CONTRIB_LIB)
+
+%build_prog mmake=contrib-libva-vadecode progname=vadecode \
+    files="vadecode/vadecode" targetdir=$(AROS_CONTRIB)/MultiMedia/Video \
+    uselibs="avformat avcodec swresample swscale avutil va surfacetrack pthread net z bz2 lzma iconv"
+
 %common
