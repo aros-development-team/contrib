@@ -59,13 +59,15 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx, const enum AVPixelF
  * same picture hash alike.
  */
 /*
- * 10-bit pictures: P010 (hardware, value in the high 10 bits of 16) and
- * yuv420p10le (software, value in the low 10 bits) reduce to the same
- * canonical bytes: Y, U, V planes of 16-bit little-endian values in the low bits.
+ * 10 and 12-bit pictures: P010/P012 (hardware, value in the high bits of 16)
+ * and yuv420p10le/yuv420p12le (software, value in the low bits) reduce to the
+ * same canonical bytes: Y, U, V planes of 16-bit little-endian values in the low bits.
  */
 static int frame_md5_10(const AVFrame *f, struct AVMD5 *md5)
 {
     int w = f->width, h = f->height, y, x, plane;
+    int high = (f->format == AV_PIX_FMT_P010LE) || (f->format == AV_PIX_FMT_P012LE);
+    int shift = (f->format == AV_PIX_FMT_P012LE) ? 4 : 6;
     uint16_t *tmp = malloc(w * 2);
 
     if (!tmp)
@@ -75,23 +77,54 @@ static int frame_md5_10(const AVFrame *f, struct AVMD5 *md5)
         const uint16_t *row = (const uint16_t *)(f->data[0] + (size_t)y * f->linesize[0]);
 
         for (x = 0; x < w; x++)
-            tmp[x] = (f->format == AV_PIX_FMT_P010LE) ? (row[x] >> 6) : row[x];
+            tmp[x] = high ? (row[x] >> shift) : row[x];
         av_md5_update(md5, (uint8_t *)tmp, w * 2);
     }
     for (plane = 0; plane < 2; plane++)
         for (y = 0; y < h / 2; y++)
         {
-            if (f->format == AV_PIX_FMT_P010LE)
+            if (high)
             {
                 const uint16_t *row = (const uint16_t *)(f->data[1] + (size_t)y * f->linesize[1]);
 
                 for (x = 0; x < w / 2; x++)
-                    tmp[x] = row[2 * x + plane] >> 6;
+                    tmp[x] = row[2 * x + plane] >> shift;
             }
             else
                 memcpy(tmp, f->data[1 + plane] + (size_t)y * f->linesize[1 + plane], w);
             av_md5_update(md5, (uint8_t *)tmp, w);
         }
+    free(tmp);
+    return 0;
+}
+
+/*
+ * 4:2:2 and 4:4:4 pictures, planar (software) or packed (the VA-API ones:
+ * xv30, xv36, y210, y212): every component's values, plane by plane, as
+ * 16-bit little-endian numbers in the low bits.
+ */
+static int frame_md5_generic(const AVFrame *f, struct AVMD5 *md5)
+{
+    const AVPixFmtDescriptor *d = av_pix_fmt_desc_get(f->format);
+    uint16_t *tmp;
+    int c, y;
+
+    if (!d || d->nb_components < 3 || (d->flags & AV_PIX_FMT_FLAG_RGB))
+        return -2;
+    tmp = malloc(f->width * sizeof(*tmp));
+    if (!tmp)
+        return -1;
+    for (c = 0; c < 3; c++)
+    {
+        int w = c ? AV_CEIL_RSHIFT(f->width, d->log2_chroma_w) : f->width;
+        int h = c ? AV_CEIL_RSHIFT(f->height, d->log2_chroma_h) : f->height;
+
+        for (y = 0; y < h; y++)
+        {
+            av_read_image_line2(tmp, (const uint8_t **)f->data, f->linesize, d, 0, y, c, w, 0, 2);
+            av_md5_update(md5, (uint8_t *)tmp, w * 2);
+        }
+    }
     free(tmp);
     return 0;
 }
@@ -105,7 +138,18 @@ static int frame_md5(const AVFrame *f, uint8_t out[16])
     if (!md5)
         return -1;
     av_md5_init(md5);
-    if (f->format == AV_PIX_FMT_P010LE || f->format == AV_PIX_FMT_YUV420P10LE)
+    if (f->format != AV_PIX_FMT_NV12 && f->format != AV_PIX_FMT_YUV420P && f->format != AV_PIX_FMT_YUVJ420P &&
+        f->format != AV_PIX_FMT_P010LE && f->format != AV_PIX_FMT_YUV420P10LE &&
+        f->format != AV_PIX_FMT_P012LE && f->format != AV_PIX_FMT_YUV420P12LE)
+    {
+        int r = frame_md5_generic(f, md5);
+
+        av_md5_final(md5, out);
+        av_free(md5);
+        return r;
+    }
+    if (f->format == AV_PIX_FMT_P010LE || f->format == AV_PIX_FMT_YUV420P10LE ||
+        f->format == AV_PIX_FMT_P012LE || f->format == AV_PIX_FMT_YUV420P12LE)
     {
         int r = frame_md5_10(f, md5);
 

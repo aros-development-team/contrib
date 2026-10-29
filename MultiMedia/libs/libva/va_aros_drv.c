@@ -51,10 +51,10 @@ static OOP_AttrBase __IHidd_Display;
 
 #define VA_AROS_VENDOR  "AROS gfx.hidd VA driver"
 
-#define MAX_PROFILES        16
+#define MAX_PROFILES        32      /* at least NUM_CANDIDATES */
 #define MAX_ENTRYPOINTS     1
 #define MAX_ATTRIBUTES      4
-#define MAX_IMAGE_FORMATS   2
+#define MAX_IMAGE_FORMATS   9       /* at least NUM_FORMATS */
 #define MAX_SUBPIC_FORMATS  1
 #define MAX_DISPLAY_ATTRIBS 1
 
@@ -234,11 +234,21 @@ static const VAProfile va_candidates[] =
     VAProfileVC1Advanced,
     VAProfileJPEGBaseline,
     VAProfileVP8Version0_3,
+    VAProfileH264High10,
     VAProfileHEVCMain,
     VAProfileHEVCMain10,
+    VAProfileHEVCMain12,
+    VAProfileHEVCMain422_10,
+    VAProfileHEVCMain422_12,
+    VAProfileHEVCMain444,
+    VAProfileHEVCMain444_10,
+    VAProfileHEVCMain444_12,
     VAProfileVP9Profile0,
+    VAProfileVP9Profile1,
     VAProfileVP9Profile2,
+    VAProfileVP9Profile3,
     VAProfileAV1Profile0,
+    VAProfileAV1Profile1,
 };
 
 #define NUM_CANDIDATES  (sizeof(va_candidates) / sizeof(va_candidates[0]))
@@ -256,54 +266,101 @@ static BOOL va_ProfileSupported(struct aros_va_driver *drv, VAProfile profile, s
     return (HIDD_Display_QueryDecode(drv->display, profile, 0, 0, caps) & DCF_DECODE) ? TRUE : FALSE;
 }
 
+/*
+ * The surface formats: the display's video format, the VA render target
+ * format and the fourcc FFmpeg knows it by. Direct formats are the
+ * surface's own layout; the others (4:2:2, 4:4:4: the decoder writes them
+ * semi-planar, FFmpeg takes planar or packed) are converted when an image
+ * is read (vaGetImage), and cannot be derived.
+ */
+static const struct va_format
+{
+    ULONG           videofmt;
+    unsigned int    rt;
+    unsigned int    fourcc;
+    UBYTE           direct;
+    UBYTE           bits;       /* VAImageFormat bits_per_pixel */
+} va_formats[] =
+{
+    { vHidd_VideoFmt_NV12, VA_RT_FORMAT_YUV420,    VA_FOURCC_NV12, TRUE,  12 },
+    { vHidd_VideoFmt_P010, VA_RT_FORMAT_YUV420_10, VA_FOURCC_P010, TRUE,  24 },
+    { vHidd_VideoFmt_P012, VA_RT_FORMAT_YUV420_12, VA_FOURCC_P012, TRUE,  24 },
+    { vHidd_VideoFmt_NV16, VA_RT_FORMAT_YUV422,    VA_FOURCC_422H, FALSE, 16 },
+    { vHidd_VideoFmt_P210, VA_RT_FORMAT_YUV422_10, VA_FOURCC_Y210, FALSE, 32 },
+    { vHidd_VideoFmt_P212, VA_RT_FORMAT_YUV422_12, VA_FOURCC_Y212, FALSE, 32 },
+    { vHidd_VideoFmt_NV24, VA_RT_FORMAT_YUV444,    VA_FOURCC_444P, FALSE, 24 },
+    { vHidd_VideoFmt_P410, VA_RT_FORMAT_YUV444_10, VA_FOURCC_Y410, FALSE, 32 },
+    { vHidd_VideoFmt_P412, VA_RT_FORMAT_YUV444_12, VA_FOURCC_Y412, FALSE, 64 },
+};
+
+#define NUM_FORMATS     (sizeof(va_formats) / sizeof(va_formats[0]))
+
+static const struct va_format *va_FormatOf(ULONG videofmt)
+{
+    ULONG i;
+
+    for (i = 0; i < NUM_FORMATS; i++)
+        if (va_formats[i].videofmt == videofmt)
+            return &va_formats[i];
+    return NULL;
+}
+
 /* The VA_RT_FORMAT_* a profile decodes to */
 static ULONG va_ProfileRTFormats(struct aros_va_driver *drv, VAProfile profile)
 {
     struct HIDD_DecodeCaps caps;
-    ULONG rt = 0;
+    ULONG rt = 0, i;
 
     if (!va_ProfileSupported(drv, profile, &caps))
         return 0;
-    if (caps.VideoFmtMask & (1 << vHidd_VideoFmt_NV12))
-        rt |= VA_RT_FORMAT_YUV420;
-    if (caps.VideoFmtMask & (1 << vHidd_VideoFmt_P010))
-        rt |= VA_RT_FORMAT_YUV420_10;
+    for (i = 0; i < NUM_FORMATS; i++)
+        if (caps.VideoFmtMask & (1 << va_formats[i].videofmt))
+            rt |= va_formats[i].rt;
     return rt;
+}
+
+/* A video format's fourcc and bytes per sample */
+static unsigned int va_VideoFmtFourcc(ULONG videofmt)
+{
+    const struct va_format *f = va_FormatOf(videofmt);
+
+    return f ? f->fourcc : VA_FOURCC_NV12;
+}
+
+static ULONG va_VideoFmtBpp(ULONG videofmt)
+{
+    return ((videofmt == vHidd_VideoFmt_NV12) || (videofmt == vHidd_VideoFmt_NV16) ||
+            (videofmt == vHidd_VideoFmt_NV24)) ? 1 : 2;
 }
 
 static ULONG va_FourccToVideoFmt(unsigned int fourcc)
 {
-    switch (fourcc)
-    {
-    case VA_FOURCC_NV12: return vHidd_VideoFmt_NV12;
-    case VA_FOURCC_P010: return vHidd_VideoFmt_P010;
-    }
+    ULONG i;
+
+    for (i = 0; i < NUM_FORMATS; i++)
+        if (va_formats[i].fourcc == fourcc)
+            return va_formats[i].videofmt;
     return vHidd_VideoFmt_None;
 }
 
 static ULONG va_RTToVideoFmt(unsigned int rtformat)
 {
-    if (rtformat & VA_RT_FORMAT_YUV420)
-        return vHidd_VideoFmt_NV12;
-    if (rtformat & VA_RT_FORMAT_YUV420_10)
-        return vHidd_VideoFmt_P010;
+    ULONG i;
+
+    for (i = 0; i < NUM_FORMATS; i++)
+        if (rtformat & va_formats[i].rt)
+            return va_formats[i].videofmt;
     return vHidd_VideoFmt_None;
 }
 
 static void va_ImageFormat(ULONG videofmt, VAImageFormat *fmt)
 {
+    const struct va_format *f = va_FormatOf(videofmt);
+
     memset(fmt, 0, sizeof(*fmt));
     fmt->byte_order = VA_LSB_FIRST;
-    if (videofmt == vHidd_VideoFmt_P010)
-    {
-        fmt->fourcc = VA_FOURCC_P010;
-        fmt->bits_per_pixel = 24;
-    }
-    else
-    {
-        fmt->fourcc = VA_FOURCC_NV12;
-        fmt->bits_per_pixel = 12;
-    }
+    fmt->fourcc = f ? f->fourcc : VA_FOURCC_NV12;
+    fmt->bits_per_pixel = f ? f->bits : 12;
 }
 
 /*****************************************************************************/
@@ -648,6 +705,7 @@ static VAStatus aros_DestroySurfaces(VADriverContextP ctx, VASurfaceID *surface_
 static VAStatus aros_QuerySurfaceAttributes(VADriverContextP ctx, VAConfigID config, VASurfaceAttrib *attrib_list,
                                            unsigned int *num_attribs)
 {
+    ULONG i;
     struct aros_va_driver *drv = DRV(ctx);
     struct HIDD_DecodeCaps caps;
     struct va_config *cfg;
@@ -664,19 +722,14 @@ static VAStatus aros_QuerySurfaceAttributes(VADriverContextP ctx, VAConfigID con
     va_ProfileSupported(drv, cfg->profile, &caps);
     memset(attribs, 0, sizeof(attribs));
 
-    if ((cfg->rtformat & VA_RT_FORMAT_YUV420) && (caps.VideoFmtMask & (1 << vHidd_VideoFmt_NV12)))
+    for (i = 0; i < NUM_FORMATS; i++)
     {
+        if (!(cfg->rtformat & va_formats[i].rt) || !(caps.VideoFmtMask & (1 << va_formats[i].videofmt)))
+            continue;
         attribs[n].type = VASurfaceAttribPixelFormat;
         attribs[n].flags = VA_SURFACE_ATTRIB_GETTABLE | VA_SURFACE_ATTRIB_SETTABLE;
         attribs[n].value.type = VAGenericValueTypeInteger;
-        attribs[n++].value.value.i = VA_FOURCC_NV12;
-    }
-    if ((cfg->rtformat & VA_RT_FORMAT_YUV420_10) && (caps.VideoFmtMask & (1 << vHidd_VideoFmt_P010)))
-    {
-        attribs[n].type = VASurfaceAttribPixelFormat;
-        attribs[n].flags = VA_SURFACE_ATTRIB_GETTABLE | VA_SURFACE_ATTRIB_SETTABLE;
-        attribs[n].value.type = VAGenericValueTypeInteger;
-        attribs[n++].value.value.i = VA_FOURCC_P010;
+        attribs[n++].value.value.i = va_formats[i].fourcc;
     }
 
     attribs[n].type = VASurfaceAttribMemoryType;
@@ -1163,16 +1216,18 @@ static VAStatus aros_QuerySurfaceError(VADriverContextP ctx, VASurfaceID render_
 
 static VAStatus aros_QueryImageFormats(VADriverContextP ctx, VAImageFormat *format_list, int *num_formats)
 {
-    va_ImageFormat(vHidd_VideoFmt_NV12, &format_list[0]);
-    va_ImageFormat(vHidd_VideoFmt_P010, &format_list[1]);
-    *num_formats = 2;
+    ULONG i;
+
+    for (i = 0; i < NUM_FORMATS; i++)
+        va_ImageFormat(va_formats[i].videofmt, &format_list[i]);
+    *num_formats = NUM_FORMATS;
     return VA_STATUS_SUCCESS;
 }
 
 /* Layout of an image of the given format; FALSE for formats we lack */
 static BOOL va_ImageLayout(VAImage *img, ULONG videofmt, int width, int height, ULONG pitch, ULONG uvoffset)
 {
-    ULONG bpp = (videofmt == vHidd_VideoFmt_P010) ? 2 : 1;
+    ULONG bpp = va_VideoFmtBpp(videofmt);
     ULONG cw = (width + 1) & ~1;
     ULONG ch = (height + 1) / 2;
 
@@ -1184,6 +1239,32 @@ static BOOL va_ImageLayout(VAImage *img, ULONG videofmt, int width, int height, 
     va_ImageFormat(videofmt, &img->format);
     img->width      = width;
     img->height     = height;
+    switch (img->format.fourcc)
+    {
+    case VA_FOURCC_422H:        /* planar 4:2:2: Y, then U and V at half width */
+    case VA_FOURCC_444P:        /* planar 4:4:4: Y, U, V */
+    {
+        ULONG cp = (img->format.fourcc == VA_FOURCC_422H) ? cw / 2 : cw;
+
+        img->num_planes = 3;
+        img->pitches[0] = cw;
+        img->pitches[1] = img->pitches[2] = cp;
+        img->offsets[0] = 0;
+        img->offsets[1] = cw * height;
+        img->offsets[2] = img->offsets[1] + cp * height;
+        img->data_size  = img->offsets[2] + cp * height;
+        return TRUE;
+    }
+    case VA_FOURCC_Y210:        /* packed 4:2:2, Y0 U Y1 V, 16 bits each */
+    case VA_FOURCC_Y212:
+    case VA_FOURCC_Y410:        /* packed 4:4:4, one 32-bit word per pixel */
+    case VA_FOURCC_Y412:        /* packed 4:4:4, U Y V A, 16 bits each */
+        img->num_planes = 1;
+        img->pitches[0] = cw * ((img->format.fourcc == VA_FOURCC_Y412) ? 8 : 4);
+        img->offsets[0] = 0;
+        img->data_size  = img->pitches[0] * height;
+        return TRUE;
+    }
     img->num_planes = 2;
     img->pitches[0] = pitch;
     img->pitches[1] = pitch;
@@ -1269,6 +1350,8 @@ static VAStatus aros_DeriveImage(VADriverContextP ctx, VASurfaceID surface, VAIm
         status = VA_STATUS_ERROR_INVALID_SURFACE;
     else if (surf->derived != VA_INVALID_ID)
         status = VA_STATUS_ERROR_SURFACE_BUSY;
+    else if (!va_FormatOf(surf->pool->videofmt) || !va_FormatOf(surf->pool->videofmt)->direct)
+        status = VA_STATUS_ERROR_OPERATION_FAILED;      /* converted formats: vaGetImage */
     else
     {
         if (va_SyncLocked(surf, ~0) == vHidd_DecodeStatus_Error)
@@ -1388,6 +1471,85 @@ static void va_CopyPlanes(UBYTE *dst, const ULONG *dstpitch, const ULONG *dstoff
                src + srcoff[1] + (sy / 2 + row) * srcpitch[1] + (sx & ~1) * bpp, bytes);
 }
 
+/*
+ * A rectangle of a semi-planar 4:2:2 / 4:4:4 surface (Y plane, interleaved
+ * U/V plane; 16-bit samples hold the value in their high bits) into an image
+ * of the format FFmpeg takes for it.
+ */
+static void va_ConvertToImage(UBYTE *dst, const VAImage *img, const UBYTE *src, ULONG pitch, ULONG uvoff,
+                              ULONG videofmt, int sx, int sy, int width, int height)
+{
+    BOOL is444 = (videofmt == vHidd_VideoFmt_NV24) || (videofmt == vHidd_VideoFmt_P410) ||
+                 (videofmt == vHidd_VideoFmt_P412);
+    ULONG uvpitch = is444 ? pitch * 2 : pitch;
+    int x, row;
+
+    sx &= ~1;
+    for (row = 0; row < height; row++)
+    {
+        const UBYTE *y8 = src + (sy + row) * pitch + sx;
+        const UBYTE *c8 = src + uvoff + (sy + row) * uvpitch + (is444 ? sx * 2 : sx);
+        const UWORD *y16 = (const UWORD *)(src + (sy + row) * pitch) + sx;
+        const UWORD *c16 = (const UWORD *)(src + uvoff + (sy + row) * uvpitch) + (is444 ? sx * 2 : sx);
+
+        switch (img->format.fourcc)
+        {
+        case VA_FOURCC_444P:
+        case VA_FOURCC_422H:
+        {
+            UBYTE *py = dst + img->offsets[0] + row * img->pitches[0];
+            UBYTE *pu = dst + img->offsets[1] + row * img->pitches[1];
+            UBYTE *pv = dst + img->offsets[2] + row * img->pitches[2];
+            int cwid = is444 ? width : (width + 1) / 2;
+
+            memcpy(py, y8, width);
+            for (x = 0; x < cwid; x++)
+            {
+                pu[x] = c8[2 * x];
+                pv[x] = c8[2 * x + 1];
+            }
+            break;
+        }
+        case VA_FOURCC_Y210:
+        case VA_FOURCC_Y212:
+        {
+            UWORD *p = (UWORD *)(dst + img->offsets[0] + row * img->pitches[0]);
+
+            for (x = 0; x < width; x += 2)
+            {
+                p[2 * x]     = y16[x];
+                p[2 * x + 1] = c16[x];
+                p[2 * x + 2] = y16[x + 1];
+                p[2 * x + 3] = c16[x + 1];
+            }
+            break;
+        }
+        case VA_FOURCC_Y410:
+        {
+            ULONG *p = (ULONG *)(dst + img->offsets[0] + row * img->pitches[0]);
+
+            for (x = 0; x < width; x++)
+                p[x] = (ULONG)(c16[2 * x] >> 6) | ((ULONG)(y16[x] >> 6) << 10) |
+                       ((ULONG)(c16[2 * x + 1] >> 6) << 20) | (3UL << 30);
+            break;
+        }
+        case VA_FOURCC_Y412:
+        {
+            UWORD *p = (UWORD *)(dst + img->offsets[0] + row * img->pitches[0]);
+
+            for (x = 0; x < width; x++)
+            {
+                p[4 * x]     = c16[2 * x];
+                p[4 * x + 1] = y16[x];
+                p[4 * x + 2] = c16[2 * x + 1];
+                p[4 * x + 3] = 0;
+            }
+            break;
+        }
+        }
+    }
+}
+
 static VAStatus aros_GetImage(VADriverContextP ctx, VASurfaceID surface, int x, int y,
                               unsigned int width, unsigned int height, VAImageID image)
 {
@@ -1405,7 +1567,7 @@ static VAStatus aros_GetImage(VADriverContextP ctx, VASurfaceID surface, int x, 
         status = VA_STATUS_ERROR_INVALID_SURFACE;
     else if (!vi || !buf || vi->locked)
         status = VA_STATUS_ERROR_INVALID_IMAGE;
-    else if (vi->image.format.fourcc != (surf->pool->videofmt == vHidd_VideoFmt_P010 ? VA_FOURCC_P010 : VA_FOURCC_NV12))
+    else if (vi->image.format.fourcc != va_VideoFmtFourcc(surf->pool->videofmt))
         status = VA_STATUS_ERROR_INVALID_IMAGE_FORMAT;
     else if (x < 0 || y < 0 || x + width > surf->pool->width || y + height > surf->pool->height ||
              width > vi->image.width || height > vi->image.height)
@@ -1424,9 +1586,13 @@ static VAStatus aros_GetImage(VADriverContextP ctx, VASurfaceID surface, int x, 
             ULONG spitch[2] = { pitch, pitch };
             ULONG soff[2] = { 0, offsets[0] };
 
-            va_CopyPlanes(buf->data, vi->image.pitches, vi->image.offsets, 0, 0,
-                          addr, spitch, soff, x, y, width, height,
-                          (surf->pool->videofmt == vHidd_VideoFmt_P010) ? 2 : 1);
+            if (va_FormatOf(surf->pool->videofmt) && !va_FormatOf(surf->pool->videofmt)->direct)
+                va_ConvertToImage(buf->data, &vi->image, addr, pitch, offsets[0], surf->pool->videofmt,
+                                  x, y, width, height);
+            else
+                va_CopyPlanes(buf->data, vi->image.pitches, vi->image.offsets, 0, 0,
+                              addr, spitch, soff, x, y, width, height,
+                              va_VideoFmtBpp(surf->pool->videofmt));
             HIDD_BM_UnlockBuffer(surf->pool->bm, surf->index, &none);
         }
         else
@@ -1458,8 +1624,9 @@ static VAStatus aros_PutImage(VADriverContextP ctx, VASurfaceID surface, VAImage
         status = VA_STATUS_ERROR_INVALID_SURFACE;
     else if (!vi || !buf || vi->locked)
         status = VA_STATUS_ERROR_INVALID_IMAGE;
-    else if (vi->image.format.fourcc != (surf->pool->videofmt == vHidd_VideoFmt_P010 ? VA_FOURCC_P010 : VA_FOURCC_NV12))
-        status = VA_STATUS_ERROR_INVALID_IMAGE_FORMAT;
+    else if ((vi->image.format.fourcc != va_VideoFmtFourcc(surf->pool->videofmt)) ||
+             !va_FormatOf(surf->pool->videofmt) || !va_FormatOf(surf->pool->videofmt)->direct)
+        status = VA_STATUS_ERROR_INVALID_IMAGE_FORMAT;     /* uploads: the direct formats only */
     else if (src_x < 0 || src_y < 0 || dest_x < 0 || dest_y < 0 ||
              src_x + src_width > vi->image.width || src_y + src_height > vi->image.height ||
              dest_x + dest_width > surf->pool->width || dest_y + dest_height > surf->pool->height)
@@ -1480,7 +1647,7 @@ static VAStatus aros_PutImage(VADriverContextP ctx, VASurfaceID surface, VAImage
 
             va_CopyPlanes(addr, dpitch, doff, dest_x, dest_y,
                           buf->data, vi->image.pitches, vi->image.offsets, src_x, src_y,
-                          src_width, src_height, (surf->pool->videofmt == vHidd_VideoFmt_P010) ? 2 : 1);
+                          src_width, src_height, va_VideoFmtBpp(surf->pool->videofmt));
             HIDD_BM_UnlockBuffer(surf->pool->bm, surf->index, &dirty);
         }
         else
