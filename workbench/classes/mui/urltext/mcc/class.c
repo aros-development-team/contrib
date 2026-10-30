@@ -581,6 +581,7 @@ mDraw(REG(a0) struct IClass *cl,REG(a2) Object *obj,REG(a1) struct MUIP_Draw *ms
         struct RastPort    *rp = _rp(obj);
         struct TextFont             *tf;
         WORD               l = _mtop(obj)-data->te.te_Extent.MinY;
+        UBYTE              oldDrawMode = rp->DrawMode;
 
         SetAPen(rp,
             (UTFLG_IsToUse(flags) && !UTFLG_IsDisabled(flags)) ?
@@ -594,6 +595,8 @@ mDraw(REG(a0) struct IClass *cl,REG(a2) Object *obj,REG(a1) struct MUIP_Draw *ms
         GetRPAttrs(rp,RPTAG_Font,&tf,TAG_DONE);
         SetRPAttrs(rp,RPTAG_Font,data->tf,TAG_DONE);
 
+        /* Area/focus drawing may leave JAM2 and an unrelated background pen. */
+        SetDrMd(rp,JAM1);
         Move(rp,_mleft(obj),l);
         Text(rp,data->text,data->tLen);
         SetRPAttrs(rp,RPTAG_Font,tf,TAG_DONE);
@@ -603,6 +606,7 @@ mDraw(REG(a0) struct IClass *cl,REG(a2) Object *obj,REG(a1) struct MUIP_Draw *ms
             Move(rp,_mleft(obj),++l);
             Draw(rp,_mleft(obj)+data->te.te_Extent.MaxX,l);
         }
+        SetDrMd(rp,oldDrawMode);
     }
 
     return 0;
