@@ -1,0 +1,288 @@
+{
+  "reference": "542147067dd016fc5f49120ef0ba605a98a4e3a7",
+  "columns": 80,
+  "cases": [
+    [
+      "\\p{Any}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{Any}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{Any}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{Any}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{ASCII}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{ASCII}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{ASCII}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{ASCII}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{Assigned}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{Assigned}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{Assigned}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{Assigned}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{gc=Any}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{gc=Any}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{gc=Any}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{gc=Any}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{General_Category=ASCII}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{General_Category=ASCII}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{General_Category=ASCII}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{General_Category=ASCII}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "\\p{gc:Assigned}+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "[\\p{gc:Assigned}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "\\P{gc:Assigned}+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{gc:Assigned}]+",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?i:\\p{ASCII}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ],
+    [
+      "(?i:\\P{ASCII}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "[\\P{ASCII}0]+",
+      "aAB 09_!$zZ",
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    [
+      "\\p{Any}{2}",
+      "aAB 09_!$zZ",
+      [
+        0,
+        2
+      ],
+      [
+        78,
+        80
+      ]
+    ],
+    [
+      "\\P{Any}*a",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    [
+      "[^\\P{Any}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        80
+      ],
+      [
+        0,
+        80
+      ]
+    ]
+  ]
+}
