@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-//#define DEBUG 1
+#define DEBUG 0
 #include <aros/debug.h>
 
 #include <aros/atomic.h>
@@ -59,4 +59,3 @@ static void exit_sdl2()
 
 ADD2INIT(init_sdl2, 0);
 ADD2EXIT(exit_sdl2, 0);
-
