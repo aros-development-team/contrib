@@ -53,9 +53,7 @@
 #include <sys/mman.h>
 #endif
 #include <sys/stat.h>
-#ifndef __AROS__
 #include <sched.h>
-#endif
 #include <setjmp.h>
 #include <math.h>
 
@@ -88,10 +86,6 @@ static inline void iperf_munmap_fallback(void *p, size_t size) {
 }
 #define mmap(addr, size, prot, flags, fd, offset) iperf_mmap_fallback(size)
 #define munmap(addr, size) iperf_munmap_fallback(addr, size)
-/* AROS has no sched.h; provide stubs for cpu_set_t */
-typedef struct { unsigned long __bits[1]; } cpu_set_t;
-#define CPU_ZERO(s) memset((s), 0, sizeof(*(s)))
-#define CPU_SET(cpu, s) ((void)(cpu), (void)(s))
 #endif /* __AROS__ */
 
 #include "net.h"
@@ -5400,7 +5394,7 @@ iperf_json_finish(struct iperf_test *test)
 }
 
 
-/* CPU affinity stuff - Linux, FreeBSD, and Windows only. */
+/* CPU affinity stuff - Linux, FreeBSD, Windows and AROS only. */
 
 int
 iperf_setaffinity(struct iperf_test *test, int affinity)
@@ -5430,6 +5424,19 @@ iperf_setaffinity(struct iperf_test *test, int affinity)
     if(cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_PID, -1,
                           sizeof(cpuset_t), &cpumask) != 0) {
         i_errno = IEAFFINITY;
+        return -1;
+    }
+    return 0;
+#elif defined(HAVE_PTHREAD_SETAFFINITY_NP)
+    /* AROS: place this thread; the worker threads it starts inherit it */
+    cpu_set_t cpu_set;
+    int rc;
+
+    CPU_ZERO(&cpu_set);
+    CPU_SET(affinity, &cpu_set);
+    if ((rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpu_set)) != 0) {
+        errno = rc;     /* returned, not set in errno as sched_setaffinity() does */
+	i_errno = IEAFFINITY;
         return -1;
     }
     return 0;
@@ -5467,6 +5474,20 @@ iperf_clearaffinity(struct iperf_test *test)
     if(cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_PID, -1,
                           sizeof(cpuset_t), &test->cpumask) != 0) {
         i_errno = IEAFFINITY;
+        return -1;
+    }
+    return 0;
+#elif defined(HAVE_PTHREAD_SETAFFINITY_NP)
+    cpu_set_t cpu_set;
+    int i, rc;
+
+    /* every CPU; those the system does not have are ignored */
+    CPU_ZERO(&cpu_set);
+    for (i = 0; i < CPU_SETSIZE; ++i)
+	CPU_SET(i, &cpu_set);
+    if ((rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpu_set)) != 0) {
+        errno = rc;     /* returned, not set in errno as sched_setaffinity() does */
+	i_errno = IEAFFINITY;
         return -1;
     }
     return 0;

@@ -9,11 +9,14 @@
 /* AROS does not have clock_nanosleep */
 /* #undef HAVE_CLOCK_NANOSLEEP */
 
-/* AROS does not have CPU affinity support */
+/* CPU affinity: AROS has pthread_setaffinity_np(), not the calls below */
 /* #undef HAVE_CPUSET_SETAFFINITY */
-/* #undef HAVE_CPU_AFFINITY */
+#define HAVE_CPU_AFFINITY 1
 /* #undef HAVE_SCHED_SETAFFINITY */
 /* #undef HAVE_SETPROCESSAFFINITYMASK */
+
+/* AROS: thread affinity through pthread_setaffinity_np() */
+#define HAVE_PTHREAD_SETAFFINITY_NP 1
 
 /* AROS does not have fork(); provide a no-op daemon() stub */
 #define HAVE_DAEMON 1
