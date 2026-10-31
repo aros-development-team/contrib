@@ -452,9 +452,9 @@ int os_set_affinity(const os_thread_t &thread, const os_cpuset_t &_mycpuset) {
     mach_port_t tid = pthread_mach_thread_np(thread.tid);
     if (0 != thread_policy_set(tid, THREAD_AFFINITY_POLICY,  (thread_policy_t)&_mycpuset.cpuset, THREAD_AFFINITY_POLICY_COUNT)) return -1;
 #elif defined(__AROS__)
-    (void)thread;
-    (void)_mycpuset;
-    /* CPU affinity not supported on AROS */
+    /* os_thread_t holds the pthread_t here, so the thread named is the one placed */
+    if (0 != pthread_setaffinity_np(thread.tid, sizeof(cpu_set_t), &(_mycpuset.cpuset)))
+        return -1;
 #else
     // Can't use thread.tid since it's syscall and not pthread_t
     if (0 != pthread_setaffinity_np(pthread_self(), sizeof(os_cpuset_t), &(_mycpuset.cpuset)))

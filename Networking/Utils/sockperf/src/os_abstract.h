@@ -153,15 +153,9 @@ void *win_set_timer(void *p_timer);
 #elif defined(__AROS__)
 
 #include <endian.h>
+#include <sched.h>     /* cpu_set_t, CPU_SETSIZE, CPU_ZERO/CPU_SET */
 
 #define IP_MAX_MEMBERSHIPS 20
-#define __CPU_SETSIZE 1024
-#define CPU_SETSIZE __CPU_SETSIZE
-
-/* AROS does not have cpu_set_t; provide a minimal stub */
-typedef struct { unsigned long __bits[CPU_SETSIZE / (8 * sizeof(unsigned long))]; } cpu_set_t;
-#define CPU_ZERO(s) memset((s), 0, sizeof(*(s)))
-#define CPU_SET(cpu, s) ((s)->__bits[(cpu) / (8 * sizeof(unsigned long))] |= (1UL << ((cpu) % (8 * sizeof(unsigned long)))))
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 static inline uint64_t __sp_bswap64(uint64_t x) {
