@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-//#define DEBUG 1
+#define DEBUG 0
 #include <aros/debug.h>
 
 #include <aros/atomic.h>
@@ -41,8 +41,24 @@
 
 #include "SDL2_intern.h"
 
-extern void SDL_Quit(void);
+/* SDL_malloc() is served from an exec pool owned by this library
+ * (src/stdlib/aros/SDL_arosmem.c). */
+extern void AROS_MemQuit(void);
 
+/* Library bases used by the SDL sources, which reach them as plain externs so
+ * that the proto/ inline calls resolve.
+ *
+ * Every one of these is process-independent on AROS: OpenLibrary() hands the
+ * same base pointer to every opener. So SDL2.library holds exactly ONE open of
+ * each for its own lifetime, taken in init_libs() and released in close_libs()
+ * at expunge.
+ *
+ * They used to be (re)opened from SDL2LIB_Open() per opener, which leaked:
+ * SDL2LIB_Close() only ran the teardown for the LAST closer, so every earlier
+ * opener's handles were dropped on the floor - and the four bases with no
+ * per-opener slot (OpenURL, GadTools, IFFParse, Locale) could only ever have
+ * the last opener's handle closed, because that is all the global held.
+ */
 struct SDL2Base   		*GlobalBase = NULL;
 
 struct DosLibrary    	*DOSBase = NULL;
@@ -53,10 +69,8 @@ struct Library       	*CyberGfxBase = NULL;
 struct Library       	*KeymapBase = NULL;
 struct Library       	*WorkbenchBase = NULL;
 struct Library       	*IconBase = NULL;
-struct Library       	*MUIMasterBase = NULL;
 struct Library       	*CxBase = NULL;
 struct Library       	*TimerBase = NULL;
-struct Library       	*LocaleBase = NULL;
 struct Library       	*IFFParseBase = NULL;
 struct Library       	*OpenURLBase = NULL;
 struct Library       	*GadToolsBase = NULL;
@@ -78,23 +92,69 @@ static void init_system(LIBBASETYPEPTR LIBBASE)
 	init_libs
 **********************************************************************/
 
+static void close_libs(void)
+{
+    D(bug("[SDL2] %s()\n", __func__));
+
+	if (GlobalTimeReq.tr_node.io_Device) {
+		CloseDevice(&GlobalTimeReq.tr_node);
+		GlobalTimeReq.tr_node.io_Device = NULL;
+		TimerBase = NULL;
+	}
+
+	/* CloseLibrary(NULL) is a no-op, so this doubles as the unwind path for
+	 * a partially completed init_libs(). */
+	CloseLibrary(OpenURLBase);						OpenURLBase = NULL;
+	CloseLibrary(GadToolsBase);						GadToolsBase = NULL;
+	CloseLibrary(IFFParseBase);						IFFParseBase = NULL;
+	CloseLibrary(CxBase);							CxBase = NULL;
+	CloseLibrary(IconBase);							IconBase = NULL;
+	CloseLibrary(WorkbenchBase);					WorkbenchBase = NULL;
+	CloseLibrary(KeymapBase);						KeymapBase = NULL;
+	CloseLibrary(CyberGfxBase);						CyberGfxBase = NULL;
+	CloseLibrary(OOPBase);							OOPBase = NULL;
+	CloseLibrary(UtilityBase);						UtilityBase = NULL;
+	CloseLibrary((struct Library *)IntuitionBase);	IntuitionBase = NULL;
+	CloseLibrary((struct Library *)DOSBase);		DOSBase = NULL;
+	CloseLibrary((struct Library *)GfxBase);		GfxBase = NULL;
+}
+
 static int init_libs(LIBBASETYPEPTR LIBBASE)
 {
     D(bug("[SDL2] %s(0x%p)\n", __func__, LIBBASE));
 
-	if ((GfxBase = LIBBASE->MyGfxBase = (APTR)OpenLibrary("graphics.library", 39)) != NULL)
-	if ((DOSBase = LIBBASE->MyDOSBase = (APTR)OpenLibrary("dos.library", 36)) != NULL)
-	if ((IntuitionBase = LIBBASE->MyIntuiBase = (APTR)OpenLibrary("intuition.library", 39)) != NULL)
-	if ((UtilityBase = OpenLibrary("utility.library", 36)) != NULL)
-	if ((OOPBase = OpenLibrary("oop.library", 0)) != NULL)
-	if (OpenDevice("timer.device", UNIT_MICROHZ, &GlobalTimeReq.tr_node, 0) == 0)
-	{
-		TimerBase = (struct Library *)GlobalTimeReq.tr_node.io_Device;
+	/* Required: the SDL sources call into all of these without checking, so
+	 * failing to get one means the library genuinely cannot work. */
+	if (!(GfxBase       = (APTR)OpenLibrary("graphics.library", 39)))		goto fail;
+	if (!(DOSBase       = (APTR)OpenLibrary("dos.library", 36)))			goto fail;
+	if (!(IntuitionBase = (APTR)OpenLibrary("intuition.library", 39)))		goto fail;
+	if (!(UtilityBase   = OpenLibrary("utility.library", 36)))				goto fail;
+	if (!(OOPBase       = OpenLibrary("oop.library", 0)))					goto fail;
+	if (!(CyberGfxBase  = OpenLibrary("cybergraphics.library", 40)))		goto fail;
+	if (!(KeymapBase    = OpenLibrary("keymap.library", 36)))				goto fail;
+	if (!(WorkbenchBase = OpenLibrary("workbench.library", 0)))				goto fail;
+	if (!(IconBase      = OpenLibrary("icon.library", 0)))					goto fail;
+	if (!(CxBase        = OpenLibrary("commodities.library", 37)))			goto fail;
+	if (!(IFFParseBase  = OpenLibrary("iffparse.library", 0)))				goto fail;
+	if (!(GadToolsBase  = OpenLibrary("gadtools.library", 0)))				goto fail;
 
-		init_system(LIBBASE);
+	/* Optional: SDL_sysurl.c checks for NULL and answers SDL_Unsupported(),
+	 * and openurl.library is not part of a base AROS install. */
+	OpenURLBase = OpenLibrary("openurl.library", 0);
 
-		return 1;
-	}
+	if (OpenDevice("timer.device", UNIT_MICROHZ, &GlobalTimeReq.tr_node, 0) != 0)
+		goto fail;
+
+	TimerBase = (struct Library *)GlobalTimeReq.tr_node.io_Device;
+
+	init_system(LIBBASE);
+
+	return 1;
+
+fail:
+	/* The old &&-chain returned without closing what it had already opened,
+	 * and an init failure means the expunge hook never runs to catch it. */
+	close_libs();
 
 	return 0;
 }
@@ -110,8 +170,6 @@ static int SDL2LIB_Init(LIBBASETYPEPTR LIBBASE)
 	LIBBASE->Parent    = NULL;
 
     D(bug("[SDL2] %s(0x%p)\n", __func__, LIBBASE));
-
-	InitSemaphore(&LIBBASE->Semaphore);
 
 	if (init_libs(LIBBASE) == 0)
 	{
@@ -131,50 +189,17 @@ static BOOL DeleteLib(LIBBASETYPEPTR LIBBASE)
 
 	if (LIBBASE->_lib.lib_OpenCnt == 0)
 	{
-		CloseDevice(&GlobalTimeReq.tr_node);
-		CloseLibrary(OOPBase);
-		CloseLibrary(UtilityBase);
-		CloseLibrary((struct Library *)LIBBASE->MyIntuiBase);
-		CloseLibrary((struct Library *)LIBBASE->MyDOSBase);
-		CloseLibrary((struct Library *)LIBBASE->MyGfxBase);
+		close_libs();
+
+		/* DeletePool() releases every block at once, so it must come last,
+		 * once nothing can allocate again - and only here, at expunge,
+		 * never at close. */
+		AROS_MemQuit();
 
 		return TRUE;
 	}
 
 	return FALSE;
-}
-
-/**********************************************************************
-	UserLibClose
-**********************************************************************/
-
-static void UserLibClose(LIBBASETYPEPTR LIBBASE, struct ExecBase *SysBase)
-{
-    D(bug("[SDL2] %s(0x%p)\n", __func__, LIBBASE));
-
-	CloseLibrary(OpenURLBase);
-	CloseLibrary(GadToolsBase);
-	CloseLibrary(IFFParseBase);
-	CloseLibrary(LocaleBase);
-
-	OpenURLBase = NULL;
-	GadToolsBase = NULL;
-	IFFParseBase = NULL;
-	LocaleBase = NULL;
-
-	CloseLibrary(LIBBASE->MyCxBase);
-	CloseLibrary(LIBBASE->MyMUIMasterBase);
-	CloseLibrary(LIBBASE->MyIconBase);
-	CloseLibrary(LIBBASE->MyWorkbenchBase);
-	CloseLibrary(LIBBASE->MyKeymapBase);
-	CloseLibrary(LIBBASE->MyCyberGfxBase);
-
-	CxBase           = LIBBASE->MyCxBase           = NULL;
-    MUIMasterBase    = LIBBASE->MyMUIMasterBase    = NULL;
-	IconBase         = LIBBASE->MyIconBase         = NULL;
-	WorkbenchBase    = LIBBASE->MyWorkbenchBase    = NULL;
-	KeymapBase       = LIBBASE->MyKeymapBase       = NULL;
-	CyberGfxBase     = LIBBASE->MyCyberGfxBase     = NULL;
 }
 
 /**********************************************************************
@@ -199,21 +224,15 @@ static void SDL2LIB_Close(LIBBASETYPEPTR LIBBASE)
 {
     D(bug("[SDL2] %s(0x%p)\n", __func__, LIBBASE));
 
-	ObtainSemaphore(&LIBBASE->Semaphore);
-
-	SDL_Quit();
-
-	LIBBASE->_lib.lib_OpenCnt--;
-	if (LIBBASE->_lib.lib_OpenCnt == 0)
-	{
-		UserLibClose(LIBBASE, SysBase);
-	}
-	else
-		LIBBASE->_lib.lib_Flags |= LIBF_DELEXP;
-
-	ReleaseSemaphore(&LIBBASE->Semaphore);
-
-	return;
+	/* Nothing to do. Every library base is owned by init_libs()/close_libs()
+	 * for the lifetime of SDL2.library, so an opener has nothing of its own
+	 * to release.
+	 *
+	 * In particular, do NOT call SDL_Quit() here: SDL's global state is owned
+	 * by the application, which already calls SDL_Quit() itself. Tearing it
+	 * down a second time from the library close path double-frees SDL objects
+	 * (freed Intuition ports etc.).
+	 */
 }
 
 /**********************************************************************
@@ -224,21 +243,16 @@ static int SDL2LIB_Open(LIBBASETYPEPTR LIBBASE)
 {
     D(bug("[SDL2] %s(0x%p)\n", __func__, LIBBASE));
 
-	if (((IntuitionBase    = LIBBASE->MyIntuiBase        = (APTR)OpenLibrary("intuition.library"    , 39)) != NULL)
-	 && ((CyberGfxBase     = LIBBASE->MyCyberGfxBase     = (APTR)OpenLibrary("cybergraphics.library", 40)) != NULL)
-	 && ((KeymapBase       = LIBBASE->MyKeymapBase       = (APTR)OpenLibrary("keymap.library"       , 36)) != NULL)
-	 && ((WorkbenchBase    = LIBBASE->MyWorkbenchBase    = (APTR)OpenLibrary("workbench.library"    ,  0)) != NULL)
-	 && ((IconBase         = LIBBASE->MyIconBase         = (APTR)OpenLibrary("icon.library"         ,  0)) != NULL)
-	 && ((MUIMasterBase    = LIBBASE->MyMUIMasterBase    = (APTR)OpenLibrary("muimaster.library"    , 19)) != NULL)
-	 && ((CxBase           = LIBBASE->MyCxBase           = (APTR)OpenLibrary("commodities.library"  , 37)) != NULL)
-	 && ((LocaleBase       =                                     OpenLibrary("locale.library"       ,  0)) != NULL)
-	 && ((IFFParseBase     =                                     OpenLibrary("iffparse.library"     ,  0)) != NULL)
-	 && ((GadToolsBase	   =									 OpenLibrary("gadtools.library"		,  0)) != NULL)
-	 && ((OpenURLBase 	   = 									 OpenLibrary("openurl.library"		,  0)) != NULL))
-	{
-		return TRUE;
-	}
-	return FALSE;
+	/* Nothing to open per opener - init_libs() already holds one open of
+	 * every library the SDL sources use, for as long as SDL2.library is
+	 * resident. See the comment on the base globals at the top of this file
+	 * for why opening them here instead was wrong.
+	 *
+	 * Two of the bases this used to take are gone entirely: locale.library
+	 * was never referenced by the SDL sources at all, and muimaster.library
+	 * is opened locally by AROS_ShowMessageBox(), which shadowed the global.
+	 */
+	return TRUE;
 }
 
 int SDL_LoadObject(void)

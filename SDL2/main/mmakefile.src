@@ -100,6 +100,7 @@ FILES := \
     $(ARCHSRCDIR)/src/stdlib/SDL_stdlib \
     $(ARCHSRCDIR)/src/stdlib/SDL_string \
     $(ARCHSRCDIR)/src/stdlib/SDL_strtokr \
+    $(ARCHSRCDIR)/src/stdlib/aros/SDL_arosmem \
     $(ARCHSRCDIR)/src/thread/generic/SDL_syscond \
     $(ARCHSRCDIR)/src/thread/generic/SDL_systls \
     $(ARCHSRCDIR)/src/thread/SDL_thread \
