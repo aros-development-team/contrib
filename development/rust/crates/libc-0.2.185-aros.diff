@@ -45,7 +45,7 @@ diff -ruN -x .cargo-ok -x .git -x target libc-0.2.185.orig/src/new/mod.rs libc-0
 diff -ruN -x .cargo-ok -x .git -x target libc-0.2.185.orig/src/unix/aros/mod.rs libc-0.2.185/src/unix/aros/mod.rs
 --- libc-0.2.185.orig/src/unix/aros/mod.rs	1970-01-01 01:00:00
 +++ libc-0.2.185/src/unix/aros/mod.rs	2026-10-03 11:24:22
-@@ -0,0 +1,987 @@
+@@ -0,0 +1,998 @@
 +//! Bindings for the AROS C library (posixc.library / stdc.library) and
 +//! pthread.library, as shipped in the AROS SDK.
 +//!
@@ -244,6 +244,13 @@ diff -ruN -x .cargo-ok -x .git -x target libc-0.2.185.orig/src/unix/aros/mod.rs 
 +        pub param: sched_param,
 +        pub inheritsched: c_int,
 +        pub contentionscope: c_int,
++        pub affinityset: c_int,
++        pub affinity: cpu_set_t,
++    }
++
++    // sched.h: a CPU_SETSIZE bit mask in unsigned longs.
++    pub struct cpu_set_t {
++        bits: [c_ulong; CPU_SETSIZE as usize / (8 * core::mem::size_of::<c_ulong>())],
 +    }
 +
 +    pub struct pthread_mutexattr_t {
@@ -253,6 +260,8 @@ diff -ruN -x .cargo-ok -x .git -x target libc-0.2.185.orig/src/unix/aros/mod.rs 
 +
 +    pub struct pthread_condattr_t {
 +        pub pshared: c_int,
++        // CLOCK_REALTIME unless pthread_condattr_setclock() changed it
++        pub cond_clock: clockid_t,
 +    }
 +
 +    pub struct pthread_rwlockattr_t {
@@ -378,6 +387,8 @@ diff -ruN -x .cargo-ok -x .git -x target libc-0.2.185.orig/src/unix/aros/mod.rs 
 +        pub machine: [c_char; 65],
 +    }
 +}
++
++pub const CPU_SETSIZE: c_int = 1024;
 +
 +pub const PTHREAD_MUTEX_INITIALIZER: pthread_mutex_t = pthread_mutex_t { __private: [0; 32] };
 +pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t { __private: [0; 40] };

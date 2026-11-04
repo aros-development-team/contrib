@@ -203,10 +203,17 @@ contrib-rust-crates-refresh :
 	    $(call RUST_REFRESH,$(RUST_CRATESDIR),$$c.crate,$$c,$$f) ; \
 	done
 
+# This store's libc copy must agree with the AROS C headers too (see
+# tools-crosstools-rust-abicheck in tools/crosstools/rust).
+#MM contrib-rust-crates-abicheck : tools-crosstools-rust-abicheck contrib-rust-crates-libc0185
+#MM
+contrib-rust-crates-abicheck :
+	@$(call RUST_ABICHECK,$(GENDIR)/$(CURDIR)/abicheck) $(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_LIBC0185)
+
 # Every entry must exist (cargo refuses a [patch] path that does not), so the
 # config target fetches all of them; a program that does not use one only
 # gets a warning.
-#MM contrib-rust-crates-config : contrib-rust-crates-tokio contrib-rust-crates-mio \
+#MM contrib-rust-crates-config : contrib-rust-crates-abicheck contrib-rust-crates-tokio contrib-rust-crates-mio \
 #MM     contrib-rust-crates-socket2 contrib-rust-crates-errno \
 #MM     contrib-rust-crates-libloading07 contrib-rust-crates-libloading09 \
 #MM     contrib-rust-crates-iced contrib-rust-crates-iced-tiny-skia contrib-rust-crates-iced-aros \
