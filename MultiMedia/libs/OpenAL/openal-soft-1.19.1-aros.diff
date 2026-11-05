@@ -22,8 +22,8 @@ diff -ruN openal-soft-1.19.1/Alc/ALc.c openal-soft-1.19.1.aros/Alc/ALc.c
      RTPrioLevel = 0;
 diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/backends/ahi.c
 --- openal-soft-1.19.1/Alc/backends/ahi.c	1970-01-01 00:00:00.000000000 +0000
-+++ openal-soft-1.19.1.aros/Alc/backends/ahi.c	2025-08-02 20:37:18.352892723 +0000
-@@ -0,0 +1,384 @@
++++ openal-soft-1.19.1.aros/Alc/backends/ahi.c	2026-11-05 13:58:56.000000000 +0000
+@@ -0,0 +1,607 @@
 +/**
 + * OpenAL cross platform audio library
 + * Copyright (C) 1999-2007 by authors.
@@ -66,21 +66,61 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +
 +#include "backends/base.h"
 +
++#include <exec/memory.h>
++#include <dos/dos.h>
 +#include <devices/ahi.h>
++#include <utility/hooks.h>
++#include <aros/asmcall.h>
 +#include <proto/exec.h>
++#include <proto/ahi.h>
++#include <aros/debug.h>
 +
++/*
++ * OpenAL's own error log writes through the C library's stderr, which is
++ * not usable from inside openal.library: the backend reports its errors on
++ * the debug output instead.
++ */
++#define AHI_ERR(...) bug("[OpenAL:AHI] " __VA_ARGS__)
++
++/*
++ * "AHI Default" plays through the AHI Music unit - the mode and frequency
++ * chosen for applications in AHI preferences - using the low-level API.
++ * "AHI Unit 0" to "AHI Unit 3" write to that ahi.device unit instead; they
++ * are used only when an application asks for one by name, or when
++ * "[ahi] unit = N" in the configuration makes one the default.
++ */
 +static const ALCchar ahi_device[] = "AHI Default";
++static const ALCchar *const ahi_unit_names[] = {
++    "AHI Unit 0", "AHI Unit 1", "AHI Unit 2", "AHI Unit 3"
++};
++#define AHI_UNIT_COUNT  (int)(sizeof(ahi_unit_names) / sizeof(ahi_unit_names[0]))
++#define AHI_MUSIC_UNIT  (-1)
 +
 +static const char *ahi_driver = "ahi.device";
++static int ahi_default_unit = AHI_MUSIC_UNIT;
 +
 +typedef struct ALCplaybackAHI {
 +	DERIVE_FROM_TYPE(ALCbackend);
 +
++	int unit;		/* AHI_MUSIC_UNIT, or the ahi.device unit written to */
 +	int ahi_fmt;
 +
 +	struct MsgPort *ahip;
 +	struct AHIRequest *ahir[2];
 +	struct AHIRequest *link;
++
++	/* Music unit (low-level API) */
++	struct Library *ahibase;
++	struct AHIAudioCtrl *actrl;
++	struct Hook soundhook;
++	struct AHISampleInfo sample[2];
++	BOOL sounds_loaded;
++	ULONG mixfreq;
++	volatile ULONG nextsound;
++	volatile ULONG queuedsound;	/* the sound the hook queued last: the one to refill */
++	int frames;			/* sample frames per AHI sound */
++	struct Task * volatile mixtask;
++	BYTE mixsig;
 +
 +	ALubyte *mix_data[2];
 +	int data_size;
@@ -89,31 +129,10 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +	althrd_t thread;
 +} ALCplaybackAHI;
 +
-+
-+typedef struct {
-+    al_string name;
-+    al_string device_name;
-+} DevMap;
-+TYPEDEF_VECTOR(DevMap, vector_DevMap)
-+
-+static vector_DevMap PlaybackDevices;
-+static vector_DevMap CaptureDevices;
-+
-+static void clear_devlist(vector_DevMap *devlist)
-+{
-+#define FREE_DEV(i) do {                                                      \
-+    AL_STRING_DEINIT((i)->name);                                              \
-+    AL_STRING_DEINIT((i)->device_name);                                       \
-+} while(0)
-+    VECTOR_FOR_EACH(DevMap, *devlist, FREE_DEV);
-+    VECTOR_RESIZE(*devlist, 0, 0);
-+#undef FREE_DEV
-+}
-+
 +static int ALCplaybackAHI_mixerProc(void *ptr);
 +
 +static void ALCplaybackAHI_Construct(ALCplaybackAHI *self, ALCdevice *device);
-+static DECLARE_FORWARD(ALCplaybackAHI, ALCbackend, void, Destruct)
++static void ALCplaybackAHI_Destruct(ALCplaybackAHI *self);
 +static ALCenum ALCplaybackAHI_open(ALCplaybackAHI *self, const ALCchar *name);
 +static void ALCplaybackAHI_close(ALCplaybackAHI *self);
 +static ALCboolean ALCplaybackAHI_reset(ALCplaybackAHI *self);
@@ -127,19 +146,99 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +DECLARE_DEFAULT_ALLOCATORS(ALCplaybackAHI)
 +DEFINE_ALCBACKEND_VTABLE(ALCplaybackAHI);
 +
-+static int ALCplaybackAHI_mixerProc(void *ptr) {
-+	ALCplaybackAHI *self = (ALCplaybackAHI*)ptr;
++/*
++ * Called by AHI when a sound starts playing: queue the other buffer to
++ * follow it and wake the mixer thread to refill that one meanwhile.
++ */
++AROS_UFH3(ULONG, ALCplaybackAHI_soundFunc,
++	AROS_UFHA(struct Hook *, hook, A0),
++	AROS_UFHA(struct AHIAudioCtrl *, actrl, A2),
++	AROS_UFHA(struct AHISoundMessage *, smsg, A1))
++{
++	AROS_USERFUNC_INIT
++
++	ALCplaybackAHI *self = (ALCplaybackAHI *)hook->h_Data;
++	struct Library *AHIBase = self->ahibase;
++	struct Task *task = self->mixtask;
++
++	(void)smsg;
++	AHI_SetSound(0, self->nextsound, 0, 0, actrl, AHISF_NONE);
++	self->queuedsound = self->nextsound;
++	self->nextsound ^= 1;
++	if(task)
++		Signal(task, 1UL << self->mixsig);
++	return 0;
++
++	AROS_USERFUNC_EXIT
++}
++
++static int ALCplaybackAHI_musicProc(ALCplaybackAHI *self) {
 +	ALCdevice *device = STATIC_CAST(ALCbackend, self)->mDevice;
-+	struct MsgPort *ahip = self->ahip;
++	struct Library *AHIBase = self->ahibase;
++	ALint frames = self->frames;
++
++	self->mixsig = AllocSignal(-1);
++	if(self->mixsig == -1)
++		return 1;
++
++	ALCplaybackAHI_lock(self);
++	aluMixData(device, self->mix_data[0], frames);
++	ALCplaybackAHI_unlock(self);
++
++	self->nextsound = 1;
++	self->queuedsound = 0;
++	self->mixtask = FindTask(NULL);
++	AHI_Play(self->actrl,
++		AHIP_BeginChannel, 0,
++		AHIP_Freq,   self->mixfreq,
++		AHIP_Vol,    0x10000,
++		AHIP_Pan,    0x8000,
++		AHIP_Sound,  0,
++		AHIP_EndChannel, 0,
++		TAG_DONE);
++	if(AHI_ControlAudio(self->actrl, AHIC_Play, TRUE, TAG_DONE) != AHIE_OK) {
++		AHI_ERR("AHIC_Play failed\n");
++		self->mixtask = NULL;
++		FreeSignal(self->mixsig);
++		self->mixsig = -1;
++		return 1;
++	}
++
++	while(!self->killNow && ATOMIC_LOAD(&device->Connected, almemory_order_acquire)) {
++		ULONG sigs = Wait((1UL << self->mixsig) | SIGBREAKF_CTRL_C);
++		if(self->killNow)
++			break;
++		if(!(sigs & (1UL << self->mixsig)))
++			continue;
++		/* Refill the sound the hook queued last: it plays after the current
++		   one. Several hook calls can arrive as one wake-up, so the buffer
++		   is taken from the hook rather than alternated here. */
++		ALCplaybackAHI_lock(self);
++		aluMixData(device, self->mix_data[self->queuedsound], frames);
++		ALCplaybackAHI_unlock(self);
++	}
++
++
++	AHI_ControlAudio(self->actrl, AHIC_Play, FALSE, TAG_DONE);
++	self->mixtask = NULL;
++	FreeSignal(self->mixsig);
++	self->mixsig = -1;
++
++	return 0;
++}
++
++static int ALCplaybackAHI_unitProc(ALCplaybackAHI *self) {
++	ALCdevice *device = STATIC_CAST(ALCbackend, self)->mDevice;
 +	ALint frameSize;
 +	ALint cb = 0;
 +
-+    SetRTPriority();
-+    althrd_setname(althrd_current(), MIXER_THREAD_NAME);
-+
-+	ahip->mp_SigTask = FindTask(NULL);
-+	ahip->mp_SigBit = AllocSignal(-1);
-+	ahip->mp_Flags = PA_SIGNAL;
++	/* Replies must signal this task, so they come to a port of its own
++	   rather than the one created by the task that opened the device. */
++	struct MsgPort *ahip = CreateMsgPort();
++	if(ahip == NULL)
++		return 1;
++	self->ahir[0]->ahir_Std.io_Message.mn_ReplyPort = ahip;
++	self->ahir[1]->ahir_Std.io_Message.mn_ReplyPort = ahip;
 +
 +	frameSize = FrameSizeFromDevFmt(device->FmtChans, device->FmtType, device->AmbiOrder);
 +
@@ -159,7 +258,7 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +		ahir->ahir_Volume    = 0x10000;
 +		ahir->ahir_Position  = 0x8000;
 +		ahir->ahir_Link      = self->link;
-+	   	SendIO((struct IORequest*)ahir);
++		SendIO((struct IORequest*)ahir);
 +
 +		if(self->link != NULL) {
 +			WaitIO((struct IORequest*)self->link);
@@ -171,19 +270,33 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +
 +	if(self->link != NULL) {
 +		WaitIO((struct IORequest*)self->link);
++		self->link = NULL;
 +	}
 +
-+	ahip->mp_Flags = PA_IGNORE;
-+	FreeSignal(ahip->mp_SigBit);
-+	ahip->mp_SigTask = NULL;
-+	ahip->mp_SigBit = -1;
++	self->ahir[0]->ahir_Std.io_Message.mn_ReplyPort = self->ahip;
++	self->ahir[1]->ahir_Std.io_Message.mn_ReplyPort = self->ahip;
++	DeleteMsgPort(ahip);
 +
 +	return 0;
++}
++
++static int ALCplaybackAHI_mixerProc(void *ptr) {
++	ALCplaybackAHI *self = (ALCplaybackAHI*)ptr;
++
++	SetRTPriority();
++	althrd_setname(althrd_current(), MIXER_THREAD_NAME);
++
++	if(self->unit == AHI_MUSIC_UNIT)
++		return ALCplaybackAHI_musicProc(self);
++	return ALCplaybackAHI_unitProc(self);
 +}
 +
 +static void ALCplaybackAHI_Construct(ALCplaybackAHI *self, ALCdevice *device) {
 +	ALCbackend_Construct(STATIC_CAST(ALCbackend, self), device);
 +	SET_VTABLE2(ALCplaybackAHI, ALCbackend, self);
++	self->unit = AHI_MUSIC_UNIT;
++	self->ahi_fmt = -1;
++	self->mixsig = -1;
 +}
 +
 +static int get_ahi_format(ALCdevice *device) {
@@ -229,45 +342,77 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +	default:
 +		break;
 +	}
-+	ERR("Unknown format?! chans: %d type: %d\n", device->FmtChans, device->FmtType);
++	AHI_ERR("unknown format, channels %d type %d\n", device->FmtChans, device->FmtType);
 +	return -1;
++}
++
++/* The Music unit is driven with 16-bit mono or stereo dynamic sounds. */
++static int get_ahi_music_format(ALCdevice *device) {
++	if(device->FmtChans != DevFmtMono)
++		device->FmtChans = DevFmtStereo;
++	device->FmtType = DevFmtShort;
++	return (device->FmtChans == DevFmtMono) ? AHIST_M16S : AHIST_S16S;
 +}
 +
 +static ALCenum ALCplaybackAHI_open(ALCplaybackAHI *self, const ALCchar *name) {
 +	ALCdevice *device = STATIC_CAST(ALCbackend, self)->mDevice;
++	int unit, i;
 +
-+	if(!name)
++	if(!name || strcmp(name, ahi_device) == 0) {
 +		name = ahi_device;
-+	else if(strcmp(name, ahi_device) != 0)
-+		return ALC_INVALID_VALUE;
++		unit = ahi_default_unit;
++	} else {
++		for(i = 0; i < AHI_UNIT_COUNT; i++) {
++			if(strcmp(name, ahi_unit_names[i]) == 0)
++				break;
++		}
++		if(i == AHI_UNIT_COUNT)
++			return ALC_INVALID_VALUE;
++		unit = i;
++	}
 +
 +	self->killNow = 0;
-+
-+	self->ahi_fmt = get_ahi_format(device);
-+	if(self->ahi_fmt == -1)
-+		return ALC_INVALID_VALUE;
++	self->unit = unit;
 +
 +	self->ahip = CreateMsgPort();
++	if(self->ahip == NULL)
++		return ALC_OUT_OF_MEMORY;
 +
 +	self->ahir[0] = (struct AHIRequest*)CreateIORequest(self->ahip, sizeof(struct AHIRequest));
 +	if(self->ahir[0] == NULL) {
++		DeleteMsgPort(self->ahip);
++		self->ahip = NULL;
 +		return ALC_OUT_OF_MEMORY;
 +	}
-+
 +	self->ahir[0]->ahir_Version = 4;
 +
-+	if(OpenDevice("ahi.device", AHI_DEFAULT_UNIT, (struct IORequest *)self->ahir[0], 0)
-+		!= 0)
-+	{
-+		return ALC_OUT_OF_MEMORY;
++	if(OpenDevice(ahi_driver, (unit == AHI_MUSIC_UNIT) ? AHI_NO_UNIT : unit,
++	              (struct IORequest *)self->ahir[0], 0) != 0) {
++		AHI_ERR("could not open %s unit %d\n", ahi_driver, unit);
++		DeleteIORequest((struct IORequest *)self->ahir[0]);
++		self->ahir[0] = NULL;
++		DeleteMsgPort(self->ahip);
++		self->ahip = NULL;
++		return ALC_INVALID_VALUE;
 +	}
 +
-+	self->ahir[1] = (struct AHIRequest*)CreateIORequest(self->ahip, sizeof(struct AHIRequest));
-+	if(self->ahir[1] == NULL) {
-+		return ALC_OUT_OF_MEMORY;
-+	}
++	if(unit == AHI_MUSIC_UNIT) {
++		self->ahibase = (struct Library *)self->ahir[0]->ahir_Std.io_Device;
++		self->ahi_fmt = get_ahi_music_format(device);
++	} else {
++		self->ahir[1] = (struct AHIRequest*)CreateIORequest(self->ahip, sizeof(struct AHIRequest));
++		if(self->ahir[1] == NULL) {
++			ALCplaybackAHI_close(self);
++			return ALC_OUT_OF_MEMORY;
++		}
++		CopyMem(self->ahir[0], self->ahir[1], sizeof(struct AHIRequest));
 +
-+        CopyMem(self->ahir[0], self->ahir[1], sizeof(struct AHIRequest));
++		self->ahi_fmt = get_ahi_format(device);
++		if(self->ahi_fmt == -1) {
++			ALCplaybackAHI_close(self);
++			return ALC_INVALID_VALUE;
++		}
++	}
 +
 +	alstr_copy_cstr(&device->DeviceName, name);
 +
@@ -275,23 +420,68 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +}
 +
 +static void ALCplaybackAHI_close(ALCplaybackAHI *self) {
-+	CloseDevice((struct IORequest*)self->ahir[0]);
-+	DeleteIORequest(self->ahir[1]);
-+	DeleteIORequest(self->ahir[0]);
++	if(self->actrl) {
++		struct Library *AHIBase = self->ahibase;
++		AHI_FreeAudio(self->actrl);
++		self->actrl = NULL;
++	}
++	self->ahibase = NULL;
++
++	if(self->ahir[0])
++		CloseDevice((struct IORequest*)self->ahir[0]);
++	if(self->ahir[1])
++		DeleteIORequest((struct IORequest*)self->ahir[1]);
++	if(self->ahir[0])
++		DeleteIORequest((struct IORequest*)self->ahir[0]);
 +	self->ahir[0] = self->ahir[1] = NULL;
 +
-+	DeleteMsgPort(self->ahip);
++	if(self->ahip)
++		DeleteMsgPort(self->ahip);
 +	self->ahip = NULL;
 +
 +	self->ahi_fmt = -1;
 +}
 +
++/* The backend interface has no close: releasing the device is the destructor's job. */
++static void ALCplaybackAHI_Destruct(ALCplaybackAHI *self) {
++	ALCplaybackAHI_close(self);
++	ALCbackend_Destruct(STATIC_CAST(ALCbackend, self));
++}
++
 +static ALCboolean ALCplaybackAHI_reset(ALCplaybackAHI *self) {
 +	ALCdevice *device = STATIC_CAST(ALCbackend, self)->mDevice;
 +
-+	self->ahi_fmt = get_ahi_format(device);
-+	if(self->ahi_fmt == -1)
-+		return ALC_FALSE;
++	if(self->unit == AHI_MUSIC_UNIT) {
++		struct Library *AHIBase = self->ahibase;
++		IPTR freq = 0;
++
++		if(self->actrl) {
++			AHI_FreeAudio(self->actrl);
++			self->actrl = NULL;
++		}
++		self->soundhook.h_Entry = (HOOKFUNC)ALCplaybackAHI_soundFunc;
++		self->soundhook.h_Data = self;
++		self->actrl = AHI_AllocAudio(
++			AHIA_AudioID,   AHI_DEFAULT_ID,
++			AHIA_MixFreq,   AHI_DEFAULT_FREQ,
++			AHIA_Channels,  1,
++			AHIA_Sounds,    2,
++			AHIA_SoundFunc, (IPTR)&self->soundhook,
++			TAG_DONE);
++		if(!self->actrl) {
++			AHI_ERR("AHI_AllocAudio for the Music unit failed\n");
++			return ALC_FALSE;
++		}
++		AHI_ControlAudio(self->actrl, AHIC_MixFreq_Query, (IPTR)&freq, TAG_DONE);
++		if(freq)
++			device->Frequency = freq;
++		self->mixfreq = device->Frequency;
++		self->ahi_fmt = get_ahi_music_format(device);
++	} else {
++		self->ahi_fmt = get_ahi_format(device);
++		if(self->ahi_fmt == -1)
++			return ALC_FALSE;
++	}
 +
 +	SetDefaultChannelOrder(device);
 +
@@ -301,17 +491,43 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +static ALCboolean ALCplaybackAHI_start(ALCplaybackAHI *self) {
 +	ALCdevice *device = STATIC_CAST(ALCbackend, self)->mDevice;
 +
-+	self->data_size = device->UpdateSize * FrameSizeFromDevFmt(device->FmtChans, device->FmtType, device->AmbiOrder);
++	self->frames = device->UpdateSize;
++	self->data_size = self->frames * FrameSizeFromDevFmt(device->FmtChans, device->FmtType, device->AmbiOrder);
 +
-+	self->mix_data[0] = AllocVec(self->data_size, MEMF_ANY);
-+	self->mix_data[1] = AllocVec(self->data_size, MEMF_ANY);
++	self->mix_data[0] = AllocVec(self->data_size, MEMF_PUBLIC | MEMF_CLEAR);
++	self->mix_data[1] = AllocVec(self->data_size, MEMF_PUBLIC | MEMF_CLEAR);
 +
 +	if(self->mix_data[0] != NULL && self->mix_data[1] != NULL) {
++		if(self->unit == AHI_MUSIC_UNIT) {
++			struct Library *AHIBase = self->ahibase;
++			int i;
++
++			if(!self->actrl)
++				goto fail;
++			for(i = 0; i < 2; i++) {
++				self->sample[i].ahisi_Type = self->ahi_fmt;
++				self->sample[i].ahisi_Address = self->mix_data[i];
++				self->sample[i].ahisi_Length = self->frames;
++				if(AHI_LoadSound(i, AHIST_DYNAMICSAMPLE, &self->sample[i], self->actrl) != AHIE_OK) {
++					if(i)
++						AHI_UnloadSound(0, self->actrl);
++					goto fail;
++				}
++			}
++			self->sounds_loaded = TRUE;
++		}
 +		self->killNow = 0;
 +		if(althrd_create(&self->thread, ALCplaybackAHI_mixerProc, self) == althrd_success)
 +			return ALC_TRUE;
++		if(self->sounds_loaded) {
++			struct Library *AHIBase = self->ahibase;
++			AHI_UnloadSound(0, self->actrl);
++			AHI_UnloadSound(1, self->actrl);
++			self->sounds_loaded = FALSE;
++		}
 +	}
 +
++fail:
 +	FreeVec(self->mix_data[1]);
 +	FreeVec(self->mix_data[0]);
 +	self->mix_data[0] = self->mix_data[1] = NULL;
@@ -321,12 +537,23 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +
 +static void ALCplaybackAHI_stop(ALCplaybackAHI *self) {
 +	int res;
++	struct Task *task;
 +
 +	if(self->killNow)
 +		return;
 +
 +	self->killNow = 1;
++	/* the Music unit's thread sleeps between buffers: wake it */
++	if((task = self->mixtask) != NULL)
++		Signal(task, SIGBREAKF_CTRL_C);
 +	althrd_join(self->thread, &res);
++
++	if(self->sounds_loaded) {
++		struct Library *AHIBase = self->ahibase;
++		AHI_UnloadSound(0, self->actrl);
++		AHI_UnloadSound(1, self->actrl);
++		self->sounds_loaded = FALSE;
++	}
 +
 +	FreeVec(self->mix_data[1]);
 +	FreeVec(self->mix_data[0]);
@@ -353,20 +580,16 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +}
 +
 +ALCboolean ALCahiBackendFactory_init(ALCahiBackendFactory* UNUSED(self)) {
-+    VECTOR_INIT(PlaybackDevices);
-+    VECTOR_INIT(CaptureDevices);
++	int unit;
 +
 +	ConfigValueStr(NULL, "ahi", "device", &ahi_driver);
++	if(ConfigValueInt(NULL, "ahi", "unit", &unit) && unit >= 0 && unit < AHI_UNIT_COUNT)
++		ahi_default_unit = unit;
 +
 +	return ALC_TRUE;
 +}
 +
 +void ALCahiBackendFactory_deinit(ALCahiBackendFactory* UNUSED(self)) {
-+    clear_devlist(&PlaybackDevices);
-+    VECTOR_DEINIT(PlaybackDevices);
-+
-+    clear_devlist(&CaptureDevices);
-+    VECTOR_DEINIT(CaptureDevices);
 +}
 +
 +ALCboolean ALCahiBackendFactory_querySupport(ALCahiBackendFactory* UNUSED(self), ALCbackend_Type type) {
@@ -375,19 +598,20 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +	return ALC_FALSE;
 +}
 +
++static void append_name(al_string *outnames, const ALCchar *name) {
++	alstr_append_range(outnames, name, name + strlen(name) + 1);
++}
++
 +void ALCahiBackendFactory_probe(ALCahiBackendFactory* UNUSED(self), enum DevProbe type, al_string *outnames) {
++	int i;
++
 +	switch(type) {
-+#define APPEND_OUTNAME(i) do {                                                \
-+    if(!alstr_empty((i)->name))                                               \
-+        alstr_append_range(outnames, VECTOR_BEGIN((i)->name),                 \
-+                           VECTOR_END((i)->name)+1);                          \
-+} while(0)
 +		case ALL_DEVICE_PROBE:
-+//			AppendAllDevicesList(ahi_device);
-+            VECTOR_FOR_EACH(const DevMap, PlaybackDevices, APPEND_OUTNAME);
++			append_name(outnames, ahi_device);
++			for(i = 0; i < AHI_UNIT_COUNT; i++)
++				append_name(outnames, ahi_unit_names[i]);
 +			break;
 +		case CAPTURE_DEVICE_PROBE:
-+            VECTOR_FOR_EACH(const DevMap, CaptureDevices, APPEND_OUTNAME);
 +			break;
 +	}
 +}
@@ -403,11 +627,10 @@ diff -ruN openal-soft-1.19.1/Alc/backends/ahi.c openal-soft-1.19.1.aros/Alc/back
 +		ALCplaybackAHI_Construct(backend, device);
 +
 +		return STATIC_CAST(ALCbackend, backend);
-+    }
++	}
 +
-+    return NULL;
++	return NULL;
 +}
-+
 diff -ruN openal-soft-1.19.1/Alc/backends/base.h openal-soft-1.19.1.aros/Alc/backends/base.h
 --- openal-soft-1.19.1/Alc/backends/base.h	2018-10-11 22:05:31.000000000 +0000
 +++ openal-soft-1.19.1.aros/Alc/backends/base.h	2020-01-15 04:16:20.082121100 +0000

@@ -227,7 +227,7 @@ endif
     files="$(OPENAL_CFILES)" cxxfiles="$(OPENAL_CXXFILES)" objdir=$(OBJDIR)/static
 
 %build_module mmake=contrib-openal-library modname=openal \
-    modtype=library files="$(OPENAL_CFILES)" cxxfiles="$(OPENAL_CXXFILES)" uselibs="pthread posixc stdcio stdc"
+    modtype=library files="$(OPENAL_CFILES) openal_library" cxxfiles="$(OPENAL_CXXFILES)" uselibs="pthread posixc stdcio stdc"
 
 OPENAL_VERSION_DEPS+=$(SRCDIR)/$(CURDIR)/mmakefile.src
 $(GENDIR)/$(CURDIR)/version.h: $(OPENAL_VERSION_DEPS) | $(GENDIR)/$(CURDIR)
