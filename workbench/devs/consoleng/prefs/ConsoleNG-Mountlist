@@ -1,0 +1,9 @@
+/* Copyright (C) 2026, The AROS Development Team. All rights reserved. */
+CONNG:
+    EHandler = L:aux-handler
+    Priority = 5
+    StackSize = 65536
+    GlobVec = -1
+    Device = consoleng.device
+    Unit = 3
+#
