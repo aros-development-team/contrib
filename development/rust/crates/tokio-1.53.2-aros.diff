@@ -1,6 +1,6 @@
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/fs/read_dir.rs b/src/fs/read_dir.rs
---- a/src/fs/read_dir.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/fs/read_dir.rs	2026-10-12 13:45:27.136016706 +0100
+--- a/src/fs/read_dir.rs	2026-11-06 02:25:40.228592421 +0000
++++ b/src/fs/read_dir.rs	2026-11-06 02:25:40.288232224 +0000
 @@ -138,6 +138,7 @@
                      target_os = "solaris",
                      target_os = "illumos",
@@ -26,8 +26,8 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
              target_os = "aix",
              target_os = "nto",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/tcp/socket.rs b/src/net/tcp/socket.rs
---- a/src/net/tcp/socket.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/net/tcp/socket.rs	2026-10-12 13:45:27.164368007 +0100
+--- a/src/net/tcp/socket.rs	2026-11-06 02:25:40.228778221 +0000
++++ b/src/net/tcp/socket.rs	2026-11-06 02:25:40.288418524 +0000
 @@ -604,6 +604,7 @@
          target_os = "solaris",
          target_os = "illumos",
@@ -93,8 +93,8 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          ))))
      )]
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/udp.rs b/src/net/udp.rs
---- a/src/net/udp.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/net/udp.rs	2026-10-12 13:45:27.155544207 +0100
+--- a/src/net/udp.rs	2026-11-06 02:25:40.229006421 +0000
++++ b/src/net/udp.rs	2026-11-06 02:25:40.288640924 +0000
 @@ -2102,6 +2102,7 @@
          target_os = "solaris",
          target_os = "illumos",
@@ -160,8 +160,8 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          ))))
      )]
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/net/unix/ucred.rs b/src/net/unix/ucred.rs
---- a/src/net/unix/ucred.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/net/unix/ucred.rs	2026-10-12 13:46:26.630693861 +0100
+--- a/src/net/unix/ucred.rs	2026-11-06 02:25:40.229881221 +0000
++++ b/src/net/unix/ucred.rs	2026-11-06 02:25:40.289707324 +0000
 @@ -71,7 +71,8 @@
      target_os = "espidf",
      target_os = "nuttx",
@@ -190,33 +190,68 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
  ))]
  pub(crate) mod impl_noproc {
      use crate::net::unix::UnixStream;
-diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/runtime/builder.rs b/src/runtime/builder.rs
---- a/src/runtime/builder.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/runtime/builder.rs	2026-10-12 13:55:22.781574490 +0100
-@@ -1768,7 +1768,10 @@
-         ///     .unwrap();
-         /// ```
-         pub fn enable_io(&mut self) -> &mut Self {
--            self.enable_io = true;
-+            // AROS: posixc has no readiness notification (`select` is a stub, `poll` does
-+            // not exist), so the I/O driver cannot run; the runtime stays without it and
-+            // net/process/signal resources report that I/O is disabled when used.
-+            self.enable_io = cfg!(not(target_os = "aros"));
-             self
-         }
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/runtime/signal/mod.rs b/src/runtime/signal/mod.rs
+--- a/src/runtime/signal/mod.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/runtime/signal/mod.rs	2026-11-06 02:25:52.440650776 +0000
+@@ -20,8 +20,9 @@
+     /// Thread parker. The `Driver` park implementation delegates to this.
+     io: io::Driver,
  
-@@ -1838,7 +1841,7 @@
-         #[cfg_attr(docsrs, doc(cfg(feature = "io-uring")))]
-         pub fn enable_io_uring(&mut self) -> &mut Self {
-             // Currently, the uring flag is equivalent to `enable_io`.
--            self.enable_io = true;
-+            self.enable_io = cfg!(not(target_os = "aros"));
-             self
-         }
+-    /// A pipe for receiving wake events from the signal handler
+-    receiver: UnixStream,
++    /// A pipe for receiving wake events from the signal handler; none on
++    /// AROS, which has no POSIX signals to forward
++    receiver: Option<UnixStream>,
+ 
+     /// Shared state. The driver keeps a strong ref and the handle keeps a weak
+     /// ref. The weak ref is used to check if the driver is still active before
+@@ -40,6 +41,16 @@
+ 
+ impl Driver {
+     /// Creates a new signal `Driver` instance that delegates wakeups to `park`.
++    #[cfg(target_os = "aros")]
++    pub(crate) fn new(io: io::Driver, _io_handle: &io::Handle) -> std_io::Result<Self> {
++        Ok(Self {
++            io,
++            receiver: None,
++            inner: Arc::new(()),
++        })
++    }
++
++    #[cfg(not(target_os = "aros"))]
+     pub(crate) fn new(io: io::Driver, io_handle: &io::Handle) -> std_io::Result<Self> {
+         use std::mem::ManuallyDrop;
+         use std::os::unix::io::{AsRawFd, FromRawFd};
+@@ -75,7 +86,7 @@
+ 
+         Ok(Self {
+             io,
+-            receiver,
++            receiver: Some(receiver),
+             inner: Arc::new(()),
+         })
      }
+@@ -108,13 +119,16 @@
+         if !self.io.consume_signal_ready() {
+             return;
+         }
++        let Some(receiver) = self.receiver.as_mut() else {
++            return;
++        };
+ 
+         // Drain the pipe completely so we can receive a new readiness event
+         // if another signal has come in.
+         let mut buf = [0; 128];
+         #[allow(clippy::unused_io_amount)]
+         loop {
+-            match self.receiver.read(&mut buf) {
++            match receiver.read(&mut buf) {
+                 Ok(0) => panic!("EOF on self-pipe"),
+                 Ok(_) => continue, // Keep reading
+                 Err(e) if e.kind() == std_io::ErrorKind::WouldBlock => break,
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/signal/unix.rs b/src/signal/unix.rs
---- a/src/signal/unix.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/signal/unix.rs	2026-10-12 14:20:29.626601060 +0100
+--- a/src/signal/unix.rs	2026-11-06 02:25:40.230014821 +0000
++++ b/src/signal/unix.rs	2026-11-06 02:25:52.440793976 +0000
 @@ -158,7 +158,8 @@
          Self(libc::SIGINT)
      }
@@ -244,17 +279,18 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
      /// Represents the `SIGWINCH` signal.
      ///
      /// On Unix systems this signal is sent when the terminal window is resized.
-@@ -400,6 +402,15 @@
+@@ -400,6 +402,16 @@
  /// feature flag is not enabled.
  #[track_caller]
  pub fn signal(kind: SignalKind) -> io::Result<Signal> {
-+    // AROS: the runtime has no I/O (and so no signal) driver; report that instead of
-+    // panicking in whatever task asked for the signal.
++    // AROS: there are no POSIX signals, so the runtime's signal driver has
++    // nothing to forward; report that instead of panicking in whatever task
++    // asked for the signal.
 +    if cfg!(target_os = "aros") {
 +        let _ = kind;
 +        return Err(io::Error::new(
 +            io::ErrorKind::Unsupported,
-+            "signal handling is not available on AROS (no I/O driver)",
++            "signal handling is not available on AROS",
 +        ));
 +    }
      let handle = scheduler::Handle::current();

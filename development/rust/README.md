@@ -13,8 +13,8 @@ given):
   writes `$(RUST_CRATES_CONFIG)`), cargo runs with `$(RUST_CARGO)`
   (`tools/crosstools/rust.cfg`).
 * `contrib/development/rust/crates` (this directory): application crates -
-  `tokio`/`mio`/`socket2`/`errno` (an async runtime without an I/O driver:
-  posixc has no `poll()` and its `select()` is a stub), `libloading`, `iced`
+  `tokio`/`mio`/`socket2`/`errno` (an async runtime whose I/O driver waits
+  in bsdsocket's `WaitSelect()`, woken by an exec signal), `libloading`, `iced`
   and `iced_tiny_skia`, `fontique`; the window and graphics crates (`winit`
   on Intuition, `raw-window-handle`, `glutin`, `wgpu`/`wgpu-core`/`wgpu-hal`
   with a GLA backend, `naga`; wgpu 27 for Veloren and wgpu 30 with

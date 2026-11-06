@@ -1,5 +1,5 @@
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/poll.rs b/src/poll.rs
---- a/src/poll.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/poll.rs	2026-11-06 02:21:33.595066767 +0000
 +++ b/src/poll.rs	2026-10-12 13:42:00.784138460 +0100
 @@ -7,6 +7,7 @@
          target_os = "nuttx",
@@ -34,40 +34,34 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          target_os = "hermit",
          target_os = "hurd",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/mod.rs b/src/sys/unix/mod.rs
---- a/src/sys/unix/mod.rs	2006-07-24 02:21:28.000000000 +0100
-+++ b/src/sys/unix/mod.rs	2026-10-12 13:42:00.787397360 +0100
-@@ -49,7 +49,8 @@
+--- a/src/sys/unix/mod.rs	2026-11-06 02:21:33.595517667 +0000
++++ b/src/sys/unix/mod.rs	2026-11-06 02:23:17.610823823 +0000
+@@ -49,6 +49,7 @@
          target_os = "nuttx",
          target_os = "fuchsia",
          target_os = "haiku",
--        target_os = "hermit",
 +        target_os = "aros",
-+                target_os = "hermit",
+         target_os = "hermit",
          target_os = "hurd",
          target_os = "nto",
-         target_os = "vita",
-@@ -108,7 +109,8 @@
-         ),
-         target_os = "aix",
-         target_os = "haiku",
--        target_os = "hurd",
-+        target_os = "aros",
-+                target_os = "hurd",
-         target_os = "nto",
-         target_os = "redox",
-         all(mio_unsupported_force_poll_poll, target_os = "solaris"),
-@@ -159,7 +161,8 @@
+@@ -116,6 +117,7 @@
+         target_os = "cygwin",
+         all(target_os = "wasi", target_env = "p1")
+     ), path = "waker/pipe.rs")]
++    #[cfg_attr(target_os = "aros", path = "waker/signal.rs")]
+     #[cfg_attr(any(target_os = "horizon", all(target_os = "wasi", not(target_env = "p1"))), path = "waker/single_threaded.rs")]
+     mod waker;
+     #[cfg(all(not(mio_unsupported_force_poll_poll), target_os = "solaris"))]
+@@ -159,6 +161,7 @@
              target_os = "aix",
              target_os = "dragonfly",
              target_os = "haiku",
--            target_os = "hurd",
 +            target_os = "aros",
-+                    target_os = "hurd",
+             target_os = "hurd",
              target_os = "netbsd",
              target_os = "nto",
-             target_os = "openbsd",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/net.rs b/src/sys/unix/net.rs
---- a/src/sys/unix/net.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/sys/unix/net.rs	2026-11-06 02:21:33.595635767 +0000
 +++ b/src/sys/unix/net.rs	2026-10-12 13:42:00.789857060 +0100
 @@ -65,7 +65,8 @@
          target_os = "watchos",
@@ -100,7 +94,7 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
                      target_os = "macos",
                      target_os = "netbsd",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/pipe.rs b/src/sys/unix/pipe.rs
---- a/src/sys/unix/pipe.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/sys/unix/pipe.rs	2026-11-06 02:21:33.596410967 +0000
 +++ b/src/sys/unix/pipe.rs	2026-10-12 13:42:00.787218760 +0100
 @@ -34,7 +34,8 @@
      #[cfg(any(
@@ -112,8 +106,51 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          target_os = "macos",
          target_os = "tvos",
          target_os = "visionos",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/selector/poll.rs b/src/sys/unix/selector/poll.rs
+--- a/src/sys/unix/selector/poll.rs	2006-07-24 02:21:28.000000000 +0100
++++ b/src/sys/unix/selector/poll.rs	2026-11-06 02:23:30.257127759 +0000
+@@ -218,12 +218,31 @@
+ 
+             // Perform the poll.
+             trace!("Polling on {:?}", &fds);
++            #[cfg(not(target_os = "aros"))]
+             let num_events = poll(&mut fds.poll_fds, timeout)?;
++            // The waker is a signal of the polling thread, not a descriptor:
++            // the poll waits for it too.
++            #[cfg(target_os = "aros")]
++            let num_events = {
++                let poll_fds = &mut fds.poll_fds;
++                // `PollFd` is a transparent `libc::pollfd`
++                let raw = unsafe {
++                    std::slice::from_raw_parts_mut(poll_fds.as_mut_ptr() as *mut libc::pollfd, poll_fds.len())
++                };
++                self.notify_waker.poll(raw, timeout)?
++            };
+             trace!("Poll finished: {:?}", &fds);
+ 
++            // A wake-up with no descriptor event goes on below, where it is
++            // acknowledged and its token reported.
++            #[cfg(not(target_os = "aros"))]
+             if num_events == 0 {
+                 return Ok(());
+             }
++            #[cfg(target_os = "aros")]
++            if num_events == 0 && !self.notify_waker.woken() {
++                return Ok(());
++            }
+ 
+             let waker_events;
+             let notified;
+@@ -515,6 +534,7 @@
+ }
+ 
+ /// Helper function to call poll.
++#[cfg_attr(target_os = "aros", allow(dead_code))]
+ fn poll(fds: &mut [PollFd], timeout: Option<Duration>) -> io::Result<usize> {
+     loop {
+         // A bug in kernels < 2.6.37 makes timeouts larger than LONG_MAX / CONFIG_HZ
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/tcp.rs b/src/sys/unix/tcp.rs
---- a/src/sys/unix/tcp.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/sys/unix/tcp.rs	2026-11-06 02:21:33.596552167 +0000
 +++ b/src/sys/unix/tcp.rs	2026-10-12 13:42:00.787521960 +0100
 @@ -92,6 +92,7 @@
      #[cfg(any(
@@ -124,7 +161,7 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          target_os = "macos",
          target_os = "redox",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/uds/listener.rs b/src/sys/unix/uds/listener.rs
---- a/src/sys/unix/uds/listener.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/sys/unix/uds/listener.rs	2026-11-06 02:21:33.596668167 +0000
 +++ b/src/sys/unix/uds/listener.rs	2026-10-12 13:42:00.788954960 +0100
 @@ -65,6 +65,7 @@
      #[cfg(not(any(
@@ -143,7 +180,7 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          target_os = "macos",
          target_os = "netbsd",
 diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/uds/mod.rs b/src/sys/unix/uds/mod.rs
---- a/src/sys/unix/uds/mod.rs	2006-07-24 02:21:28.000000000 +0100
+--- a/src/sys/unix/uds/mod.rs	2026-11-06 02:21:33.597666067 +0000
 +++ b/src/sys/unix/uds/mod.rs	2026-10-12 13:42:00.789165660 +0100
 @@ -88,6 +88,7 @@
      #[cfg(not(any(
@@ -163,3 +200,183 @@ diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x 
          target_os = "macos",
          target_os = "nto",
          target_os = "tvos",
+diff -ruN -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock a/src/sys/unix/waker/signal.rs b/src/sys/unix/waker/signal.rs
+--- a/src/sys/unix/waker/signal.rs	1970-01-01 01:00:00.000000000 +0100
++++ b/src/sys/unix/waker/signal.rs	2026-11-06 02:39:02.803632419 +0000
+@@ -0,0 +1,176 @@
++//! Waker for the `poll(2)` selector on AROS, where the selector waits in
++//! bsdsocket.library's `WaitSelect()` (`poll_signals()` of the C library
++//! layer), which also returns for exec signals of the waiting thread.
++//!
++//! Waking signals the thread that is polling, with a signal the thread
++//! allocates for the time of the poll: a runtime may poll from any of its
++//! threads, and a thread keeps no signal when it ends. With no socket to wait
++//! for, the selector waits on a condition variable instead, which needs no
++//! TCP/IP stack.
++
++use std::io;
++use std::os::fd::RawFd;
++use std::sync::{Condvar, Mutex};
++use std::time::Duration;
++
++use libc::c_void;
++
++extern "C" {
++    /// exec.library's base, set up by the C start-up code.
++    static SysBase: *mut c_void;
++
++    /// `poll()` that also returns when the calling thread gets one of the
++    /// exec signals in `*sigmask`, which then holds those that came.
++    fn poll_signals(
++        fds: *mut libc::pollfd,
++        nfds: libc::nfds_t,
++        timeout: libc::c_int,
++        sigmask: *mut u32,
++    ) -> libc::c_int;
++}
++
++/// exec.library function `lvo`, called with the base as the last argument
++/// (the AROS library ABI of x86_64 and riscv64).
++unsafe fn exec_vector(lvo: isize) -> *const c_void {
++    *(SysBase as *const *const c_void).offset(-lvo)
++}
++
++/// FindTask(NULL): the calling thread's task.
++unsafe fn this_task() -> usize {
++    let f: unsafe extern "C" fn(*const c_void, *mut c_void) -> *mut c_void =
++        std::mem::transmute(exec_vector(49));
++    f(std::ptr::null(), SysBase) as usize
++}
++
++/// Signal(task, mask).
++unsafe fn signal(task: usize, mask: u32) {
++    let f: unsafe extern "C" fn(*mut c_void, u32, *mut c_void) = std::mem::transmute(exec_vector(54));
++    f(task as *mut c_void, mask, SysBase)
++}
++
++/// SetSignal(new, mask): clears the calling thread's signals in `mask`.
++unsafe fn clear_signals(mask: u32) {
++    let f: unsafe extern "C" fn(u32, u32, *mut c_void) -> u32 = std::mem::transmute(exec_vector(51));
++    f(0, mask, SysBase);
++}
++
++/// AllocSignal(-1): a free signal of the calling thread, or -1.
++unsafe fn alloc_signal() -> i8 {
++    let f: unsafe extern "C" fn(i32, *mut c_void) -> i8 = std::mem::transmute(exec_vector(55));
++    f(-1, SysBase)
++}
++
++/// FreeSignal(bit).
++unsafe fn free_signal(bit: i8) {
++    let f: unsafe extern "C" fn(i32, *mut c_void) = std::mem::transmute(exec_vector(56));
++    f(bit as i32, SysBase)
++}
++
++#[derive(Debug)]
++struct State {
++    woken: bool,
++    /// The task waiting in `poll()` and its signal.
++    poller: Option<(usize, u32)>,
++}
++
++#[derive(Debug)]
++pub(crate) struct Waker {
++    state: Mutex<State>,
++    wakeup: Condvar,
++}
++
++impl Waker {
++    pub(crate) fn new_unregistered() -> io::Result<Waker> {
++        Ok(Waker {
++            state: Mutex::new(State {
++                woken: false,
++                poller: None,
++            }),
++            wakeup: Condvar::new(),
++        })
++    }
++
++    pub(crate) fn wake(&self) -> io::Result<()> {
++        let mut state = self.state.lock().unwrap();
++        state.woken = true;
++        if let Some((task, mask)) = state.poller {
++            // the poller clears its poller entry under the lock, so the
++            // task is still waiting or about to clear the signal
++            unsafe { signal(task, mask) };
++        }
++        drop(state);
++        self.wakeup.notify_all();
++        Ok(())
++    }
++
++    /// Only non-`None` for the `pipe(2)`- and `eventfd(2)`-based `Waker`s.
++    pub(crate) fn fd(&self) -> Option<RawFd> {
++        None
++    }
++
++    pub(crate) fn woken(&self) -> bool {
++        self.state.lock().unwrap().woken
++    }
++
++    pub(crate) fn ack_and_reset(&self) {
++        self.state.lock().unwrap().woken = false;
++    }
++
++    /// Waits as `poll(2)` for `fds`, until `timeout` or a `wake()`, and gives
++    /// the number of descriptors with events.
++    pub(crate) fn poll(&self, fds: &mut [libc::pollfd], timeout: Option<Duration>) -> io::Result<usize> {
++        let mut state = self.state.lock().unwrap();
++        if fds.is_empty() {
++            if !state.woken {
++                match timeout {
++                    None => drop(self.wakeup.wait_while(state, |s| !s.woken).unwrap()),
++                    Some(to) => drop(self.wakeup.wait_timeout_while(state, to, |s| !s.woken).unwrap()),
++                }
++            }
++            return Ok(0);
++        }
++
++        let bit = unsafe { alloc_signal() };
++        if bit < 0 {
++            return Err(io::Error::new(
++                io::ErrorKind::Other,
++                "no free signal for the selector on this thread",
++            ));
++        }
++        let mask = 1u32 << bit;
++        let timeout = if state.woken { Some(Duration::ZERO) } else { timeout };
++        // Round up, so that a short timeout does not become a busy poll.
++        let ms = timeout
++            .map(|to| {
++                let ms = to
++                    .checked_add(Duration::from_nanos(999_999))
++                    .unwrap_or(to)
++                    .as_millis();
++                ms.min(libc::c_int::MAX as u128) as libc::c_int
++            })
++            .unwrap_or(-1);
++        state.poller = Some((unsafe { this_task() }, mask));
++        drop(state);
++
++        let res = loop {
++            let mut sigs = mask;
++            let n = unsafe { poll_signals(fds.as_mut_ptr(), fds.len() as libc::nfds_t, ms, &mut sigs) };
++            if n >= 0 {
++                break Ok(n as usize);
++            }
++            let err = io::Error::last_os_error();
++            if err.raw_os_error() != Some(libc::EAGAIN) {
++                break Err(err);
++            }
++        };
++
++        // From here no wake() signals this thread.
++        self.state.lock().unwrap().poller = None;
++        unsafe {
++            // a wake() that came as the wait ended
++            clear_signals(mask);
++            free_signal(bit);
++        }
++        res
++    }
++}

@@ -3,10 +3,11 @@
 #   tools/crosstools/rust/crates has the crates every Rust program needs; this
 #   one has the application crates that need AROS changes:
 #
-#     tokio, mio, socket2, errno  the async runtime without an I/O driver
-#                                 (posixc has no poll(), select() is a stub),
-#                                 AROS treated like Haiku where they pick
-#                                 platform code, errno from posixc;
+#     tokio, mio, socket2, errno  the async runtime; mio's poll() selector
+#                                 waits in bsdsocket's WaitSelect() with an
+#                                 exec signal as its waker, AROS treated like
+#                                 Haiku where they pick platform code, errno
+#                                 from posixc;
 #     libloading 0.7 / 0.9        dlopen flag constants for AROS (dlopen
 #                                 itself fails at run time);
 #     iced, iced_tiny_skia        the iced 0.14 GUI toolkit with crates/aros/
