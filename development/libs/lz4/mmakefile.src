@@ -11,7 +11,12 @@ include $(SRCDIR)/config/aros-contrib.cfg
 
 LZ4VERSION      := 1.10.0
 LZ4ARCHBASE     := lz4-$(LZ4VERSION)
-LZ4REPOSITORIES := github://lz4/lz4/releases/download/v$(LZ4VERSION)
+# github release downloads fail intermittently on the nightly builders, so the
+# distro mirrors of the same release tarball are tried after it.
+LZ4REPOSITORIES := github://lz4/lz4/releases/download/v$(LZ4VERSION) \
+ http://distcache.freebsd.org/ports-distfiles \
+ https://ftp.openbsd.org/pub/OpenBSD/distfiles \
+ http://distfiles.macports.org/lz4
 LZ4PATCHFILE    := $(LZ4ARCHBASE)-aros.diff
 # fetch fails on a missing patch, so only name it when it exists
 ifneq ($(wildcard $(SRCDIR)/$(CURDIR)/$(LZ4PATCHFILE)),)
