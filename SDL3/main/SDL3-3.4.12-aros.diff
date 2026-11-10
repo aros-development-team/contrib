@@ -1,6 +1,6 @@
-diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config_aros.h SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h
---- SDL3-3.4.12/include/build_config/SDL_build_config_aros.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h	2026-07-28 13:08:21.751348390 +0100
+diff -ruN SDL3-3.4.12/include/build_config/SDL_build_config_aros.h SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h
+--- SDL3-3.4.12/include/build_config/SDL_build_config_aros.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/include/build_config/SDL_build_config_aros.h	2026-07-28 12:08:21.751348390 +0000
 @@ -0,0 +1,664 @@
 +/*
 +  Simple DirectMedia Layer
@@ -666,9 +666,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config_
 +   build FILES list (src/locale/aros, src/misc/aros, src/thread/aros). */
 +
 +#endif /* SDL_build_config_aros_h_ */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config.h SDL3-3.4.12.aros/include/build_config/SDL_build_config.h
+diff -ruN SDL3-3.4.12/include/build_config/SDL_build_config.h SDL3-3.4.12.aros/include/build_config/SDL_build_config.h
 --- SDL3-3.4.12/include/build_config/SDL_build_config.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/include/build_config/SDL_build_config.h	2026-07-28 13:08:21.751768290 +0100
++++ SDL3-3.4.12.aros/include/build_config/SDL_build_config.h	2026-07-28 12:08:21.751768290 +0000
 @@ -45,6 +45,8 @@
  #include "SDL_build_config_ios.h"
  #elif defined(SDL_PLATFORM_ANDROID)
@@ -678,9 +678,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/include/build_config/SDL_build_config.
  #else
  /* This is a minimal configuration just to get SDL running on new platforms. */
  #include "SDL_build_config_minimal.h"
-diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_platform_defines.h SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h
+diff -ruN SDL3-3.4.12/include/SDL3/SDL_platform_defines.h SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h
 --- SDL3-3.4.12/include/SDL3/SDL_platform_defines.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h	2026-07-28 13:08:21.751880290 +0100
++++ SDL3-3.4.12.aros/include/SDL3/SDL_platform_defines.h	2026-07-28 12:08:21.751880290 +0000
 @@ -48,6 +48,17 @@
  #define SDL_PLATFORM_HAIKU 1
  #endif
@@ -699,9 +699,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_platform_defines.h SD
  #if defined(bsdi) || defined(__bsdi) || defined(__bsdi__)
  
  /**
-diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_stdinc.h SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h
---- SDL3-3.4.12/include/SDL3/SDL_stdinc.h	2026-05-31 03:50:12.000000000 +0100
-+++ SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h	2026-07-28 21:47:30.670060310 +0100
+diff -ruN SDL3-3.4.12/include/SDL3/SDL_stdinc.h SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h
+--- SDL3-3.4.12/include/SDL3/SDL_stdinc.h	2026-05-31 02:50:12.000000000 +0000
++++ SDL3-3.4.12.aros/include/SDL3/SDL_stdinc.h	2026-07-28 20:47:30.670060310 +0000
 @@ -1184,7 +1184,14 @@
      Uint8 a;
      void *b;
@@ -717,9 +717,328 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/include/SDL3/SDL_stdinc.h SDL3-3.4.12.
  SDL_COMPILE_TIME_ASSERT(two_s_complement, SDL_static_cast(int, ~SDL_static_cast(int, 0)) == SDL_static_cast(int, -1));
  #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
  /** \endcond */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c
---- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c	2026-07-28 13:08:21.755632791 +0100
+diff -ruN SDL3-3.4.12/src/aros/SDL_arosbase.h SDL3-3.4.12.aros/src/aros/SDL_arosbase.h
+--- SDL3-3.4.12/src/aros/SDL_arosbase.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/aros/SDL_arosbase.h	2026-11-10 16:48:07.451850625 +0000
+@@ -0,0 +1,159 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#ifndef SDL_arosbase_h_
++#define SDL_arosbase_h_
++
++/* Per-client state for the AROS port.
++ *
++ * SDL3.library is a peropenerbase module ("options peropenerbase" in
++ * SDL3.conf), so every OpenLibrary() already gets its own struct SDL3Base.
++ * Everything in SDL that would otherwise be a file-scope static and that
++ * belongs to one client lives in the block below instead, one per opener,
++ * reached through that base. The static link library has no base and gets
++ * exactly one block.
++ *
++ * Reaching the block: genmodule keeps the base of the opener whose call is
++ * being served in an exec task storage slot, and sets it on entry to every
++ * one of the library's functions (the AROS_GM_STACKCALL thunk calls
++ * __aros_setoffsettable()). So the current client is known without SDL having
++ * to pass anything around. SDL3_library.c owns the base layout and hands out
++ * the pointer, which keeps exec/ headers out of the generic SDL sources and
++ * SDL headers out of the library glue.
++ *
++ * Task storage needs an ETask, so nothing reached through SDL_AROSSTATE may
++ * run in an interrupt or in a bare AddTask() task. Tasks that SDL creates
++ * itself get the base installed for them by RunThread() in
++ * src/thread/aros/SDL_systhread.c.
++ */
++
++#include "SDL_internal.h"
++
++/* Only pointers to these are kept here, so the definitions stay private to
++   the files that own them. */
++struct SDL_VideoDevice;
++struct SDL_HashTable;
++
++/* One slot per subsystem that keeps per-client state. Add to the end. */
++enum
++{
++    SDL3_GRP_EVENTS = 0,
++    SDL3_GRP_KEYBOARD,
++    SDL3_GRP_MOUSE,
++    SDL3_GRP_TOUCH,
++    SDL3_GRP_PEN,
++    SDL3_GRP_AUDIO,
++    SDL3_GRP_JOYSTICK,
++    SDL3_GRP_GAMEPAD,
++    SDL3_GRP_SENSOR,
++    SDL3_GRP_HAPTIC,
++    SDL3_GRP_CAMERA,
++    SDL3_GRP_LOG,
++    SDL3_GRP_ASSERT,
++    SDL3_GRP_TIMER,
++    SDL3_GRP_RENDER,
++    SDL3_GRP_MAX
++};
++
++typedef struct SDL3State
++{
++    /* src/SDL.c */
++    Uint8                   st_SubsystemRefCount[32];
++    bool                    st_bInMainQuit;
++    bool                    st_MainIsReady;
++    SDL_ThreadID            st_MainThreadID;
++    SDL_ThreadID            st_EventsThreadID;
++    SDL_ThreadID            st_VideoThreadID;
++
++    /* src/video/SDL_video.c */
++    struct SDL_VideoDevice *st_VideoDevice;
++    SDL_AtomicInt           st_MessageboxCount;
++    bool                    st_SyncHint;
++
++    /* src/SDL_hints.c - the property set the client's hints live in. */
++    SDL_AtomicU32           st_HintProps;
++
++    /* src/SDL_properties.c.  All of it: SDL_InitState is a one-shot guard,
++       not a refcount, so SDL_ShouldQuit() returns true for the FIRST client
++       to quit - with a shared table that client destroys the properties of
++       the clients still running, which showed up as the other client's hints
++       reading back NULL. */
++    SDL_InitState           st_PropertiesInit;
++    struct SDL_HashTable   *st_Properties;
++    SDL_AtomicU32           st_LastPropertiesID;
++    SDL_AtomicU32           st_GlobalProperties;
++
++    /* src/SDL_utils.c - the object registry, for the same reason.  The object
++       id counter stays shared (a function-local static in
++       SDL_GetNextObjectID()): ids are then unique across clients, which is
++       what makes a stale id from another client fail validation rather than
++       match the wrong object. */
++    SDL_InitState           st_ObjectsInit;
++    struct SDL_HashTable   *st_Objects;
++
++    /* Per-subsystem blocks, allocated on first use by SDL_AROS_Group() and
++       released together with this block.  A subsystem keeps its state in a
++       struct private to its own source file and reaches it through its slot
++       here, so moving a subsystem's statics over needs no change to this
++       header and no SDL type pulled into it. */
++    void                   *st_Group[SDL3_GRP_MAX];
++    size_t                  st_GroupSize[SDL3_GRP_MAX];
++} SDL3State;
++
++#if defined(SDL3_AROS_SHARED)
++
++/* In SDL3_library.c, which owns the base layout. Returns the calling client's
++   block, or NULL when this task has no base - which happens only if SDL state
++   is reached from a context with no ETask, or from a task SDL created without
++   the base being installed. Both are bugs; SDL_AROS_STATECHECK names them. */
++extern void *SDL_AROS_GetStatePtr(void);
++
++/* Called by SDL3LIB_Open()/SDL3LIB_Close() with no state block in place yet,
++   so these take and return the block rather than going through the base. */
++extern void *SDL_AROS_StateAlloc(void);
++extern void  SDL_AROS_StateDestroy(void *state);
++
++#ifdef SDL_AROS_STATECHECK
++extern SDL3State *SDL_AROS_CheckedState(const char *func);
++#define SDL_AROSSTATE   SDL_AROS_CheckedState(__func__)
++#else
++#define SDL_AROSSTATE   ((SDL3State *)SDL_AROS_GetStatePtr())
++#endif
++
++#elif defined(SDL3_AROS_STATIC)
++
++/* No library base: one program, one block. In src/aros/SDL_arosstate.c,
++   set up from ADD2INIT/ADD2EXIT in SDL3_static.c. */
++extern SDL3State __sdl3_arosstate;
++#define SDL_AROSSTATE   (&__sdl3_arosstate)
++
++extern int  SDL_AROS_StateInit(void);
++extern void SDL_AROS_StateFree(void);
++
++#else
++#error "SDL_arosbase.h is for the SDL3.library and static-library builds only"
++#endif
++
++/* The calling client's block for one subsystem, allocated zeroed on first
++   use.  'init' runs once, on the allocation, for the fields whose old
++   declarations carried a non-zero initialiser; pass NULL if there are none. */
++extern void *SDL_AROS_Group(int which, size_t size, void (*init)(void *));
++
++#endif /* SDL_arosbase_h_ */
+diff -ruN SDL3-3.4.12/src/aros/SDL_arosstate.c SDL3-3.4.12.aros/src/aros/SDL_arosstate.c
+--- SDL3-3.4.12/src/aros/SDL_arosstate.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/aros/SDL_arosstate.c	2026-11-10 16:19:57.434924462 +0000
+@@ -0,0 +1,152 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "SDL_internal.h"
++
++#include "SDL_arosbase.h"
++
++#include <proto/exec.h>
++#include <aros/debug.h>
++
++/* The non-zero initial values the migrated statics used to carry in their own
++   declarations. Everything else is zero: AllocMem(MEMF_CLEAR) for the library
++   and .bss for the static build both give us that. */
++static void SDL_AROS_StateDefaults(SDL3State *state)
++{
++    /* src/SDL.c. SDL_MAIN_NEEDED is not set for AROS, so SDL takes the branch
++       where main() is the application's own and the library is ready without
++       SDL_SetMainReady(). */
++    state->st_MainIsReady = true;
++}
++
++/* Per-subsystem blocks.  A subsystem's state struct is private to its own
++   source file, so this only ever sees a size and an initialiser. */
++void *SDL_AROS_Group(int which, size_t size, void (*init)(void *))
++{
++    SDL3State *state = SDL_AROSSTATE;
++    void *grp;
++
++    if (!state) {
++        return NULL;
++    }
++
++    grp = state->st_Group[which];
++    if (!grp) {
++        grp = AllocMem(size, MEMF_ANY | MEMF_CLEAR);
++        if (!grp) {
++            return NULL;
++        }
++        if (init) {
++            init(grp);
++        }
++        /* Single-threaded with respect to this client: the block belongs to
++           one opener, and a client's own tasks serialise through SDL's locks
++           before they reach any subsystem state. */
++        state->st_Group[which] = grp;
++        state->st_GroupSize[which] = size;
++
++        D(bug("[SDL3] %s: group %d @ 0x%p (%u bytes)\n", __func__, which, grp,
++              (unsigned)size));
++    }
++
++    return grp;
++}
++
++static void SDL_AROS_GroupsFree(SDL3State *state)
++{
++    int i;
++
++    for (i = 0; i < SDL3_GRP_MAX; i++) {
++        if (state->st_Group[i]) {
++            FreeMem(state->st_Group[i], state->st_GroupSize[i]);
++            state->st_Group[i] = NULL;
++            state->st_GroupSize[i] = 0;
++        }
++    }
++}
++
++#if defined(SDL3_AROS_STATIC)
++
++SDL3State __sdl3_arosstate;
++
++int SDL_AROS_StateInit(void)
++{
++    SDL_memset(&__sdl3_arosstate, 0, sizeof(__sdl3_arosstate));
++    SDL_AROS_StateDefaults(&__sdl3_arosstate);
++
++    return 1;
++}
++
++void SDL_AROS_StateFree(void)
++{
++    SDL_AROS_GroupsFree(&__sdl3_arosstate);
++}
++
++#else /* SDL3.library */
++
++/* Called from SDL3LIB_Open() before anything of SDL's runs for the opener.
++   AllocMem rather than SDL_malloc so that allocation does not itself depend
++   on a state block being in place. */
++void *SDL_AROS_StateAlloc(void)
++{
++    SDL3State *state;
++
++    state = (SDL3State *)AllocMem(sizeof(SDL3State), MEMF_ANY | MEMF_CLEAR);
++    if (!state) {
++        return NULL;
++    }
++
++    SDL_AROS_StateDefaults(state);
++
++    D(bug("[SDL3] %s: client state @ 0x%p (%u bytes)\n", __func__,
++          state, (unsigned)sizeof(SDL3State)));
++
++    return (void *)state;
++}
++
++void SDL_AROS_StateDestroy(void *state)
++{
++    if (state) {
++        D(bug("[SDL3] %s: freeing client state @ 0x%p\n", __func__, state));
++        SDL_AROS_GroupsFree((SDL3State *)state);
++        FreeMem(state, sizeof(SDL3State));
++    }
++}
++
++#ifdef SDL_AROS_STATECHECK
++SDL3State *SDL_AROS_CheckedState(const char *func)
++{
++    SDL3State *state = (SDL3State *)SDL_AROS_GetStatePtr();
++
++    if (!state) {
++        struct Task *t = FindTask(NULL);
++
++        bug("[SDL3] *** %s: no client state for task 0x%p '%s'.\n"
++            "    SDL state was reached either from a context with no ETask (an\n"
++            "    interrupt, or a task made with AddTask()), or from a task SDL\n"
++            "    created without the library base being installed in it.\n",
++            func, t, t ? (char *)t->tc_Node.ln_Name : "?");
++    }
++
++    return state;
++}
++#endif
++
++#endif /* SDL3_AROS_STATIC */
+diff -ruN SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c
+--- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.c	2026-07-28 12:08:21.755632791 +0000
 @@ -0,0 +1,484 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1205,9 +1524,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.c SDL3-3.4
 +};
 +
 +#endif // SDL_AUDIO_DRIVER_AHI
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h
---- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h	2026-07-28 13:08:21.758620992 +0100
+diff -ruN SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h
+--- SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/audio/ahi/SDL_ahi_audio.h	2026-07-28 12:08:21.758620992 +0000
 @@ -0,0 +1,45 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1254,9 +1573,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/ahi/SDL_ahi_audio.h SDL3-3.4
 +typedef struct SDL_PrivateAudioData AHIAudioData;
 +
 +#endif // SDL_ahi_audio_h_
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_audio.c SDL3-3.4.12.aros/src/audio/SDL_audio.c
---- SDL3-3.4.12/src/audio/SDL_audio.c	2026-07-01 04:29:41.000000000 +0100
-+++ SDL3-3.4.12.aros/src/audio/SDL_audio.c	2026-07-28 13:08:21.758846492 +0100
+diff -ruN SDL3-3.4.12/src/audio/SDL_audio.c SDL3-3.4.12.aros/src/audio/SDL_audio.c
+--- SDL3-3.4.12/src/audio/SDL_audio.c	2026-07-01 03:29:41.000000000 +0000
++++ SDL3-3.4.12.aros/src/audio/SDL_audio.c	2026-07-28 12:08:21.758846492 +0000
 @@ -92,6 +92,9 @@
  #ifdef SDL_AUDIO_DRIVER_QNX
      &QSAAUDIO_bootstrap,
@@ -1267,9 +1586,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_audio.c SDL3-3.4.12.aros
  #ifdef SDL_AUDIO_DRIVER_DISK
      &DISKAUDIO_bootstrap,
  #endif
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_sysaudio.h SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h
+diff -ruN SDL3-3.4.12/src/audio/SDL_sysaudio.h SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h
 --- SDL3-3.4.12/src/audio/SDL_sysaudio.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h	2026-07-28 13:08:21.759632792 +0100
++++ SDL3-3.4.12.aros/src/audio/SDL_sysaudio.h	2026-07-28 12:08:21.759632792 +0000
 @@ -380,6 +380,7 @@
  extern AudioBootStrap HAIKUAUDIO_bootstrap;
  extern AudioBootStrap COREAUDIO_bootstrap;
@@ -1278,9 +1597,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/audio/SDL_sysaudio.h SDL3-3.4.12.a
  extern AudioBootStrap DUMMYAUDIO_bootstrap;
  extern AudioBootStrap AAUDIO_bootstrap;
  extern AudioBootStrap OPENSLES_bootstrap;
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/dynapi/SDL_dynapi.h SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h
+diff -ruN SDL3-3.4.12/src/dynapi/SDL_dynapi.h SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h
 --- SDL3-3.4.12/src/dynapi/SDL_dynapi.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h	2026-07-28 13:08:21.761962992 +0100
++++ SDL3-3.4.12.aros/src/dynapi/SDL_dynapi.h	2026-07-28 12:08:21.761962992 +0000
 @@ -65,6 +65,8 @@
  #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
  #elif defined(SDL_PLATFORM_NGAGE)
@@ -1290,9 +1609,152 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/dynapi/SDL_dynapi.h SDL3-3.4.12.ar
  #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
  #define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
  #endif
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c
---- SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c	2026-07-28 13:08:21.763112093 +0100
+diff -ruN SDL3-3.4.12/src/events/SDL_events.c SDL3-3.4.12.aros/src/events/SDL_events.c
+--- SDL3-3.4.12/src/events/SDL_events.c	2026-02-05 22:09:07.000000000 +0000
++++ SDL3-3.4.12.aros/src/events/SDL_events.c	2026-11-10 16:20:12.421357924 +0000
+@@ -114,18 +114,11 @@
+     } msg;
+ } SDL2_SysWMmsg;
+ 
+-static SDL_EventWatchList SDL_event_watchers;
+-static SDL_AtomicInt SDL_sentinel_pending;
+-static Uint32 SDL_last_event_id = 0;
+-
+ typedef struct
+ {
+     Uint32 bits[8];
+ } SDL_DisabledEventBlock;
+ 
+-static SDL_DisabledEventBlock *SDL_disabled_events[256];
+-static SDL_AtomicInt SDL_userevents;
+-
+ typedef struct SDL_TemporaryMemory
+ {
+     void *memory;
+@@ -139,7 +132,7 @@
+     SDL_TemporaryMemory *tail;
+ } SDL_TemporaryMemoryState;
+ 
+-static SDL_TLSID SDL_temporary_memory;
++
+ 
+ typedef struct SDL_EventEntry
+ {
+@@ -149,16 +142,62 @@
+     struct SDL_EventEntry *next;
+ } SDL_EventEntry;
+ 
+-static struct
++/* Per client on AROS - see src/aros/SDL_arosbase.h.  With one set of these,
++   events raised for one client get delivered to whichever one polls first and
++   one client's event filter runs on the other's events. */
++#include "../aros/SDL_arosbase.h"
++
++/* Defined further down, where SDL_RunOnMainThread() needs it. */
++struct SDL_MainThreadCallbackEntry;
++
++struct SDL3_EventState
++{
++    SDL_EventWatchList watchers;
++    SDL_AtomicInt sentinel_pending;
++    Uint32 last_event_id;
++    SDL_DisabledEventBlock *disabled_events[256];
++    SDL_AtomicInt userevents;
++    SDL_TLSID temporary_memory;
++    bool update_joysticks;
++    bool update_sensors;
++    int logging_verbosity;
++    SDL_Mutex *main_callbacks_lock;
++    struct SDL_MainThreadCallbackEntry *main_callbacks_head;
++    struct SDL_MainThreadCallbackEntry *main_callbacks_tail;
++
++    struct
++    {
++        SDL_Mutex *lock;
++        bool active;
++        SDL_AtomicInt count;
++        int max_events_seen;
++        SDL_EventEntry *head;
++        SDL_EventEntry *tail;
++        SDL_EventEntry *free;
++    } q;
++};
++
++static void SDL3_EventStateInit(void *grp)
+ {
+-    SDL_Mutex *lock;
+-    bool active;
+-    SDL_AtomicInt count;
+-    int max_events_seen;
+-    SDL_EventEntry *head;
+-    SDL_EventEntry *tail;
+-    SDL_EventEntry *free;
+-} SDL_EventQ = { NULL, false, { 0 }, 0, NULL, NULL, NULL };
++    struct SDL3_EventState *e = (struct SDL3_EventState *)grp;
++
++    e->update_joysticks = true;
++    e->update_sensors = true;
++}
++
++static struct SDL3_EventState *SDL3_Events(void)
++{
++    return (struct SDL3_EventState *)SDL_AROS_Group(SDL3_GRP_EVENTS,
++               sizeof(struct SDL3_EventState), SDL3_EventStateInit);
++}
++
++#define SDL_event_watchers       (SDL3_Events()->watchers)
++#define SDL_sentinel_pending     (SDL3_Events()->sentinel_pending)
++#define SDL_last_event_id        (SDL3_Events()->last_event_id)
++#define SDL_disabled_events      (SDL3_Events()->disabled_events)
++#define SDL_userevents           (SDL3_Events()->userevents)
++#define SDL_temporary_memory     (SDL3_Events()->temporary_memory)
++#define SDL_EventQ               (SDL3_Events()->q)
+ 
+ 
+ static void SDL_CleanupTemporaryMemory(void *data)
+@@ -406,7 +445,7 @@
+ 
+ #ifndef SDL_JOYSTICK_DISABLED
+ 
+-static bool SDL_update_joysticks = true;
++#define SDL_update_joysticks     (SDL3_Events()->update_joysticks)
+ 
+ static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+ {
+@@ -417,7 +456,7 @@
+ 
+ #ifndef SDL_SENSOR_DISABLED
+ 
+-static bool SDL_update_sensors = true;
++#define SDL_update_sensors       (SDL3_Events()->update_sensors)
+ 
+ static void SDLCALL SDL_AutoUpdateSensorsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+ {
+@@ -437,7 +476,7 @@
+  *  - 1: logging of most events
+  *  - 2: as above, plus mouse, pen, and finger motion
+  */
+-static int SDL_EventLoggingVerbosity = 0;
++#define SDL_EventLoggingVerbosity (SDL3_Events()->logging_verbosity)
+ 
+ static void SDLCALL SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+ {
+@@ -1300,9 +1339,9 @@
+     struct SDL_MainThreadCallbackEntry *next;
+ } SDL_MainThreadCallbackEntry;
+ 
+-static SDL_Mutex *SDL_main_callbacks_lock;
+-static SDL_MainThreadCallbackEntry *SDL_main_callbacks_head;
+-static SDL_MainThreadCallbackEntry *SDL_main_callbacks_tail;
++#define SDL_main_callbacks_lock  (SDL3_Events()->main_callbacks_lock)
++#define SDL_main_callbacks_head  (SDL3_Events()->main_callbacks_head)
++#define SDL_main_callbacks_tail  (SDL3_Events()->main_callbacks_tail)
+ 
+ static SDL_MainThreadCallbackEntry *SDL_CreateMainThreadCallback(SDL_MainThreadCallback callback, void *userdata, bool wait_complete)
+ {
+diff -ruN SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c
+--- SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfilesystem.c	2026-07-28 12:08:21.763112093 +0000
 @@ -0,0 +1,208 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1502,9 +1964,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfilesystem.
 +}
 +
 +#endif /* SDL_FILESYSTEM_AROS */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c
---- SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c	2026-07-28 13:08:21.763677793 +0100
+diff -ruN SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c
+--- SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/filesystem/aros/SDL_sysfsops.c	2026-07-28 12:08:21.763677793 +0000
 @@ -0,0 +1,210 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1716,9 +2178,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/filesystem/aros/SDL_sysfsops.c SDL
 +}
 +
 +#endif /* SDL_FSOPS_AROS */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c
---- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c	2026-09-27 20:05:55.521904821 +0100
+diff -ruN SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c
+--- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick.c	2026-09-27 19:05:55.521904821 +0000
 @@ -0,0 +1,1044 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2764,9 +3226,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick.c SD
 +};
 +
 +#endif /* SDL_JOYSTICK_AROS */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h
---- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-09-27 20:05:55.522925421 +0100
+diff -ruN SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h
+--- SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/joystick/aros/SDL_sysjoystick_c.h	2026-09-27 19:05:55.522925421 +0000
 @@ -0,0 +1,56 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2824,9 +3286,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/aros/SDL_sysjoystick_c.h 
 +};
 +
 +#endif /* SDL_sysjoystick_aros_h_ */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_joystick.c SDL3-3.4.12.aros/src/joystick/SDL_joystick.c
---- SDL3-3.4.12/src/joystick/SDL_joystick.c	2026-06-28 04:12:20.000000000 +0100
-+++ SDL3-3.4.12.aros/src/joystick/SDL_joystick.c	2026-07-28 13:08:21.767632794 +0100
+diff -ruN SDL3-3.4.12/src/joystick/SDL_joystick.c SDL3-3.4.12.aros/src/joystick/SDL_joystick.c
+--- SDL3-3.4.12/src/joystick/SDL_joystick.c	2026-06-28 03:12:20.000000000 +0000
++++ SDL3-3.4.12.aros/src/joystick/SDL_joystick.c	2026-07-28 12:08:21.767632794 +0000
 @@ -106,6 +106,9 @@
  #ifdef SDL_JOYSTICK_N3DS
      &SDL_N3DS_JoystickDriver,
@@ -2837,9 +3299,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_joystick.c SDL3-3.4.1
  #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
      &SDL_DUMMY_JoystickDriver
  #endif
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_sysjoystick.h SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h
+diff -ruN SDL3-3.4.12/src/joystick/SDL_sysjoystick.h SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h
 --- SDL3-3.4.12/src/joystick/SDL_sysjoystick.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h	2026-07-28 13:08:21.771632795 +0100
++++ SDL3-3.4.12.aros/src/joystick/SDL_sysjoystick.h	2026-07-28 12:08:21.771632795 +0000
 @@ -248,6 +248,7 @@
  extern SDL_JoystickDriver SDL_BSD_JoystickDriver;
  extern SDL_JoystickDriver SDL_DARWIN_JoystickDriver;
@@ -2848,9 +3310,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/joystick/SDL_sysjoystick.h SDL3-3.
  extern SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver;
  extern SDL_JoystickDriver SDL_HAIKU_JoystickDriver;
  extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/locale/aros/SDL_syslocale.c SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c
---- SDL3-3.4.12/src/locale/aros/SDL_syslocale.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c	2026-07-28 13:08:21.774211195 +0100
+diff -ruN SDL3-3.4.12/src/locale/aros/SDL_syslocale.c SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c
+--- SDL3-3.4.12/src/locale/aros/SDL_syslocale.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/locale/aros/SDL_syslocale.c	2026-07-28 12:08:21.774211195 +0000
 @@ -0,0 +1,82 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2934,9 +3396,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/locale/aros/SDL_syslocale.c SDL3-3
 +    SDL_strlcpy(buf, "en_GB", buflen);
 +    return true;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/misc/aros/SDL_sysurl.c SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c
---- SDL3-3.4.12/src/misc/aros/SDL_sysurl.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c	2026-07-28 13:08:21.775632795 +0100
+diff -ruN SDL3-3.4.12/src/misc/aros/SDL_sysurl.c SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c
+--- SDL3-3.4.12/src/misc/aros/SDL_sysurl.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/misc/aros/SDL_sysurl.c	2026-07-28 12:08:21.775632795 +0000
 @@ -0,0 +1,45 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2983,9 +3445,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/misc/aros/SDL_sysurl.c SDL3-3.4.12
 +
 +    return SDL_SetError("Failed to open URL '%s'", url);
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/aros/SDL_syspower.c SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c
---- SDL3-3.4.12/src/power/aros/SDL_syspower.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c	2026-07-28 13:08:21.778390696 +0100
+diff -ruN SDL3-3.4.12/src/power/aros/SDL_syspower.c SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c
+--- SDL3-3.4.12/src/power/aros/SDL_syspower.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/power/aros/SDL_syspower.c	2026-07-28 12:08:21.778390696 +0000
 @@ -0,0 +1,42 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3029,9 +3491,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/aros/SDL_syspower.c SDL3-3.4
 +
 +#endif /* SDL_POWER_AROS */
 +#endif /* SDL_POWER_DISABLED */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_power.c SDL3-3.4.12.aros/src/power/SDL_power.c
+diff -ruN SDL3-3.4.12/src/power/SDL_power.c SDL3-3.4.12.aros/src/power/SDL_power.c
 --- SDL3-3.4.12/src/power/SDL_power.c	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/power/SDL_power.c	2026-07-28 13:08:21.778510896 +0100
++++ SDL3-3.4.12.aros/src/power/SDL_power.c	2026-07-28 12:08:21.778510896 +0000
 @@ -75,6 +75,10 @@
      SDL_GetPowerInfo_Emscripten,
  #endif
@@ -3043,9 +3505,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_power.c SDL3-3.4.12.aros
  #ifdef SDL_POWER_HARDWIRED
      SDL_GetPowerInfo_Hardwired,
  #endif
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_syspower.h SDL3-3.4.12.aros/src/power/SDL_syspower.h
+diff -ruN SDL3-3.4.12/src/power/SDL_syspower.h SDL3-3.4.12.aros/src/power/SDL_syspower.h
 --- SDL3-3.4.12/src/power/SDL_syspower.h	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/power/SDL_syspower.h	2026-07-28 13:08:21.778599196 +0100
++++ SDL3-3.4.12.aros/src/power/SDL_syspower.h	2026-07-28 12:08:21.778599196 +0000
 @@ -39,6 +39,7 @@
  bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
  bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
@@ -3054,10 +3516,38 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/power/SDL_syspower.h SDL3-3.4.12.a
  
  // this one is static in SDL_power.c
  /* bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL.c SDL3-3.4.12.aros/src/SDL.c
---- SDL3-3.4.12/src/SDL.c	2026-05-27 01:34:28.000000000 +0100
-+++ SDL3-3.4.12.aros/src/SDL.c	2026-07-28 13:08:21.779632796 +0100
-@@ -766,6 +766,8 @@
+diff -ruN SDL3-3.4.12/src/SDL.c SDL3-3.4.12.aros/src/SDL.c
+--- SDL3-3.4.12/src/SDL.c	2026-05-27 00:34:28.000000000 +0000
++++ SDL3-3.4.12.aros/src/SDL.c	2026-11-10 16:19:57.435218462 +0000
+@@ -185,17 +185,16 @@
+ }
+ 
+ 
+-// The initialized subsystems
+-#ifdef SDL_MAIN_NEEDED
+-static bool SDL_MainIsReady = false;
+-#else
+-static bool SDL_MainIsReady = true;
+-#endif
+-static SDL_ThreadID SDL_MainThreadID = 0;
+-static SDL_ThreadID SDL_EventsThreadID = 0;
+-static SDL_ThreadID SDL_VideoThreadID = 0;
+-static bool SDL_bInMainQuit = false;
+-static Uint8 SDL_SubsystemRefCount[32];
++// The initialized subsystems.  Per client on AROS: see
++// src/aros/SDL_arosbase.h.  The initial value of SDL_MainIsReady is set by
++// SDL_AROS_StateDefaults().
++#include "aros/SDL_arosbase.h"
++#define SDL_MainIsReady         (SDL_AROSSTATE->st_MainIsReady)
++#define SDL_MainThreadID        (SDL_AROSSTATE->st_MainThreadID)
++#define SDL_EventsThreadID      (SDL_AROSSTATE->st_EventsThreadID)
++#define SDL_VideoThreadID       (SDL_AROSSTATE->st_VideoThreadID)
++#define SDL_bInMainQuit         (SDL_AROSSTATE->st_bInMainQuit)
++#define SDL_SubsystemRefCount   (SDL_AROSSTATE->st_SubsystemRefCount)
+ 
+ // Private helper to increment a subsystem's ref counter.
+ static void SDL_IncrementSubsystemRefCount(Uint32 subsystem)
+@@ -766,6 +765,8 @@
      return "AIX";
  #elif defined(SDL_PLATFORM_ANDROID)
      return "Android";
@@ -3066,9 +3556,25 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL.c SDL3-3.4.12.aros/src/SDL.c
  #elif defined(SDL_PLATFORM_BSDI)
      return "BSDI";
  #elif defined(SDL_PLATFORM_EMSCRIPTEN)
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL_log.c SDL3-3.4.12.aros/src/SDL_log.c
+diff -ruN SDL3-3.4.12/src/SDL_hints.c SDL3-3.4.12.aros/src/SDL_hints.c
+--- SDL3-3.4.12/src/SDL_hints.c	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/SDL_hints.c	2026-11-10 16:19:57.435388362 +0000
+@@ -40,7 +40,11 @@
+     SDL_HintWatch *callbacks;
+ } SDL_Hint;
+ 
+-static SDL_AtomicU32 SDL_hint_props;
++/* Per client on AROS - the property set a client's hints live in, so one
++   client's SDL_SetHint() does not reconfigure the other.  See
++   src/aros/SDL_arosbase.h. */
++#include "aros/SDL_arosbase.h"
++#define SDL_hint_props (SDL_AROSSTATE->st_HintProps)
+ 
+ 
+ void SDL_InitHints(void)
+diff -ruN SDL3-3.4.12/src/SDL_log.c SDL3-3.4.12.aros/src/SDL_log.c
 --- SDL3-3.4.12/src/SDL_log.c	2026-01-01 17:48:19.000000000 +0000
-+++ SDL3-3.4.12.aros/src/SDL_log.c	2026-07-28 13:08:21.781983497 +0100
++++ SDL3-3.4.12.aros/src/SDL_log.c	2026-07-28 12:08:21.781983497 +0000
 @@ -40,6 +40,10 @@
  #include <android/log.h>
  #endif
@@ -3100,9 +3606,51 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/SDL_log.c SDL3-3.4.12.aros/src/SDL
      !(defined(SDL_PLATFORM_WIN32))
      (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
  #endif
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c
---- SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c	2026-07-28 13:08:21.782410797 +0100
+diff -ruN SDL3-3.4.12/src/SDL_properties.c SDL3-3.4.12.aros/src/SDL_properties.c
+--- SDL3-3.4.12/src/SDL_properties.c	2026-01-01 17:48:19.000000000 +0000
++++ SDL3-3.4.12.aros/src/SDL_properties.c	2026-11-10 16:48:39.118844769 +0000
+@@ -48,10 +48,15 @@
+     SDL_Mutex *lock;
+ } SDL_Properties;
+ 
+-static SDL_InitState SDL_properties_init;
+-static SDL_HashTable *SDL_properties;
+-static SDL_AtomicU32 SDL_last_properties_id;
+-static SDL_AtomicU32 SDL_global_properties;
++/* Per client on AROS - see src/aros/SDL_arosbase.h.  SDL_InitState is a
++   one-shot guard rather than a refcount, so with a shared table the first
++   client to call SDL_Quit() destroys the properties of every client still
++   running. */
++#include "aros/SDL_arosbase.h"
++#define SDL_properties_init    (SDL_AROSSTATE->st_PropertiesInit)
++#define SDL_properties         (SDL_AROSSTATE->st_Properties)
++#define SDL_last_properties_id (SDL_AROSSTATE->st_LastPropertiesID)
++#define SDL_global_properties  (SDL_AROSSTATE->st_GlobalProperties)
+ 
+ 
+ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, bool cleanup)
+diff -ruN SDL3-3.4.12/src/SDL_utils.c SDL3-3.4.12.aros/src/SDL_utils.c
+--- SDL3-3.4.12/src/SDL_utils.c	2026-05-27 00:33:44.000000000 +0000
++++ SDL3-3.4.12.aros/src/SDL_utils.c	2026-11-10 16:48:07.454897725 +0000
+@@ -144,8 +144,13 @@
+     return id;
+ }
+ 
+-static SDL_InitState SDL_objects_init;
+-static SDL_HashTable *SDL_objects;
++/* Per client on AROS - see src/aros/SDL_arosbase.h.  The id counter in
++   SDL_GetNextObjectID() above stays shared, so ids remain unique across
++   clients and another client's id fails validation here rather than matching
++   the wrong object. */
++#include "aros/SDL_arosbase.h"
++#define SDL_objects_init (SDL_AROSSTATE->st_ObjectsInit)
++#define SDL_objects      (SDL_AROSSTATE->st_Objects)
+ bool SDL_object_validation = true;
+ 
+ static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+diff -ruN SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c
+--- SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_sysmutex.c	2026-07-28 12:08:21.782410797 +0000
 @@ -0,0 +1,81 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3185,9 +3733,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_sysmutex.c SDL3-3.
 +    }
 +#endif
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_syssem.c SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c
---- SDL3-3.4.12/src/thread/aros/SDL_syssem.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c	2026-07-28 13:08:21.783632797 +0100
+diff -ruN SDL3-3.4.12/src/thread/aros/SDL_syssem.c SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c
+--- SDL3-3.4.12/src/thread/aros/SDL_syssem.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_syssem.c	2026-07-28 12:08:21.783632797 +0000
 @@ -0,0 +1,192 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3381,10 +3929,10 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_syssem.c SDL3-3.4.
 +}
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c
---- SDL3-3.4.12/src/thread/aros/SDL_systhread.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c	2026-07-28 13:08:21.786563898 +0100
-@@ -0,0 +1,154 @@
+diff -ruN SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c
+--- SDL3-3.4.12/src/thread/aros/SDL_systhread.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread.c	2026-11-10 16:48:39.118736069 +0000
+@@ -0,0 +1,171 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -3422,6 +3970,14 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3
 +
 +static const char *warn_NoResources = "Not enough resources to create thread";
 +
++#if defined(SDL3_AROS_SHARED)
++/* Both generated into SDL3_start.c by genmodule for a peropenerbase module.
++   __aros_setoffsettable() is the one hook that lets a task SDL created serve
++   the client that created it. */
++extern APTR __aros_getbase_SDL3Base(void);
++extern void __aros_setoffsettable(void *base);
++#endif
++
 +static AROS_UFH3(Uint32, RunThread,
 +    AROS_UFHA(char *,              args, A0),
 +    AROS_UFHA(ULONG,               argSize, D0),
@@ -3433,6 +3989,12 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3
 +    SDL_Thread *thread = (SDL_Thread *)thisTask->tc_UserData;
 +
 +    D(bug("[SDL3:Thread] 0x%p:%s: Entered Thread (0x%p)\n", thisTask, __func__, thread));
++
++#if defined(SDL3_AROS_SHARED)
++    /* Serve the same client as the task that created us. This has to come
++       before anything that reaches SDL state, which is everything below. */
++    __aros_setoffsettable(thread->handle.tp_Base);
++#endif
 +
 +    SDL_RunThread(thread);
 +
@@ -3451,6 +4013,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3
 +                          SDL_FunctionPointer pfnEndThread)
 +{
 +    thread->handle.tp_Parent = FindTask(NULL);
++#if defined(SDL3_AROS_SHARED)
++    thread->handle.tp_Base   = __aros_getbase_SDL3Base();
++#endif
 +    thread->handle.tp_PSig   = AllocSignal(-1);
 +    if (thread->handle.tp_PSig == -1) {
 +        return SDL_SetError("%s", warn_NoResources);
@@ -3539,10 +4104,10 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread.c SDL3-3
 +}
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h
---- SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h	2026-07-28 13:08:21.786657998 +0100
-@@ -0,0 +1,32 @@
+diff -ruN SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h
+--- SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/thread/aros/SDL_systhread_c.h	2026-11-10 16:20:50.393182486 +0000
+@@ -0,0 +1,37 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -3572,12 +4137,17 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/aros/SDL_systhread_c.h SDL3
 +    struct Task *tp_Task;
 +    struct Task *tp_Parent;
 +    LONG        tp_PSig;
++#if defined(SDL3_AROS_SHARED)
++    /* The creating client's library base, for RunThread() to install in the
++       child - see src/aros/SDL_arosbase.h. */
++    APTR        tp_Base;
++#endif
 +};
 +
 +typedef struct _AROS_ThreadPrivate SYS_ThreadHandle;
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/SDL_thread_c.h SDL3-3.4.12.aros/src/thread/SDL_thread_c.h
---- SDL3-3.4.12/src/thread/SDL_thread_c.h	2026-05-05 05:54:08.000000000 +0100
-+++ SDL3-3.4.12.aros/src/thread/SDL_thread_c.h	2026-07-28 13:08:21.786721898 +0100
+diff -ruN SDL3-3.4.12/src/thread/SDL_thread_c.h SDL3-3.4.12.aros/src/thread/SDL_thread_c.h
+--- SDL3-3.4.12/src/thread/SDL_thread_c.h	2026-05-05 04:54:08.000000000 +0000
++++ SDL3-3.4.12.aros/src/thread/SDL_thread_c.h	2026-07-28 12:08:21.786721898 +0000
 @@ -38,6 +38,8 @@
  #include "vita/SDL_systhread_c.h"
  #elif defined(SDL_THREAD_N3DS)
@@ -3587,9 +4157,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/thread/SDL_thread_c.h SDL3-3.4.12.
  #else
  #error Need thread implementation for this platform
  #include "generic/SDL_systhread_c.h"
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c
---- SDL3-3.4.12/src/timer/aros/SDL_systimer.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c	2026-07-28 13:08:21.787632798 +0100
+diff -ruN SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c
+--- SDL3-3.4.12/src/timer/aros/SDL_systimer.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c	2026-07-28 12:08:21.787632798 +0000
 @@ -0,0 +1,75 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3666,9 +4236,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4
 +#endif /* SDL_TIMER_AROS */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/scancodes_amigaos.h SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h
---- SDL3-3.4.12/src/video/aros/scancodes_amigaos.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h	2026-07-28 13:08:21.790384199 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/scancodes_amigaos.h SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h
+--- SDL3-3.4.12/src/video/aros/scancodes_amigaos.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/scancodes_amigaos.h	2026-07-28 12:08:21.790384199 +0000
 @@ -0,0 +1,144 @@
 +/*
 +  Simple DirectMedia Layer
@@ -3814,9 +4384,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/scancodes_amigaos.h SDL
 +    /*  113 */    SDL_SCANCODE_END,
 +};
 +/* *INDENT-ON* */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c
---- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c	2026-07-28 13:08:21.792152599 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c	2026-07-28 12:08:21.792152599 +0000
 @@ -0,0 +1,277 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4095,9 +4665,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL
 +
 +	return result;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h
---- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h	2026-07-28 13:08:21.794623200 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.h	2026-07-28 12:08:21.794623200 +0000
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4129,9 +4699,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL
 +extern bool AROS_HasClipboardText(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_arosclipboard_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c
---- SDL3-3.4.12/src/video/aros/SDL_arosevents.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c	2026-07-28 13:08:21.795632800 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c	2026-07-28 12:08:21.795632800 +0000
 @@ -0,0 +1,850 @@
 +/*
 +  Simple DirectMedia Layer
@@ -4984,9 +5554,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3
 +    }
 +}
 \ No newline at end of file
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.h SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h
---- SDL3-3.4.12/src/video/aros/SDL_arosevents.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h	2026-07-28 13:08:21.802207901 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.h SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosevents.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.h	2026-07-28 12:08:21.802207901 +0000
 @@ -0,0 +1,29 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5017,9 +5587,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosevents.h SDL3-3
 +extern void AROS_GlobalMenu(struct Menu *mymenu, UWORD menu, UWORD item, UWORD sub, UWORD check);
 +
 +#endif /* _SDL_arosevents_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c
---- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c	2026-07-28 13:08:21.803632802 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.c	2026-07-28 12:08:21.803632802 +0000
 @@ -0,0 +1,156 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5177,9 +5747,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.c S
 +		}
 +	return true;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h
---- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h	2026-07-28 13:08:21.806469202 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosframebuffer.h	2026-07-28 12:08:21.806469202 +0000
 @@ -0,0 +1,30 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5211,9 +5781,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosframebuffer.h S
 +extern void AROS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window);
 +
 +#endif /* _SDL_arosframebuffer_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c
---- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c	2026-07-28 13:08:21.810268603 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c
+--- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.c	2026-07-28 12:08:21.810268603 +0000
 @@ -0,0 +1,91 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5306,9 +5876,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.c SDL3
 +	//SDL_SetScancodeName(SDL_SCANCODE_LCTRL, "Control");
 +
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h
---- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h	2026-07-28 13:08:21.812861104 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h
+--- SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroskeyboard.h	2026-07-28 12:08:21.812861104 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5338,9 +5908,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroskeyboard.h SDL3
 +extern void AROS_InitKeyboard(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_aroskeyboard_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c
---- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c	2026-07-28 13:08:21.813010604 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.c	2026-07-28 12:08:21.813010604 +0000
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5438,9 +6008,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.c SD
 +
 +	return (rc == 0);
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h
---- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h	2026-07-28 13:08:21.813445504 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmessagebox.h	2026-07-28 12:08:21.813445504 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5470,9 +6040,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmessagebox.h SD
 +extern bool AROS_ShowMessageBox(const SDL_MessageBoxData *mbd, int *buttonid);
 +
 +#endif /* _SDL_arosmessagebox_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c
---- SDL3-3.4.12/src/video/aros/SDL_arosmisc.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c	2026-07-28 13:08:21.813869204 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmisc.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmisc.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.c	2026-07-28 12:08:21.813869204 +0000
 @@ -0,0 +1,130 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5604,9 +6174,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.c SDL3-3.4
 +    *dst++ = '\0';
 +    return path;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h
---- SDL3-3.4.12/src/video/aros/SDL_arosmisc.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h	2026-07-28 13:08:21.813965804 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmisc.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmisc.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmisc.h	2026-07-28 12:08:21.813965804 +0000
 @@ -0,0 +1,33 @@
 +/*
 +  Simple DirectMedia Layer
@@ -5641,9 +6211,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmisc.h SDL3-3.4
 +extern char *AROS_ConvertPath(const char *fn);
 +
 +#endif /* SDL_arosmisc_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c
---- SDL3-3.4.12/src/video/aros/SDL_arosmodes.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c	2026-07-28 13:08:21.814923504 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmodes.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmodes.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.c	2026-07-28 12:08:21.814923504 +0000
 @@ -0,0 +1,508 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6153,9 +6723,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.c SDL3-3.
 +
 +    return true;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h
---- SDL3-3.4.12/src/video/aros/SDL_arosmodes.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h	2026-07-28 13:08:21.815073704 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmodes.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmodes.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmodes.h	2026-07-28 12:08:21.815073704 +0000
 @@ -0,0 +1,43 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6200,9 +6770,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmodes.h SDL3-3.
 +extern bool AROS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay * display, SDL_Rect * rect);
 +
 +#endif /* _SDL_arosmodes_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c
---- SDL3-3.4.12/src/video/aros/SDL_arosmouse.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c	2026-07-28 13:08:21.815798104 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmouse.c SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosmouse.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.c	2026-07-28 12:08:21.815798104 +0000
 @@ -0,0 +1,375 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6579,9 +7149,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.c SDL3-3.
 +		mouse->cur_cursor = NULL;
 +	}
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h
---- SDL3-3.4.12/src/video/aros/SDL_arosmouse.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h	2026-07-28 13:08:21.815964605 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosmouse.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosmouse.h	2026-07-28 12:08:21.815964605 +0000
 @@ -0,0 +1,54 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6637,10 +7207,10 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.
 +extern void AROS_QuitMouse(SDL_VideoDevice *_this);
 +
 +#endif /* _SDL_arosmouse_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c
---- SDL3-3.4.12/src/video/aros/SDL_arosopengl.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c	2026-07-28 13:08:21.816580005 +0100
-@@ -0,0 +1,267 @@
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c	2026-11-10 16:48:39.118623669 +0000
+@@ -0,0 +1,286 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -6684,6 +7254,25 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3
 +extern struct ExecBase *SysBase;
 +extern struct Library *GfxBase;
 +#define GLBase (_this->gl_data->gldd_GLBase)
++/* Call gl.library through the base opened above, not through libGL's
++   link stubs: the stubs bring libGL's auto-open, which opens gl.library
++   when the program starts even if it never asks SDL for OpenGL. */
++#define __INLINE_GL_STACKCALL__
++#include <proto/gl.h>
++/* inline/gl.h has no inlines for the two functions taking a tag list;
++   call their vectors (LVOs 5 and 11 in gl.conf) the way it calls the rest. */
++static inline GLAContext __sdl_glACreateContext(APTR base, struct TagItem *tagList)
++{
++    GLAContext (*fn)(struct TagItem *) = ((APTR *)base)[-5];
++    return fn(tagList);
++}
++static inline void __sdl_glASetRast(APTR base, GLAContext ctx, struct TagItem *tagList)
++{
++    void (*fn)(GLAContext, struct TagItem *) = ((APTR *)base)[-11];
++    fn(ctx, tagList);
++}
++#define glACreateContext(tagList) __sdl_glACreateContext(GLBase, (tagList))
++#define glASetRast(ctx, tagList) __sdl_glASetRast(GLBase, (ctx), (tagList))
 +
 +bool
 +AROS_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -6908,9 +7497,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3
 +}
 +
 +#endif /* SDL_VIDEO_OPENGL_AGL */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.h SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h
---- SDL3-3.4.12/src/video/aros/SDL_arosopengl.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h	2026-07-28 13:08:21.816898705 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.h SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosopengl.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.h	2026-07-28 12:08:21.816898705 +0000
 @@ -0,0 +1,60 @@
 +/*
 +  Simple DirectMedia Layer
@@ -6972,9 +7561,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosopengl.h SDL3-3
 +#endif /* !SDL_VIDEO_OPENGL_AGL_INTERN */
 +
 +#endif /* _SDL_arosopengl_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.c SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c
---- SDL3-3.4.12/src/video/aros/SDL_arosshape.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c	2026-07-28 13:08:21.817229205 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosshape.c SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosshape.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.c	2026-07-28 12:08:21.817229205 +0000
 @@ -0,0 +1,163 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7139,9 +7728,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.c SDL3-3.
 +
 +	return true;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.h SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h
---- SDL3-3.4.12/src/video/aros/SDL_arosshape.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h	2026-07-28 13:08:21.817324805 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosshape.h SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosshape.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosshape.h	2026-07-28 12:08:21.817324805 +0000
 @@ -0,0 +1,28 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7171,9 +7760,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosshape.h SDL3-3.
 +extern bool AROS_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 +
 +#endif /* _SDL_arosshape_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.c SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c
---- SDL3-3.4.12/src/video/aros/SDL_arosvideo.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c	2026-07-28 13:08:21.823632806 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosvideo.c SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c
+--- SDL3-3.4.12/src/video/aros/SDL_arosvideo.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.c	2026-07-28 12:08:21.823632806 +0000
 @@ -0,0 +1,466 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7641,9 +8230,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.c SDL3-3.
 +    AROS_ShowMessageBox,
 +    false
 +};
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h
---- SDL3-3.4.12/src/video/aros/SDL_arosvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h	2026-07-28 13:08:21.825662107 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h
+--- SDL3-3.4.12/src/video/aros/SDL_arosvideo.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_arosvideo.h	2026-07-28 12:08:21.825662107 +0000
 @@ -0,0 +1,96 @@
 +/*
 +  Simple DirectMedia Layer
@@ -7741,9 +8330,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.
 +extern size_t getv(APTR obj, size_t attr);
 +
 +#endif /* _SDL_arosvideo_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c
---- SDL3-3.4.12/src/video/aros/SDL_aroswindow.c	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c	2026-07-28 13:08:21.827328507 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c
+--- SDL3-3.4.12/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c	2026-07-28 12:08:21.827328507 +0000
 @@ -0,0 +1,994 @@
 +/*
 +  Simple DirectMedia Layer
@@ -8739,9 +9328,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3
 +	
 +	return true;
 +}
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.h SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h
---- SDL3-3.4.12/src/video/aros/SDL_aroswindow.h	1970-01-01 01:00:00.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h	2026-07-28 13:08:21.828003607 +0100
+diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.h SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h
+--- SDL3-3.4.12/src/video/aros/SDL_aroswindow.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.h	2026-07-28 12:08:21.828003607 +0000
 @@ -0,0 +1,133 @@
 +/*
 +  Simple DirectMedia Layer
@@ -8876,9 +9465,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/aros/SDL_aroswindow.h SDL3-3
 +extern void AROS_WindowToFront(struct Window *win);
 +
 +#endif /* _SDL_aroswindow_h */
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_sysvideo.h SDL3-3.4.12.aros/src/video/SDL_sysvideo.h
---- SDL3-3.4.12/src/video/SDL_sysvideo.h	2026-04-19 12:06:43.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/SDL_sysvideo.h	2026-07-28 13:08:21.829787108 +0100
+diff -ruN SDL3-3.4.12/src/video/SDL_sysvideo.h SDL3-3.4.12.aros/src/video/SDL_sysvideo.h
+--- SDL3-3.4.12/src/video/SDL_sysvideo.h	2026-04-19 11:06:43.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/SDL_sysvideo.h	2026-07-28 12:08:21.829787108 +0000
 @@ -538,6 +538,7 @@
  extern VideoBootStrap RPI_bootstrap;
  extern VideoBootStrap KMSDRM_bootstrap;
@@ -8887,9 +9476,9 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_sysvideo.h SDL3-3.4.12.a
  extern VideoBootStrap DUMMY_evdev_bootstrap;
  extern VideoBootStrap Wayland_preferred_bootstrap;
  extern VideoBootStrap Wayland_bootstrap;
-diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_video.c SDL3-3.4.12.aros/src/video/SDL_video.c
---- SDL3-3.4.12/src/video/SDL_video.c	2026-06-18 15:58:24.000000000 +0100
-+++ SDL3-3.4.12.aros/src/video/SDL_video.c	2026-07-28 13:08:21.831632808 +0100
+diff -ruN SDL3-3.4.12/src/video/SDL_video.c SDL3-3.4.12.aros/src/video/SDL_video.c
+--- SDL3-3.4.12/src/video/SDL_video.c	2026-06-18 14:58:24.000000000 +0000
++++ SDL3-3.4.12.aros/src/video/SDL_video.c	2026-11-10 16:19:57.436215562 +0000
 @@ -146,6 +146,9 @@
  #ifdef SDL_VIDEO_DRIVER_QNX
      &QNX_bootstrap,
@@ -8900,3 +9489,29 @@ diff -ruN --strip-trailing-cr SDL3-3.4.12/src/video/SDL_video.c SDL3-3.4.12.aros
  #ifdef SDL_VIDEO_DRIVER_OFFSCREEN
      &OFFSCREEN_bootstrap,
  #endif
+@@ -227,8 +230,9 @@
+     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES);
+ }
+ 
+-// Hint to treat all window ops as synchronous
+-static bool syncHint;
++// Hint to treat all window ops as synchronous.  Per client on AROS.
++#include "../aros/SDL_arosbase.h"
++#define syncHint (SDL_AROSSTATE->st_SyncHint)
+ 
+ static void SDL_SyncHintWatcher(void *userdata, const char *name, const char *oldValue, const char *newValue)
+ {
+@@ -538,8 +542,11 @@
+     }
+ }
+ 
+-static SDL_VideoDevice *_this = NULL;
+-static SDL_AtomicInt SDL_messagebox_count;
++/* Per client on AROS - see src/aros/SDL_arosbase.h.  This has to stay below
++   the static helpers above that take a _this parameter of their own: from
++   here down, _this is the video device of the calling client. */
++#define _this                (SDL_AROSSTATE->st_VideoDevice)
++#define SDL_messagebox_count (SDL_AROSSTATE->st_MessageboxCount)
+ 
+ static int SDLCALL cmpmodes(const void *A, const void *B)
+ {

@@ -35,12 +35,20 @@
 
 extern void 	SDL_Quit(void);
 
+/* The static library has no library base, so its one state block lives in
+   .bss - see src/aros/SDL_arosstate.c. */
+extern int  SDL_AROS_StateInit(void);
+extern void SDL_AROS_StateFree(void);
+
 struct Library       *TimerBase = NULL;
 
 struct timerequest   GlobalTimeReq;
 
 static int init_sdl2()
 {
+	if (!SDL_AROS_StateInit())
+		return 0;
+
 	if (OpenDevice("timer.device", UNIT_MICROHZ, &GlobalTimeReq.tr_node, 0) == 0)
 	{
 		TimerBase = (struct Library *)GlobalTimeReq.tr_node.io_Device;
@@ -54,6 +62,7 @@ static int init_sdl2()
 static void exit_sdl2()
 {
     CloseDevice((struct IORequest *)&GlobalTimeReq);
+    SDL_AROS_StateFree();
 }
 
 

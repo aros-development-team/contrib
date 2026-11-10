@@ -37,6 +37,7 @@ TESTEXEDIR := $(AROS_TESTS)/SDL3
     suffixes="tar.gz" destination=$(PORTSDIR)/SDL3
 
 FILES := \
+    $(ARCHSRCDIR)/src/aros/SDL_arosstate \
     $(ARCHSRCDIR)/src/atomic/SDL_atomic \
     $(ARCHSRCDIR)/src/atomic/SDL_spinlock \
     $(ARCHSRCDIR)/src/audio/dummy/SDL_dummyaudio \
