@@ -4160,7 +4160,7 @@ diff -ruN SDL3-3.4.12/src/thread/SDL_thread_c.h SDL3-3.4.12.aros/src/thread/SDL_
 diff -ruN SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c
 --- SDL3-3.4.12/src/timer/aros/SDL_systimer.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/timer/aros/SDL_systimer.c	2026-07-28 12:08:21.787632798 +0000
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,80 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
@@ -4209,6 +4209,11 @@ diff -ruN SDL3-3.4.12/src/timer/aros/SDL_systimer.c SDL3-3.4.12.aros/src/timer/a
 +/* Shared helper used by the AROS semaphore implementation too. */
 +void InitQPort(struct MsgPort *port)
 +{
++    /* The callers' ports live on their stacks: clear the whole structure so
++       the node and the message list lock start out valid rather than as
++       leftover stack contents */
++    SDL_zerop(port);
++    port->mp_Node.ln_Type = NT_MSGPORT;
 +    port->mp_SigBit = SIGB_SINGLE;
 +    port->mp_Flags = PA_SIGNAL;
 +    port->mp_SigTask = FindTask(NULL);
