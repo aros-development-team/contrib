@@ -135,6 +135,7 @@ FILES := \
 
 # Platform Files
 SDL2AROSCOREFILES = \
+    $(ARCHSRCDIR)/src/aros/SDL_arosstate \
     $(ARCHSRCDIR)/src/core/aros/SDL_cpu \
     $(ARCHSRCDIR)/src/filesystem/aros/SDL_sysfilesystem \
     $(ARCHSRCDIR)/src/locale/aros/SDL_syslocale \
