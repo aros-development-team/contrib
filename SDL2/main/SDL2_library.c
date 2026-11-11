@@ -43,6 +43,9 @@
 
 extern void SDL_Quit(void);
 
+/* SDL_malloc()'s exec pool, src/stdlib/aros/SDL_arosmem.c */
+extern void AROS_MemQuit(void);
+
 /* Per-client SDL state.  Allocated and released by the SDL sources
    (src/aros/SDL_arosstate.c); this file owns the base it hangs off and so
    provides the lookup the SDL sources use.  genmodule installs the base of
@@ -199,6 +202,8 @@ static BOOL DeleteLib(LIBBASETYPEPTR LIBBASE)
 	if (LIBBASE->_lib.lib_OpenCnt == 0)
 	{
 		close_libs();
+		/* Last: DeletePool() frees every block SDL still holds. */
+		AROS_MemQuit();
 
 		return TRUE;
 	}

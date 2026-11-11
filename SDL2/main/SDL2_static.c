@@ -40,6 +40,9 @@ extern void 	SDL_Quit(void);
 extern int  SDL_AROS_StateInit(void);
 extern void SDL_AROS_StateFree(void);
 
+/* SDL_malloc()'s exec pool, src/stdlib/aros/SDL_arosmem.c */
+extern void AROS_MemQuit(void);
+
 struct Library       *TimerBase = NULL;
 
 struct timerequest   GlobalTimeReq;
@@ -63,6 +66,8 @@ static void exit_sdl2()
 {
     CloseDevice((struct IORequest *)&GlobalTimeReq);
     SDL_AROS_StateFree();
+    /* exec does not reclaim pools at process exit. */
+    AROS_MemQuit();
 }
 
 
