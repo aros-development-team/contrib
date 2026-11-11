@@ -12,8 +12,8 @@ diff -ruN SDL2-2.32.10/include/begin_code.h SDL2-2.32.10.aros/include/begin_code
  #   define DECLSPEC
 diff -ruN SDL2-2.32.10/include/SDL_config_aros.h SDL2-2.32.10.aros/include/SDL_config_aros.h
 --- SDL2-2.32.10/include/SDL_config_aros.h	1970-01-01 00:00:00.000000000 +0000
-+++ SDL2-2.32.10.aros/include/SDL_config_aros.h	2025-12-08 05:27:13.152122789 +0000
-@@ -0,0 +1,481 @@
++++ SDL2-2.32.10.aros/include/SDL_config_aros.h	2026-11-11 06:59:58.035245656 +0000
+@@ -0,0 +1,490 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
@@ -83,10 +83,19 @@ diff -ruN SDL2-2.32.10/include/SDL_config_aros.h SDL2-2.32.10.aros/include/SDL_c
 +/* #undef HAVE_LIBUNWIND_H */
 +
 +/* C library functions */
-+#define HAVE_MALLOC 1
-+#define HAVE_CALLOC 1
-+#define HAVE_REALLOC    1
-+#define HAVE_FREE   1
++
++/* SDL owns its heap on AROS: src/stdlib/aros/SDL_arosmem.c serves
++ * SDL_malloc() and friends from one exec pool belonging to SDL2.library.
++ * stdc.library's pools are per opener, and SDL keeps library-global objects
++ * (TLS list, format cache, ...) that must outlive the client that made them.
++ *
++ * dlmalloc in SDL_malloc.c is not the alternative: it wants mmap() or
++ * sbrk(), and AROS has neither. */
++#define SDL_MEMORY_AROS 1
++/* #undef HAVE_MALLOC */
++/* #undef HAVE_CALLOC */
++/* #undef HAVE_REALLOC */
++/* #undef HAVE_FREE */
 +#define HAVE_ALLOCA 1
 +//#ifndef __WIN32__ /* Don't use C runtime versions of these on Windows */
 +//#define HAVE_GETENV 1
@@ -12058,3 +12067,270 @@ diff -ruN SDL2-2.32.10/src/SDL_internal.h SDL2-2.32.10.aros/src/SDL_internal.h
  #endif /* SDL_internal_h_ */
  
  /* vi: set ts=4 sw=4 expandtab: */
+diff -ruN SDL2-2.32.10/src/stdlib/SDL_malloc.c SDL2-2.32.10.aros/src/stdlib/SDL_malloc.c
+--- SDL2-2.32.10/src/stdlib/SDL_malloc.c	2025-01-01 15:47:53.000000000 +0000
++++ SDL2-2.32.10.aros/src/stdlib/SDL_malloc.c	2026-11-11 06:59:47.049345970 +0000
+@@ -30,7 +30,14 @@
+ #include "SDL_atomic.h"
+ #include "SDL_error.h"
+ 
+-#ifndef HAVE_MALLOC
++#ifdef SDL_MEMORY_AROS
++#include "aros/SDL_arosmem.h"
++#endif
++
++/* dlmalloc below wants mmap()/sbrk() to get memory from, and AROS has
++ * neither — SDL_MEMORY_AROS supplies real_malloc() and friends from an exec
++ * pool instead, so the whole allocator can drop out of the build. */
++#if !defined(HAVE_MALLOC) && !defined(SDL_MEMORY_AROS)
+ #define LACKS_SYS_TYPES_H
+ #define LACKS_STDIO_H
+ #define LACKS_STRINGS_H
+@@ -5190,13 +5197,18 @@
+ 
+ */
+ 
+-#endif /* !HAVE_MALLOC */
++#endif /* !HAVE_MALLOC && !SDL_MEMORY_AROS */
+ 
+ #ifdef HAVE_MALLOC
+ static void* SDLCALL real_malloc(size_t s) { return malloc(s); }
+ static void* SDLCALL real_calloc(size_t n, size_t s) { return calloc(n, s); }
+ static void* SDLCALL real_realloc(void *p, size_t s) { return realloc(p,s); }
+ static void  SDLCALL real_free(void *p) { free(p); }
++#elif defined(SDL_MEMORY_AROS)
++static void* SDLCALL real_malloc(size_t s) { return AROS_MemAlloc(s); }
++static void* SDLCALL real_calloc(size_t n, size_t s) { return AROS_MemCalloc(n, s); }
++static void* SDLCALL real_realloc(void *p, size_t s) { return AROS_MemRealloc(p, s); }
++static void  SDLCALL real_free(void *p) { AROS_MemFree(p); }
+ #else
+ #define real_malloc dlmalloc
+ #define real_calloc dlcalloc
+diff -ruN SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.c SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.c
+--- SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.c	1970-01-01 00:00:00.000000000 +0000
++++ SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.c	2026-11-11 06:59:47.052254676 +0000
+@@ -0,0 +1,173 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#ifdef SDL_MEMORY_AROS
++
++#include "SDL_arosmem.h"
++#include "SDL_atomic.h"
++
++#include <exec/memory.h>
++#include <proto/exec.h>
++
++/* AllocPooled() does not record block sizes, so every allocation carries its
++ * own header. Keep that header a full alignment unit wide so the pointer we
++ * hand out stays as aligned as the pool's own blocks. */
++#define AROS_MEM_ALIGN   16
++
++/* 16 matches MEMCHUNK_TOTAL (AROS_WORSTALIGN is 16 on x86_64/i386/arm/ppc/
++ * riscv, and sizeof(struct MemChunk) elsewhere), so the pointer we return
++ * keeps the pool's own alignment rather than shaving it down. */
++SDL_COMPILE_TIME_ASSERT(aros_mem_align, AROS_MEM_ALIGN >= sizeof(size_t));
++
++/* Puddle size, and the size above which a block gets a puddle to itself.
++ * SDL's traffic is mostly small objects with the odd large surface. */
++#define AROS_MEM_PUDDLE  (128 * 1024)
++#define AROS_MEM_THRESH  (32 * 1024)
++
++static APTR aros_mem_pool;
++static SDL_SpinLock aros_mem_lock;
++
++static APTR AROS_MemGetPool(void)
++{
++    if (!aros_mem_pool) {
++        SDL_AtomicLock(&aros_mem_lock);
++        if (!aros_mem_pool) {
++            /* MEMF_SEM_PROTECTED makes exec serialise AllocPooled() and
++             * FreePooled() on this pool (rom/exec/createpool.c). SDL needs
++             * that: the audio thread allocates concurrently with the app. */
++            APTR pool = CreatePool(MEMF_ANY | MEMF_SEM_PROTECTED,
++                                   AROS_MEM_PUDDLE, AROS_MEM_THRESH);
++            SDL_MemoryBarrierRelease();
++            aros_mem_pool = pool;
++        }
++        SDL_AtomicUnlock(&aros_mem_lock);
++    }
++    SDL_MemoryBarrierAcquire();
++
++    return aros_mem_pool;
++}
++
++void *AROS_MemAlloc(size_t size)
++{
++    APTR pool = AROS_MemGetPool();
++    size_t total;
++    UBYTE *mem;
++
++    if (!pool) {
++        return NULL;
++    }
++
++    /* malloc(0) must not read as failure to the caller. */
++    if (size == 0) {
++        size = 1;
++    }
++
++    total = size + AROS_MEM_ALIGN;
++    if (total < size) { /* size_t overflow */
++        return NULL;
++    }
++
++    mem = (UBYTE *)AllocPooled(pool, total);
++    if (!mem) {
++        return NULL;
++    }
++
++    *(size_t *)mem = total;
++
++    return mem + AROS_MEM_ALIGN;
++}
++
++void AROS_MemFree(void *ptr)
++{
++    if (ptr) {
++        UBYTE *mem = (UBYTE *)ptr - AROS_MEM_ALIGN;
++
++        /* The pool must exist: this block came out of it. */
++        FreePooled(aros_mem_pool, mem, *(size_t *)mem);
++    }
++}
++
++void *AROS_MemCalloc(size_t nmemb, size_t size)
++{
++    size_t total = nmemb * size;
++    void *mem;
++
++    if (nmemb != 0 && (total / nmemb) != size) { /* multiplication overflowed */
++        return NULL;
++    }
++
++    mem = AROS_MemAlloc(total);
++    if (mem) {
++        SDL_memset(mem, 0, total);
++    }
++
++    return mem;
++}
++
++void *AROS_MemRealloc(void *ptr, size_t size)
++{
++    UBYTE *mem;
++    size_t oldsize;
++    void *newptr;
++
++    if (!ptr) {
++        return AROS_MemAlloc(size);
++    }
++
++    if (size == 0) {
++        AROS_MemFree(ptr);
++        return NULL;
++    }
++
++    mem = (UBYTE *)ptr - AROS_MEM_ALIGN;
++    oldsize = *(size_t *)mem - AROS_MEM_ALIGN;
++
++    /* Shrinking keeps the block, and the header keeps the size the pool was
++     * given — which is what FreePooled() has to be handed back. */
++    if (size <= oldsize) {
++        return ptr;
++    }
++
++    newptr = AROS_MemAlloc(size);
++    if (!newptr) {
++        return NULL;
++    }
++
++    SDL_memcpy(newptr, ptr, oldsize);
++    AROS_MemFree(ptr);
++
++    return newptr;
++}
++
++void AROS_MemQuit(void)
++{
++    SDL_AtomicLock(&aros_mem_lock);
++    if (aros_mem_pool) {
++        DeletePool(aros_mem_pool);
++        aros_mem_pool = NULL;
++    }
++    SDL_AtomicUnlock(&aros_mem_lock);
++}
++
++#endif /* SDL_MEMORY_AROS */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff -ruN SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.h SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.h
+--- SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.h	1970-01-01 00:00:00.000000000 +0000
++++ SDL2-2.32.10.aros/src/stdlib/aros/SDL_arosmem.h	2026-11-11 06:59:58.035518407 +0000
+@@ -0,0 +1,47 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#ifndef SDL_arosmem_h_
++#define SDL_arosmem_h_
++
++#ifdef SDL_MEMORY_AROS
++
++/* Backing store for SDL_malloc() and friends on AROS: one exec memory pool
++ * owned by SDL2.library (or, in the static build, by the program).
++ *
++ * stdc.library's pools are per opener, but SDL keeps library-global objects
++ * allocated by whichever client got there first. A block's memory must not
++ * vanish when that client closes the library.
++ */
++
++extern void *AROS_MemAlloc(size_t size);
++extern void *AROS_MemCalloc(size_t nmemb, size_t size);
++extern void *AROS_MemRealloc(void *ptr, size_t size);
++extern void  AROS_MemFree(void *ptr);
++
++/* Tear the pool down at library expunge or static-program exit, when
++ * nothing can allocate again: DeletePool() releases every block in one go. */
++extern void  AROS_MemQuit(void);
++
++#endif /* SDL_MEMORY_AROS */
++
++#endif /* SDL_arosmem_h_ */
