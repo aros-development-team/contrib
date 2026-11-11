@@ -4250,8 +4250,19 @@ diff -ruN SDL2-2.32.10/src/render/opengl/SDL_shaders_gl.c SDL2-2.32.10.aros/src/
  #include "SDL_shaders_gl.h"
 diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
 --- SDL2-2.32.10/src/SDL.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/SDL.c	2026-11-10 15:00:05.501732494 +0000
-@@ -49,7 +49,6 @@
++++ SDL2-2.32.10.aros/src/SDL.c	2026-11-11 07:00:45.624232769 +0000
+@@ -24,6 +24,10 @@
+ #include "core/windows/SDL_windows.h"
+ #elif defined(__OS2__)
+ #include <stdlib.h> /* _exit() */
++#elif defined(__AROS__)
++/* Not unistd.h: _exit() lives in posixc. dos.library serves instead. */
++#include <proto/dos.h>
++#include <proto/exec.h>
+ #elif !defined(__WINRT__)
+ #include <unistd.h> /* _exit(), etc. */
+ #endif
+@@ -49,7 +53,6 @@
  #include "haptic/SDL_haptic_c.h"
  #include "joystick/SDL_joystick_c.h"
  #include "sensor/SDL_sensor_c.h"
@@ -4259,17 +4270,21 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  
  /* Initialization/Cleanup routines */
  #ifndef SDL_TIMERS_DISABLED
-@@ -101,6 +100,9 @@
+@@ -101,6 +104,13 @@
      exit(exitcode);
  #elif defined(__HAIKU__)  /* Haiku has _Exit, but it's not marked noreturn. */
      _exit(exitcode);
 +#elif defined(__MORPHOS__)
 +    extern void (*morphos_exit)(int exitcode);
 +    morphos_exit(exitcode);
++#elif defined(__AROS__)
++    /* Native _exit(). RemTask() only because Exit() is not noreturn. */
++    Exit(exitcode);
++    RemTask(NULL);
  #elif defined(HAVE__EXIT) /* Upper case _Exit() */
      _Exit(exitcode);
  #else
-@@ -108,15 +110,13 @@
+@@ -108,15 +118,13 @@
  #endif
  }
  
@@ -4292,10 +4307,12 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  
  /* Private helper to increment a subsystem's ref counter. */
  static void SDL_PrivateSubsystemRefCountIncr(Uint32 subsystem)
-@@ -180,36 +180,6 @@
+@@ -178,38 +186,8 @@
+ void SDL_SetMainReady(void)
+ {
      SDL_MainIsReady = SDL_TRUE;
- }
- 
+-}
+-
 -void SDL_InitMainThread(void)
 -{
 -    if (SDL_main_thread_initialized) {
@@ -4309,8 +4326,8 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
 -    SDL_LogInit();
 -
 -    SDL_main_thread_initialized = SDL_TRUE;
--}
--
+ }
+ 
 -static void SDL_QuitMainThread(void)
 -{
 -    if (!SDL_main_thread_initialized) {
@@ -4329,16 +4346,16 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  int SDL_InitSubSystem(Uint32 flags)
  {
      Uint32 flags_initialized = 0;
-@@ -218,6 +188,8 @@
+@@ -217,6 +195,8 @@
+     if (!SDL_MainIsReady) {
          return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
      }
- 
-+    SDL_LogInit();
 +
++    SDL_LogInit();
+ 
      /* Clear the error message */
      SDL_ClearError();
- 
-@@ -233,6 +205,10 @@
+@@ -233,6 +213,10 @@
      }
  #endif
  
@@ -4349,7 +4366,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
      /* Initialize the event subsystem */
      if (flags & SDL_INIT_EVENTS) {
  #ifndef SDL_EVENTS_DISABLED
-@@ -374,7 +350,7 @@
+@@ -374,7 +358,7 @@
          }
          SDL_PrivateSubsystemRefCountIncr(SDL_INIT_SENSOR);
          flags_initialized |= SDL_INIT_SENSOR;
@@ -4358,18 +4375,18 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
          SDL_SetError("SDL not built with sensor support");
          goto quit_and_error;
  #endif
-@@ -520,6 +496,10 @@
+@@ -519,6 +503,10 @@
+     SDL_HelperWindowDestroy();
  #endif
      SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
- 
++
 +#ifndef SDL_TIMERS_DISABLED
 +    SDL_TicksQuit();
 +#endif
-+
+ 
  #ifdef SDL_USE_LIBDBUS
      SDL_DBus_Quit();
- #endif
-@@ -527,12 +507,14 @@
+@@ -527,12 +515,14 @@
      SDL_ClearHints();
      SDL_AssertionsQuit();
  
@@ -4385,7 +4402,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  
      SDL_bInMainQuit = SDL_FALSE;
  }
-@@ -580,6 +562,8 @@
+@@ -580,6 +570,8 @@
      return "AIX";
  #elif defined(__ANDROID__)
      return "Android";
@@ -4394,7 +4411,7 @@ diff -ruN SDL2-2.32.10/src/SDL.c SDL2-2.32.10.aros/src/SDL.c
  #elif defined(__BSDI__)
      return "BSDI";
  #elif defined(__DREAMCAST__)
-@@ -636,6 +620,8 @@
+@@ -636,6 +628,8 @@
      return "PlayStation 2";
  #elif defined(__PSP__)
      return "PlayStation Portable";
@@ -4473,19 +4490,22 @@ diff -ruN SDL2-2.32.10/src/SDL_hints.c SDL2-2.32.10.aros/src/SDL_hints.c
  {
 diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
 --- SDL2-2.32.10/src/SDL_log.c	2025-01-01 15:47:53.000000000 +0000
-+++ SDL2-2.32.10.aros/src/SDL_log.c	2025-07-30 18:47:19.000000000 +0000
-@@ -40,6 +40,10 @@
- #include <android/log.h>
- #endif
++++ SDL2-2.32.10.aros/src/SDL_log.c	2026-11-11 07:00:45.600429534 +0000
+@@ -38,6 +38,13 @@
  
+ #if defined(__ANDROID__)
+ #include <android/log.h>
++#endif
++
 +#if defined(__MORPHOS__) || defined(__AROS__)
 +#include <proto/exec.h>
 +#endif
-+
- #include "stdlib/SDL_vacopy.h"
++#ifdef __AROS__
++#include <proto/dos.h>
+ #endif
  
- /* The size of the stack buffer to use for rendering log messages. */
-@@ -47,6 +51,7 @@
+ #include "stdlib/SDL_vacopy.h"
+@@ -47,6 +54,7 @@
  
  #define DEFAULT_CATEGORY -1
  
@@ -4493,7 +4513,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  typedef struct SDL_LogLevel
  {
      int category;
-@@ -296,6 +301,7 @@
+@@ -296,6 +304,7 @@
      }
      SDL_forced_priority = SDL_FALSE;
  }
@@ -4501,7 +4521,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  
  void SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
  {
-@@ -369,6 +375,7 @@
+@@ -369,6 +378,7 @@
      va_end(ap);
  }
  
@@ -4509,7 +4529,7 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
  #ifdef __ANDROID__
  static const char *GetCategoryPrefix(int category)
  {
-@@ -573,6 +580,10 @@
+@@ -573,6 +583,32 @@
              (void)fclose(pFile);
          }
      }
@@ -4517,10 +4537,45 @@ diff -ruN SDL2-2.32.10/src/SDL_log.c SDL2-2.32.10.aros/src/SDL_log.c
 +	{
 +    	NewRawDoFmt("%s: %s\n", (APTR)1, NULL, SDL_priority_prefixes[priority], message);
 +	}
++#ifdef __AROS__
++	{
++		/* NewRawDoFmt() above goes to the raw debug console, which someone
++		 * running the app from a Shell never sees. Echo it there too, through
++		 * dos.library rather than stdio - reaching for fprintf() here is what
++		 * made the library depend on stdcio.library.
++		 *
++		 * Output() is NULL when the app was started from Workbench, and
++		 * Write() takes raw bytes, so a '%' in the message cannot be mistaken
++		 * for a format specifier. */
++		BPTR out = Output();
++
++		if (out) {
++			const char *prefix = SDL_priority_prefixes[priority];
++
++			Write(out, (APTR)prefix, SDL_strlen(prefix));
++			Write(out, (APTR)": ", 2);
++			Write(out, (APTR)message, SDL_strlen(message));
++			Write(out, (APTR)"\n", 1);
++		}
++	}
++#endif
  #elif defined(__3DS__)
      {
          FILE *pFile;
-@@ -607,5 +618,6 @@
+@@ -583,7 +619,11 @@
+         }
+     }
+ #endif
+-#if defined(HAVE_STDIO_H) && \
++/* AROS/MorphOS already emitted the line through NewRawDoFmt() above; this
++ * block is not part of that #elif chain, so without the exclusion every
++ * SDL_Log() went out twice - and the second copy is the only reason the
++ * library needs stdcio.library at all. */
++#if defined(HAVE_STDIO_H) && !defined(__AROS__) && !defined(__MORPHOS__) && \
+     !(defined(__APPLE__) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT)))
+     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+ #ifdef __NACL__
+@@ -607,5 +647,6 @@
      SDL_log_function = callback;
      SDL_log_userdata = userdata;
  }
@@ -12334,3 +12389,18 @@ diff -ruN SDL2-2.32.10/src/stdlib/aros/SDL_arosmem.h SDL2-2.32.10.aros/src/stdli
 +#endif /* SDL_MEMORY_AROS */
 +
 +#endif /* SDL_arosmem_h_ */
+diff -ruN SDL2-2.32.10/src/SDL_assert.c SDL2-2.32.10.aros/src/SDL_assert.c
+--- SDL2-2.32.10/src/SDL_assert.c	2025-03-20 23:36:25.000000000 +0000
++++ SDL2-2.32.10.aros/src/SDL_assert.c	2026-11-11 07:00:45.600716590 +0000
+@@ -289,7 +289,10 @@
+                 break;
+             }
+         }
+-#elif defined(HAVE_STDIO_H) && !defined(__3DS__)
++/* AROS falls through to SDL_ShowSimpleMessageBox() below: the port has a
++ * working message box, and this stdin/stderr prompt is the only thing in
++ * the library that needs stdcio.library. */
++#elif defined(HAVE_STDIO_H) && !defined(__3DS__) && !defined(__AROS__)
+         /* this is a little hacky. */
+         for (;;) {
+             char buf[32];
