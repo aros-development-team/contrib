@@ -7215,7 +7215,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosmouse.h SDL3-3.4.12.aros/src/video/
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c
 --- SDL3-3.4.12/src/video/aros/SDL_arosopengl.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_arosopengl.c	2026-11-10 16:48:39.118623669 +0000
-@@ -0,0 +1,286 @@
+@@ -0,0 +1,315 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -7278,6 +7278,26 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video
 +}
 +#define glACreateContext(tagList) __sdl_glACreateContext(GLBase, (tagList))
 +#define glASetRast(ctx, tagList) __sdl_glASetRast(GLBase, (ctx), (tagList))
++
++#ifdef GLA_SwapInterval
++/* The swap interval tag and glASwapInterval() came with gl.library 20.3;
++   on an older one the tag is ignored and the call must not be made. */
++static inline int __sdl_glHasSwapInterval(struct Library *base)
++{
++    return (base->lib_Version > 20) ||
++           (base->lib_Version == 20 && base->lib_Revision >= 3);
++}
++#endif
++
++/* Hand the interval asked for with SDL_GL_SetSwapInterval() to a context */
++static void
++AROS_GL_ApplySwapInterval(SDL_VideoDevice *_this, SDL_GLContext context)
++{
++#ifdef GLA_SwapInterval
++	if (GLBase && context && __sdl_glHasSwapInterval(GLBase))
++		glASwapInterval((GLAContext)context, _this->gl_data->gldd_Interval ? 1 : 0);
++#endif
++}
 +
 +bool
 +AROS_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -7361,6 +7381,8 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video
 +				tags[0].ti_Data = (IPTR)data->win;
 +				tags[1].ti_Tag = TAG_DONE;
 +				glASetRast(context, tags);
++				/* the interval may have changed while another context was current */
++				AROS_GL_ApplySwapInterval(_this, context);
 +			}
 +		}
 +		SDL_WindowData *data = (SDL_WindowData *) window->internal;
@@ -7375,7 +7397,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video
 +{
 +    D(bug("[SDL3:arosgl] %s()\n", __func__));
 +
-+    struct TagItem ctxAttribs [10];
++    struct TagItem ctxAttribs [12];
 +	LONG i = 0;
 +
 +    if ( _this->gl_config.red_size   != 0 &&
@@ -7426,6 +7448,12 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video
 +			ctxAttribs[i++].ti_Data = _this->gl_config.minor_version;
 +#endif
 +
++#ifdef GLA_SwapInterval
++			/* SDL_GL_SetSwapInterval() made before the context existed */
++			ctxAttribs[i].ti_Tag = GLA_SwapInterval;
++			ctxAttribs[i++].ti_Data = _this->gl_data->gldd_Interval ? 1 : 0;
++#endif
++
 +			/* done */
 +			ctxAttribs[i].ti_Tag = TAG_DONE;
 +
@@ -7455,6 +7483,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosopengl.c SDL3-3.4.12.aros/src/video
 +		case 0:
 +		case 1:
 +			_this->gl_data->gldd_Interval = (interval ? TRUE : FALSE);
++			AROS_GL_ApplySwapInterval(_this, (SDL_GLContext)_this->gl_data->gldd_GLACtx);
 +			return true;
 +		default:
 +			return SDL_SetError("Unsupported swap interval");
