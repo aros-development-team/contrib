@@ -1,0 +1,786 @@
+{
+  "reference": "542147067dd016fc5f49120ef0ba605a98a4e3a7",
+  "columns": 80,
+  "cases": [
+    [
+      "(?-i:\\p{c}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{casedletter}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{cc}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{cf}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{closepunctuation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{cn}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{cntrl}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{co}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{combiningmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{connectorpunctuation}+)",
+      "aAB 09_!$zZ",
+      [
+        6,
+        7
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    [
+      "(?-i:\\p{control}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{currencysymbol}+)",
+      "aAB 09_!$zZ",
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{dashpunctuation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{decimalnumber}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{digit}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{enclosingmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{finalpunctuation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{format}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{initialpunctuation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{l}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{lc}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{letter}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{letternumber}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{lineseparator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ll}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{lm}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{lo}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{lowercaseletter}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        1
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    [
+      "(?-i:\\p{lt}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{lu}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{m}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{mark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{mathsymbol}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{mc}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{me}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{mn}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{modifierletter}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{modifiersymbol}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{n}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{nd}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{nl}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{no}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{nonspacingmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{number}+)",
+      "aAB 09_!$zZ",
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      "(?-i:\\p{openpunctuation}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{other}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otherletter}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{othernumber}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{otherpunctuation}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{othersymbol}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{p}+)",
+      "aAB 09_!$zZ",
+      [
+        6,
+        8
+      ],
+      [
+        6,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{paragraphseparator}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{pc}+)",
+      "aAB 09_!$zZ",
+      [
+        6,
+        7
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    [
+      "(?-i:\\p{pd}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{pe}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{pf}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{pi}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{po}+)",
+      "aAB 09_!$zZ",
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{privateuse}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{ps}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{punct}+)",
+      "aAB 09_!$zZ",
+      [
+        6,
+        8
+      ],
+      [
+        6,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{punctuation}+)",
+      "aAB 09_!$zZ",
+      [
+        6,
+        8
+      ],
+      [
+        6,
+        8
+      ]
+    ],
+    [
+      "(?-i:\\p{s}+)",
+      "aAB 09_!$zZ",
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{sc}+)",
+      "aAB 09_!$zZ",
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{separator}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{sk}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{sm}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{so}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{spaceseparator}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{spacingmark}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{symbol}+)",
+      "aAB 09_!$zZ",
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        9
+      ]
+    ],
+    [
+      "(?-i:\\p{titlecaseletter}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{unassigned}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{uppercaseletter}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\p{z}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?-i:\\p{zl}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{zp}+)",
+      "aAB 09_!$zZ",
+      null,
+      null
+    ],
+    [
+      "(?-i:\\p{zs}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        4
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:\\p{Lu}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?i:\\P{Lu}+)",
+      "aAB 09_!$zZ",
+      [
+        3,
+        9
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:[\\P{Lu}A]+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        2
+      ],
+      [
+        11,
+        80
+      ]
+    ],
+    [
+      "(?i:[^\\P{Lu}]+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?i:\\p{Ll}+)",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "(?-i:\\P{Ll}+)",
+      "aAB 09_!$zZ",
+      [
+        1,
+        9
+      ],
+      [
+        10,
+        80
+      ]
+    ],
+    [
+      "[0\\p{Lu}]+",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "[\\p{Lu}0]+",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "[\\p{Lu}\\p{Ll}]+",
+      "aAB 09_!$zZ",
+      [
+        0,
+        3
+      ],
+      [
+        9,
+        11
+      ]
+    ],
+    [
+      "\\p{General_Category=Uppercase_Letter}+",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ],
+    [
+      "\\p{gc=punct}+",
+      "aAB 09_!$zZ",
+      [
+        6,
+        8
+      ],
+      [
+        6,
+        8
+      ]
+    ],
+    [
+      "\\p{ UPPER-case_letter }+",
+      "aAB 09_!$zZ",
+      [
+        1,
+        3
+      ],
+      [
+        10,
+        11
+      ]
+    ]
+  ]
+}
