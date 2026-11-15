@@ -1,6 +1,6 @@
-diff -ruN -x .cargo-ok -x .git -x target ring-0.17.14.orig/build.rs ring-0.17.14/build.rs
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git -x '*.orig' -x '*.rej' ring-0.17.14.orig/build.rs ring-0.17.14/build.rs
 --- ring-0.17.14.orig/build.rs	2006-07-24 02:21:28.000000000 +0100
-+++ ring-0.17.14/build.rs	2026-10-13 14:38:06.542416921 +0100
++++ ring-0.17.14/build.rs	2026-11-15 14:53:53.489617668 +0000
 @@ -243,6 +243,7 @@
  /// mentioned in `ASM_TARGETS`.
  const LINUX_ABI: &[&str] = &[
@@ -9,9 +9,21 @@ diff -ruN -x .cargo-ok -x .git -x target ring-0.17.14.orig/build.rs ring-0.17.14
      "dragonfly",
      "freebsd",
      "fuchsia",
-diff -ruN -x .cargo-ok -x .git -x target ring-0.17.14.orig/src/rand.rs ring-0.17.14/src/rand.rs
+@@ -567,6 +568,11 @@
+         compiler
+     };
+ 
++    // AROS programs are relocatable objects fixed up by the loader, which has no GOT or PLT:
++    // position-independent code (cc's default) would leave relocations it cannot apply.
++    if target.os == "aros" {
++        let _ = c.pic(false);
++    }
+     let _ = c.include(c_root_dir.join("include"));
+     let _ = c.include(include_dir);
+     for f in cpp_flags(&compiler) {
+diff -ruN -x .cargo-ok -x .cargo-checksum.json -x Cargo.toml.orig -x .cargo_vcs_info.json -x target -x Cargo.lock -x .git -x '*.orig' -x '*.rej' ring-0.17.14.orig/src/rand.rs ring-0.17.14/src/rand.rs
 --- ring-0.17.14.orig/src/rand.rs	2006-07-24 02:21:28.000000000 +0100
-+++ ring-0.17.14/src/rand.rs	2026-10-13 13:47:35.302487798 +0100
++++ ring-0.17.14/src/rand.rs	2026-11-15 14:12:45.503849584 +0000
 @@ -126,6 +126,7 @@
      all(feature = "less-safe-getrandom-espidf", target_os = "espidf"),
      target_os = "aix",

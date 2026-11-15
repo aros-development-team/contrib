@@ -20,7 +20,7 @@ given):
   with a GLA backend, `naga`; wgpu 27 for Veloren and wgpu 30 with
   `naga-types` for SolidCraft's egui 0.36), `cpal` on AHI and the system crates the
   cargo ports need (`polling`, `socket2` 0.5, `quinn-udp`, `filetime`,
-  `open`, `libsqlite3-sys`, `num_cpus`, `stacker`, `ring`, `kiddo`,
+  `open`, `libsqlite3-sys`, `num_cpus`, `stacker`, `ring`, `rustix`, `kiddo`,
   `copypasta`, `window_clipboard`, `atomicwrites`, `libc` 0.2.185 for
   alacritty) - and the AROS-only crates in `crates/aros`. An edited diff
   replaces its crate's unpacked tree on the next build

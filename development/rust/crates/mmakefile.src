@@ -23,6 +23,10 @@
 #     quinn-udp, filetime, open,  utimes(), OpenURL, sqlite on dos.library,
 #     libsqlite3-sys, num_cpus,   sysconf() CPU count, heap stacks, the
 #     stacker, ring, ...          clipboard, files written in place, ...
+#     rustix                      its file system calls on posixc (the "fs"
+#                                 feature; AROS treated like its smallest
+#                                 libc targets, readv/writev through
+#                                 read/write);
 #     libc 0.2.185                for alacritty's locked graph (the core
 #                                 store's libc is 0.2.190); not in the config.
 #
@@ -51,6 +55,7 @@ include $(SRCDIR)/config/aros-contrib.cfg
 #MM     contrib-rust-crates-num-cpus contrib-rust-crates-open \
 #MM     contrib-rust-crates-polling contrib-rust-crates-quinn-udp \
 #MM     contrib-rust-crates-raw-window-handle contrib-rust-crates-ring \
+#MM     contrib-rust-crates-rustix \
 #MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
 #MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
 #MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
@@ -113,6 +118,8 @@ contrib-rust-crates :
     patch=$(CONTRIB_RUST_CRATE_RAW_WINDOW_HANDLE)-aros.diff
 %rust_crate mmake=contrib-rust-crates-ring crate=ring version=$(CONTRIB_RUST_RING_VERSION) \
     patch=$(CONTRIB_RUST_CRATE_RING)-aros.diff
+%rust_crate mmake=contrib-rust-crates-rustix crate=rustix version=$(CONTRIB_RUST_RUSTIX_VERSION) \
+    patch=$(CONTRIB_RUST_CRATE_RUSTIX)-aros.diff
 %rust_crate mmake=contrib-rust-crates-socket205 crate=socket2 version=$(CONTRIB_RUST_SOCKET205_VERSION) \
     patch=$(CONTRIB_RUST_CRATE_SOCKET205)-aros.diff
 %rust_crate mmake=contrib-rust-crates-stacker crate=stacker version=$(CONTRIB_RUST_STACKER_VERSION) \
@@ -182,6 +189,7 @@ $(RUST_CRATESDIR)/iced_aros :
 #MM- contrib-rust-crates-quinn-udp : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-raw-window-handle : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-ring : contrib-rust-crates-refresh
+#MM- contrib-rust-crates-rustix : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-socket205 : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-stacker : contrib-rust-crates-refresh
 #MM- contrib-rust-crates-wgpu : contrib-rust-crates-refresh
@@ -227,6 +235,7 @@ contrib-rust-crates-abicheck :
 #MM     contrib-rust-crates-num-cpus contrib-rust-crates-open \
 #MM     contrib-rust-crates-polling contrib-rust-crates-quinn-udp \
 #MM     contrib-rust-crates-raw-window-handle contrib-rust-crates-ring \
+#MM     contrib-rust-crates-rustix \
 #MM     contrib-rust-crates-socket205 contrib-rust-crates-stacker \
 #MM     contrib-rust-crates-wgpu contrib-rust-crates-wgpu-core \
 #MM     contrib-rust-crates-wgpu-core-deps contrib-rust-crates-wgpu-hal \
@@ -259,6 +268,7 @@ contrib-rust-crates-abicheck :
         quinn-udp=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_QUINN_UDP) \
         raw-window-handle=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_RAW_WINDOW_HANDLE) \
         ring=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_RING) \
+        rustix=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_RUSTIX) \
         socket205:socket2=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_SOCKET205) \
         stacker=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_STACKER) \
         wgpu=$(RUST_CRATESDIR)/$(CONTRIB_RUST_CRATE_WGPU) \
