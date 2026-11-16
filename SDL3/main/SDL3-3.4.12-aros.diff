@@ -4707,7 +4707,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL3-3.4.12.aros/src/vi
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c
 --- SDL3-3.4.12/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c	2026-07-28 12:08:21.795632800 +0000
-@@ -0,0 +1,850 @@
+@@ -0,0 +1,863 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -4819,6 +4819,17 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video
 +        bool state = (m->Code & IECODE_UP_PREFIX) ? false : true;
 +        int button = AROS_GetButton(m->Code & ~(IECODE_UP_PREFIX));
 +
++        /* SDL reports a button at the last pointer position it was told
++           about. Outside relative mode the message carries the position at
++           the time of the click (window coordinates, IDCMP_DELTAMOVE off):
++           report it first, so a click is not placed at a stale position or,
++           when events are handled late, at where the pointer is now. */
++        if (!SDL_GetRelativeMouseMode()) {
++            struct Window *w = m->IDCMPWindow;
++            SDL_SendMouseMotion(0, data->window, 0, false,
++                                m->MouseX - w->BorderLeft, m->MouseY - w->BorderTop);
++        }
++
 +        globalMouseState.buttonPressed[button] = state;
 +
 +        SDL_SendMouseButton(0, data->window, 0, button, state);
@@ -4906,9 +4917,11 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video
 +        }
 +        SDL_SendMouseMotion(0, data->window, 0, true, m->MouseX, m->MouseY);
 +    } else {
-+    	//struct Screen *s = data->win->WScreen;
-+        int x = (s->MouseX - data->win->LeftEdge - data->win->BorderLeft);
-+        int y = (s->MouseY - data->win->TopEdge - data->win->BorderTop);
++        /* The position at the time of the move, not where the pointer is
++           when the message is handled: strokes keep their shape when the
++           program is busy. */
++        int x = m->MouseX - data->win->BorderLeft;
++        int y = m->MouseY - data->win->BorderTop;
 +        SDL_SendMouseMotion(0, data->window, 0, false, x, y);
 +    }
 +}
@@ -8367,7 +8380,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.4.12.aros/src/video/
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c
 --- SDL3-3.4.12/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c	2026-07-28 12:08:21.827328507 +0000
-@@ -0,0 +1,994 @@
+@@ -0,0 +1,996 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -8876,7 +8889,9 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video
 +			}
 +
 +			data->win->UserPort = &vd->WinPort;
-+			ModifyIDCMP(data->win, IDCMP_CLOSEWINDOW | IDCMP_RAWKEY | IDCMP_MOUSEMOVE | IDCMP_DELTAMOVE | IDCMP_MOUSEBUTTONS | IDCMP_REFRESHWINDOW | IDCMP_ACTIVEWINDOW | IDCMP_INACTIVEWINDOW | IDCMP_CHANGEWINDOW | IDCMP_GADGETUP | IDCMP_MENUPICK);
++			/* Deltas only in relative mode (AROS_SetRelativeMouseMode toggles
++			   the flag); otherwise messages carry window positions. */
++			ModifyIDCMP(data->win, IDCMP_CLOSEWINDOW | IDCMP_RAWKEY | IDCMP_MOUSEMOVE | (SDL_GetRelativeMouseMode() ? IDCMP_DELTAMOVE : 0) | IDCMP_MOUSEBUTTONS | IDCMP_REFRESHWINDOW | IDCMP_ACTIVEWINDOW | IDCMP_INACTIVEWINDOW | IDCMP_CHANGEWINDOW | IDCMP_GADGETUP | IDCMP_MENUPICK);
 +
 +			data->curr_x = data->win->LeftEdge;
 +			data->curr_y = data->win->TopEdge;
