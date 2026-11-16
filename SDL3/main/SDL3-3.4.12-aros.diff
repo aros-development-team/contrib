@@ -4707,7 +4707,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.h SDL3-3.4.12.aros/src/vi
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c
 --- SDL3-3.4.12/src/video/aros/SDL_arosevents.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_arosevents.c	2026-07-28 12:08:21.795632800 +0000
-@@ -0,0 +1,850 @@
+@@ -0,0 +1,923 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -4746,7 +4746,9 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video
 +#include "SDL_arosopengl.h"
 +#include "SDL_arosmouse.h"
 +
++#include <devices/inputevent.h>
 +#include <devices/rawkeycodes.h>
++#include <dos/var.h>
 +#include <intuition/extensions.h>
 +#include <rexx/errors.h>
 +#include <rexx/storage.h>
@@ -4826,13 +4828,84 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video
 +
 +}
 +
++#if defined(__AROS__)
++extern struct Library *KeymapBase;
++
++/* The system character set: keymaps produce bytes in the set the Locale
++   preferences store in ENV:CHARSET (codesets.library names, e.g.
++   "ISO-8859-2"; "ISO-8859-1 + Euro" is the codesets default). */
++static const char *
++AROS_SystemCharset(void)
++{
++	static char charset[64];
++	static int read;
++
++	if (!read) {
++		read = 1;
++		if (GetVar("CHARSET", charset, sizeof(charset), GVF_GLOBAL_ONLY) <= 0) {
++			charset[0] = '\0';
++		} else {
++			char *plus = SDL_strchr(charset, '+');
++			if (plus) {
++				*plus = '\0';
++			}
++			for (size_t n = SDL_strlen(charset); n > 0 && charset[n - 1] == ' '; n--) {
++				charset[n - 1] = '\0';
++			}
++		}
++	}
++	return charset[0] ? charset : "ISO-8859-1";
++}
++#endif
++
++/* Text typed by a key press, as UTF-8 in buffer (size bytes). Returns its
++   length, 0 when the key produces no printable text. */
 +static int
-+AROS_TranslateUnicode(struct IntuiMessage *m, char *buffer)
++AROS_TranslateUnicode(struct IntuiMessage *m, char *buffer, size_t size)
 +{
 +	int length = 0;
 +#if !defined(__AROS__)
 +    WCHAR keycode = getv(m, IMSGA_UCS4);
 +	length = UTF8_Encode(keycode, buffer);
++#else
++	struct InputEvent ie;
++	char bytes[8];
++	WORD n;
++	char *utf8;
++
++	SDL_zero(ie);
++	ie.ie_Class = IECLASS_RAWKEY;
++	ie.ie_Code = m->Code;
++	ie.ie_Qualifier = m->Qualifier;
++	/* The previous key presses, so that dead keys combine. */
++	ie.ie_EventAddress = m->IAddress ? *((APTR *)m->IAddress) : NULL;
++
++	n = MapRawKey(&ie, bytes, sizeof(bytes) - 1, NULL);
++	if (n <= 0) {
++		return 0;
++	}
++	for (WORD i = 0; i < n; i++) {
++		unsigned char c = (unsigned char)bytes[i];
++		/* Control codes and CSI sequences (cursor and function keys) are not text. */
++		if (c < 0x20 || c == 0x7F || (c >= 0x80 && c < 0xA0)) {
++			return 0;
++		}
++	}
++	bytes[n] = '\0';
++
++	utf8 = SDL_iconv_string("UTF-8", AROS_SystemCharset(), bytes, (size_t)n + 1);
++	if (!utf8) {
++		utf8 = SDL_iconv_string("UTF-8", "ISO-8859-1", bytes, (size_t)n + 1);
++	}
++	if (utf8) {
++		length = (int)SDL_strlen(utf8);
++		if ((size_t)length >= size) {
++			length = 0;
++		} else {
++			SDL_memcpy(buffer, utf8, (size_t)length);
++		}
++		SDL_free(utf8);
++	}
 +#endif
 +	return length;
 +}
@@ -4875,8 +4948,8 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosevents.c SDL3-3.4.12.aros/src/video
 +			if (rawkey < sizeof(amigaos_scancode_table) / sizeof(amigaos_scancode_table[0])) {
 +                SDL_Scancode s = amigaos_scancode_table[rawkey];
 +                if (m->Code < 128) {
-+                    char text[5] = { 0 };
-+					int length = AROS_TranslateUnicode(m, text);
++                    char text[32] = { 0 };
++					int length = AROS_TranslateUnicode(m, text, sizeof(text));
 +					SDL_SendKeyboardKey(0, 0, code, s, true);
 +					if (length > 0) {
 +						text[length] = '\0';
