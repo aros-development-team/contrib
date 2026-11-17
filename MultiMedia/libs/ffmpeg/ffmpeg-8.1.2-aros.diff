@@ -68,6 +68,21 @@ diff -ruN ffmpeg-8.1.2/libavcodec/av1dec.c ffmpeg-8.1.2.aros/libavcodec/av1dec.c
      if (seq->timing_info_present_flag)
          avctx->framerate = ff_av1_framerate(1LL + seq->timing_info.num_ticks_per_picture_minus_1,
                                              seq->timing_info.num_units_in_display_tick,
+diff -ruN ffmpeg-8.1.2/libavformat/avio.c ffmpeg-8.1.2.aros/libavformat/avio.c
+--- ffmpeg-8.1.2/libavformat/avio.c	2026-06-17 04:17:51
++++ ffmpeg-8.1.2.aros/libavformat/avio.c	2026-11-09 09:57:23
+@@ -339,6 +339,11 @@
+         }
+     }
+     av_freep(&protocols);
++#ifdef __AROS__
++    // "Work:film.mkv" names a volume, not a scheme
++    if (filename[proto_len] == ':' && strncmp(filename + proto_len + 1, "//", 2))
++        return url_find_protocol("file");
++#endif
+     if (av_strstart(filename, "https:", NULL) || av_strstart(filename, "tls:", NULL) ||
+         av_strstart(filename, "dtls:", NULL))
+         av_log(NULL, AV_LOG_WARNING, "https or dtls protocol not found, recompile FFmpeg with "
 diff -ruN ffmpeg-8.1.2/libavformat/os_support.h ffmpeg-8.1.2.aros/libavformat/os_support.h
 --- ffmpeg-8.1.2/libavformat/os_support.h	2026-06-17 03:17:51.000000000 +0100
 +++ ffmpeg-8.1.2.aros/libavformat/os_support.h	2026-10-27 18:30:14.210133936 +0000

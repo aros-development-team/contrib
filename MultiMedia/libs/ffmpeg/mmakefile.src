@@ -24,6 +24,12 @@ endif
 FFMPEG_LIBS=-lnet
 FFMPEG_PROGS=--disable-programs
 
+# VideoCore H.264, MPEG-2 and VC-1 decoding (h264_mmal etc.) on the Pi 1-4.
+# The MMAL libraries come from arch/arm-native/soc/broadcom/2708/vchiq/libmmal.
+ifeq ($(AROS_TARGET_ARCH)-$(AROS_TARGET_CPU),raspi-aarch64)
+FFMPEG_MMAL := --enable-mmal
+endif
+
 VERSION      := 8.1.2
 REPOSITORIES := https://ffmpeg.org/releases \
  http://mirror.sobukus.de/files/src/ffmpeg \
@@ -53,6 +59,8 @@ FFMPEG_OPTIONS := \
         --disable-debug \
         --enable-vaapi \
         $(FFMPEG_PROGS)
+
+FFMPEG_OPTIONS += $(FFMPEG_MMAL)
 
 ifeq ($(AROS_TARGET_CPU),m68k)
 FFMPEG_OPTIONS += \
