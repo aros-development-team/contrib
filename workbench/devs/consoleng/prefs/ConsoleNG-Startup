@@ -1,0 +1,19 @@
+; Restore shared future-console defaults before user startup and applications.
+; ENV:/ENVARC: resolution remains the OS's responsibility.
+If EXISTS "SYS:Prefs/ConsoleNG"
+    If EXISTS "ENV:SYS/consoleng.prefs"
+        SYS:Prefs/ConsoleNG RESTORE
+    Else
+        If EXISTS "ENVARC:SYS/consoleng.prefs"
+            SYS:Prefs/ConsoleNG RESTORE
+        Else
+            If EXISTS "ENV:SYS/consoleng-cursor.prefs"
+                SYS:Prefs/ConsoleNG RESTORE
+            Else
+                If EXISTS "ENVARC:SYS/consoleng-cursor.prefs"
+                    SYS:Prefs/ConsoleNG RESTORE
+                EndIf
+            EndIf
+        EndIf
+    EndIf
+EndIf

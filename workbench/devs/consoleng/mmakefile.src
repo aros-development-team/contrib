@@ -1,0 +1,26 @@
+
+include $(SRCDIR)/config/aros-contrib.cfg
+
+# On-demand console device alongside the resident console.device.
+# Keep the public devices/console.h owned by the core console; extensions are
+# private to include/consoleng.h. Internal library-base names are module-local.
+
+FILES	:=  support sync_output keyboard_protocol bindings consoleclass stdconclass charmapconclass rendezvous charmap charmap_reflow mouse_report url_action hyperlink search search_regex query_clipboard copy_clipboard read_clipboard osc_clipboard snipmapconclass consoletask consolengtext consolengglyph
+FUNCS	:=  cdinputhandler rawkeyconvert setconsnip getconsnip addconsniphook remconsniphook
+
+#MM- contrib-workbench : contrib-workbench-devs-consoleng
+#MM contrib-workbench-devs-consoleng : includes linklibs
+
+USER_CPPFLAGS := \
+               -DUSE_EXEC_DEBUG \
+               -D__GRAPHICS_NOLIBBASE__ \
+               -D__INTUITION_NOLIBBASE__ \
+               -D__KEYMAP_NOLIBBASE__ \
+               -D__UTILITY_NOLIBBASE__
+USER_CPPFLAGS += \
+               -DINTUITION_INLINE_NEWOBJECT
+USER_LDFLAGS := -static
+
+%build_module mmake=contrib-workbench-devs-consoleng \
+  modname=consoleng modtype=device \
+  files="console $(FUNCS) $(FILES)"
