@@ -4392,7 +4392,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/scancodes_amigaos.h SDL3-3.4.12.aros/src/vi
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c
 --- SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_arosclipboard.c	2026-07-28 12:08:21.792152599 +0000
-@@ -0,0 +1,277 @@
+@@ -0,0 +1,176 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -4434,159 +4434,58 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosclipboard.c SDL3-3.4.12.aros/src/vi
 +#define ID_CHRS	MAKE_ID('C','H','R','S')
 +#define ID_UTF8	MAKE_ID('U','T','F','8')
 +
-+STATIC APTR clipboard_open(void)
-+{
-+	struct IOClipReq *io;
-+	struct MsgPort *mp;
-+
-+	mp = CreateMsgPort();
-+
-+	if ((io = (struct IOClipReq *)CreateIORequest(mp,sizeof(struct IOClipReq)))) {
-+		if (!(OpenDevice("clipboard.device", 0, (struct IORequest *)io, 0))) {
-+			return io;
-+		}
-+
-+		DeleteIORequest((struct IORequest *)io);
-+	}
-+
-+	DeleteMsgPort(mp);
-+	return NULL;
-+}
-+
-+STATIC ULONG clipboard_write_data(struct IOClipReq *io, CONST_APTR data, ULONG len)
-+{
-+	LONG rc;
-+
-+	io->io_Command = CMD_WRITE;
-+	io->io_Data    = (APTR)data;
-+	io->io_Length  = len;
-+	DoIO( (struct IORequest *)io);
-+
-+	if (io->io_Actual != len) {
-+		io->io_Error = 1;
-+	}
-+
-+	rc = io->io_Error ? FALSE : TRUE;
-+	return rc;
-+}
-+
-+
-+STATIC VOID clipboard_pad_text(struct IOClipReq *io, ULONG textlen)
-+{
-+	if (textlen & 1)
-+		clipboard_write_data(io, "", 1);
-+}
-+
-+
-+STATIC ULONG clipboard_write_header_and_text(struct IOClipReq *io, CONST_STRPTR string, ULONG slen, ULONG ulen)
-+{
-+	ULONG rc;
-+
-+	struct
-+	{
-+		ULONG form;
-+		ULONG totalsize;
-+		ULONG ftxt;
-+		ULONG type;
-+		ULONG strlen;
-+	} iffheader;
-+
-+	io->io_Offset = 0;
-+	io->io_Error  = 0;
-+//	io->io_ClipID = 0;
-+
-+	iffheader.form      = ID_FORM;
-+	iffheader.totalsize = (slen & 1 ? slen + 1 : slen) + (ulen & 1 ? ulen + 1 : ulen) + 12 + 8;
-+	iffheader.ftxt      = ID_FTXT;
-+	iffheader.type      = ID_CHRS;
-+	iffheader.strlen    = slen;
-+
-+	rc = FALSE;
-+
-+	if (clipboard_write_data(io, &iffheader, sizeof(iffheader))) {
-+		if (clipboard_write_data(io, string, slen)) {
-+			clipboard_pad_text(io, slen);
-+			rc = TRUE;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
-+
-+STATIC ULONG clipboard_write_utf8(struct IOClipReq *io, CONST_STRPTR utext, ULONG ulen)
-+{
-+	ULONG rc;
-+
-+	struct
-+	{
-+		ULONG type;
-+		ULONG strlen;
-+	} utf8_header;
-+
-+	/* FIXME: For correct operation we should also store font name. Used font
-+	 * is relevant with guides written in Japanese for example.
-+	 */
-+
-+	utf8_header.type   = ID_UTF8;
-+	utf8_header.strlen = ulen;
-+
-+	rc = FALSE;
-+
-+	if (clipboard_write_data(io, &utf8_header, sizeof(utf8_header))) {
-+		if (clipboard_write_data(io, utext, ulen)) {
-+			clipboard_pad_text(io, ulen);
-+			rc = TRUE;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
-+STATIC VOID clipboard_finalize(struct IOClipReq *io)
-+{
-+	io->io_Command = CMD_UPDATE;
-+	DoIO((struct IORequest *)io);
-+}
-+
-+STATIC void clipboard_close(struct IOClipReq *io)
-+{
-+	if (io) {
-+		struct MsgPort *mp = io->io_Message.mn_ReplyPort;
-+
-+		CloseDevice((struct IORequest *)io);
-+		DeleteIORequest((struct IORequest *)io);
-+		DeleteMsgPort(mp);
-+	}
-+}
-+
++/* The text goes to the clipboard as FORM FTXT with a CHRS chunk in the system
++   character set, which every program reads, and a UTF8 chunk with the
++   unconverted text, which AROS_GetClipboardText prefers. iffparse.library
++   writes the chunk headers, so sizes are big-endian on every processor. */
 +bool
 +AROS_SetClipboardText(SDL_VideoDevice *_this, const char *text)
 +{
-+	APTR ctx;
-+	int rc = -1;
++	struct IFFHandle *clip;
++	char *stext;
++	bool ok = false;
 +
-+	if ((ctx = clipboard_open())) {
-+		char *stext = NULL;
-+		
-+		stext = AROS_ConvertUTF8Text(text);
++	if (!text)
++		text = "";
 +
-+		if (stext) {
-+			int ulen = strlen(text);
++	stext = AROS_ConvertUTF8Text(text);
++	if (!stext)
++		return SDL_OutOfMemory();
 +
-+			if (clipboard_write_header_and_text(ctx, stext, strlen(stext), ulen)) {
-+				if (clipboard_write_utf8(ctx, text, ulen))
-+					rc = 0;
++	if ((clip = AllocIFF())) {
++		clip->iff_Stream = (IPTR)OpenClipboard(0);
++
++		if (clip->iff_Stream) {
++			InitIFFasClip(clip);
++
++			if (!OpenIFF(clip, IFFF_WRITE)) {
++				LONG slen = (LONG)SDL_strlen(stext);
++				LONG ulen = (LONG)SDL_strlen(text);
++
++				if (!PushChunk(clip, ID_FTXT, ID_FORM, IFFSIZE_UNKNOWN)
++				 && !PushChunk(clip, 0, ID_CHRS, IFFSIZE_UNKNOWN)
++				 && WriteChunkBytes(clip, stext, slen) == slen
++				 && !PopChunk(clip)
++				 && !PushChunk(clip, 0, ID_UTF8, IFFSIZE_UNKNOWN)
++				 && WriteChunkBytes(clip, (APTR)text, ulen) == ulen
++				 && !PopChunk(clip)
++				 && !PopChunk(clip))
++					ok = true;
++
++				CloseIFF(clip);
 +			}
 +
-+			SDL_free(stext);
-+			clipboard_finalize(ctx);
++			CloseClipboard((struct ClipboardHandle *)clip->iff_Stream);
 +		}
-+		
-+		clipboard_close(ctx);
++
++		FreeIFF(clip);
 +	}
 +
-+	return (rc == 0);
++	SDL_free(stext);
++
++	if (!ok)
++		return SDL_SetError("Could not write to the clipboard");
++	return true;
 +}
 +
 +char *
