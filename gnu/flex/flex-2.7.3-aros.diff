@@ -1,7 +1,7 @@
-diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
---- flex-2.6.4/src/filter.c	2017-05-03 19:13:14.000000000 +0100
-+++ flex-2.6.4.aros/src/filter.c	2026-07-28 20:02:10.863834731 +0100
-@@ -121,12 +121,198 @@
+diff -ruN flex-2.7.3/src/filter.c flex-2.7.3.aros/src/filter.c
+--- flex-2.7.3/src/filter.c	2026-11-20 19:45:21.000000000 +0000
++++ flex-2.7.3.aros/src/filter.c	2026-11-21 12:13:20.626928675 +0000
+@@ -124,12 +124,198 @@
  	return f;
  }
  
@@ -200,15 +200,15 @@ diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
  	int     pid, pipes[2];
  
  
-@@ -196,6 +382,7 @@
-     fseek (stdout, 0, SEEK_CUR);
+@@ -199,6 +385,7 @@
+ 	fseek (stdout, 0, SEEK_CUR);
  
  	return true;
 +#endif /* !__AROS__ */
  }
  
  /** Truncate the chain to max_len number of filters.
-@@ -243,6 +430,14 @@
+@@ -245,6 +432,14 @@
  	 * stdout, and fork the rest of the chain again.
  	 */
  
@@ -221,9 +221,9 @@ diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
 +		to_h = aros_tee_to_h;
 +#else
  	if ((to_cfd = dup (1)) == -1)
- 		flexfatal (_("dup(1) failed"));
+ 		lerr_fatal (_("%s failed"), "dup(1)");
  	to_c = fdopen (to_cfd, "w");
-@@ -254,6 +449,7 @@
+@@ -256,6 +451,7 @@
  		filter_apply_chain (chain->next);
  		to_h = stdout;
  	}
@@ -231,9 +231,9 @@ diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
  
  	/* Now to_c is a pipe to the C branch, and to_h is a pipe to the H branch.
  	 */
-@@ -322,10 +518,15 @@
+@@ -317,10 +513,15 @@
  		lerr (_("error closing output file %s"),
- 			outfilename ? outfilename : "<stdout>");
+ 			env.outfilename != NULL ? env.outfilename : "<stdout>");
  
 +#ifdef __AROS__
 +	/* Sequential: nothing was forked and flex must carry on running. */
@@ -246,11 +246,11 @@ diff -ruN flex-2.6.4/src/filter.c flex-2.6.4.aros/src/filter.c
 +#endif
  }
  
- /** Adjust the line numbers in the #line directives of the generated scanner.
-diff -ruN flex-2.6.4/src/flexdef.h flex-2.6.4.aros/src/flexdef.h
---- flex-2.6.4/src/flexdef.h	2017-05-03 19:13:14.000000000 +0100
-+++ flex-2.6.4.aros/src/flexdef.h	2026-07-28 19:54:17.083281127 +0100
-@@ -1125,6 +1125,10 @@
+ static bool is_blank_line (const char *str)
+diff -ruN flex-2.7.3/src/flexdef.h flex-2.7.3.aros/src/flexdef.h
+--- flex-2.7.3/src/flexdef.h	2026-11-20 19:45:21.000000000 +0000
++++ flex-2.7.3.aros/src/flexdef.h	2026-11-21 12:13:20.627071175 +0000
+@@ -1171,6 +1171,10 @@
  extern int filter_truncate(struct filter * chain, int max_len);
  extern int filter_tee_header(struct filter *chain);
  extern int filter_fix_linedirs(struct filter *chain);
@@ -261,10 +261,10 @@ diff -ruN flex-2.6.4/src/flexdef.h flex-2.6.4.aros/src/flexdef.h
  
  
  /*
-diff -ruN flex-2.6.4/src/main.c flex-2.6.4.aros/src/main.c
---- flex-2.6.4/src/main.c	2017-05-03 22:10:22.000000000 +0100
-+++ flex-2.6.4.aros/src/main.c	2026-07-28 19:54:17.085396627 +0100
-@@ -516,6 +516,12 @@
+diff -ruN flex-2.7.3/src/main.c flex-2.7.3.aros/src/main.c
+--- flex-2.7.3/src/main.c	2026-11-20 19:45:21.000000000 +0000
++++ flex-2.7.3.aros/src/main.c	2026-11-21 12:13:27.440272354 +0000
+@@ -473,6 +473,12 @@
  	if (++called_before)
  		FLEX_EXIT (exit_status);
  
@@ -274,6 +274,6 @@ diff -ruN flex-2.6.4/src/main.c flex-2.6.4.aros/src/main.c
 +	filter_run_chain ();
 +#endif
 +
- 	if (skelfile != NULL) {
- 		if (ferror (skelfile))
- 			lerr (_("input error reading skeleton file %s"),
+ 	if (ctrl.yyclass != NULL && !ctrl.C_plus_plus)
+ 		lerr (_("%s only meaningful for C++ scanners"),
+ 		      "%option yyclass");

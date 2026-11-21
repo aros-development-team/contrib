@@ -3,7 +3,7 @@
 
 include $(SRCDIR)/config/aros-contrib.cfg
 
-FLEX_VERSBASE = 2.6.4
+FLEX_VERSBASE = 2.7.3
 FLEX_VERSION = $(FLEX_VERSBASE)
 ARCHBASE := flex-$(FLEX_VERSBASE)
 
