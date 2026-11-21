@@ -246,7 +246,7 @@ $(GENDIR)/$(CURDIR)/version.h: $(OPENAL_VERSION_DEPS) | $(GENDIR)/$(CURDIR)
     targetdir=$(HOSTGENDIR)/$(CURDIR) \
     objdir=$(HOSTGENDIR)/$(CURDIR)/native-tools files="$(addprefix $(OPENALARCHSRCDIR)/native-tools/,bsincgen)" uselibs="m"
 
-$(GENDIR)/$(CURDIR)/bsinc_inc.h: $(HOSTGENDIR)/$(CURDIR)/bsincgen
+$(GENDIR)/$(CURDIR)/bsinc_inc.h: $(HOSTGENDIR)/$(CURDIR)/bsincgen | $(GENDIR)/$(CURDIR)
 	$(Q)$(ECHO) "Generating bsinc_inc.h"
 	$(Q)$< $@
 
