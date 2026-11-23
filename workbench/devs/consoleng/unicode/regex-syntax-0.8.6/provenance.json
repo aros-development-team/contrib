@@ -1,0 +1,25 @@
+{
+  "crate": "regex-syntax 0.8.6",
+  "unicode": "16.0.0",
+  "url": "https://static.crates.io/crates/regex-syntax/regex-syntax-0.8.6.crate",
+  "sha256": "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001",
+  "reference": "Alacritty 542147067dd016fc5f49120ef0ba605a98a4e3a7 Cargo.lock",
+  "files": {
+    "perl_word.rs": "30f073baae28ea34c373c7778c00f20c1621c3e644404eff031f7d1cc8e9c9e2",
+    "LICENSE-MIT": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+    "LICENSE-UNICODE": "74db5baf44a41b1000312c673544b3374e4198af5605c7f9080a402cec42cfa3",
+    "perl_space.rs": "ec9bb22ed7e99feef292249c7e6f4673ee0af9635d4d158f93923494c14cd5ed",
+    "perl_decimal.rs": "6a59143db81a0bcaf0e8d0af265e711d1a6472e1f091ee9ee4377da5d5d0cd1f",
+    "case_folding_simple.rs": "7622c7f7f03ac0dc2f2bcd51c81a217d64de0cc912f62f1add5f676603a02456",
+    "property_bool.rs": "66cf5bd2a1438bf9694152f077a285cf014fbd50b9dd63a97233b2ea61d64962",
+    "general_category.rs": "9488e3721f7c2ae20e1b77fcff9a59b4ed8f22954b8645ea6d8592eac1856423",
+    "property_values.rs": "ef9131ce0a575c7327ec6d466aafd8b7c25600d80c232b5a4110bbf0a5a59136",
+    "script.rs": "41bd424f1e3a03290cf4995ced678dcf24c94b38c905c62f6819bf67e098a2ec",
+    "script_extension.rs": "a314099ddbf50a07fe350bb0835bf2fe494ed5ad278b30e171e21506eb557906",
+    "property_names.rs": "8c93985d1bcb01735667a3c4cb92f7e260d267326bde9d7f048bc77cd7e07855",
+    "age.rs": "71b7cf52acdb4aa98b44145303b8efbfa94913235493521941ef1e0092a0ffe2",
+    "grapheme_cluster_break.rs": "0dd9d66bad598f4ec3451b6699f05c17c52079e37d463baf6385bbe51aa218f1",
+    "word_break.rs": "c551681ad49ec28c7ae32bab1371945821c736ca8f0de410cb89f28066ec2ecf",
+    "sentence_break.rs": "be84fbe8c5c67e761b16fe6c27f16664dbb145357835cd6b92bc2a4a4c52ee79"
+  }
+}
