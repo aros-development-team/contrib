@@ -8266,7 +8266,7 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_arosvideo.h SDL3-3.4.12.aros/src/video/
 diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c
 --- SDL3-3.4.12/src/video/aros/SDL_aroswindow.c	1970-01-01 00:00:00.000000000 +0000
 +++ SDL3-3.4.12.aros/src/video/aros/SDL_aroswindow.c	2026-07-28 12:08:21.827328507 +0000
-@@ -0,0 +1,994 @@
+@@ -0,0 +1,1026 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -8595,6 +8595,26 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video
 +	}
 +}
 +
++/* The outer size of the open window for the inner size window->w x window->h,
++   no higher than the screen below its title bar. */
++static void
++AROS_OuterWindowSize(SDL_Window * window, LONG *ow, LONG *oh)
++{
++	SDL_WindowData *data = (SDL_WindowData *) window->internal;
++	SDL_VideoData *vd = data->videodata;
++	LONG w = window->w, h = window->h;
++
++	if ((window->flags & SDL_WINDOW_BORDERLESS) == 0) {
++		w += data->win->BorderLeft + data->win->BorderRight;
++		h += data->win->BorderTop + data->win->BorderBottom;
++	}
++
++	h = MIN(vd->WScreen->Height - (vd->CustomScreen == NULL ? vd->WScreen->BarHeight + 1 : 0), h);
++
++	*ow = w;
++	*oh = h;
++}
++
 +void
 +AROS_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window)
 +{
@@ -8603,16 +8623,9 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video
 +	SDL_WindowData *data = (SDL_WindowData *) window->internal;
 +
 +	if (data->win) {
-+		SDL_VideoData *vd = data->videodata;
-+		size_t h = window->h, w = window->w; 
++		LONG w, h;
 +
-+		if ((window->flags & SDL_WINDOW_BORDERLESS) == 0) {
-+			w += data->win->BorderLeft + data->win->BorderRight;
-+			h += data->win->BorderTop + data->win->BorderBottom;
-+		}
-+
-+		h = MIN(vd->WScreen->Height - (vd->CustomScreen == NULL ? vd->WScreen->BarHeight + 1 : 0), h);
-+
++		AROS_OuterWindowSize(window, &w, &h);
 +		ChangeWindowBox(data->win, data->win->LeftEdge, data->win->TopEdge, w, h);
 +	}
 +}
@@ -8781,6 +8794,18 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video
 +			data->curr_y = data->win->TopEdge;
 +			data->curr_w = data->win->Width;
 +			data->curr_h = data->win->Height;
++
++			/* WA_AutoAdjust shrinks a window that does not fit on the screen
++			   (an 800x600 inner area on an 800x600 screen, with its borders
++			   and title bar). Tell SDL the inner size the window really got,
++			   otherwise the program draws and maps the pointer for a larger
++			   area than the one shown. */
++			{
++				int iw = data->win->Width - data->win->BorderLeft - data->win->BorderRight;
++				int ih = data->win->Height - data->win->BorderTop - data->win->BorderBottom;
++				if (iw > 0 && ih > 0 && ((size_t)iw != w || (size_t)ih != h))
++					SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, iw, ih);
++			}
 +			data->first_deltamove = TRUE;
 +            data->menuactive = FALSE;
 +            data->win->UserData = (APTR)data;
@@ -8970,7 +8995,14 @@ diff -ruN SDL3-3.4.12/src/video/aros/SDL_aroswindow.c SDL3-3.4.12.aros/src/video
 +	if (data->win) {
 +		data->sdlflags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED);
 +
-+		ChangeWindowBox(data->win, window->x, window->y, window->w, window->h);
++		/* window->w/h are the inner size; ChangeWindowBox takes the outer one,
++		   limited as in AROS_SetWindowSize. */
++		{
++			LONG ow, oh;
++
++			AROS_OuterWindowSize(window, &ow, &oh);
++			ChangeWindowBox(data->win, window->x, window->y, ow, oh);
++		}
 +		AROS_WindowToFront(data->win);
 +	}
 +}
